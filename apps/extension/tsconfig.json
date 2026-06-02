@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "noEmit": true,
+    "types": ["chrome", "node"],
+    "paths": {
+      "@harumae/core": ["../../packages/core/src/index.ts"],
+      "@harumae/llm": ["../../packages/llm/src/index.ts"]
+    }
+  },
+  "include": ["entrypoints", "src", "wxt.config.ts", ".wxt/types/**/*.d.ts"]
+}

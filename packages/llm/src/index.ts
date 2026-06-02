@@ -1,0 +1,26 @@
+export { analyzeContextRisk, createLlmContextAnalyzer } from "./analyzer";
+export {
+  ANALYZING_MESSAGE,
+  DEFAULT_CONFIDENCE_THRESHOLD,
+  DEFAULT_MAX_CANDIDATES,
+  DEFAULT_MAX_INPUT_CHARS,
+  DEFAULT_MODEL_ID,
+  MODEL_LOADING_MESSAGE,
+  WEBGPU_UNAVAILABLE_MESSAGE
+} from "./constants";
+export { convertContextCandidatesToFindings } from "./convert";
+export { parseContextAnalysisJson } from "./parser";
+export { buildContextRiskPrompt } from "./prompt";
+export { isWebGpuAvailable } from "./webgpu";
+export type {
+  AnalyzeContextOptions,
+  ChatMessage,
+  ContextAnalysisResult,
+  ContextPromptOptions,
+  ContextRiskCandidate,
+  ContextRiskCategory,
+  ConvertCandidatesOptions,
+  LlmAnalyzerOptions,
+  LlmContextAnalyzer,
+  LlmProgress
+} from "./types";

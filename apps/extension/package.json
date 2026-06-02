@@ -1,0 +1,22 @@
+{
+  "name": "@harumae/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "typecheck": "wxt prepare && tsc --noEmit"
+  },
+  "dependencies": {
+    "@harumae/core": "workspace:*",
+    "@harumae/llm": "workspace:*",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}

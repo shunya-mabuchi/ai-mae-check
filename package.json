@@ -1,0 +1,35 @@
+{
+  "name": "harumae",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.12.1",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm dev:demo",
+    "dev:extension": "pnpm --filter @harumae/core build && pnpm --filter @harumae/llm build && pnpm --filter @harumae/extension dev",
+    "dev:demo": "pnpm --filter @harumae/core build && pnpm --filter @harumae/llm build && pnpm --filter @harumae/demo dev",
+    "build": "pnpm -r --sort build",
+    "build:extension": "pnpm --filter @harumae/core build && pnpm --filter @harumae/llm build && pnpm --filter @harumae/extension build",
+    "build:demo": "pnpm --filter @harumae/core build && pnpm --filter @harumae/llm build && pnpm --filter @harumae/demo build",
+    "test": "pnpm --filter @harumae/core test && pnpm --filter @harumae/llm test",
+    "test:core": "pnpm --filter @harumae/core test",
+    "test:llm": "pnpm --filter @harumae/llm test",
+    "test:e2e": "pnpm --filter @harumae/demo test:e2e",
+    "lint": "pnpm typecheck",
+    "typecheck": "pnpm -r --sort typecheck"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/chrome": "^0.0.326",
+    "@types/node": "^22.15.29",
+    "@vitejs/plugin-react": "^4.5.2",
+    "@wxt-dev/module-react": "^1.1.3",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4",
+    "wxt": "^0.20.6"
+  }
+}

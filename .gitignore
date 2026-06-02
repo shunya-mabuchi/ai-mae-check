@@ -1,0 +1,15 @@
+node_modules/
+.pnpm-store/
+.pnpm-state/
+.pnpm-cache/
+.pnpm-temp/
+dist/
+.output/
+.wxt/
+test-results/
+playwright-report/
+coverage/
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
