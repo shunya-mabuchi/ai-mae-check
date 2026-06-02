@@ -92,7 +92,15 @@ function Button({
   );
 }
 
-function FindingList({ findings }: { findings: Finding[] }) {
+function FindingList({
+  findings,
+  selectedFindingIds,
+  onToggle
+}: {
+  findings: Finding[];
+  selectedFindingIds: string[];
+  onToggle: (id: string) => void;
+}) {
   if (findings.length === 0) {
     return <p className="rounded-md border border-line bg-white p-4 text-sm text-stone-600">まだ検出結果はありません。</p>;
   }
@@ -100,17 +108,30 @@ function FindingList({ findings }: { findings: Finding[] }) {
   return (
     <div className="space-y-3">
       {findings.map((finding) => (
-        <div key={finding.id} className="rounded-md border border-line bg-white p-3">
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <span className={`rounded-md border px-2 py-1 text-xs font-semibold ${riskClass[finding.riskLevel]}`}>
-              危険度: {riskLabel[finding.riskLevel]}
-            </span>
-            <span className="text-sm font-semibold text-ink">{finding.label}</span>
-            <span className="text-xs text-stone-500">{finding.source === "llm" ? "AI候補" : "ルール"}</span>
+        <label key={finding.id} className="block rounded-md border border-line bg-white p-3">
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 accent-leaf"
+              checked={selectedFindingIds.includes(finding.id)}
+              onChange={() => onToggle(finding.id)}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <span className={`rounded-md border px-2 py-1 text-xs font-semibold ${riskClass[finding.riskLevel]}`}>
+                  危険度: {riskLabel[finding.riskLevel]}
+                </span>
+                <span className="text-sm font-semibold text-ink">{finding.label}</span>
+                <span className="text-xs text-stone-500">{finding.source === "llm" ? "AI候補" : "ルール"}</span>
+                <span className="text-xs font-semibold text-leaf">
+                  {selectedFindingIds.includes(finding.id) ? "マスク対象" : "マスク対象外"}
+                </span>
+              </div>
+              <p className="break-all rounded bg-stone-50 px-2 py-1 font-mono text-sm text-stone-800">{finding.text}</p>
+              <p className="mt-2 text-xs text-stone-600">{finding.message}</p>
+            </div>
           </div>
-          <p className="break-all rounded bg-stone-50 px-2 py-1 font-mono text-sm text-stone-800">{finding.text}</p>
-          <p className="mt-2 text-xs text-stone-600">{finding.message}</p>
-        </div>
+        </label>
       ))}
     </div>
   );
@@ -162,11 +183,20 @@ function LlmCandidates({
 export function App() {
   const [text, setText] = useState("");
   const [detection, setDetection] = useState<DetectionResult | null>(null);
+  const [selectedRuleFindingIds, setSelectedRuleFindingIds] = useState<string[]>([]);
   const [llmCandidates, setLlmCandidates] = useState<ContextRiskCandidate[]>([]);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
   const [llmStatus, setLlmStatus] = useState<LlmStatus>("idle");
   const [llmMessage, setLlmMessage] = useState("AI文脈チェックは手動で実行できます。");
   const [copyMessage, setCopyMessage] = useState("");
+
+  const selectedRuleFindings = useMemo(() => {
+    if (!detection) {
+      return [];
+    }
+
+    return detection.findings.filter((finding) => selectedRuleFindingIds.includes(finding.id));
+  }, [detection, selectedRuleFindingIds]);
 
   const selectedLlmFindings = useMemo(() => {
     const selectedCandidates = llmCandidates.filter((candidate) => selectedCandidateIds.includes(candidate.id));
@@ -178,20 +208,21 @@ export function App() {
       return selectedLlmFindings;
     }
 
-    return mergeFindings(detection.findings, selectedLlmFindings);
-  }, [detection, selectedLlmFindings]);
+    return mergeFindings(selectedRuleFindings, selectedLlmFindings);
+  }, [detection, selectedLlmFindings, selectedRuleFindings]);
 
   const maskedText = useMemo(() => {
     if (mergedFindings.length === 0) {
-      return "";
+      return detection ? text : "";
     }
 
     return maskSensitiveText(text, mergedFindings).maskedText;
-  }, [mergedFindings, text]);
+  }, [detection, mergedFindings, text]);
 
   const runRuleDetection = () => {
     const result = detectSensitiveText(text);
     setDetection(result);
+    setSelectedRuleFindingIds(result.findings.map((finding) => finding.id));
     setLlmCandidates([]);
     setSelectedCandidateIds([]);
     setLlmStatus("idle");
@@ -206,7 +237,10 @@ export function App() {
     }
 
     const ruleResult = detection ?? detectSensitiveText(text);
-    setDetection(ruleResult);
+    if (!detection) {
+      setDetection(ruleResult);
+      setSelectedRuleFindingIds(ruleResult.findings.map((finding) => finding.id));
+    }
 
     if (!isWebGpuAvailable()) {
       setLlmStatus("error");
@@ -253,6 +287,7 @@ export function App() {
   const reset = () => {
     setText("");
     setDetection(null);
+    setSelectedRuleFindingIds([]);
     setLlmCandidates([]);
     setSelectedCandidateIds([]);
     setLlmStatus("idle");
@@ -271,6 +306,10 @@ export function App() {
 
   const toggleCandidate = (id: string) => {
     setSelectedCandidateIds((current) => (current.includes(id) ? current.filter((candidateId) => candidateId !== id) : [...current, id]));
+  };
+
+  const toggleRuleFinding = (id: string) => {
+    setSelectedRuleFindingIds((current) => (current.includes(id) ? current.filter((findingId) => findingId !== id) : [...current, id]));
   };
 
   const summary = detection?.summary ?? { total: 0, high: 0, medium: 0, low: 0, byRule: {} };
@@ -397,7 +436,11 @@ export function App() {
                   </div>
                 </div>
                 <div className="max-h-[420px] overflow-auto pr-1">
-                  <FindingList findings={mergedFindings} />
+                  <FindingList
+                    findings={detection?.findings ?? []}
+                    selectedFindingIds={selectedRuleFindingIds}
+                    onToggle={toggleRuleFinding}
+                  />
                   <div
                     className={`mt-4 rounded-md border p-3 text-sm ${
                       llmStatus === "error"

@@ -191,6 +191,11 @@ const css = `
     padding-top: 10px;
     margin-top: 10px;
   }
+  .hm-select-row {
+    display: flex;
+    gap: 10px;
+  }
+  .hm-select-row input,
   .hm-candidate input {
     margin-top: 3px;
     accent-color: #2f7d57;
@@ -264,7 +269,12 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
   return element;
 }
 
-function renderFindingList(container: HTMLElement, findings: Finding[]): void {
+function renderFindingList(
+  container: HTMLElement,
+  findings: Finding[],
+  selectedFindingIds: Set<string>,
+  onChange: () => void
+): void {
   container.replaceChildren();
   if (findings.length === 0) {
     container.append(createElement("p", "hm-message", "検出項目はありません。"));
@@ -272,14 +282,31 @@ function renderFindingList(container: HTMLElement, findings: Finding[]): void {
   }
 
   for (const finding of findings) {
-    const item = createElement("div", "hm-item");
+    const item = createElement("label", "hm-item");
+    const wrapper = createElement("div", "hm-select-row");
+    const checkbox = createElement("input") as HTMLInputElement;
+    checkbox.type = "checkbox";
+    checkbox.checked = selectedFindingIds.has(finding.id);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        selectedFindingIds.add(finding.id);
+      } else {
+        selectedFindingIds.delete(finding.id);
+      }
+      onChange();
+    });
+
+    const body = createElement("div");
     const meta = createElement("div", "hm-meta");
     meta.append(createElement("span", `hm-badge hm-badge-${finding.riskLevel}`, `危険度: ${riskLabel[finding.riskLevel]}`));
     meta.append(createElement("strong", undefined, finding.label));
     meta.append(createElement("span", "hm-message", finding.source === "llm" ? "AI候補" : "ルール"));
-    item.append(meta);
-    item.append(createElement("code", "hm-text", finding.text));
-    item.append(createElement("p", "hm-message", finding.message));
+    meta.append(createElement("span", "hm-message", selectedFindingIds.has(finding.id) ? "マスク対象" : "マスク対象外"));
+    body.append(meta);
+    body.append(createElement("code", "hm-text", finding.text));
+    body.append(createElement("p", "hm-message", finding.message));
+    wrapper.append(checkbox, body);
+    item.append(wrapper);
     container.append(item);
   }
 }
@@ -379,17 +406,19 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     document.documentElement.append(host);
 
     let llmCandidates: ContextRiskCandidate[] = [];
+    const selectedRuleFindingIds = new Set(options.detection.findings.map((finding) => finding.id));
     const selectedCandidateIds = new Set<string>();
 
     const currentFindings = () => {
+      const selectedRuleFindings = options.detection.findings.filter((finding) => selectedRuleFindingIds.has(finding.id));
       const selectedCandidates = llmCandidates.filter((candidate) => selectedCandidateIds.has(candidate.id));
       const llmFindings = convertContextCandidatesToFindings(options.inputText, selectedCandidates);
-      return mergeFindings(options.detection.findings, llmFindings);
+      return mergeFindings(selectedRuleFindings, llmFindings);
     };
 
     const render = () => {
       const findings = currentFindings();
-      renderFindingList(list, findings);
+      renderFindingList(list, options.detection.findings, selectedRuleFindingIds, render);
       preview.textContent = maskSensitiveText(options.inputText, findings).maskedText;
       renderCandidates(candidateList, llmCandidates, selectedCandidateIds, render);
     };

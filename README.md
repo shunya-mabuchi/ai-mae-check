@@ -35,6 +35,7 @@
 - Luhnチェックによるクレジットカード風番号の検出
 - 重複範囲の優先順位処理
 - プレースホルダー連番付きのマスキング
+- 検出項目ごとのマスク適用ON/OFF
 - Shadow DOMベースの確認モーダル
 - `textarea`、text/search input、`contenteditable`へのカーソル位置挿入
 - Options Pageで対象サイト、検出ルール、WebLLM設定を変更
