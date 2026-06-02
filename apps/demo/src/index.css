@@ -4,32 +4,59 @@
 
 :root {
   color: #202124;
-  background: #fbfaf7;
+  background: #f7f4ed;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   min-width: 320px;
+  background: #f7f4ed;
 }
 
 button,
-textarea {
+textarea,
+input {
   font: inherit;
 }
 
-.hero-scene {
-  background:
-    radial-gradient(circle at 24% 18%, rgba(47, 125, 87, 0.2), transparent 28%),
-    linear-gradient(135deg, rgba(251, 250, 247, 0.92), rgba(232, 237, 229, 0.88)),
-    #f4f2ec;
+textarea::selection,
+pre::selection,
+p::selection,
+h1::selection,
+h2::selection,
+h3::selection,
+span::selection {
+  background: rgba(47, 125, 87, 0.18);
 }
 
-.redaction-line {
-  background: linear-gradient(90deg, rgba(32, 33, 36, 0.9), rgba(32, 33, 36, 0.5));
-  border-radius: 3px;
-  height: 0.7rem;
+.bg-page-texture {
+  background:
+    linear-gradient(135deg, rgba(47, 125, 87, 0.11), rgba(247, 244, 237, 0) 44%),
+    linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(238, 235, 227, 0.92)),
+    #f7f4ed;
+}
+
+.bg-page-texture::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  opacity: 0.08;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(32, 33, 36, 0.14) 0, rgba(32, 33, 36, 0.14) 1px, transparent 1px, transparent 5px),
+    repeating-linear-gradient(90deg, rgba(47, 125, 87, 0.12) 0, rgba(47, 125, 87, 0.12) 1px, transparent 1px, transparent 7px);
+  pointer-events: none;
+}
+
+.page-shell {
+  background:
+    repeating-linear-gradient(0deg, rgba(32, 33, 36, 0.018) 0, rgba(32, 33, 36, 0.018) 1px, transparent 1px, transparent 9px),
+    linear-gradient(180deg, #fffdf8 0%, #f7f4ed 42%, #f3efe6 100%);
 }
