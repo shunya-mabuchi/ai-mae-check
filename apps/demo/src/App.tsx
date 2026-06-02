@@ -20,6 +20,7 @@ import {
 import {
   convertContextCandidatesToFindings,
   createLlmContextAnalyzer,
+  formatLlmErrorMessage,
   isWebGpuAvailable,
   type ContextRiskCandidate,
   type LlmProgress
@@ -228,7 +229,7 @@ export function App() {
 
       if (result.error) {
         setLlmStatus("error");
-        setLlmMessage("AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。");
+        setLlmMessage(result.error);
         return;
       }
 
@@ -243,7 +244,7 @@ export function App() {
       }
     } catch {
       setLlmStatus("error");
-      setLlmMessage("AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。");
+      setLlmMessage(formatLlmErrorMessage(new Error("AI文脈チェックを実行できませんでした")));
     } finally {
       analyzer.dispose();
     }

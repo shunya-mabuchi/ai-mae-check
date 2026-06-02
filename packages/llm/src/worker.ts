@@ -1,4 +1,5 @@
 import { ANALYZING_MESSAGE, DEFAULT_MODEL_ID, MODEL_LOADING_MESSAGE } from "./constants";
+import { formatLlmErrorMessage } from "./errors";
 import { buildContextRiskPrompt } from "./prompt";
 import { parseContextAnalysisJson } from "./parser";
 import type { AnalyzeContextOptions, ContextAnalysisResult, LlmAnalyzerOptions, LlmProgress } from "./types";
@@ -181,11 +182,11 @@ workerScope.addEventListener("message", (event: MessageEvent<unknown>) => {
     .then((result) => {
       workerScope.postMessage({ type: "result", requestId: request.requestId, result });
     })
-    .catch(() => {
+    .catch((error: unknown) => {
       workerScope.postMessage({
         type: "error",
         requestId: request.requestId,
-        error: "AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。",
+        error: formatLlmErrorMessage(error),
         modelId: request.analyzerOptions.modelId,
         elapsedMs: 0
       });

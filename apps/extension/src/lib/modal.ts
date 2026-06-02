@@ -8,6 +8,7 @@ import {
 import {
   convertContextCandidatesToFindings,
   createLlmContextAnalyzer,
+  formatLlmErrorMessage,
   isWebGpuAvailable,
   type ContextRiskCandidate,
   type LlmProgress
@@ -425,7 +426,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
         });
 
         if (result.error) {
-          llmStatus.textContent = "AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。";
+          llmStatus.textContent = result.error;
           return;
         }
 
@@ -442,8 +443,8 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
             ? "AI文脈チェックで注意候補が見つかりました。"
             : "AI文脈チェックでは追加の注意候補は見つかりませんでした。ただし、安全を保証するものではありません。";
         render();
-      } catch {
-        llmStatus.textContent = "AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。";
+      } catch (error: unknown) {
+        llmStatus.textContent = formatLlmErrorMessage(error);
       } finally {
         analyzer.dispose();
         llmButton.removeAttribute("disabled");
