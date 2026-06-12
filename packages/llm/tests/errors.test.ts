@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { classifyLlmError, formatLlmErrorMessage } from "../src";
+import { classifyLlmError, COMPATIBLE_LIGHTWEIGHT_MODEL_ID, DEFAULT_MODEL_ID, formatLlmErrorMessage } from "../src";
 
 describe("formatLlmErrorMessage", () => {
+  it("デフォルトモデルはf16非対応環境を考慮した互換モデルにする", () => {
+    expect(DEFAULT_MODEL_ID).toBe(COMPATIBLE_LIGHTWEIGHT_MODEL_ID);
+    expect(DEFAULT_MODEL_ID).toContain("q4f32_1");
+  });
+
   it("モデル取得のネットワーク失敗を日本語で説明する", () => {
     const message = formatLlmErrorMessage(new Error("net::ERR_NETWORK_ACCESS_DENIED https://huggingface.co/model"));
 
