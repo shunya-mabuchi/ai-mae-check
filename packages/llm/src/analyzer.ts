@@ -1,3 +1,5 @@
+/// <reference path="./vite-env.d.ts" />
+
 import {
   ANALYZING_MESSAGE,
   DEFAULT_CONFIDENCE_THRESHOLD,
@@ -7,44 +9,63 @@ import {
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
 import { classifyLlmError } from "./errors";
+import { resolveModelId, type WebLlmModelListModule } from "./model";
+import { parseContextAnalysisJson } from "./parser";
+import { buildContextRiskPrompt } from "./prompt";
 import { isWebGpuAvailable } from "./webgpu";
 import type { AnalyzeContextOptions, ContextAnalysisResult, LlmAnalyzerOptions, LlmContextAnalyzer, LlmErrorDetail, LlmProgress } from "./types";
+import WebLlmWorker from "./webllmWorker?worker";
 
-type WorkerSuccessMessage = {
-  type: "result";
-  requestId: string;
-  result: ContextAnalysisResult;
+type WebLlmProgressReport = {
+  progress?: number;
+  text?: string;
 };
 
-type WorkerProgressMessage = {
-  type: "progress";
-  requestId: string;
-  progress: LlmProgress;
+type WebLlmChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
 };
 
-type WorkerErrorMessage = {
-  type: "error";
-  requestId: string;
-  error: string;
-  errorDetail?: LlmErrorDetail;
-  modelId: string;
-  elapsedMs: number;
+type WebLlmCompletion = {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
 };
 
-type WorkerResponse = WorkerSuccessMessage | WorkerProgressMessage | WorkerErrorMessage;
+type WebLlmEngine = {
+  chat: {
+    completions: {
+      create(request: {
+        messages: WebLlmChatMessage[];
+        temperature: number;
+        max_tokens: number;
+      }): Promise<WebLlmCompletion>;
+    };
+  };
+  unload?(): Promise<void>;
+};
+
+type WebLlmModule = WebLlmModelListModule & {
+  CreateWebWorkerMLCEngine(
+    worker: Worker,
+    modelId: string,
+    options?: {
+      initProgressCallback?: (report: WebLlmProgressReport) => void;
+    }
+  ): Promise<WebLlmEngine>;
+};
+
+type NavigatorWithGpu = Navigator & {
+  gpu?: {
+    requestAdapter(options?: { powerPreference?: "low-power" | "high-performance" }): Promise<unknown | null>;
+  };
+};
 
 type NormalizedLlmAnalyzerOptions = Required<Omit<LlmAnalyzerOptions, "workerUrl">> & {
   workerUrl?: string;
 };
-
-function isWorkerResponse(value: unknown): value is WorkerResponse {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const record = value as Record<string, unknown>;
-  return typeof record.type === "string" && typeof record.requestId === "string";
-}
 
 function createErrorResult(inputModelId: string, startedAt: number, error: string, errorDetail?: LlmErrorDetail): ContextAnalysisResult {
   return {
@@ -58,17 +79,33 @@ function createErrorResult(inputModelId: string, startedAt: number, error: strin
   };
 }
 
+async function ensureWebGpuAdapter(): Promise<LlmErrorDetail | null> {
+  if (!isWebGpuAvailable()) {
+    return classifyLlmError(new Error("navigator.gpu is not available"));
+  }
+
+  try {
+    const adapter = await (navigator as NavigatorWithGpu).gpu?.requestAdapter({ powerPreference: "high-performance" });
+    if (!adapter) {
+      return classifyLlmError(new Error("No available WebGPU adapters"));
+    }
+  } catch (error) {
+    return classifyLlmError(error);
+  }
+
+  return null;
+}
+
 class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
   private worker: Worker | null = null;
+  private engine: WebLlmEngine | null = null;
+  private loadedModelId: string | null = null;
+  private enginePromise: Promise<{ engine: WebLlmEngine; modelId: string }> | null = null;
 
   constructor(private readonly options: NormalizedLlmAnalyzerOptions) {}
 
   async analyze(input: string, options: AnalyzeContextOptions = {}): Promise<ContextAnalysisResult> {
     const startedAt = performance.now();
-
-    if (!isWebGpuAvailable()) {
-      return createErrorResult(this.options.modelId, startedAt, WEBGPU_UNAVAILABLE_MESSAGE);
-    }
 
     if (typeof Worker === "undefined") {
       return createErrorResult(this.options.modelId, startedAt, WEBGPU_UNAVAILABLE_MESSAGE);
@@ -78,89 +115,105 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
       return createErrorResult(this.options.modelId, startedAt, "AI文脈チェックが中断されました。");
     }
 
-    options.onProgress?.({ phase: "loading", message: MODEL_LOADING_MESSAGE });
-    const worker = this.getWorker();
-    const requestId = `request-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const webGpuError = await ensureWebGpuAdapter();
+    if (webGpuError) {
+      return createErrorResult(this.options.modelId, startedAt, webGpuError.message, webGpuError);
+    }
+
     const inputForModel = input.slice(0, this.options.maxInputChars);
 
-    return new Promise((resolve) => {
-      const cleanup = () => {
-        worker.removeEventListener("message", handleMessage);
-        worker.removeEventListener("error", handleWorkerError);
-        worker.removeEventListener("messageerror", handleWorkerMessageError);
-        options.signal?.removeEventListener("abort", handleAbort);
-      };
+    try {
+      const { engine, modelId } = await this.getEngine(options.onProgress);
 
-      const handleAbort = () => {
-        cleanup();
-        this.dispose();
-        resolve(createErrorResult(this.options.modelId, startedAt, "AI文脈チェックが中断されました。"));
-      };
+      if (options.signal?.aborted) {
+        return createErrorResult(modelId, startedAt, "AI文脈チェックが中断されました。");
+      }
 
-      const handleMessage = (event: MessageEvent<unknown>) => {
-        if (!isWorkerResponse(event.data) || event.data.requestId !== requestId) {
-          return;
-        }
-
-        if (event.data.type === "progress") {
-          options.onProgress?.(event.data.progress);
-          return;
-        }
-
-        cleanup();
-        if (event.data.type === "result") {
-          resolve(event.data.result);
-          return;
-        }
-
-        resolve(createErrorResult(event.data.modelId, startedAt, event.data.error, event.data.errorDetail));
-      };
-
-      const handleWorkerError = (event: ErrorEvent) => {
-        cleanup();
-        this.dispose();
-        const detail = classifyLlmError(new Error(event.message || "Worker script error"));
-        resolve(createErrorResult(this.options.modelId, startedAt, detail.message, detail));
-      };
-
-      const handleWorkerMessageError = () => {
-        cleanup();
-        this.dispose();
-        const detail = classifyLlmError(new Error("Worker messageerror"));
-        resolve(createErrorResult(this.options.modelId, startedAt, detail.message, detail));
-      };
-
-      options.signal?.addEventListener("abort", handleAbort, { once: true });
-      worker.addEventListener("message", handleMessage);
-      worker.addEventListener("error", handleWorkerError);
-      worker.addEventListener("messageerror", handleWorkerMessageError);
-      const { workerUrl: _workerUrl, ...analyzerOptions } = this.options;
-      worker.postMessage({
-        type: "analyze",
-        requestId,
-        input: inputForModel,
-        analyzerOptions,
-        analyzeOptions: {
-          existingFindings: options.existingFindings ?? [],
-          language: options.language ?? "ja",
-          maxCandidates: options.maxCandidates ?? 12
-        }
-      });
       options.onProgress?.({ phase: "analyzing", message: ANALYZING_MESSAGE });
-    });
+      const messages = buildContextRiskPrompt(inputForModel, {
+        existingFindings: options.existingFindings ?? [],
+        ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
+      });
+
+      const completion = await engine.chat.completions.create({
+        messages,
+        temperature: this.options.temperature,
+        max_tokens: this.options.maxTokens
+      });
+      const rawText = completion.choices?.[0]?.message?.content ?? "";
+      const parsed = parseContextAnalysisJson(rawText, {
+        ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {}),
+        confidenceThreshold: this.options.confidenceThreshold
+      });
+
+      return {
+        candidates: parsed.candidates,
+        summary: parsed.summary,
+        rawText,
+        modelId,
+        elapsedMs: Math.max(0, performance.now() - startedAt)
+      };
+    } catch (error) {
+      const detail = classifyLlmError(error);
+      this.dispose();
+      return createErrorResult(this.options.modelId, startedAt, detail.message, detail);
+    }
   }
 
   dispose(): void {
+    void this.engine?.unload?.();
     this.worker?.terminate();
     this.worker = null;
+    this.engine = null;
+    this.loadedModelId = null;
+    this.enginePromise = null;
   }
 
-  private getWorker(): Worker {
-    if (!this.worker) {
-      this.worker = new Worker(this.options.workerUrl ?? new URL("./worker.js", import.meta.url), { type: "module" });
+  private async getEngine(onProgress?: (progress: LlmProgress) => void): Promise<{ engine: WebLlmEngine; modelId: string }> {
+    if (this.engine && this.loadedModelId) {
+      return { engine: this.engine, modelId: this.loadedModelId };
     }
 
-    return this.worker;
+    if (this.enginePromise) {
+      return this.enginePromise;
+    }
+
+    this.enginePromise = this.createEngine(onProgress);
+    try {
+      return await this.enginePromise;
+    } finally {
+      this.enginePromise = null;
+    }
+  }
+
+  private async createEngine(onProgress?: (progress: LlmProgress) => void): Promise<{ engine: WebLlmEngine; modelId: string }> {
+    const webllm = (await import("@mlc-ai/web-llm")) as unknown as WebLlmModule;
+    const modelId = resolveModelId(webllm, this.options.modelId);
+
+    onProgress?.({
+      phase: "loading",
+      message: `${MODEL_LOADING_MESSAGE} 使用モデル: ${modelId}`
+    });
+
+    const worker = this.options.workerUrl ? new Worker(this.options.workerUrl, { type: "module" }) : new WebLlmWorker();
+    this.worker = worker;
+    this.engine = await webllm.CreateWebWorkerMLCEngine(worker, modelId, {
+      initProgressCallback: (report) => {
+        const progress: LlmProgress = {
+          phase: "loading",
+          message: report.text && report.text.length > 0 ? report.text : MODEL_LOADING_MESSAGE
+        };
+
+        if (typeof report.progress === "number") {
+          progress.progress = report.progress;
+        }
+
+        onProgress?.(progress);
+      }
+    });
+    this.loadedModelId = modelId;
+
+    return { engine: this.engine, modelId };
   }
 }
 

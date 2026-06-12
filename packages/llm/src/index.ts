@@ -7,11 +7,13 @@ export {
   DEFAULT_MAX_INPUT_CHARS,
   DEFAULT_MODEL_ID,
   LEGACY_LIGHTWEIGHT_MODEL_ID,
+  LOW_VRAM_MODEL_ID,
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
 export { convertContextCandidatesToFindings } from "./convert";
 export { classifyLlmError, formatLlmErrorMessage } from "./errors";
+export { getAvailableModelIds, resolveModelId } from "./model";
 export { parseContextAnalysisJson } from "./parser";
 export { buildContextRiskPrompt } from "./prompt";
 export { isWebGpuAvailable } from "./webgpu";
