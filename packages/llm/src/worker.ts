@@ -1,4 +1,10 @@
-import { ANALYZING_MESSAGE, DEFAULT_MODEL_ID, MODEL_LOADING_MESSAGE } from "./constants";
+import {
+  ANALYZING_MESSAGE,
+  COMPATIBLE_LIGHTWEIGHT_MODEL_ID,
+  DEFAULT_MODEL_ID,
+  LEGACY_LIGHTWEIGHT_MODEL_ID,
+  MODEL_LOADING_MESSAGE
+} from "./constants";
 import { classifyLlmError } from "./errors";
 import { buildContextRiskPrompt } from "./prompt";
 import { parseContextAnalysisJson } from "./parser";
@@ -75,13 +81,18 @@ function postProgress(requestId: string, progress: LlmProgress): void {
 function resolveModelId(module: WebLlmModule, requestedModelId: string): string {
   const modelList = module.prebuiltAppConfig?.model_list ?? [];
   const ids = modelList.map((item) => item.model_id ?? item.model).filter((id): id is string => typeof id === "string");
+  const preferredModelId = requestedModelId === LEGACY_LIGHTWEIGHT_MODEL_ID ? COMPATIBLE_LIGHTWEIGHT_MODEL_ID : requestedModelId;
 
-  if (ids.includes(requestedModelId)) {
-    return requestedModelId;
+  if (ids.includes(preferredModelId)) {
+    return preferredModelId;
   }
 
   if (ids.includes(DEFAULT_MODEL_ID)) {
     return DEFAULT_MODEL_ID;
+  }
+
+  if (ids.includes(COMPATIBLE_LIGHTWEIGHT_MODEL_ID)) {
+    return COMPATIBLE_LIGHTWEIGHT_MODEL_ID;
   }
 
   const lightweight = ids.find((id) => /1B/i.test(id) && /Instruct/i.test(id));
@@ -106,7 +117,7 @@ async function getEngine(requestId: string, options: Required<Omit<LlmAnalyzerOp
 
   postProgress(requestId, {
     phase: "loading",
-    message: MODEL_LOADING_MESSAGE
+    message: `${MODEL_LOADING_MESSAGE} 使用モデル: ${modelId}`
   });
 
   engine = await webllm.CreateMLCEngine(modelId, {

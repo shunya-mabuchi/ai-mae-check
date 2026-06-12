@@ -1,4 +1,6 @@
-export const DEFAULT_MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+export const DEFAULT_MODEL_ID = "Llama-3.2-1B-Instruct-q4f32_1-MLC";
+export const LEGACY_LIGHTWEIGHT_MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+export const COMPATIBLE_LIGHTWEIGHT_MODEL_ID = "Llama-3.2-1B-Instruct-q4f32_1-MLC";
 export const DEFAULT_MAX_INPUT_CHARS = 6000;
 export const DEFAULT_MAX_CANDIDATES = 12;
 export const DEFAULT_CONFIDENCE_THRESHOLD = 0.6;
