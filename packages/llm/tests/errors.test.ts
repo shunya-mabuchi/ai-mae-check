@@ -46,6 +46,14 @@ describe("formatLlmErrorMessage", () => {
     expect(detail.message).toContain("Worker");
   });
 
+  it("破棄済みオブジェクトのエラーをWorker寿命系として分類する", () => {
+    const detail = classifyLlmError(new Error("Object has already been disposed"));
+
+    expect(detail.kind).toBe("worker");
+    expect(detail.hint).toContain("破棄済み");
+    expect(detail.technicalDetail).toContain("Object has already been disposed");
+  });
+
   it("WASM読込失敗を分類する", () => {
     const detail = classifyLlmError(new Error("WebAssembly.compile failed"));
 

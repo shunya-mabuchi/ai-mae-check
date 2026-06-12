@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   detectSensitiveText,
   maskSensitiveText,
@@ -13,6 +13,7 @@ import {
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE,
   type ContextRiskCandidate,
+  type LlmContextAnalyzer,
   type LlmErrorDetail,
   type LlmProgress
 } from "@harumae/llm";
@@ -28,6 +29,7 @@ import { initialLlmMessage, sampleText, type LlmStatus } from "./lib/demoConstan
 const emptySummary = { total: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
 export function App() {
+  const analyzerRef = useRef<LlmContextAnalyzer | null>(null);
   const [text, setText] = useState("");
   const [detection, setDetection] = useState<DetectionResult | null>(null);
   const [selectedRuleFindingIds, setSelectedRuleFindingIds] = useState<string[]>([]);
@@ -72,6 +74,23 @@ export function App() {
   }, [detection, mergedFindings, text]);
 
   const summary = detection?.summary ?? emptySummary;
+
+  useEffect(() => {
+    return () => {
+      analyzerRef.current?.dispose();
+      analyzerRef.current = null;
+    };
+  }, []);
+
+  const getAnalyzer = () => {
+    analyzerRef.current ??= createLlmContextAnalyzer();
+    return analyzerRef.current;
+  };
+
+  const resetAnalyzer = () => {
+    analyzerRef.current?.dispose();
+    analyzerRef.current = null;
+  };
 
   const resetLlmState = () => {
     setLlmCandidates([]);
@@ -125,7 +144,7 @@ export function App() {
     setLlmStatus("loading");
     setLlmMessage(MODEL_LOADING_MESSAGE);
     setLlmErrorDetail(null);
-    const analyzer = createLlmContextAnalyzer();
+    const analyzer = getAnalyzer();
 
     try {
       const result = await analyzer.analyze(text, {
@@ -140,6 +159,7 @@ export function App() {
         setLlmStatus("error");
         setLlmMessage(result.error);
         setLlmErrorDetail(result.errorDetail ?? null);
+        resetAnalyzer();
         return;
       }
 
@@ -160,8 +180,7 @@ export function App() {
       setLlmStatus("error");
       setLlmMessage(errorDetail.message);
       setLlmErrorDetail(errorDetail);
-    } finally {
-      analyzer.dispose();
+      resetAnalyzer();
     }
   };
 

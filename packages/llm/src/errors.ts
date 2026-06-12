@@ -126,9 +126,16 @@ export function classifyLlmError(error: unknown): LlmErrorDetail {
     lowerMessage.includes("worker") ||
     lowerMessage.includes("module script") ||
     lowerMessage.includes("failed to construct") ||
-    lowerMessage.includes("imported module")
+    lowerMessage.includes("imported module") ||
+    lowerMessage.includes("already been disposed") ||
+    lowerMessage.includes("disposed object")
   ) {
-    return detail("worker", WORKER_ERROR_MESSAGE, "ページをハードリロードし、開発サーバーを再起動してから再試行してください。", message);
+    return detail(
+      "worker",
+      WORKER_ERROR_MESSAGE,
+      "WebLLMの内部WorkerまたはGPUオブジェクトが破棄済みになっています。ページを再読み込みしてから再試行してください。",
+      message
+    );
   }
 
   if (lowerMessage.includes("wasm") || lowerMessage.includes("webassembly") || lowerMessage.includes("compile") || lowerMessage.includes("instantiate")) {
