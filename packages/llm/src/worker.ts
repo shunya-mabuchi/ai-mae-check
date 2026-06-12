@@ -1,5 +1,5 @@
 import { ANALYZING_MESSAGE, DEFAULT_MODEL_ID, MODEL_LOADING_MESSAGE } from "./constants";
-import { formatLlmErrorMessage } from "./errors";
+import { classifyLlmError } from "./errors";
 import { buildContextRiskPrompt } from "./prompt";
 import { parseContextAnalysisJson } from "./parser";
 import type { AnalyzeContextOptions, ContextAnalysisResult, LlmAnalyzerOptions, LlmProgress } from "./types";
@@ -183,10 +183,12 @@ workerScope.addEventListener("message", (event: MessageEvent<unknown>) => {
       workerScope.postMessage({ type: "result", requestId: request.requestId, result });
     })
     .catch((error: unknown) => {
+      const errorDetail = classifyLlmError(error);
       workerScope.postMessage({
         type: "error",
         requestId: request.requestId,
-        error: formatLlmErrorMessage(error),
+        error: errorDetail.message,
+        errorDetail,
         modelId: request.analyzerOptions.modelId,
         elapsedMs: 0
       });

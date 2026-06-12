@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatLlmErrorMessage } from "../src";
+import { classifyLlmError, formatLlmErrorMessage } from "../src";
 
 describe("formatLlmErrorMessage", () => {
   it("モデル取得のネットワーク失敗を日本語で説明する", () => {
@@ -7,6 +7,50 @@ describe("formatLlmErrorMessage", () => {
 
     expect(message).toContain("ローカルAIモデルの取得に失敗しました");
     expect(message).toContain("ルールベースの検出結果は引き続き利用できます");
+  });
+
+  it("モデル取得失敗を分類して診断ヒントを返す", () => {
+    const detail = classifyLlmError(new Error("Failed to fetch https://huggingface.co/mlc-ai/model"));
+
+    expect(detail.kind).toBe("model_fetch");
+    expect(detail.message).toContain("ローカルAIモデルの取得に失敗しました");
+    expect(detail.hint).toContain("Hugging Face");
+    expect(detail.technicalDetail).toContain("Failed to fetch");
+  });
+
+  it("ブラウザ保存領域の失敗を分類する", () => {
+    const detail = classifyLlmError(new Error("QuotaExceededError: IndexedDB storage quota exceeded"));
+
+    expect(detail.kind).toBe("storage");
+    expect(detail.message).toContain("保存領域");
+  });
+
+  it("メモリ不足を分類する", () => {
+    const detail = classifyLlmError(new Error("WebAssembly memory access out of bounds"));
+
+    expect(detail.kind).toBe("memory");
+    expect(detail.message).toContain("メモリ");
+  });
+
+  it("WebGPUデバイス取得失敗を分類する", () => {
+    const detail = classifyLlmError(new Error("requestDevice failed: device lost"));
+
+    expect(detail.kind).toBe("webgpu");
+    expect(detail.message).toContain("AI文脈チェックを利用できません");
+  });
+
+  it("Worker起動失敗を分類する", () => {
+    const detail = classifyLlmError(new Error("Failed to construct 'Worker': script could not be loaded"));
+
+    expect(detail.kind).toBe("worker");
+    expect(detail.message).toContain("Worker");
+  });
+
+  it("WASM読込失敗を分類する", () => {
+    const detail = classifyLlmError(new Error("WebAssembly.compile failed"));
+
+    expect(detail.kind).toBe("wasm");
+    expect(detail.message).toContain("実行ファイル");
   });
 
   it("不明なエラーでは汎用メッセージにする", () => {

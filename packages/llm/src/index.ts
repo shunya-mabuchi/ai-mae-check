@@ -9,7 +9,7 @@ export {
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
 export { convertContextCandidatesToFindings } from "./convert";
-export { formatLlmErrorMessage } from "./errors";
+export { classifyLlmError, formatLlmErrorMessage } from "./errors";
 export { parseContextAnalysisJson } from "./parser";
 export { buildContextRiskPrompt } from "./prompt";
 export { isWebGpuAvailable } from "./webgpu";
@@ -23,5 +23,7 @@ export type {
   ConvertCandidatesOptions,
   LlmAnalyzerOptions,
   LlmContextAnalyzer,
+  LlmErrorDetail,
+  LlmErrorKind,
   LlmProgress
 } from "./types";

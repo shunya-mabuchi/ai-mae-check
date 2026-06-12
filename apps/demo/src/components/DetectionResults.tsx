@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import type { DetectionSummary, Finding, RiskLevel } from "@harumae/core";
-import type { ContextRiskCandidate } from "@harumae/llm";
+import type { ContextRiskCandidate, LlmErrorDetail } from "@harumae/llm";
 import { riskLabel, riskMeterTone, riskTone, type LlmStatus } from "../lib/demoConstants";
 
 function riskPercent(summary: DetectionSummary): number {
@@ -76,6 +76,7 @@ export function DetectionResults({
   summary,
   llmStatus,
   llmMessage,
+  llmErrorDetail,
   llmCandidates,
   selectedCandidateIds,
   onToggleCandidate
@@ -86,6 +87,7 @@ export function DetectionResults({
   summary: DetectionSummary;
   llmStatus: LlmStatus;
   llmMessage: string;
+  llmErrorDetail: LlmErrorDetail | null;
   llmCandidates: ContextRiskCandidate[];
   selectedCandidateIds: string[];
   onToggleCandidate: (id: string) => void;
@@ -187,6 +189,14 @@ export function DetectionResults({
           {llmStatus === "done" ? <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}
           <p>{llmMessage}</p>
         </div>
+        {llmStatus === "error" && llmErrorDetail && (
+          <div className="mt-3 rounded-[6px] border border-current/15 bg-white/60 p-3 text-xs leading-5">
+            <p className="font-bold">診断メモ: {llmErrorDetail.hint}</p>
+            {llmErrorDetail.technicalDetail && (
+              <p className="mt-2 break-words font-mono text-[11px] opacity-80">detail: {llmErrorDetail.technicalDetail}</p>
+            )}
+          </div>
+        )}
       </div>
 
       <LlmCandidates candidates={llmCandidates} selectedCandidateIds={selectedCandidateIds} onToggle={onToggleCandidate} />

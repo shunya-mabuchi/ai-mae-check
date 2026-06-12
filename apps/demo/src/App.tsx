@@ -7,12 +7,13 @@ import {
 } from "@harumae/core";
 import {
   convertContextCandidatesToFindings,
+  classifyLlmError,
   createLlmContextAnalyzer,
-  formatLlmErrorMessage,
   isWebGpuAvailable,
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE,
   type ContextRiskCandidate,
+  type LlmErrorDetail,
   type LlmProgress
 } from "@harumae/llm";
 import { DemoCard } from "./components/DemoCard";
@@ -34,6 +35,7 @@ export function App() {
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
   const [llmStatus, setLlmStatus] = useState<LlmStatus>("idle");
   const [llmMessage, setLlmMessage] = useState(initialLlmMessage);
+  const [llmErrorDetail, setLlmErrorDetail] = useState<LlmErrorDetail | null>(null);
   const [copyMessage, setCopyMessage] = useState("");
 
   const selectedRuleFindings = useMemo(() => {
@@ -76,6 +78,7 @@ export function App() {
     setSelectedCandidateIds([]);
     setLlmStatus("idle");
     setLlmMessage(initialLlmMessage);
+    setLlmErrorDetail(null);
   };
 
   const insertSample = () => {
@@ -98,6 +101,7 @@ export function App() {
     if (text.trim().length === 0) {
       setLlmStatus("error");
       setLlmMessage("先に貼り付け前テキストを入力してください。");
+      setLlmErrorDetail(null);
       return;
     }
 
@@ -110,11 +114,17 @@ export function App() {
     if (!isWebGpuAvailable()) {
       setLlmStatus("error");
       setLlmMessage(WEBGPU_UNAVAILABLE_MESSAGE);
+      setLlmErrorDetail({
+        kind: "webgpu",
+        message: WEBGPU_UNAVAILABLE_MESSAGE,
+        hint: "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。"
+      });
       return;
     }
 
     setLlmStatus("loading");
     setLlmMessage(MODEL_LOADING_MESSAGE);
+    setLlmErrorDetail(null);
     const analyzer = createLlmContextAnalyzer();
 
     try {
@@ -129,6 +139,7 @@ export function App() {
       if (result.error) {
         setLlmStatus("error");
         setLlmMessage(result.error);
+        setLlmErrorDetail(result.errorDetail ?? null);
         return;
       }
 
@@ -145,8 +156,10 @@ export function App() {
         setLlmMessage("AI文脈チェックでは追加の注意候補は見つかりませんでした。ただし、安全を保証するものではありません。");
       }
     } catch (error) {
+      const errorDetail = classifyLlmError(error);
       setLlmStatus("error");
-      setLlmMessage(formatLlmErrorMessage(error));
+      setLlmMessage(errorDetail.message);
+      setLlmErrorDetail(errorDetail);
     } finally {
       analyzer.dispose();
     }
@@ -206,6 +219,7 @@ export function App() {
           onToggleCandidate={toggleCandidate}
           llmStatus={llmStatus}
           llmMessage={llmMessage}
+          llmErrorDetail={llmErrorDetail}
           maskedText={maskedText}
           copyMessage={copyMessage}
         />

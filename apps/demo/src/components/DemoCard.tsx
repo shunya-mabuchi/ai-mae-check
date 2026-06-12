@@ -1,6 +1,6 @@
 import { Clipboard, RefreshCcw, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import type { DetectionResult, DetectionSummary, Finding } from "@harumae/core";
-import type { ContextRiskCandidate } from "@harumae/llm";
+import type { ContextRiskCandidate, LlmErrorDetail } from "@harumae/llm";
 import type { LlmStatus } from "../lib/demoConstants";
 import { Button, Surface } from "./ui";
 import { DetectionResults } from "./DetectionResults";
@@ -23,6 +23,7 @@ export function DemoCard({
   onToggleCandidate,
   llmStatus,
   llmMessage,
+  llmErrorDetail,
   maskedText,
   copyMessage
 }: {
@@ -42,6 +43,7 @@ export function DemoCard({
   onToggleCandidate: (id: string) => void;
   llmStatus: LlmStatus;
   llmMessage: string;
+  llmErrorDetail: LlmErrorDetail | null;
   maskedText: string;
   copyMessage: string;
 }) {
@@ -110,6 +112,7 @@ export function DemoCard({
                 summary={summary}
                 llmStatus={llmStatus}
                 llmMessage={llmMessage}
+                llmErrorDetail={llmErrorDetail}
                 llmCandidates={llmCandidates}
                 selectedCandidateIds={selectedCandidateIds}
                 onToggleCandidate={onToggleCandidate}

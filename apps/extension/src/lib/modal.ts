@@ -6,11 +6,12 @@ import {
   type RiskLevel
 } from "@harumae/core";
 import {
+  classifyLlmError,
   convertContextCandidatesToFindings,
   createLlmContextAnalyzer,
-  formatLlmErrorMessage,
   isWebGpuAvailable,
   type ContextRiskCandidate,
+  type LlmErrorDetail,
   type LlmProgress
 } from "@harumae/llm";
 import type { HarumaeSettings } from "./settings";
@@ -346,6 +347,15 @@ function renderCandidates(
   }
 }
 
+function formatLlmStatusMessage(message: string, detail?: LlmErrorDetail): string {
+  if (!detail) {
+    return message;
+  }
+
+  const technical = detail.technicalDetail ? `\n詳細: ${detail.technicalDetail}` : "";
+  return `${message}\n診断メモ: ${detail.hint}${technical}`;
+}
+
 export async function showPasteReviewModal(options: PasteReviewModalOptions): Promise<ModalDecision> {
   return new Promise((resolve) => {
     const host = document.createElement("div");
@@ -455,7 +465,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
         });
 
         if (result.error) {
-          llmStatus.textContent = result.error;
+          llmStatus.textContent = formatLlmStatusMessage(result.error, result.errorDetail);
           return;
         }
 
@@ -473,7 +483,8 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
             : "AI文脈チェックでは追加の注意候補は見つかりませんでした。ただし、安全を保証するものではありません。";
         render();
       } catch (error: unknown) {
-        llmStatus.textContent = formatLlmErrorMessage(error);
+        const detail = classifyLlmError(error);
+        llmStatus.textContent = formatLlmStatusMessage(detail.message, detail);
       } finally {
         analyzer.dispose();
         llmButton.removeAttribute("disabled");

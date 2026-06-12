@@ -6,8 +6,9 @@ import {
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
+import { classifyLlmError } from "./errors";
 import { isWebGpuAvailable } from "./webgpu";
-import type { AnalyzeContextOptions, ContextAnalysisResult, LlmAnalyzerOptions, LlmContextAnalyzer, LlmProgress } from "./types";
+import type { AnalyzeContextOptions, ContextAnalysisResult, LlmAnalyzerOptions, LlmContextAnalyzer, LlmErrorDetail, LlmProgress } from "./types";
 
 type WorkerSuccessMessage = {
   type: "result";
@@ -25,6 +26,7 @@ type WorkerErrorMessage = {
   type: "error";
   requestId: string;
   error: string;
+  errorDetail?: LlmErrorDetail;
   modelId: string;
   elapsedMs: number;
 };
@@ -44,14 +46,15 @@ function isWorkerResponse(value: unknown): value is WorkerResponse {
   return typeof record.type === "string" && typeof record.requestId === "string";
 }
 
-function createErrorResult(inputModelId: string, startedAt: number, error: string): ContextAnalysisResult {
+function createErrorResult(inputModelId: string, startedAt: number, error: string, errorDetail?: LlmErrorDetail): ContextAnalysisResult {
   return {
     candidates: [],
     summary: error,
     rawText: "",
     modelId: inputModelId,
     elapsedMs: Math.max(0, performance.now() - startedAt),
-    error
+    error,
+    ...(errorDetail ? { errorDetail } : {})
   };
 }
 
@@ -83,6 +86,8 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
     return new Promise((resolve) => {
       const cleanup = () => {
         worker.removeEventListener("message", handleMessage);
+        worker.removeEventListener("error", handleWorkerError);
+        worker.removeEventListener("messageerror", handleWorkerMessageError);
         options.signal?.removeEventListener("abort", handleAbort);
       };
 
@@ -108,11 +113,27 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
           return;
         }
 
-        resolve(createErrorResult(event.data.modelId, startedAt, event.data.error));
+        resolve(createErrorResult(event.data.modelId, startedAt, event.data.error, event.data.errorDetail));
+      };
+
+      const handleWorkerError = (event: ErrorEvent) => {
+        cleanup();
+        this.dispose();
+        const detail = classifyLlmError(new Error(event.message || "Worker script error"));
+        resolve(createErrorResult(this.options.modelId, startedAt, detail.message, detail));
+      };
+
+      const handleWorkerMessageError = () => {
+        cleanup();
+        this.dispose();
+        const detail = classifyLlmError(new Error("Worker messageerror"));
+        resolve(createErrorResult(this.options.modelId, startedAt, detail.message, detail));
       };
 
       options.signal?.addEventListener("abort", handleAbort, { once: true });
       worker.addEventListener("message", handleMessage);
+      worker.addEventListener("error", handleWorkerError);
+      worker.addEventListener("messageerror", handleWorkerMessageError);
       const { workerUrl: _workerUrl, ...analyzerOptions } = this.options;
       worker.postMessage({
         type: "analyze",

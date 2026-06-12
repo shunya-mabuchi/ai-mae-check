@@ -15,6 +15,23 @@ export interface LlmProgress {
   progress?: number;
 }
 
+export type LlmErrorKind =
+  | "model_fetch"
+  | "webgpu"
+  | "storage"
+  | "memory"
+  | "worker"
+  | "wasm"
+  | "json_parse"
+  | "unknown";
+
+export interface LlmErrorDetail {
+  kind: LlmErrorKind;
+  message: string;
+  hint: string;
+  technicalDetail?: string;
+}
+
 export interface AnalyzeContextOptions {
   existingFindings?: Finding[];
   language?: "ja" | "en" | string;
@@ -54,6 +71,7 @@ export interface ContextAnalysisResult {
   modelId: string;
   elapsedMs: number;
   error?: string;
+  errorDetail?: LlmErrorDetail;
 }
 
 export interface LlmContextAnalyzer {
