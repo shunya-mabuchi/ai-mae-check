@@ -1,6 +1,8 @@
 import {
   maskSensitiveText,
   mergeFindings,
+  normalizeFindings,
+  transformText,
   type DetectionResult,
   type Finding,
   type RiskLevel
@@ -29,6 +31,7 @@ interface PasteReviewModalOptions {
   inputText: string;
   detection: DetectionResult;
   settings: AiMaeCheckSettings;
+  mode?: "default" | "paste_guard";
 }
 
 const riskLabel: Record<RiskLevel, string> = {
@@ -88,7 +91,7 @@ const css = `
   }
   .hm-summary {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
   }
   .hm-count {
@@ -102,7 +105,7 @@ const css = `
     margin-top: 4px;
     font-size: 24px;
   }
-  .hm-high { color: #b91c1c; }
+  .hm-critical, .hm-high { color: #b91c1c; }
   .hm-medium { color: #92400e; }
   .hm-low { color: #57534e; }
   .hm-grid {
@@ -144,7 +147,7 @@ const css = `
     font-size: 12px;
     font-weight: 700;
   }
-  .hm-badge-high { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+  .hm-badge-critical, .hm-badge-high { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
   .hm-badge-medium { border-color: #fde68a; background: #fffbeb; color: #92400e; }
   .hm-badge-low { border-color: #e7e5e4; background: #f5f5f4; color: #57534e; }
   .hm-text {
@@ -357,8 +360,19 @@ function formatLlmStatusMessage(message: string, detail?: LlmErrorDetail): strin
   return `${message}\n診断メモ: ${detail.hint}${technical}`;
 }
 
+function removeFindingsText(inputText: string, findings: Finding[]): string {
+  let result = inputText;
+
+  for (const finding of [...normalizeFindings(findings)].sort((left, right) => right.start - left.start)) {
+    result = `${result.slice(0, finding.start)}${result.slice(finding.end)}`;
+  }
+
+  return result;
+}
+
 export async function showPasteReviewModal(options: PasteReviewModalOptions): Promise<ModalDecision> {
   return new Promise((resolve) => {
+    const isPasteGuard = options.mode === "paste_guard";
     const host = document.createElement("div");
     const shadow = host.attachShadow({ mode: "open" });
     const style = document.createElement("style");
@@ -368,17 +382,20 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     const overlay = createElement("div", "hm-overlay");
     const dialog = createElement("section", "hm-dialog");
     const header = createElement("header", "hm-header");
-    header.append(createElement("h2", "hm-title", "このまま貼り付けますか？"));
+    header.append(createElement("h2", "hm-title", isPasteGuard ? "安全化してから貼り付けますか？" : "このまま貼り付けますか？"));
     header.append(
       createElement(
         "p",
         "hm-description",
-        "貼り付けようとしている文章に、注意が必要な情報が含まれている可能性があります。"
+        isPasteGuard
+          ? "貼り付けようとしている文章に、秘密情報や高リスク情報の可能性があります。そのまま貼り付けず、削除または安全化してから入力できます。"
+          : "貼り付けようとしている文章に、注意が必要な情報が含まれている可能性があります。"
       )
     );
 
     const body = createElement("div", "hm-body");
     const summary = createElement("div", "hm-summary");
+    summary.append(createElement("div", "hm-count hm-critical", `重大リスク件数\n${options.detection.summary.critical}`));
     summary.append(createElement("div", "hm-count hm-high", `高リスク件数\n${options.detection.summary.high}`));
     summary.append(createElement("div", "hm-count hm-medium", `中リスク件数\n${options.detection.summary.medium}`));
     summary.append(createElement("div", "hm-count hm-low", `低リスク件数\n${options.detection.summary.low}`));
@@ -402,14 +419,22 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     const candidateList = createElement("div");
     llmPanel.append(llmStatus, candidateList);
 
-    body.append(summary, grid, llmPanel);
+    body.append(summary, grid);
+    if (!isPasteGuard) {
+      body.append(llmPanel);
+    }
 
     const footer = createElement("footer", "hm-footer");
-    const maskButton = createElement("button", "hm-button hm-primary", "マスクして入力");
+    const removeButton = createElement("button", "hm-button", "削除して貼り付け");
+    const maskButton = createElement("button", "hm-button hm-primary", isPasteGuard ? "安全化して貼り付け" : "マスクして入力");
     const llmButton = createElement("button", "hm-button hm-dark", "AI文脈チェックも実行");
     const rawButton = createElement("button", "hm-button", "そのまま入力");
     const cancelButton = createElement("button", "hm-button", "キャンセル");
-    footer.append(maskButton, llmButton, rawButton, cancelButton);
+    if (isPasteGuard) {
+      footer.append(removeButton, maskButton, cancelButton);
+    } else {
+      footer.append(maskButton, llmButton, rawButton, cancelButton);
+    }
 
     dialog.append(header, body, footer);
     overlay.append(dialog);
@@ -493,9 +518,17 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     };
 
     maskButton.addEventListener("click", () => {
-      const maskedText = maskSensitiveText(options.inputText, currentFindings()).maskedText;
+      const findings = currentFindings();
+      const maskedText = isPasteGuard
+        ? transformText(options.inputText, findings, "generalize").transformedText
+        : maskSensitiveText(options.inputText, findings).maskedText;
       cleanup();
       resolve({ type: "insert", text: maskedText });
+    });
+
+    removeButton.addEventListener("click", () => {
+      cleanup();
+      resolve({ type: "insert", text: removeFindingsText(options.inputText, currentFindings()) });
     });
 
     llmButton.addEventListener("click", () => {
@@ -521,7 +554,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
 
     render();
 
-    if (options.settings.llm.enabled && options.settings.llm.mode === "auto") {
+    if (!isPasteGuard && options.settings.llm.enabled && options.settings.llm.mode === "auto") {
       void runLlm();
     }
   });
