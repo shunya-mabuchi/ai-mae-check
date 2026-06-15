@@ -1,6 +1,7 @@
 import type { Finding, PlaceholderMap, RiskLevel } from "./types";
 
 const riskOrder: Record<RiskLevel, number> = {
+  critical: 4,
   high: 3,
   medium: 2,
   low: 1

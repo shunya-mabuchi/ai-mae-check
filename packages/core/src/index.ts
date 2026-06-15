@@ -1,7 +1,13 @@
 export { detectSensitiveText } from "./detect";
 export { createPlaceholderMap, maskSensitiveText, mergeFindings, normalizeFindings } from "./mask";
+export { evaluateDlpPolicy } from "./policy";
+export { categoryForFinding, scoreRisk } from "./riskScore";
 export { detectorRules } from "./rules";
+export { transformText } from "./transform";
 export type {
+  DlpPolicyAction,
+  DlpPolicyDecision,
+  DlpCategory,
   DetectionResult,
   DetectionSummary,
   DetectorRule,
@@ -11,5 +17,10 @@ export type {
   MaskResult,
   PlaceholderMap,
   PlaceholderMapEntry,
-  RiskLevel
+  RiskDecisionLevel,
+  RiskLevel,
+  RiskScoreOptions,
+  RiskScoreResult,
+  TextTransformResult,
+  TransformMode
 } from "./types";

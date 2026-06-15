@@ -26,7 +26,7 @@ import { StepCards } from "./components/StepCards";
 import { TechStrip } from "./components/TechStrip";
 import { initialLlmMessage, sampleText, type LlmStatus } from "./lib/demoConstants";
 
-const emptySummary = { total: 0, high: 0, medium: 0, low: 0, byRule: {} };
+const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
 export function App() {
   const analyzerRef = useRef<LlmContextAnalyzer | null>(null);

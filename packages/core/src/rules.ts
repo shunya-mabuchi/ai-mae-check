@@ -1,7 +1,8 @@
 import type { DetectorRule, Finding, RiskLevel } from "./types";
 
 const riskMessage: Record<RiskLevel, string> = {
-  high: "外部へ貼り付ける前に強く確認したい情報です。",
+  critical: "外部へ送る前に必ず安全化したい情報です。",
+  high: "外部へ送る前に強く確認したい情報です。",
   medium: "文脈によっては注意が必要な情報です。",
   low: "必要に応じて確認したい情報です。"
 };

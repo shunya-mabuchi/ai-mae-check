@@ -32,6 +32,7 @@ interface PasteReviewModalOptions {
 }
 
 const riskLabel: Record<RiskLevel, string> = {
+  critical: "重大",
   high: "高",
   medium: "中",
   low: "低"

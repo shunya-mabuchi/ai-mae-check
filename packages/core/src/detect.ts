@@ -3,6 +3,7 @@ import { maskSensitiveText, normalizeFindings } from "./mask";
 import type { DetectionResult, DetectionSummary, DetectOptions, Finding, RiskLevel } from "./types";
 
 const riskOrder: Record<RiskLevel, number> = {
+  critical: 4,
   high: 3,
   medium: 2,
   low: 1
@@ -35,6 +36,7 @@ function shouldKeepRisk(riskLevel: RiskLevel, options: DetectOptions): boolean {
 function createSummary(findings: Finding[]): DetectionSummary {
   const summary: DetectionSummary = {
     total: findings.length,
+    critical: 0,
     high: 0,
     medium: 0,
     low: 0,
@@ -50,6 +52,10 @@ function createSummary(findings: Finding[]): DetectionSummary {
 }
 
 function highestRiskLevel(findings: Finding[]): RiskLevel | null {
+  if (findings.some((finding) => finding.riskLevel === "critical")) {
+    return "critical";
+  }
+
   if (findings.some((finding) => finding.riskLevel === "high")) {
     return "high";
   }
