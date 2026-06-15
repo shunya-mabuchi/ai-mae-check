@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wxt",
     "build": "wxt build",
-    "test": "vitest run",
+    "test": "pnpm --filter @ai-mae-check/core build && pnpm --filter @ai-mae-check/llm build && vitest run",
     "typecheck": "wxt prepare && tsc --noEmit"
   },
   "dependencies": {

@@ -2,6 +2,7 @@ import { defineContentScript } from "wxt/utils/define-content-script";
 import { detectSensitiveText, evaluateDlpPolicy, type DetectionResult } from "@ai-mae-check/core";
 import { createLlmContextAnalyzer, isWebGpuAvailable, WEBGPU_UNAVAILABLE_MESSAGE } from "@ai-mae-check/llm";
 import { adapterForHostname } from "../src/content/adapters";
+import { installFileInterceptor } from "../src/content/dom/fileInterceptor";
 import { evaluatePasteGuard } from "../src/content/dom/pasteGuard";
 import { installSendInterceptor } from "../src/content/dom/sendInterceptor";
 import { readEditableText } from "../src/content/dom/editorLocator";
@@ -84,6 +85,11 @@ export default defineContentScript({
       },
       true
     );
+
+    installFileInterceptor({
+      isEnabled: () => settings.enabled && isSiteEnabled(settings, window.location.hostname),
+      disabledRuleIds: () => disabledRuleIds(settings)
+    });
 
     const adapter = adapterForHostname(window.location.hostname);
     if (adapter) {
