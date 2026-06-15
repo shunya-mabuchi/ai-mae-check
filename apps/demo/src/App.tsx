@@ -24,7 +24,7 @@ import { Hero } from "./components/Hero";
 import { PrivacySection } from "./components/PrivacySection";
 import { StepCards } from "./components/StepCards";
 import { TechStrip } from "./components/TechStrip";
-import { initialLlmMessage, sampleText, type LlmStatus } from "./lib/demoConstants";
+import { contextSampleText, initialLlmMessage, sampleText, type LlmStatus } from "./lib/demoConstants";
 
 const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
@@ -102,6 +102,14 @@ export function App() {
 
   const insertSample = () => {
     setText(sampleText);
+    setDetection(null);
+    setSelectedRuleFindingIds([]);
+    resetLlmState();
+    setCopyMessage("");
+  };
+
+  const insertContextSample = () => {
+    setText(contextSampleText);
     setDetection(null);
     setSelectedRuleFindingIds([]);
     resetLlmState();
@@ -225,6 +233,7 @@ export function App() {
             setCopyMessage("");
           }}
           onInsertSample={insertSample}
+          onInsertContextSample={insertContextSample}
           onRuleDetection={runRuleDetection}
           onLlmDetection={runLlmDetection}
           onCopyMaskedText={copyMaskedText}

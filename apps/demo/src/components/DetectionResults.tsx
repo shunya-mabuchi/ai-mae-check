@@ -143,7 +143,7 @@ export function DetectionResults({
       <div className="max-h-[360px] space-y-3 overflow-auto pr-1">
         {findings.length === 0 ? (
           <p className="rounded-card border border-dashed border-line bg-white/60 p-4 text-sm text-muted">
-            サンプル文を挿入して、ルールベース検出を実行してください。
+            サンプルを挿入して、ルールベース検出またはAI文脈チェックを実行してください。
           </p>
         ) : (
           findings.map((finding) => {

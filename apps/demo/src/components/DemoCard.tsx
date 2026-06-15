@@ -10,6 +10,7 @@ export function DemoCard({
   text,
   onTextChange,
   onInsertSample,
+  onInsertContextSample,
   onRuleDetection,
   onLlmDetection,
   onCopyMaskedText,
@@ -30,6 +31,7 @@ export function DemoCard({
   text: string;
   onTextChange: (value: string) => void;
   onInsertSample: () => void;
+  onInsertContextSample: () => void;
   onRuleDetection: () => void;
   onLlmDetection: () => void;
   onCopyMaskedText: () => void;
@@ -57,13 +59,17 @@ export function DemoCard({
             <p className="mb-3 text-sm font-bold text-leaf">ライブデモ</p>
             <h2 className="max-w-4xl text-3xl font-black leading-tight text-ink md:text-4xl">送る前に、消す場所を選ぶ。</h2>
             <p className="mt-4 max-w-3xl text-base leading-7 text-muted">
-              サンプル文を入れて、検出項目ごとにマスク対象を切り替えてください。本文は保存されません。
+              サンプル文を入れて、検出項目ごとにマスク対象を切り替えてください。AI文脈チェックは貼り付けだけでは実行されず、ボタンで起動します。
             </p>
           </div>
           <div className="flex flex-wrap gap-3 lg:max-w-[680px] lg:justify-end">
             <Button onClick={onInsertSample} variant="ghost">
               <Clipboard size={17} aria-hidden="true" />
-              サンプル文を挿入
+              ルール用サンプル
+            </Button>
+            <Button onClick={onInsertContextSample} variant="ghost">
+              <Sparkles size={17} aria-hidden="true" />
+              文脈用サンプル
             </Button>
             <Button onClick={onRuleDetection} variant="primary">
               <ShieldCheck size={17} aria-hidden="true" />

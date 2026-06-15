@@ -13,6 +13,16 @@ https://user:password@example.com/internal/proposal
 
 この内容をChatGPTで要約したいです。`;
 
+export const contextSampleText = `A社の佐藤様向けに、Project Blue Bridge の提案メモを作成します。
+
+まだ正式発表前なので、社外共有はしない前提でお願いします。
+来月の契約更新に向けて、現行プランから年間契約へ切り替える案を検討しています。
+
+候補者の山田花子さんについて、最終面談後の評価メモも含めます。
+給与条件は現職より少し上げる方向で、内定前に社内だけで確認したいです。
+
+この内容をAIで読みやすく整理したいです。`;
+
 export const riskLabel: Record<RiskLevel, string> = {
   critical: "重大",
   high: "高",
