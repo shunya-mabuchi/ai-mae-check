@@ -1,6 +1,6 @@
-# AIまえチェック DLP Roadmap Implementation Plan
+﻿# AIまえチェック DLP Roadmap Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** AIまえチェックを、paste前チェック中心の拡張から、ChatGPT / Claude / Gemini の通常入力体験を維持した送信前DLPレイヤーへ移行する。
 
@@ -43,9 +43,9 @@
 - Test: `packages/core/tests/riskScore.test.ts`
 - Test: `packages/core/tests/transform.test.ts`
 
-- [ ] `RiskLevel`を`"critical" | "high" | "medium" | "low"`へ拡張し、UI表示用には別途`RiskDecisionLevel = "safe" | "low" | "medium" | "high" | "critical"`を追加する。
-- [ ] `DlpCategory`を`person | organization | address | email | phone | id | secret | financial | medical | legal | date | url | file | other`で定義する。
-- [ ] `RiskScoreResult`を追加する。
+- [x] `RiskLevel`を`"critical" | "high" | "medium" | "low"`へ拡張し、UI表示用には別途`RiskDecisionLevel = "safe" | "low" | "medium" | "high" | "critical"`を追加する。
+- [x] `DlpCategory`を`person | organization | address | email | phone | id | secret | financial | medical | legal | date | url | file | other`で定義する。
+- [x] `RiskScoreResult`を追加する。
 
 ```ts
 export interface RiskScoreResult {
@@ -58,13 +58,13 @@ export interface RiskScoreResult {
 }
 ```
 
-- [ ] `scoreRisk(findings, options)`を実装する。目安は secret +30、クレカ/マイナンバー +25、医療/法務/人事/金融文脈 +20、氏名+住所 +15、氏名+電話 +15、メール +10、顧客ID +10、ファイル +10、会社名 +5、日付 +5。
-- [ ] `level`は 0=safe、1-19=low、20-49=medium、50-79=high、80-100=critical とする。
-- [ ] Secret Guard対象が含まれる場合は`secretGuard=true`、原則`blocked=true`にする。
-- [ ] `TransformMode = "mask" | "generalize" | "minimize"`を追加する。
-- [ ] `transformText(input, findings, mode)`を追加する。`mask`は既存`maskSensitiveText`を使い、`generalize`はルールカテゴリ別の固定表現へ置換する。`minimize`は`packages/llm`側のsafe_promptを使うためcoreでは直接実装しない。
-- [ ] 既存の`detectSensitiveText`、`maskSensitiveText`、`mergeFindings`の公開APIを壊さない。
-- [ ] `pnpm test:core`、`pnpm typecheck`を通す。
+- [x] `scoreRisk(findings, options)`を実装する。目安は secret +30、クレカ/マイナンバー +25、医療/法務/人事/金融文脈 +20、氏名+住所 +15、氏名+電話 +15、メール +10、顧客ID +10、ファイル +10、会社名 +5、日付 +5。
+- [x] `level`は 0=safe、1-19=low、20-49=medium、50-79=high、80-100=critical とする。
+- [x] Secret Guard対象が含まれる場合は`secretGuard=true`、原則`blocked=true`にする。
+- [x] `TransformMode = "mask" | "generalize" | "minimize"`を追加する。
+- [x] `transformText(input, findings, mode)`を追加する。`mask`は既存`maskSensitiveText`を使い、`generalize`はルールカテゴリ別の固定表現へ置換する。`minimize`は`packages/llm`側のsafe_promptを使うためcoreでは直接実装しない。
+- [x] 既存の`detectSensitiveText`、`maskSensitiveText`、`mergeFindings`の公開APIを壊さない。
+- [x] `pnpm test:core`、`pnpm typecheck`を通す。
 
 ### Task 2: Adapter / Send Interception基盤 (#19)
 
@@ -79,7 +79,7 @@ export interface RiskScoreResult {
 - Modify: `apps/extension/src/lib/sites.ts`
 - Test: `apps/extension/tests/sendInterceptor.test.ts`
 
-- [ ] `SiteAdapter`を定義する。
+- [x] `SiteAdapter`を定義する。
 
 ```ts
 export interface SiteAdapter {
@@ -93,14 +93,14 @@ export interface SiteAdapter {
 }
 ```
 
-- [ ] ChatGPT adapterを先行実装する。Claude/Geminiは実セレクタ候補とfallbackを持つ雛形まで作る。
-- [ ] `targetSites`からPerplexityを初期対象として外す。READMEでは後続adapterとして扱う。
-- [ ] `MutationObserver`でeditor / send buttonの差し替えを追跡する。
-- [ ] 送信ボタンclick、Enter、Cmd+Enter / Ctrl+Enterを捕捉し、一度`preventDefault()`してDLPチェックへ渡す。
-- [ ] 変換後テキストで入力欄を置換し、`input`イベントを発火してから元の送信操作を再実行する。
-- [ ] 再実行時に再度interceptしないよう、1回限りの`bypassNextSubmit`フラグをadapter単位で持つ。
-- [ ] リスクなしならUIなしで送信する。
-- [ ] `pnpm build:extension`、`pnpm typecheck`を通す。
+- [x] ChatGPT adapterを先行実装する。Claude/Geminiは実セレクタ候補とfallbackを持つ雛形まで作る。
+- [x] `targetSites`からPerplexityを初期対象として外す。READMEでは後続adapterとして扱う。
+- [x] `MutationObserver`でeditor / send buttonの差し替えを追跡する。
+- [x] 送信ボタンclick、Enter、Cmd+Enter / Ctrl+Enterを捕捉し、一度`preventDefault()`してDLPチェックへ渡す。
+- [x] 変換後テキストで入力欄を置換し、`input`イベントを発火してから元の送信操作を再実行する。
+- [x] 再実行時に再度interceptしないよう、1回限りの`bypassNextSubmit`フラグをadapter単位で持つ。
+- [x] リスクなしならUIなしで送信する。
+- [x] `pnpm build:extension`、`pnpm typecheck`を通す。
 
 ### Task 3: Paste Guard / Risk Badge (#20)
 
@@ -110,13 +110,13 @@ export interface SiteAdapter {
 - Modify: `apps/extension/src/lib/modal.ts`
 - Test: `apps/extension/tests/pasteGuard.test.ts`
 
-- [ ] 入力中は軽量検出だけを行い、モーダルは出さない。
-- [ ] badgeは`✓ Safe`または`N risks`の短い表示にする。入力欄上へ大きなUIを重ねず、対象ページの邪魔にならない固定小UIとして表示する。
-- [ ] paste内容にSecret Guard対象が含まれる場合、可能な限り`preventDefault()`して生データを入力欄に入れない。
-- [ ] high/critical paste UIは「削除して貼り付け」「安全化して貼り付け」「キャンセル」のみにする。
-- [ ] medium以下のpasteは必要に応じて既存の確認モーダルに流せるが、デフォルトで「そのまま入力」を強調しない。
-- [ ] ユーザー本文や検出文字列を`console.log`しない。
-- [ ] `pnpm build:extension`、`pnpm typecheck`を通す。
+- [x] 入力中は軽量検出だけを行い、モーダルは出さない。
+- [x] badgeは`✓ Safe`または`N risks`の短い表示にする。入力欄上へ大きなUIを重ねず、対象ページの邪魔にならない固定小UIとして表示する。
+- [x] paste内容にSecret Guard対象が含まれる場合、可能な限り`preventDefault()`して生データを入力欄に入れない。
+- [x] high/critical paste UIは「削除して貼り付け」「安全化して貼り付け」「キャンセル」のみにする。
+- [x] medium以下のpasteは必要に応じて既存の確認モーダルに流せるが、デフォルトで「そのまま入力」を強調しない。
+- [x] ユーザー本文や検出文字列を`console.log`しない。
+- [x] `pnpm build:extension`、`pnpm typecheck`を通す。
 
 ### Task 4: 送信時確認モーダル刷新 (#21)
 
@@ -126,15 +126,15 @@ export interface SiteAdapter {
 - Create: `apps/extension/src/ui/styles.ts`
 - Test: `apps/extension/tests/confirmModal.test.ts`
 
-- [ ] 既存の個別Finding一覧中心UIを、カテゴリ単位のチェックボックス中心UIへ変更する。
-- [ ] 初期表示はカテゴリ、件数、変換後の代表プレースホルダーだけを表示する。
-- [ ] 個別文字列は「詳細を開く」で表示する。
-- [ ] 変換方法は`抽象化 / マスク / 最小化`のラジオボタンにする。初期値は設定のdefaultTransformModeを使う。
-- [ ] `安全化して送信`、`編集`、`キャンセル`を表示する。
-- [ ] mediumは詳細から素通し許可可能にする。high/criticalとSecret Guard対象は安全化なしでは送信不可。
-- [ ] Secret Guard対象はカテゴリチェックを外せないか、外す操作を無効表示にする。
-- [ ] Shadow DOMを維持し、対象ページCSSとの衝突を避ける。
-- [ ] `pnpm build:extension`、`pnpm typecheck`を通す。
+- [x] 既存の個別Finding一覧中心UIを、カテゴリ単位のチェックボックス中心UIへ変更する。
+- [x] 初期表示はカテゴリ、件数、変換後の代表プレースホルダーだけを表示する。
+- [x] 個別文字列は「詳細を開く」で表示する。
+- [x] 変換方法は`抽象化 / マスク / 最小化`のラジオボタンにする。初期値は設定のdefaultTransformModeを使う。
+- [x] `安全化して送信`、`編集`、`キャンセル`を表示する。
+- [x] mediumは詳細から素通し許可可能にする。high/criticalとSecret Guard対象は安全化なしでは送信不可。
+- [x] Secret Guard対象はカテゴリチェックを外せないか、外す操作を無効表示にする。
+- [x] Shadow DOMを維持し、対象ページCSSとの衝突を避ける。
+- [x] `pnpm build:extension`、`pnpm typecheck`を通す。
 
 ### Task 5: WebLLM Generalize / Minimize (#22)
 
@@ -146,7 +146,7 @@ export interface SiteAdapter {
 - Modify: `packages/llm/src/index.ts`
 - Test: `packages/llm/tests/sanitize.test.ts`
 
-- [ ] `SanitizeAnalysisResult`を追加する。
+- [x] `SanitizeAnalysisResult`を追加する。
 
 ```ts
 export interface SanitizeAnalysisResult {
@@ -166,13 +166,13 @@ export interface SanitizeAnalysisResult {
 }
 ```
 
-- [ ] WebLLM内部指示は仕様の英語プロンプトをベースにし、strict JSONだけを返すようにする。
-- [ ] `safe_prompt`を`safePrompt`へ正規化して返す。
-- [ ] 不正JSON時は本文を含めず、既存の日本語エラー分類へ流す。
-- [ ] WebLLM出力後、extension側で必ず`detectSensitiveText(safePrompt)`を再実行する。
-- [ ] 再スキャンでSecret Guard対象が残った場合は送信不可にする。
-- [ ] WebGPU非対応、QuotaExceeded、OOM、Worker失敗時はMinimizeだけ無効化し、外部APIへfallbackしない。
-- [ ] `pnpm test:llm`、`pnpm typecheck`を通す。
+- [x] WebLLM内部指示は仕様の英語プロンプトをベースにし、strict JSONだけを返すようにする。
+- [x] `safe_prompt`を`safePrompt`へ正規化して返す。
+- [x] 不正JSON時は本文を含めず、既存の日本語エラー分類へ流す。
+- [x] WebLLM出力後、extension側で必ず`detectSensitiveText(safePrompt)`を再実行する。
+- [x] 再スキャンでSecret Guard対象が残った場合は送信不可にする。
+- [x] WebGPU非対応、QuotaExceeded、OOM、Worker失敗時はMinimizeだけ無効化し、外部APIへfallbackしない。
+- [x] `pnpm test:llm`、`pnpm typecheck`を通す。
 
 ### Task 6: ファイル添付前チェック (#23)
 
@@ -183,13 +183,13 @@ export interface SanitizeAnalysisResult {
 - Test: `packages/core/tests/fileText.test.ts`
 - Test: `apps/extension/tests/fileInterceptor.test.ts`
 
-- [ ] 対応拡張子は `.txt`, `.md`, `.csv`, `.json`, `.yaml`, `.yml`, `.env`, `.log`, `.js`, `.ts`, `.py`, `.go`, `.rb`, `.java`, `.html`, `.xml` とする。
-- [ ] PDF、docx、xlsx、画像OCRは対象外として明示する。
-- [ ] `input[type=file]`のchangeとadapterの添付ボタン周辺操作を検出する。
-- [ ] 対応ファイルはローカルで`File.text()`により読み取り、本文を保存しない。
-- [ ] risk scoreを算出し、安全なら添付を許可、危険ならモーダルで「安全版を作成」「添付をキャンセル」を表示する。
-- [ ] MVPでは安全版作成はテキストファイルのsecret removal / mask版Blob生成までに限定する。
-- [ ] `pnpm test:core`、`pnpm build:extension`を通す。
+- [x] 対応拡張子は `.txt`, `.md`, `.csv`, `.json`, `.yaml`, `.yml`, `.env`, `.log`, `.js`, `.ts`, `.py`, `.go`, `.rb`, `.java`, `.html`, `.xml` とする。
+- [x] PDF、docx、xlsx、画像OCRは対象外として明示する。
+- [x] `input[type=file]`のchangeとadapterの添付ボタン周辺操作を検出する。
+- [x] 対応ファイルはローカルで`File.text()`により読み取り、本文を保存しない。
+- [x] risk scoreを算出し、安全なら添付を許可、危険ならモーダルで「安全版を作成」「添付をキャンセル」を表示する。
+- [x] MVPでは安全版作成はテキストファイルのsecret removal / mask版Blob生成までに限定する。
+- [x] `pnpm test:core`、`pnpm build:extension`を通す。
 
 ### Task 7: Demo / README更新 (#24)
 
@@ -200,12 +200,12 @@ export interface SanitizeAnalysisResult {
 - Modify: `AGENTS.md`
 - Test: `apps/demo/tests/demo.spec.ts`
 
-- [ ] LPコピーを「AIに送る前」から「LLMに送信される前に検出・安全化」へ寄せる。
-- [ ] デモはrisk score、カテゴリ単位チェック、Mask / Generalize / Minimize切替、安全化後テキストを体験できる構成にする。
-- [ ] WebLLMモデルファイル取得、private browserでの保存容量制限、WebGPU非対応時の挙動をREADMEに明記する。
-- [ ] 「完全に安全」「ゼロリスク」「生データが対象サイトに一切見えない」といった表現を避ける。
-- [ ] Perplexityは後続adapterであることをREADMEに記載する。
-- [ ] `pnpm test:e2e`、`pnpm build:demo`を通す。
+- [x] LPコピーを「AIに送る前」から「LLMに送信される前に検出・安全化」へ寄せる。
+- [x] デモはrisk score、カテゴリ単位チェック、Mask / Generalize / Minimize切替、安全化後テキストを体験できる構成にする。
+- [x] WebLLMモデルファイル取得、private browserでの保存容量制限、WebGPU非対応時の挙動をREADMEに明記する。
+- [x] 「完全に安全」「ゼロリスク」「生データが対象サイトに一切見えない」といった表現を避ける。
+- [x] Perplexityは後続adapterであることをREADMEに記載する。
+- [x] `pnpm test:e2e`、`pnpm build:demo`を通す。
 
 ## 横断テスト計画
 

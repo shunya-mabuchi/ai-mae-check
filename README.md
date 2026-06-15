@@ -17,7 +17,7 @@
 - `apps/demo` のLP兼デモサイト
 - Vitest / Playwrightのテスト基盤
 
-現在は、初期実装の「貼り付け時チェック」から、送信ボタン・Enter送信を捕捉する「送信前DLPレイヤー」へ移行する計画段階です。実装ロードマップは [DLP Roadmap Implementation Plan](./docs/superpowers/plans/2026-06-16-dlp-roadmap.md) に整理しています。
+現在は、初期実装の「貼り付け時チェック」に加えて、送信ボタン・Enter送信を捕捉する「送信前DLPレイヤー」の基礎実装まで進んでいます。実装ロードマップは [DLP Roadmap Implementation Plan](./docs/superpowers/plans/2026-06-16-dlp-roadmap.md) に整理しています。
 
 ## 作った理由
 
