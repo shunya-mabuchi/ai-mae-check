@@ -1,4 +1,24 @@
-export type RiskLevel = "high" | "medium" | "low";
+export type RiskLevel = "critical" | "high" | "medium" | "low";
+
+export type RiskDecisionLevel = "safe" | "low" | "medium" | "high" | "critical";
+
+export type DlpCategory =
+  | "person"
+  | "organization"
+  | "address"
+  | "email"
+  | "phone"
+  | "id"
+  | "secret"
+  | "financial"
+  | "medical"
+  | "legal"
+  | "date"
+  | "url"
+  | "file"
+  | "other";
+
+export type TransformMode = "mask" | "generalize" | "minimize";
 
 export type FindingSource = "rule" | "llm";
 
@@ -8,6 +28,7 @@ export interface Finding {
   source: FindingSource;
   label: string;
   riskLevel: RiskLevel;
+  category?: DlpCategory;
   start: number;
   end: number;
   text: string;
@@ -18,6 +39,7 @@ export interface Finding {
 
 export interface DetectionSummary {
   total: number;
+  critical: number;
   high: number;
   medium: number;
   low: number;
@@ -60,4 +82,35 @@ export interface DetectOptions {
   disabledRuleIds?: string[];
   minRiskLevel?: RiskLevel;
   includeLowRisk?: boolean;
+}
+
+export interface RiskScoreResult {
+  score: number;
+  level: RiskDecisionLevel;
+  blocked: boolean;
+  secretGuard: boolean;
+  categoryCounts: Record<string, number>;
+  reasons: string[];
+}
+
+export interface RiskScoreOptions {
+  blockAtLevel?: RiskDecisionLevel;
+}
+
+export type DlpPolicyAction = "allow" | "confirm" | "sanitize_required";
+
+export interface DlpPolicyDecision {
+  action: DlpPolicyAction;
+  canSendRaw: boolean;
+  requiresSanitization: boolean;
+  risk: RiskScoreResult;
+  message: string;
+}
+
+export interface TextTransformResult {
+  mode: TransformMode;
+  transformedText: string;
+  placeholderMap: PlaceholderMap;
+  findings: Finding[];
+  requiresLlm: boolean;
 }
