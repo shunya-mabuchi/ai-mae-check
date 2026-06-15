@@ -113,7 +113,7 @@ export interface SiteAdapter {
 - [x] 入力中は軽量検出だけを行い、モーダルは出さない。
 - [x] badgeは`✓ Safe`または`N risks`の短い表示にする。入力欄上へ大きなUIを重ねず、対象ページの邪魔にならない固定小UIとして表示する。
 - [x] paste内容にSecret Guard対象が含まれる場合、可能な限り`preventDefault()`して生データを入力欄に入れない。
-- [x] high/critical paste UIは「削除して貼り付け」「安全化して貼り付け」「キャンセル」のみにする。
+- [x] high/critical paste UIは「安全化して貼り付け」「キャンセル」のみにする。
 - [x] medium以下のpasteは必要に応じて既存の確認モーダルに流せるが、デフォルトで「そのまま入力」を強調しない。
 - [x] ユーザー本文や検出文字列を`console.log`しない。
 - [x] `pnpm build:extension`、`pnpm typecheck`を通す。

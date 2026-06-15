@@ -1,7 +1,6 @@
 import {
   detectSensitiveText,
   evaluateDlpPolicy,
-  normalizeFindings,
   transformText,
   type DetectionResult,
   type DlpPolicyDecision,
@@ -9,7 +8,6 @@ import {
 } from "@ai-mae-check/core";
 
 export type PasteGuardAction = "allow" | "confirm" | "sanitize_required";
-export type PasteReplacementMode = "remove" | "safe";
 
 export interface PasteGuardOptions {
   disabledRuleIds?: string[];
@@ -48,20 +46,6 @@ export function evaluatePasteGuard(inputText: string, options: PasteGuardOptions
   };
 }
 
-function removeFindings(inputText: string, findings: Finding[]): string {
-  let result = inputText;
-
-  for (const finding of [...normalizeFindings(findings)].sort((left, right) => right.start - left.start)) {
-    result = `${result.slice(0, finding.start)}${result.slice(finding.end)}`;
-  }
-
-  return result;
-}
-
-export function createPasteReplacement(inputText: string, findings: Finding[], mode: PasteReplacementMode): string {
-  if (mode === "remove") {
-    return removeFindings(inputText, findings);
-  }
-
+export function createPasteReplacement(inputText: string, findings: Finding[]): string {
   return transformText(inputText, findings, "generalize").transformedText;
 }

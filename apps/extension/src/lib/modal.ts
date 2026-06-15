@@ -1,7 +1,6 @@
 import {
   maskSensitiveText,
   mergeFindings,
-  normalizeFindings,
   transformText,
   type DetectionResult,
   type Finding,
@@ -360,16 +359,6 @@ function formatLlmStatusMessage(message: string, detail?: LlmErrorDetail): strin
   return `${message}\n診断メモ: ${detail.hint}${technical}`;
 }
 
-function removeFindingsText(inputText: string, findings: Finding[]): string {
-  let result = inputText;
-
-  for (const finding of [...normalizeFindings(findings)].sort((left, right) => right.start - left.start)) {
-    result = `${result.slice(0, finding.start)}${result.slice(finding.end)}`;
-  }
-
-  return result;
-}
-
 export async function showPasteReviewModal(options: PasteReviewModalOptions): Promise<ModalDecision> {
   return new Promise((resolve) => {
     const isPasteGuard = options.mode === "paste_guard";
@@ -388,7 +377,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
         "p",
         "hm-description",
         isPasteGuard
-          ? "貼り付けようとしている文章に、秘密情報や高リスク情報の可能性があります。そのまま貼り付けず、削除または安全化してから入力できます。"
+          ? "貼り付けようとしている文章に、秘密情報や高リスク情報の可能性があります。そのまま貼り付けず、安全化してから入力できます。"
           : "貼り付けようとしている文章に、注意が必要な情報が含まれている可能性があります。"
       )
     );
@@ -425,13 +414,12 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     }
 
     const footer = createElement("footer", "hm-footer");
-    const removeButton = createElement("button", "hm-button", "削除して貼り付け");
     const maskButton = createElement("button", "hm-button hm-primary", isPasteGuard ? "安全化して貼り付け" : "マスクして入力");
     const llmButton = createElement("button", "hm-button hm-dark", "AI文脈チェックも実行");
     const rawButton = createElement("button", "hm-button", "そのまま入力");
     const cancelButton = createElement("button", "hm-button", "キャンセル");
     if (isPasteGuard) {
-      footer.append(removeButton, maskButton, cancelButton);
+      footer.append(maskButton, cancelButton);
     } else {
       footer.append(maskButton, llmButton, rawButton, cancelButton);
     }
@@ -524,11 +512,6 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
         : maskSensitiveText(options.inputText, findings).maskedText;
       cleanup();
       resolve({ type: "insert", text: maskedText });
-    });
-
-    removeButton.addEventListener("click", () => {
-      cleanup();
-      resolve({ type: "insert", text: removeFindingsText(options.inputText, currentFindings()) });
     });
 
     llmButton.addEventListener("click", () => {

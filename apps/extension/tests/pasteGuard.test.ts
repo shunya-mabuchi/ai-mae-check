@@ -25,16 +25,9 @@ describe("pasteGuard", () => {
     expect(result.rawPasteAllowed).toBe(true);
   });
 
-  it("削除貼り付け用に検出範囲を空文字へ置換する", () => {
-    const result = evaluatePasteGuard("メールは taro@example.com です。");
-    const replaced = createPasteReplacement(result.inputText, result.detection.findings, "remove");
-
-    expect(replaced).toBe("メールは  です。");
-  });
-
   it("安全化貼り付け用に検出範囲を汎用表現へ置換する", () => {
     const result = evaluatePasteGuard("メールは taro@example.com です。");
-    const replaced = createPasteReplacement(result.inputText, result.detection.findings, "safe");
+    const replaced = createPasteReplacement(result.inputText, result.detection.findings);
 
     expect(replaced).toBe("メールは [メールアドレス] です。");
   });
