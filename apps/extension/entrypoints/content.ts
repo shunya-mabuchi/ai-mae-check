@@ -8,6 +8,7 @@ import { captureCurrentRange, findEditableTarget, insertTextAtTarget, type Edita
 import { DEFAULT_SETTINGS, disabledRuleIds, isSiteEnabled, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
 import { targetMatches } from "../src/lib/sites";
 import { showPasteReviewModal } from "../src/lib/modal";
+import { showSendConfirmModal } from "../src/ui/confirmModal";
 import { mountRiskBadge, type RiskBadgeController } from "../src/ui/riskBadge";
 
 export default defineContentScript({
@@ -102,13 +103,12 @@ export default defineContentScript({
           };
         },
         review: async ({ inputText, detection }) => {
-          const decision = await showPasteReviewModal({
+          const decision = await showSendConfirmModal({
             inputText,
-            detection,
-            settings
+            detection
           });
 
-          if (decision.type === "insert") {
+          if (decision.type === "submit") {
             return {
               type: "replaceAndSubmit",
               text: decision.text
