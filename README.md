@@ -208,6 +208,7 @@ pnpm build
 pnpm build:extension
 pnpm build:demo
 pnpm package:extension
+pnpm qa:extension:manifest
 pnpm test
 pnpm test:core
 pnpm test:llm
@@ -220,6 +221,8 @@ pnpm typecheck
 
 `pnpm package:extension` はChrome Web Store提出用のZIPを作成するためのコマンドです。
 
+`pnpm qa:extension:manifest` は、ビルド済み拡張のmanifestが初期対象サイト、最小権限、WebLLM bridge公開リソースを満たしているか確認するQAコマンドです。
+
 ## Chrome拡張の読み込み方法
 
 1. `pnpm build:extension` を実行する
@@ -231,6 +234,8 @@ pnpm typecheck
 Chrome Web Store提出前の説明文、権限理由、プライバシー方針、手動チェックリストは [docs/chrome-web-store-release.md](docs/chrome-web-store-release.md) にまとめています。
 
 プライバシー方針の本文は [docs/privacy-policy.md](docs/privacy-policy.md) にあります。
+
+ChatGPT / Claude / Gemini上での実サイトQA手順は [docs/extension-site-qa.md](docs/extension-site-qa.md) にまとめています。
 
 ## デモサイトの起動方法
 
