@@ -1,4 +1,5 @@
 import {
+  evaluateDlpPolicy,
   maskSensitiveText,
   mergeFindings,
   transformText,
@@ -14,7 +15,7 @@ import {
   type LlmProgress
 } from "@ai-mae-check/llm";
 import type { AiMaeCheckSettings } from "./settings";
-import { analyzeContextWithBridge } from "./llmBridgeClient";
+import { analyzeContextWithBridge, analyzeSanitizeWithBridge } from "./llmBridgeClient";
 
 type ModalDecision =
   | {
@@ -390,6 +391,8 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       )
     );
 
+    const policy = evaluateDlpPolicy(options.detection.findings);
+    const rawPasteAllowed = !policy.requiresSanitization;
     const body = createElement("div", "hm-body");
     const summary = createElement("div", "hm-summary");
     summary.append(createElement("div", "hm-count hm-critical", `重大リスク件数\n${options.detection.summary.critical}`));
@@ -411,28 +414,27 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     grid.append(listPanel, previewPanel);
 
     const llmPanel = createElement("div", "hm-llm");
-    llmPanel.append(createElement("h3", undefined, "WebLLMによる文脈チェック結果"));
+    llmPanel.append(createElement("h3", undefined, "WebLLMによる文脈チェック・依頼文生成"));
     const llmStatus = createElement("p", "hm-llm-status", "AI文脈チェックは手動で実行できます。");
     const candidateList = createElement("div");
     llmPanel.append(llmStatus, candidateList);
 
     body.append(summary, grid);
-    if (!isPasteGuard) {
-      body.append(llmPanel);
-    }
+    body.append(llmPanel);
 
     const footer = createElement("footer", "hm-footer");
     const maskButton = createElement("button", "hm-button hm-primary", isPasteGuard ? "安全化して貼り付け" : "マスクして入力");
     const llmButton = createElement("button", "hm-button hm-dark", "AI文脈チェックも実行");
-    const rawButton = createElement("button", "hm-button", "そのまま入力");
+    const safePromptButton = createElement("button", "hm-button hm-dark", "安全な依頼文に整える");
+    const rawButton = createElement("button", "hm-button", "そのまま貼り付け");
     const cancelButton = createElement("button", "hm-button", "キャンセル");
     if (isPasteGuard) {
-      footer.append(maskButton, cancelButton);
+      footer.append(maskButton, llmButton, safePromptButton, rawButton, cancelButton);
     } else if (isContextCheck) {
       maskButton.textContent = "候補をマスクして入力";
-      footer.append(maskButton, llmButton, rawButton, cancelButton);
+      footer.append(maskButton, llmButton, safePromptButton, rawButton, cancelButton);
     } else {
-      footer.append(maskButton, llmButton, rawButton, cancelButton);
+      footer.append(maskButton, llmButton, safePromptButton, rawButton, cancelButton);
     }
 
     dialog.append(header, body, footer);
@@ -459,6 +461,8 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       if (isContextCheck) {
         maskButton.toggleAttribute("disabled", findings.length === 0);
       }
+      rawButton.toggleAttribute("disabled", !rawPasteAllowed);
+      rawButton.title = rawPasteAllowed ? "" : "高リスクまたはSecret Guard対象のため、そのまま貼り付けはできません。";
     };
 
     const cleanup = () => {
@@ -509,6 +513,46 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       }
     };
 
+    const runSafePrompt = async () => {
+      if (!options.settings.llm.enabled) {
+        llmStatus.textContent = "設定でAI文脈チェックが無効になっています。";
+        return;
+      }
+
+      safePromptButton.setAttribute("disabled", "true");
+      llmStatus.textContent = "ローカルAIで安全な依頼文を作成しています。";
+
+      try {
+        const result = await analyzeSanitizeWithBridge(options.inputText, {
+          modelId: options.settings.llm.modelId,
+          existingFindings: currentFindings(),
+          mode: "minimize",
+          onProgress: (progress: LlmProgress) => {
+            llmStatus.textContent = progress.message;
+          }
+        });
+
+        if (result.error) {
+          llmStatus.textContent = result.error;
+          return;
+        }
+
+        if (result.block || result.safePrompt.trim().length === 0) {
+          llmStatus.textContent =
+            "安全な依頼文の再スキャンで高リスク情報が残っている可能性があります。安全化して貼り付けを選んでください。";
+          return;
+        }
+
+        cleanup();
+        resolve({ type: "insert", text: result.safePrompt });
+      } catch (error: unknown) {
+        const detail = classifyLlmError(error);
+        llmStatus.textContent = formatLlmStatusMessage(detail.message, detail);
+      } finally {
+        safePromptButton.removeAttribute("disabled");
+      }
+    };
+
     maskButton.addEventListener("click", () => {
       const findings = currentFindings();
       const maskedText = isPasteGuard
@@ -522,7 +566,15 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       void runLlm();
     });
 
+    safePromptButton.addEventListener("click", () => {
+      void runSafePrompt();
+    });
+
     rawButton.addEventListener("click", () => {
+      if (!rawPasteAllowed) {
+        llmStatus.textContent = "高リスクまたはSecret Guard対象のため、そのまま貼り付けはできません。";
+        return;
+      }
       cleanup();
       resolve({ type: "insert", text: options.inputText });
     });

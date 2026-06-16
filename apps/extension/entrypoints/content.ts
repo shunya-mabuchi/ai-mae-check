@@ -201,7 +201,7 @@ async function handlePaste(event: ClipboardEvent, settings: AiMaeCheckSettings, 
     inputText: pastedText,
     detection: guard.detection,
     settings,
-    mode: "paste_guard"
+    mode: guard.action === "sanitize_required" ? "paste_guard" : "default"
   });
 
   if (decision.type === "insert") {
