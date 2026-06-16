@@ -1,5 +1,5 @@
 import { detectorRules } from "@ai-mae-check/core";
-import { SARASHINA_INSTRUCT_SOURCE_MODEL_ID } from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
 import { siteIdFromHostname, targetSites, type SiteId } from "./sites";
 
 export const SETTINGS_KEY = "ai-mae-check.settings.v1";
@@ -31,7 +31,7 @@ export const DEFAULT_SETTINGS: AiMaeCheckSettings = {
   rules: defaultRules(),
   llm: {
     enabled: true,
-    modelId: SARASHINA_INSTRUCT_SOURCE_MODEL_ID,
+    modelId: DEFAULT_MODEL_ID,
     mode: "manual"
   }
 };

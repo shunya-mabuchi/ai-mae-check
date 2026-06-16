@@ -44,6 +44,16 @@ describe("formatLlmErrorMessage", () => {
     expect(detail.message).toContain("AI文脈チェックを利用できません");
   });
 
+  it("WebGPU推論中のGPUBuffer mapAsync失敗を分類する", () => {
+    const detail = classifyLlmError(
+      new Error("AbortError: Failed to execute 'mapAsync' on 'GPUBuffer': Buffer was unmapped before mapping was resolved.")
+    );
+
+    expect(detail.kind).toBe("webgpu");
+    expect(detail.message).toContain("GPU実行が中断されました");
+    expect(detail.hint).toContain("互換性優先モデル");
+  });
+
   it("Worker起動失敗を分類する", () => {
     const detail = classifyLlmError(new Error("Failed to construct 'Worker': script could not be loaded"));
 

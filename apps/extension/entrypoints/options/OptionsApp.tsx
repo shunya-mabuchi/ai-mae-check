@@ -13,9 +13,9 @@ import { targetSites, type SiteId } from "../../src/lib/sites";
 const modelChoices = [
   {
     id: SARASHINA_INSTRUCT_SOURCE_MODEL_ID,
-    label: "国産推奨モデル",
+    label: "国産推奨モデル（実験）",
     description:
-      "SB Intuitions Sarashina2.2 1B instructです。現時点ではWebLLM変換済みモデルが未同梱のため、日本語対応のWebLLM互換モデルへフォールバックします。"
+      "SB Intuitions Sarashina2.2 1B instructです。現時点ではWebLLM変換済みモデルが未同梱のため、日本語対応のWebLLM互換モデルへフォールバックします。低めのGPU環境では互換性優先モデルをおすすめします。"
   },
   {
     id: DEFAULT_MODEL_ID,

@@ -16,6 +16,9 @@ const STORAGE_ERROR_MESSAGE =
 const MEMORY_ERROR_MESSAGE =
   "ローカルAIモデルの実行に必要なメモリを確保できませんでした。ほかのタブやアプリを閉じてから再試行してください。ルールベースの検出結果は引き続き利用できます。";
 
+const WEBGPU_RUNTIME_ERROR_MESSAGE =
+  "ローカルAIモデルのGPU実行が中断されました。ルールベースの検出結果は引き続き利用できます。";
+
 const WORKER_ERROR_MESSAGE =
   "AI文脈チェック用のWorkerを起動できませんでした。ページを再読み込みしてから再試行してください。ルールベースの検出結果は引き続き利用できます。";
 
@@ -107,6 +110,9 @@ export function classifyLlmError(error: unknown): LlmErrorDetail {
 
   if (
     lowerMessage.includes("webgpu") ||
+    lowerMessage.includes("gpubuffer") ||
+    lowerMessage.includes("mapasync") ||
+    lowerMessage.includes("unmapped before mapping") ||
     lowerMessage.includes("gpuadapter") ||
     lowerMessage.includes("requestadapter") ||
     lowerMessage.includes("requestdevice") ||
@@ -114,10 +120,14 @@ export function classifyLlmError(error: unknown): LlmErrorDetail {
     lowerMessage.includes("no available adapters") ||
     lowerMessage.includes("device lost")
   ) {
+    const isRuntimeFailure =
+      lowerMessage.includes("gpubuffer") || lowerMessage.includes("mapasync") || lowerMessage.includes("unmapped before mapping");
     return detail(
       "webgpu",
-      WEBGPU_UNAVAILABLE_MESSAGE,
-      "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。Chromeの完全再起動も有効です。",
+      isRuntimeFailure ? WEBGPU_RUNTIME_ERROR_MESSAGE : WEBGPU_UNAVAILABLE_MESSAGE,
+      isRuntimeFailure
+        ? "設定画面でWebLLMモデルを互換性優先モデルまたは低VRAMモデルに切り替え、ChatGPT側のタブを再読み込みしてから再試行してください。"
+        : "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。Chromeの完全再起動も有効です。",
       message
     );
   }
