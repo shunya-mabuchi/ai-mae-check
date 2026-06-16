@@ -11,6 +11,7 @@
     "build": "pnpm -r --sort build",
     "build:extension": "pnpm --filter @ai-mae-check/core build && pnpm --filter @ai-mae-check/llm build && pnpm --filter @ai-mae-check/extension build",
     "build:demo": "pnpm --filter @ai-mae-check/core build && pnpm --filter @ai-mae-check/llm build && pnpm --filter @ai-mae-check/demo build",
+    "package:extension": "pnpm --filter @ai-mae-check/core build && pnpm --filter @ai-mae-check/llm build && pnpm --filter @ai-mae-check/extension zip",
     "test": "pnpm --filter @ai-mae-check/core test && pnpm --filter @ai-mae-check/llm test && pnpm --filter @ai-mae-check/extension test",
     "test:core": "pnpm --filter @ai-mae-check/core test",
     "test:llm": "pnpm --filter @ai-mae-check/llm test",

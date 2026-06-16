@@ -207,6 +207,7 @@ pnpm dev:demo
 pnpm build
 pnpm build:extension
 pnpm build:demo
+pnpm package:extension
 pnpm test
 pnpm test:core
 pnpm test:llm
@@ -217,6 +218,8 @@ pnpm typecheck
 
 `pnpm lint` は現時点では `pnpm typecheck` の別名です。
 
+`pnpm package:extension` はChrome Web Store提出用のZIPを作成するためのコマンドです。
+
 ## Chrome拡張の読み込み方法
 
 1. `pnpm build:extension` を実行する
@@ -224,6 +227,10 @@ pnpm typecheck
 3. デベロッパーモードを有効にする
 4. 「パッケージ化されていない拡張機能を読み込む」を選ぶ
 5. `apps/extension/.output/chrome-mv3` を選択する
+
+Chrome Web Store提出前の説明文、権限理由、プライバシー方針、手動チェックリストは [docs/chrome-web-store-release.md](docs/chrome-web-store-release.md) にまとめています。
+
+プライバシー方針の本文は [docs/privacy-policy.md](docs/privacy-policy.md) にあります。
 
 ## デモサイトの起動方法
 
