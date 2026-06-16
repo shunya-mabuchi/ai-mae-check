@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { detectSensitiveText, evaluateDlpPolicy } from "@ai-mae-check/core";
-import { canSubmitSelection, createCategoryGroups, createConfirmedText } from "../src/ui/confirmModal";
+import {
+  canSubmitSelection,
+  createCategoryGroups,
+  createConfirmedText,
+  transformModeOptions
+} from "../src/ui/confirmModal";
 
 describe("confirmModal helpers", () => {
   it("検出結果をカテゴリ単位にまとめる", () => {
@@ -45,5 +50,14 @@ describe("confirmModal helpers", () => {
     const selectedIds = new Set(detection.findings.map((finding) => finding.id));
 
     expect(createConfirmedText(inputText, detection.findings, selectedIds, "minimize")).toBe("メールは  です。");
+  });
+
+  it("MinimizeのUI文言は安全な依頼文生成として説明する", () => {
+    const minimizeOption = transformModeOptions.find((option) => option.value === "minimize");
+
+    expect(minimizeOption?.title).toBe("安全な依頼文に整える");
+    expect(minimizeOption?.description).toContain("外部AIへ貼るため");
+    expect(minimizeOption?.description).toContain("削った/抽象化したカテゴリ");
+    expect(minimizeOption?.description).toContain("再スキャン");
   });
 });

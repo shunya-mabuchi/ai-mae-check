@@ -4,7 +4,7 @@
 
 **Goal:** AIまえチェックを、paste前チェック中心の拡張から、ChatGPT / Claude / Gemini の通常入力体験を維持した送信前DLPレイヤーへ移行する。
 
-**Architecture:** 既存monorepoを維持し、`packages/core`をサイト非依存のDLPエンジン、`packages/llm`をWebLLMによるGeneralize / Minimize / safe_prompt生成、`apps/extension`をサイトadapter・送信インターセプト・UI、`apps/demo`をLP兼体験デモとして分離する。サイドパネルや独自入力欄は作らず、対象サイトの通常入力欄を使う。
+**Architecture:** 既存monorepoを維持し、`packages/core`をサイト非依存のDLPエンジン、`packages/llm`をWebLLMによるGeneralize / safe_prompt生成、`apps/extension`をサイトadapter・送信インターセプト・UI、`apps/demo`をLP兼体験デモとして分離する。サイドパネルや独自入力欄は作らず、対象サイトの通常入力欄を使う。
 
 **Tech Stack:** TypeScript, pnpm workspace, React, WXT, Vite, Tailwind CSS, Vitest, Playwright, Chrome Extension Manifest V3, WebLLM, Web Worker, WebGPU, chrome.storage.local.
 
@@ -15,7 +15,7 @@
 - 初期対象サイトは ChatGPT / Claude / Gemini。Perplexityは後続adapterとして扱う。
 - mediumは確認モーダルの詳細から素通し可能。high / critical とSecret Guard対象は安全化なしでは送信不可。
 - Secret Guard対象は、APIキー、private key、SSH/PEM秘密鍵、JWT、`.env`、DATABASE_URL、AWS/GitHub/Slack/Stripe/OAuth token、webhook URL、クレカ風、マイナンバー風。
-- WebLLMは必須だが、失敗時は外部APIへfallbackしない。ルールベース検出は継続し、Minimizeだけ無効化する。
+- WebLLMは必須だが、失敗時は外部APIへfallbackしない。ルールベース検出は継続し、安全な依頼文生成だけ無効化する。
 - ユーザー入力文、検出結果、マスク対応表、送信履歴、ファイル本文は保存しない。保存してよいのは設定とWebLLMモデルキャッシュだけ。
 - UIは送信時確認モーダル、カテゴリ別チェックボックス、詳細展開、変換モード選択、ファイル検査結果モーダルに限定する。常時表示のrisk badgeは貼り付け前チェックと意味が重なりやすいため表示しない。
 
@@ -200,7 +200,7 @@ export interface SanitizeAnalysisResult {
 - Test: `apps/demo/tests/demo.spec.ts`
 
 - [x] LPコピーを「AIに送る前」から「LLMに送信される前に検出・安全化」へ寄せる。
-- [x] デモはrisk score、カテゴリ単位チェック、Mask / Generalize / Minimize切替、安全化後テキストを体験できる構成にする。
+- [x] デモはrisk score、カテゴリ単位チェック、Mask / Generalize / 安全な依頼文切替、安全化後テキストを体験できる構成にする。
 - [x] WebLLMモデルファイル取得、private browserでの保存容量制限、WebGPU非対応時の挙動をREADMEに明記する。
 - [x] 「完全に安全」「ゼロリスク」「生データが対象サイトに一切見えない」といった表現を避ける。
 - [x] Perplexityは後続adapterであることをREADMEに記載する。

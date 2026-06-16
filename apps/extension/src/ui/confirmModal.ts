@@ -39,6 +39,12 @@ export interface SendConfirmModalOptions {
   onMinimize?: (onProgress: (message: string) => void) => Promise<MinimizeResult>;
 }
 
+export interface TransformModeOption {
+  value: TransformMode;
+  title: string;
+  description: string;
+}
+
 export interface CategoryGroup {
   category: DlpCategory;
   label: string;
@@ -87,6 +93,25 @@ const riskRank: Record<RiskLevel, number> = {
   high: 3,
   critical: 4
 };
+
+export const transformModeOptions: TransformModeOption[] = [
+  {
+    value: "mask",
+    title: "Mask",
+    description: "検出箇所をプレースホルダーへ置き換えます。"
+  },
+  {
+    value: "generalize",
+    title: "Generalize",
+    description: "カテゴリ名が分かる汎用表現へ置き換えます。"
+  },
+  {
+    value: "minimize",
+    title: "安全な依頼文に整える",
+    description:
+      "ローカルAIで、外部AIへ貼るための自然な依頼文に整えます。削った/抽象化したカテゴリと再スキャン結果を確認します。"
+  }
+];
 
 function highestRisk(findings: Finding[]): RiskLevel {
   return findings.reduce<RiskLevel>((highest, finding) => {
@@ -306,25 +331,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     };
 
     const renderModeOptions = () => {
-      const modeOptions: Array<{ value: TransformMode; title: string; description: string }> = [
-        {
-          value: "mask",
-          title: "Mask",
-          description: "検出箇所をプレースホルダーへ置き換えます。"
-        },
-        {
-          value: "generalize",
-          title: "Generalize",
-          description: "カテゴリ名が分かる汎用表現へ置き換えます。"
-        },
-        {
-          value: "minimize",
-          title: "Minimize",
-          description: "検出箇所を削除して、送信量を最小化します。"
-        }
-      ];
-
-      for (const option of modeOptions) {
+      for (const option of transformModeOptions) {
         const label = createElement("label", "amc-radio");
         const radio = createElement("input") as HTMLInputElement;
         radio.type = "radio";
@@ -361,7 +368,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
 
       if (mode === "minimize" && options.onMinimize) {
         minimizeInFlight = true;
-        status.textContent = "ローカルAIでMinimize候補を作成しています。";
+        status.textContent = "ローカルAIで安全な依頼文を作成しています。";
         renderPreview();
 
         void options
@@ -373,7 +380,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
               status.textContent =
                 result.error ??
                 result.message ??
-                "Minimize結果を送信できませんでした。MaskまたはGeneralizeを選んでください。";
+                "安全な依頼文を送信できませんでした。MaskまたはGeneralizeを選んでください。";
               return;
             }
 

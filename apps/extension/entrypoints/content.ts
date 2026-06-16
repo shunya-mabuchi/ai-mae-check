@@ -133,7 +133,8 @@ function createMinimizeRunner(
       if (result.block) {
         return {
           blocked: true,
-          message: "Minimize後も高リスク情報が残っている可能性があります。MaskまたはGeneralizeを選んでください。"
+          message:
+            "安全な依頼文の再スキャンで高リスク情報が残っている可能性があります。MaskまたはGeneralizeを選んでください。"
         };
       }
 

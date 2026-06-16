@@ -14,6 +14,28 @@ describe("buildSanitizePrompt", () => {
     expect(joined).toContain("必ずJSONだけを返す");
     expect(joined).toContain("A社向けの提案資料です。");
   });
+
+  it("用途別に外部AIへ貼るための自然な依頼文へ整える指示を含める", () => {
+    const messages = buildSanitizePrompt(
+      "A社向けにProject Blue Bridgeの契約更新案と候補者の給与条件を整理してください。"
+    );
+    const joined = messages.map((message) => message.content).join("\n");
+
+    expect(joined).toContain("外部AIへ貼るための自然な依頼文");
+    expect(joined).toContain("顧客提案");
+    expect(joined).toContain("顧客名");
+    expect(joined).toContain("契約前情報");
+    expect(joined).toContain("採用/人事");
+    expect(joined).toContain("候補者名");
+    expect(joined).toContain("給与条件");
+    expect(joined).toContain("法務/契約");
+    expect(joined).toContain("契約条件");
+    expect(joined).toContain("社内情報");
+    expect(joined).toContain("社内URL");
+    expect(joined).toContain("内部プロジェクト名");
+    expect(joined).toContain("削った/抽象化したカテゴリ");
+    expect(joined).toContain("再スキャン");
+  });
 });
 
 describe("parseSanitizeAnalysisJson", () => {

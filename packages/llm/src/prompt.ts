@@ -76,18 +76,25 @@ export function buildSanitizePrompt(input: string, options: SanitizePromptOption
   const system = [
     "You are a local browser DLP assistant for preparing text before it is sent to an external AI or form.",
     "Return strict JSON only. Do not call external tools, do not summarize for convenience, and do not claim the text is completely safe.",
-    "Your job is to remove, mask, or generalize sensitive context while preserving the user's intent as much as possible."
+    "Your job is to create a natural safe_prompt request for an external AI by removing, masking, or generalizing sensitive context while preserving the user's intent as much as possible."
   ].join("\n");
 
   const user = [
     "次のルールを必ず守ってください。",
     "- 必ずJSONだけを返す",
     "- 入力文にない事実を作らない",
+    "- safe_promptは外部AIへ貼るための自然な依頼文として書き直す",
+    "- 元文章の要約ではなく、ユーザーがAIに依頼したい作業目的を残す",
     "- APIキー、秘密鍵、JWT、.env、認証情報はsafe_promptに残さない",
     "- 人名、会社名、顧客名、案件名、契約、給与、採用、法務、金額は必要に応じて汎用化または削除する",
     "- 「佐藤様」「山田花子さん」のような敬称つき人名、候補者名、担当者名はsafe_promptに残さない",
     "- 「Project Blue Bridge」のような案件名・プロジェクト名はsafe_promptに残さず、必要なら[PROJECT_1]のように置き換える",
+    "- 顧客提案: 顧客名、案件名、金額、契約前情報を抽象化する",
+    "- 採用/人事: 候補者名、評価、給与条件、内定前情報を抽象化する",
+    "- 法務/契約: 相手先、契約条件、未公開情報、NDA文脈を抽象化する",
+    "- 社内情報: 社内URL、組織名、内部プロジェクト名、環境名を抽象化する",
     "- safe_promptは外部AIへ送る前の候補文です。安全を保証する文章は書かない",
+    "- user_visible_explanationには削った/抽象化したカテゴリと、生成後に再スキャンする前提を短く書く",
     "- 変換できないほど危険な場合はblockをtrueにし、safe_promptを空文字にする",
     `- 希望モード: ${mode}`,
     "",
@@ -107,8 +114,9 @@ export function buildSanitizePrompt(input: string, options: SanitizePromptOption
             action: "generalize"
           }
         ],
-        safe_prompt: "顧客向けの提案資料について、契約前情報を伏せた形で要点を整理してください。",
-        user_visible_explanation: "顧客名と契約前情報を汎用表現に置き換えました。"
+        safe_prompt:
+          "顧客向け提案資料について、顧客名・案件名・金額・契約前情報を伏せたうえで、外部AIで要点整理できる依頼文に整えてください。",
+        user_visible_explanation: "顧客名、案件名、金額、契約前情報を抽象化しました。生成後にルールベースで再スキャンします。"
       },
       null,
       2
