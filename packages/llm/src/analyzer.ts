@@ -12,6 +12,7 @@ import { classifyLlmError } from "./errors";
 import { resolveModelId, type WebLlmModelListModule } from "./model";
 import { parseContextAnalysisJson } from "./parser";
 import { buildContextRiskPrompt, buildSanitizePrompt } from "./prompt";
+import { mergeResidualContextCandidates } from "./residualMasking";
 import { createSanitizeAnalysisResult } from "./sanitizeParser";
 import { isWebGpuAvailable } from "./webgpu";
 import type {
@@ -179,8 +180,12 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
         confidenceThreshold: this.options.confidenceThreshold
       });
 
+      const candidates = mergeResidualContextCandidates(inputForModel, parsed.candidates, {
+        ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
+      });
+
       return {
-        candidates: parsed.candidates,
+        candidates,
         summary: parsed.summary,
         rawText,
         modelId,

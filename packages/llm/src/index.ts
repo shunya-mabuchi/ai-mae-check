@@ -15,6 +15,7 @@ export { convertContextCandidatesToFindings } from "./convert";
 export { classifyLlmError, formatLlmErrorMessage } from "./errors";
 export { getAvailableModelIds, resolveModelId } from "./model";
 export { parseContextAnalysisJson } from "./parser";
+export { extractResidualContextTerms, mergeResidualContextCandidates } from "./residualMasking";
 export { createSanitizeAnalysisResult, parseSanitizeAnalysisJson } from "./sanitizeParser";
 export { buildContextRiskPrompt, buildSanitizePrompt } from "./prompt";
 export { isWebGpuAvailable } from "./webgpu";

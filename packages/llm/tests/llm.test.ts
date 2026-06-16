@@ -4,6 +4,7 @@ import {
   buildSanitizePrompt,
   convertContextCandidatesToFindings,
   createSanitizeAnalysisResult,
+  mergeResidualContextCandidates,
   parseContextAnalysisJson,
   type ContextRiskCandidate
 } from "../src";
@@ -118,6 +119,59 @@ describe("createSanitizeAnalysisResult", () => {
     expect(result.safePrompt).toContain("[PERSON_1]");
     expect(result.safePrompt).toContain("[PERSON_2]");
     expect(result.safePrompt).toContain("[PROJECT_1]");
+  });
+
+  it("LLMが顧客名だけを置換して人名を残した場合も追加でマスクする", () => {
+    const input =
+      "A社の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて、最終面談後の評価メモも含めます。";
+    const result = createSanitizeAnalysisResult(
+      JSON.stringify({
+        block: false,
+        risk_level: "medium",
+        detected_categories: [{ type: "organization", risk: "medium", action: "mask" }],
+        safe_prompt:
+          "[CUSTOMER_1]の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて確認します。",
+        user_visible_explanation: "顧客名を置換しました。"
+      }),
+      "test-model",
+      10,
+      input
+    );
+
+    expect(result.safePrompt).not.toContain("佐藤様");
+    expect(result.safePrompt).not.toContain("山田花子さん");
+    expect(result.safePrompt).not.toContain("Project Blue Bridge");
+  });
+});
+
+describe("mergeResidualContextCandidates", () => {
+  it("WebLLMが返さなかった敬称つき人名と案件名をローカル補助候補として追加する", () => {
+    const input =
+      "A社の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて、最終面談後の評価メモも含めます。";
+    const candidates = mergeResidualContextCandidates(input, []);
+
+    expect(candidates.map((candidate) => candidate.surface)).toEqual(["Project Blue Bridge", "山田花子さん", "佐藤様"]);
+    expect(candidates.map((candidate) => candidate.category)).toEqual(["project_name", "person_name", "person_name"]);
+    expect(candidates.every((candidate) => candidate.confidence >= 0.75)).toBe(true);
+  });
+
+  it("既存のLLM候補と重複するsurfaceは追加しない", () => {
+    const input = "候補者の山田花子さんについて確認します。";
+    const candidates = mergeResidualContextCandidates(input, [
+      {
+        id: "llm-candidate-1",
+        category: "person_name",
+        surface: "候補者の山田花子さん",
+        label: "人名候補",
+        reason: "採用文脈の候補です。",
+        riskLevel: "medium",
+        suggestedPlaceholder: "[PERSON_1]",
+        confidence: 0.9
+      }
+    ]);
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]?.surface).toBe("候補者の山田花子さん");
   });
 });
 
