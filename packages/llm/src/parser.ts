@@ -1,4 +1,5 @@
 import { DEFAULT_CONFIDENCE_THRESHOLD, DEFAULT_MAX_CANDIDATES } from "./constants";
+import { extractJsonObject } from "./jsonExtraction";
 import type { ContextRiskCandidate, ContextRiskCategory } from "./types";
 
 const categories: ContextRiskCategory[] = [
@@ -37,20 +38,6 @@ function clampConfidence(value: unknown): number {
   return Math.min(1, Math.max(0, value));
 }
 
-function extractJson(rawText: string): string {
-  try {
-    JSON.parse(rawText);
-    return rawText;
-  } catch {
-    const start = rawText.indexOf("{");
-    const end = rawText.lastIndexOf("}");
-    if (start >= 0 && end > start) {
-      return rawText.slice(start, end + 1);
-    }
-    return rawText;
-  }
-}
-
 export interface ParseContextAnalysisOptions {
   maxCandidates?: number;
   confidenceThreshold?: number;
@@ -62,7 +49,7 @@ export function parseContextAnalysisJson(rawText: string, options: ParseContextA
   let parsed: unknown;
 
   try {
-    parsed = JSON.parse(extractJson(rawText));
+    parsed = JSON.parse(extractJsonObject(rawText, ["candidates", "summary"]));
   } catch {
     throw new Error("AI文脈チェックの結果を読み取れませんでした");
   }

@@ -69,6 +69,33 @@ describe("parseContextAnalysisJson", () => {
     expect(() => parseContextAnalysisJson("JSONではありません")).toThrow("AI文脈チェックの結果を読み取れませんでした");
   });
 
+  it("Markdownコードブロックと前後の説明文が混ざってもJSON部分を読み取る", () => {
+    const result = parseContextAnalysisJson(`確認しました。候補は以下です。
+
+\`\`\`json
+{
+  "candidates": [
+    {
+      "category": "customer_name",
+      "surface": "A社",
+      "label": "顧客名候補",
+      "reason": "提案文脈に含まれる名称です。",
+      "riskLevel": "medium",
+      "suggestedPlaceholder": "[CUSTOMER_1]",
+      "confidence": 0.86
+    }
+  ],
+  "summary": "顧客名候補があります。"
+}
+\`\`\`
+
+補足: {これはJSONではありません}`);
+
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]?.surface).toBe("A社");
+    expect(result.summary).toBe("顧客名候補があります。");
+  });
+
   it("confidenceThreshold未満を捨てる", () => {
     const result = parseContextAnalysisJson(
       JSON.stringify({

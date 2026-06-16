@@ -1,4 +1,5 @@
 import { detectSensitiveText, evaluateDlpPolicy, type DlpCategory, type RiskLevel } from "@ai-mae-check/core";
+import { extractJsonObject } from "./jsonExtraction";
 import { maskResidualContextTerms } from "./residualMasking";
 import type { ParsedSanitizeAnalysis, SanitizeAction, SanitizeAnalysisResult, SanitizeDetectedCategory } from "./types";
 
@@ -25,20 +26,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function extractJson(rawText: string): string {
-  try {
-    JSON.parse(rawText);
-    return rawText;
-  } catch {
-    const start = rawText.indexOf("{");
-    const end = rawText.lastIndexOf("}");
-    if (start >= 0 && end > start) {
-      return rawText.slice(start, end + 1);
-    }
-    return rawText;
-  }
-}
-
 function toRiskLevel(value: unknown): RiskLevel {
   return value === "critical" || value === "high" || value === "medium" || value === "low" ? value : "low";
 }
@@ -60,7 +47,17 @@ export function parseSanitizeAnalysisJson(rawText: string): ParsedSanitizeAnalys
   let parsed: unknown;
 
   try {
-    parsed = JSON.parse(extractJson(rawText));
+    parsed = JSON.parse(
+      extractJsonObject(rawText, [
+        "safe_prompt",
+        "safePrompt",
+        "detected_categories",
+        "detectedCategories",
+        "risk_level",
+        "riskLevel",
+        "block"
+      ])
+    );
   } catch {
     throw new Error("AI安全化結果を読み取れませんでした");
   }

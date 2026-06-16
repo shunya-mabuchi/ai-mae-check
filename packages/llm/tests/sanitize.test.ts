@@ -71,6 +71,27 @@ describe("parseSanitizeAnalysisJson", () => {
       expect((error as Error).message).not.toContain("taro@example.com");
     }
   });
+  it("Markdownコードブロックと前後の説明文が混ざっても安全化JSON部分を読み取る", () => {
+    const parsed = parseSanitizeAnalysisJson(`安全化案です。
+
+\`\`\`json
+{
+  "block": false,
+  "risk_level": "medium",
+  "detected_categories": [
+    { "type": "organization", "risk": "medium", "action": "generalize" }
+  ],
+  "safe_prompt": "顧客名を伏せた依頼文です。",
+  "user_visible_explanation": "顧客名を抽象化しました。"
+}
+\`\`\`
+
+補足: {これはJSONではありません}`);
+
+    expect(parsed.safePrompt).toBe("顧客名を伏せた依頼文です。");
+    expect(parsed.detectedCategories[0]?.type).toBe("organization");
+    expect(parsed.userVisibleExplanation).toBe("顧客名を抽象化しました。");
+  });
 });
 
 describe("createSanitizeAnalysisResult", () => {
