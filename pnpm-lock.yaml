@@ -95,6 +95,12 @@ importers:
         specifier: ^19.0.0
         version: 19.2.3(@types/react@19.2.16)
 
+  apps/worker:
+    dependencies:
+      '@ai-mae-check/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+
   packages/core: {}
 
   packages/llm:

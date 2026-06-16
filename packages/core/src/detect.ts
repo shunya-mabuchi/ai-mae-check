@@ -82,7 +82,8 @@ export function detectSensitiveText(input: string, options: DetectOptions = {}):
     };
   }
 
-  const findings = detectorRules.flatMap((rule) => {
+  const activeRules = [...detectorRules, ...(options.extraRules ?? [])];
+  const findings = activeRules.flatMap((rule) => {
     if (!rule.enabled || !shouldUseRule(rule.id, options) || !shouldKeepRisk(rule.riskLevel, options)) {
       return [];
     }

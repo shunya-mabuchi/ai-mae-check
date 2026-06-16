@@ -4,6 +4,7 @@ import {
   transformText,
   type DetectionResult,
   type DlpPolicyDecision,
+  type DetectorRule,
   type Finding
 } from "@ai-mae-check/core";
 
@@ -11,6 +12,7 @@ export type PasteGuardAction = "allow" | "confirm" | "sanitize_required";
 
 export interface PasteGuardOptions {
   disabledRuleIds?: string[];
+  extraRules?: DetectorRule[];
 }
 
 export interface PasteGuardResult {
@@ -32,7 +34,10 @@ function actionFromPolicy(policy: DlpPolicyDecision, hasFindings: boolean): Past
 export function evaluatePasteGuard(inputText: string, options: PasteGuardOptions = {}): PasteGuardResult {
   const detection = detectSensitiveText(
     inputText,
-    options.disabledRuleIds ? { disabledRuleIds: options.disabledRuleIds } : {}
+    {
+      ...(options.disabledRuleIds ? { disabledRuleIds: options.disabledRuleIds } : {}),
+      ...(options.extraRules ? { extraRules: options.extraRules } : {})
+    }
   );
   const policy = evaluateDlpPolicy(detection.findings);
   const action = actionFromPolicy(policy, detection.findings.length > 0);

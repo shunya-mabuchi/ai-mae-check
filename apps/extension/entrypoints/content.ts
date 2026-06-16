@@ -1,5 +1,5 @@
 import { defineContentScript } from "wxt/utils/define-content-script";
-import { detectSensitiveText, evaluateDlpPolicy, type DetectionResult } from "@ai-mae-check/core";
+import { detectSensitiveText, evaluateDlpPolicy, type DetectionResult, type DetectorRule } from "@ai-mae-check/core";
 import { classifyLlmError } from "@ai-mae-check/llm";
 import { adapterForHostname } from "../src/content/adapters";
 import { shouldOfferContextCheck } from "../src/content/dom/contextHints";
@@ -10,6 +10,7 @@ import { readEditableText } from "../src/content/dom/editorLocator";
 import { captureCurrentRange, findEditableTarget, insertTextAtTarget, type EditableTarget } from "../src/lib/dom";
 import { DEFAULT_SETTINGS, disabledRuleIds, isSiteEnabled, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
 import { analyzeSanitizeWithBridge } from "../src/lib/llmBridgeClient";
+import { loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
 import { targetMatches } from "../src/lib/sites";
 import { showPasteReviewModal } from "../src/lib/modal";
 import { showSendConfirmModal, type MinimizeResult, type SendConfirmModalOptions } from "../src/ui/confirmModal";
@@ -22,6 +23,7 @@ export default defineContentScript({
     let settings: AiMaeCheckSettings = DEFAULT_SETTINGS;
     let activeTarget: EditableTarget | null = null;
     let badgeTimer: number | null = null;
+    let remoteRules: DetectorRule[] = [];
     const riskBadge = mountRiskBadge();
 
     const scheduleRiskBadgeUpdate = (target: EditableTarget | null) => {
@@ -32,13 +34,20 @@ export default defineContentScript({
       }
 
       badgeTimer = window.setTimeout(() => {
-        updateRiskBadge(target, settings, riskBadge);
+        updateRiskBadge(target, settings, remoteRules, riskBadge);
       }, 220);
+    };
+
+    const refreshRemoteRules = async () => {
+      const result = await loadVerifiedRemoteRules();
+      remoteRules = result.status === "verified" ? result.rules : [];
+      scheduleRiskBadgeUpdate(activeTarget);
     };
 
     void loadSettings().then((loadedSettings) => {
       settings = loadedSettings;
       scheduleRiskBadgeUpdate(activeTarget);
+      void refreshRemoteRules();
     });
 
     chrome.storage.onChanged.addListener((changes, areaName) => {
@@ -83,7 +92,7 @@ export default defineContentScript({
     document.addEventListener(
       "paste",
       (event) => {
-        void handlePaste(event, settings);
+        void handlePaste(event, settings, remoteRules);
       },
       true
     );
@@ -99,7 +108,7 @@ export default defineContentScript({
         adapter,
         isEnabled: () => settings.enabled && isSiteEnabled(settings, window.location.hostname),
         prepareReview: (inputText) => {
-          const detection = createDetection(inputText, settings);
+          const detection = createDetection(inputText, settings, remoteRules);
           const policy = evaluateDlpPolicy(detection.findings);
 
           if (detection.findings.length === 0 || policy.action === "allow") {
@@ -137,9 +146,10 @@ export default defineContentScript({
   }
 });
 
-function createDetection(inputText: string, settings: AiMaeCheckSettings): DetectionResult {
+function createDetection(inputText: string, settings: AiMaeCheckSettings, remoteRules: DetectorRule[]): DetectionResult {
   return detectSensitiveText(inputText, {
-    disabledRuleIds: disabledRuleIds(settings)
+    disabledRuleIds: disabledRuleIds(settings),
+    extraRules: remoteRules
   });
 }
 
@@ -191,7 +201,12 @@ function createMinimizeRunner(
   };
 }
 
-function updateRiskBadge(target: EditableTarget | null, settings: AiMaeCheckSettings, riskBadge: RiskBadgeController): void {
+function updateRiskBadge(
+  target: EditableTarget | null,
+  settings: AiMaeCheckSettings,
+  remoteRules: DetectorRule[],
+  riskBadge: RiskBadgeController
+): void {
   if (!target || !settings.enabled || !isSiteEnabled(settings, window.location.hostname) || !document.contains(target)) {
     riskBadge.update(null);
     return;
@@ -207,7 +222,7 @@ function updateRiskBadge(target: EditableTarget | null, settings: AiMaeCheckSett
     return;
   }
 
-  const detection = createDetection(inputText, settings);
+  const detection = createDetection(inputText, settings, remoteRules);
   const policy = evaluateDlpPolicy(detection.findings);
   riskBadge.update({
     total: detection.findings.length,
@@ -216,7 +231,7 @@ function updateRiskBadge(target: EditableTarget | null, settings: AiMaeCheckSett
   });
 }
 
-async function handlePaste(event: ClipboardEvent, settings: AiMaeCheckSettings): Promise<void> {
+async function handlePaste(event: ClipboardEvent, settings: AiMaeCheckSettings, remoteRules: DetectorRule[]): Promise<void> {
   if (!settings.enabled || !isSiteEnabled(settings, window.location.hostname)) {
     return;
   }
@@ -232,7 +247,8 @@ async function handlePaste(event: ClipboardEvent, settings: AiMaeCheckSettings):
   }
 
   const guard = evaluatePasteGuard(pastedText, {
-    disabledRuleIds: disabledRuleIds(settings)
+    disabledRuleIds: disabledRuleIds(settings),
+    extraRules: remoteRules
   });
 
   if (guard.action === "allow") {

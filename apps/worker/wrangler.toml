@@ -1,0 +1,6 @@
+name = "ai-mae-check-rules"
+main = "src/index.ts"
+compatibility_date = "2026-06-16"
+
+[vars]
+RULE_KEY_ID = "ai-mae-check-demo-rules-2026-06"

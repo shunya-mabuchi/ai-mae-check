@@ -82,6 +82,7 @@ export interface DetectOptions {
   disabledRuleIds?: string[];
   minRiskLevel?: RiskLevel;
   includeLowRisk?: boolean;
+  extraRules?: DetectorRule[];
 }
 
 export interface RiskScoreResult {

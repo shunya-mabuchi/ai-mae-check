@@ -1,0 +1,2 @@
+RULE_KEY_ID=ai-mae-check-demo-rules-2026-06
+RULE_SIGNING_PRIVATE_JWK={"kty":"EC","crv":"P-256","x":"REPLACE_WITH_PUBLIC_X","y":"REPLACE_WITH_PUBLIC_Y","d":"REPLACE_WITH_PRIVATE_D","ext":true,"key_ops":["sign"]}

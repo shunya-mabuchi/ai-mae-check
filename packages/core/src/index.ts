@@ -10,6 +10,14 @@ export {
 } from "./fileText";
 export { categoryForFinding, scoreRisk } from "./riskScore";
 export { detectorRules } from "./rules";
+export {
+  createRemoteDetectorRules,
+  REMOTE_RULE_BUNDLE_SCHEMA_VERSION,
+  REMOTE_RULE_SIGNATURE_ALG,
+  signRemoteRuleBundle,
+  validateRemoteRuleBundlePayload,
+  verifySignedRemoteRuleBundle
+} from "./remoteRules";
 export { transformText } from "./transform";
 export type {
   DlpPolicyAction,
@@ -32,3 +40,10 @@ export type {
   TransformMode
 } from "./types";
 export type { TextFilePreflightKind } from "./fileText";
+export type {
+  RemoteDetectorRuleDefinition,
+  RemoteRuleBundlePayload,
+  RemoteRuleVerificationOptions,
+  RemoteRuleVerificationResult,
+  SignedRemoteRuleBundle
+} from "./remoteRules";

@@ -12,7 +12,7 @@
 - コメントも基本的に日本語で書く。
 - 外部LLM APIを使わない。
 - OpenAI API、Claude API、Gemini APIなどへユーザー本文を送らない。
-- バックエンドを作らない。
+- ユーザー本文を扱うバックエンドを作らない。ルール配信・署名検証サーバーは例外だが、配信するのは検出ルールだけで、ユーザー本文を受け取らない。
 - ユーザーの貼り付け本文、送信本文、ファイル本文を永続保存しない。
 - 検出結果、placeholderMap、送信履歴を永続保存しない。
 - ユーザー本文を `console.log` で出力しない。
@@ -44,6 +44,7 @@
 - 検出エンジンは `packages/core` に集約する。
 - マスキング、risk score、policy、transform modelは `packages/core` に置く。
 - WebLLM関連は `packages/llm` に集約する。
+- 署名付きルール配信APIは `apps/worker` に置き、署名検証とリモートルールのDetectorRule化は `packages/core` に置く。
 - WebLLMは文脈チェック、Generalize、Minimize、`safe_prompt` 生成に使う。
 - メール、電話番号、APIキーなどの確定情報検出をWebLLMの主役にしない。
 - 拡張機能とデモサイトは同じcore検出エンジンを使う。
