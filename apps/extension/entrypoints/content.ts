@@ -9,6 +9,7 @@ import { installSendInterceptor } from "../src/content/dom/sendInterceptor";
 import { readEditableText } from "../src/content/dom/editorLocator";
 import { captureCurrentRange, findEditableTarget, insertTextAtTarget, type EditableTarget } from "../src/lib/dom";
 import { DEFAULT_SETTINGS, disabledRuleIds, isSiteEnabled, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
+import { getLlmWorkerUrl } from "../src/lib/llmWorkerUrl";
 import { targetMatches } from "../src/lib/sites";
 import { showPasteReviewModal } from "../src/lib/modal";
 import { showSendConfirmModal, type MinimizeResult, type SendConfirmModalOptions } from "../src/ui/confirmModal";
@@ -161,7 +162,7 @@ function createMinimizeRunner(
 
     const analyzer = createLlmContextAnalyzer({
       modelId: settings.llm.modelId,
-      workerUrl: chrome.runtime.getURL("llm-worker.js")
+      workerUrl: await getLlmWorkerUrl()
     });
 
     try {

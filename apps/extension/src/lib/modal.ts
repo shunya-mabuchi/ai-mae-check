@@ -16,6 +16,7 @@ import {
   type LlmProgress
 } from "@ai-mae-check/llm";
 import type { AiMaeCheckSettings } from "./settings";
+import { getLlmWorkerUrl } from "./llmWorkerUrl";
 
 type ModalDecision =
   | {
@@ -480,12 +481,14 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
 
       llmButton.setAttribute("disabled", "true");
       llmStatus.textContent = "ローカルAIモデルを準備しています。初回のみ時間がかかる場合があります。";
-      const analyzer = createLlmContextAnalyzer({
-        modelId: options.settings.llm.modelId,
-        workerUrl: chrome.runtime.getURL("llm-worker.js")
-      });
+      let analyzer: ReturnType<typeof createLlmContextAnalyzer> | null = null;
 
       try {
+        analyzer = createLlmContextAnalyzer({
+          modelId: options.settings.llm.modelId,
+          workerUrl: await getLlmWorkerUrl()
+        });
+
         const result = await analyzer.analyze(options.inputText, {
           existingFindings: options.detection.findings,
           onProgress: (progress: LlmProgress) => {
@@ -515,7 +518,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
         const detail = classifyLlmError(error);
         llmStatus.textContent = formatLlmStatusMessage(detail.message, detail);
       } finally {
-        analyzer.dispose();
+        analyzer?.dispose();
         llmButton.removeAttribute("disabled");
       }
     };
