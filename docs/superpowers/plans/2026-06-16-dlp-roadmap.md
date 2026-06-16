@@ -17,14 +17,14 @@
 - Secret Guard対象は、APIキー、private key、SSH/PEM秘密鍵、JWT、`.env`、DATABASE_URL、AWS/GitHub/Slack/Stripe/OAuth token、webhook URL、クレカ風、マイナンバー風。
 - WebLLMは必須だが、失敗時は外部APIへfallbackしない。ルールベース検出は継続し、Minimizeだけ無効化する。
 - ユーザー入力文、検出結果、マスク対応表、送信履歴、ファイル本文は保存しない。保存してよいのは設定とWebLLMモデルキャッシュだけ。
-- UIは小さなrisk badge、送信時確認モーダル、カテゴリ別チェックボックス、詳細展開、変換モード選択、ファイル検査結果モーダルに限定する。
+- UIは送信時確認モーダル、カテゴリ別チェックボックス、詳細展開、変換モード選択、ファイル検査結果モーダルに限定する。常時表示のrisk badgeは貼り付け前チェックと意味が重なりやすいため表示しない。
 
 ## Issue分割
 
 - #17 方針転換ロードマップ
 - #18 core: risk score / policy / transform model
 - #19 extension: site adapter / send interception
-- #20 extension: paste guard / risk badge
+- #20 extension: paste guard / confirmation UI
 - #21 extension: category confirmation modal
 - #22 llm: WebLLM Generalize / Minimize / safe_prompt
 - #23 extension: text file preflight
@@ -102,16 +102,15 @@ export interface SiteAdapter {
 - [x] リスクなしならUIなしで送信する。
 - [x] `pnpm build:extension`、`pnpm typecheck`を通す。
 
-### Task 3: Paste Guard / Risk Badge (#20)
+### Task 3: Paste Guard / Confirmation UI (#20)
 
 **Files:**
 - Create: `apps/extension/src/content/dom/pasteGuard.ts`
-- Create: `apps/extension/src/ui/riskBadge.ts`
 - Modify: `apps/extension/src/lib/modal.ts`
 - Test: `apps/extension/tests/pasteGuard.test.ts`
 
 - [x] 入力中は軽量検出だけを行い、モーダルは出さない。
-- [x] badgeは`✓ Safe`または`N risks`の短い表示にする。入力欄上へ大きなUIを重ねず、対象ページの邪魔にならない固定小UIとして表示する。
+- [x] 右下固定のrisk badgeは削除し、貼り付け前/送信前の確認モーダルへ判断UIを集約する。
 - [x] paste内容にSecret Guard対象が含まれる場合、可能な限り`preventDefault()`して生データを入力欄に入れない。
 - [x] high/critical paste UIは「安全化して貼り付け」「キャンセル」のみにする。
 - [x] medium以下のpasteは必要に応じて既存の確認モーダルに流せるが、デフォルトで「そのまま入力」を強調しない。

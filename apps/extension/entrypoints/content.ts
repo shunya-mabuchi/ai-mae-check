@@ -6,47 +6,28 @@ import { shouldOfferContextCheck } from "../src/content/dom/contextHints";
 import { installFileInterceptor } from "../src/content/dom/fileInterceptor";
 import { evaluatePasteGuard } from "../src/content/dom/pasteGuard";
 import { installSendInterceptor } from "../src/content/dom/sendInterceptor";
-import { readEditableText } from "../src/content/dom/editorLocator";
-import { captureCurrentRange, findEditableTarget, insertTextAtTarget, type EditableTarget } from "../src/lib/dom";
+import { captureCurrentRange, findEditableTarget, insertTextAtTarget } from "../src/lib/dom";
 import { DEFAULT_SETTINGS, disabledRuleIds, isSiteEnabled, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
 import { analyzeSanitizeWithBridge } from "../src/lib/llmBridgeClient";
 import { loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
 import { targetMatches } from "../src/lib/sites";
 import { showPasteReviewModal } from "../src/lib/modal";
 import { showSendConfirmModal, type MinimizeResult, type SendConfirmModalOptions } from "../src/ui/confirmModal";
-import { mountRiskBadge, type RiskBadgeController } from "../src/ui/riskBadge";
 
 export default defineContentScript({
   matches: targetMatches,
   runAt: "document_start",
   main() {
     let settings: AiMaeCheckSettings = DEFAULT_SETTINGS;
-    let activeTarget: EditableTarget | null = null;
-    let badgeTimer: number | null = null;
     let remoteRules: DetectorRule[] = [];
-    const riskBadge = mountRiskBadge();
-
-    const scheduleRiskBadgeUpdate = (target: EditableTarget | null) => {
-      activeTarget = target;
-
-      if (badgeTimer !== null) {
-        window.clearTimeout(badgeTimer);
-      }
-
-      badgeTimer = window.setTimeout(() => {
-        updateRiskBadge(target, settings, remoteRules, riskBadge);
-      }, 220);
-    };
 
     const refreshRemoteRules = async () => {
       const result = await loadVerifiedRemoteRules();
       remoteRules = result.status === "verified" ? result.rules : [];
-      scheduleRiskBadgeUpdate(activeTarget);
     };
 
     void loadSettings().then((loadedSettings) => {
       settings = loadedSettings;
-      scheduleRiskBadgeUpdate(activeTarget);
       void refreshRemoteRules();
     });
 
@@ -56,38 +37,7 @@ export default defineContentScript({
       }
 
       settings = normalizeSettings(changes[SETTINGS_KEY].newValue);
-      scheduleRiskBadgeUpdate(activeTarget);
     });
-
-    document.addEventListener(
-      "input",
-      (event) => {
-        scheduleRiskBadgeUpdate(findEditableTarget(event.target));
-      },
-      true
-    );
-
-    document.addEventListener(
-      "focusin",
-      (event) => {
-        scheduleRiskBadgeUpdate(findEditableTarget(event.target));
-      },
-      true
-    );
-
-    document.addEventListener(
-      "focusout",
-      () => {
-        window.setTimeout(() => {
-          const nextTarget = findEditableTarget(document.activeElement);
-          if (!nextTarget) {
-            activeTarget = null;
-            riskBadge.update(null);
-          }
-        }, 120);
-      },
-      true
-    );
 
     document.addEventListener(
       "paste",
@@ -199,36 +149,6 @@ function createMinimizeRunner(
       };
     }
   };
-}
-
-function updateRiskBadge(
-  target: EditableTarget | null,
-  settings: AiMaeCheckSettings,
-  remoteRules: DetectorRule[],
-  riskBadge: RiskBadgeController
-): void {
-  if (!target || !settings.enabled || !isSiteEnabled(settings, window.location.hostname) || !document.contains(target)) {
-    riskBadge.update(null);
-    return;
-  }
-
-  const inputText = readEditableText(target);
-  if (inputText.trim().length === 0) {
-    riskBadge.update({
-      total: 0,
-      level: "safe",
-      secretGuard: false
-    });
-    return;
-  }
-
-  const detection = createDetection(inputText, settings, remoteRules);
-  const policy = evaluateDlpPolicy(detection.findings);
-  riskBadge.update({
-    total: detection.findings.length,
-    level: policy.risk.level,
-    secretGuard: policy.risk.secretGuard
-  });
 }
 
 async function handlePaste(event: ClipboardEvent, settings: AiMaeCheckSettings, remoteRules: DetectorRule[]): Promise<void> {
