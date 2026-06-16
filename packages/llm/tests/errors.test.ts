@@ -44,6 +44,14 @@ describe("formatLlmErrorMessage", () => {
     expect(detail.message).toContain("AI文脈チェックを利用できません");
   });
 
+  it("WebGPUアダプタ未取得はモデル選択以前の問題として分類する", () => {
+    const detail = classifyLlmError(new Error("No available WebGPU adapters"));
+
+    expect(detail.kind).toBe("webgpu");
+    expect(detail.message).toContain("WebGPUアダプタを取得できません");
+    expect(detail.hint).toContain("モデルを変更しても解消しません");
+  });
+
   it("WebGPU推論中のGPUBuffer mapAsync失敗を分類する", () => {
     const detail = classifyLlmError(
       new Error("AbortError: Failed to execute 'mapAsync' on 'GPUBuffer': Buffer was unmapped before mapping was resolved.")
