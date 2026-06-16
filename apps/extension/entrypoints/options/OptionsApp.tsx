@@ -1,20 +1,27 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { CheckCircle2, Database, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
-import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID, LOW_VRAM_MODEL_ID } from "@ai-mae-check/llm";
 import { DEFAULT_SETTINGS, loadSettings, saveSettings, type AiMaeCheckSettings, type LlmRunMode } from "../../src/lib/settings";
 import { targetSites, type SiteId } from "../../src/lib/sites";
+
+const BALANCED_JAPANESE_MODEL_ID = "Qwen2.5-1.5B-Instruct-q4f32_1-MLC";
 
 const modelChoices = [
   {
     id: DEFAULT_MODEL_ID,
-    label: "軽量モデル",
-    description: "初期設定。端末負荷を抑えたローカル推論向けです。"
+    label: "推奨モデル",
+    description: "初期設定。Llama 3.2 1Bのq4f32版です。f16非対応環境も考慮し、互換性と軽さのバランスを優先します。"
   },
   {
-    id: "Llama-3.1-8B-Instruct-q4f16_1-MLC",
-    label: "標準モデル",
-    description: "より大きなモデルを試すための候補です。端末負荷は高くなります。"
+    id: LOW_VRAM_MODEL_ID,
+    label: "低VRAMモデル",
+    description: "SmolLM2 360Mです。軽さを優先しますが、人名や文脈候補の精度は推奨モデルより落ちる場合があります。"
+  },
+  {
+    id: BALANCED_JAPANESE_MODEL_ID,
+    label: "精度重視モデル",
+    description: "Qwen2.5 1.5Bです。日本語の固有名詞や文脈候補に期待できますが、モデル取得量と端末負荷は増えます。"
   },
   {
     id: "custom",

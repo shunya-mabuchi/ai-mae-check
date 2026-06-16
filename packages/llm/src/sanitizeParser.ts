@@ -1,4 +1,5 @@
 import { detectSensitiveText, evaluateDlpPolicy, type DlpCategory, type RiskLevel } from "@ai-mae-check/core";
+import { maskResidualContextTerms } from "./residualMasking";
 import type { ParsedSanitizeAnalysis, SanitizeAction, SanitizeAnalysisResult, SanitizeDetectedCategory } from "./types";
 
 const categories: DlpCategory[] = [
@@ -99,13 +100,20 @@ export function parseSanitizeAnalysisJson(rawText: string): ParsedSanitizeAnalys
   };
 }
 
-export function createSanitizeAnalysisResult(rawText: string, modelId: string, elapsedMs: number): SanitizeAnalysisResult {
+export function createSanitizeAnalysisResult(
+  rawText: string,
+  modelId: string,
+  elapsedMs: number,
+  originalInput?: string
+): SanitizeAnalysisResult {
   const parsed = parseSanitizeAnalysisJson(rawText);
-  const residualFindings = parsed.safePrompt.length > 0 ? detectSensitiveText(parsed.safePrompt).findings : [];
+  const safePrompt = maskResidualContextTerms(parsed.safePrompt, originalInput);
+  const residualFindings = safePrompt.length > 0 ? detectSensitiveText(safePrompt).findings : [];
   const residualPolicy = evaluateDlpPolicy(residualFindings);
 
   return {
     ...parsed,
+    safePrompt,
     block: parsed.block || residualPolicy.requiresSanitization,
     rawText,
     modelId,

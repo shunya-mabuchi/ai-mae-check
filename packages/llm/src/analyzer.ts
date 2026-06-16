@@ -231,7 +231,7 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
       });
       const rawText = completion.choices?.[0]?.message?.content ?? "";
 
-      return createSanitizeAnalysisResult(rawText, modelId, Math.max(0, performance.now() - startedAt));
+      return createSanitizeAnalysisResult(rawText, modelId, Math.max(0, performance.now() - startedAt), inputForModel);
     } catch (error) {
       const detail = classifyLlmError(error);
       this.dispose();
