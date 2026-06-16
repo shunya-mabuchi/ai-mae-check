@@ -95,7 +95,7 @@ export function DemoCard({
             <div className="border-b border-line p-4 md:p-6 lg:border-b-0 lg:border-r">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">Paste Draft</p>
+                  <p className="text-xs font-bold text-muted">送信前の下書き</p>
                   <h3 className="text-xl font-black text-ink">送信前テキスト</h3>
                 </div>
                 <span className="rounded-card bg-cloud px-3 py-2 text-xs font-bold text-muted">{text.length.toLocaleString()}文字</span>

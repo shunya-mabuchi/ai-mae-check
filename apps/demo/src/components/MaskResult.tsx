@@ -14,7 +14,7 @@ export function MaskResult({
     <div className="flex h-full min-h-[420px] flex-col">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">Masked Output</p>
+          <p className="text-xs font-bold text-muted">マスキング後の出力</p>
           <h3 className="text-xl font-black text-ink">マスク結果</h3>
         </div>
         <Button onClick={onCopy} variant="ghost" disabled={!maskedText}>

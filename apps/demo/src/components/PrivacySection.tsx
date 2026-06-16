@@ -19,7 +19,7 @@ export function PrivacySection() {
         />
         <Surface className="grid gap-0 overflow-hidden md:grid-cols-[0.9fr_1.1fr]">
           <div className="border-b border-line bg-ink p-6 text-white md:border-b-0 md:border-r">
-            <p className="text-sm font-bold text-white/70">Privacy Promise</p>
+            <p className="text-sm font-bold text-white/70">プライバシー設計</p>
             <h3 className="mt-3 text-3xl font-black leading-tight">外に送る前に、ブラウザ内で気づく。</h3>
             <p className="mt-5 text-sm leading-7 text-white/70">
               検出とAI文脈チェックはユーザーのブラウザ内で実行されます。WebLLMの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。

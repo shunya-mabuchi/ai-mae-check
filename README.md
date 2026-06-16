@@ -247,6 +247,19 @@ pnpm dev:demo
 
 起動後、表示されたローカルURLをブラウザで開きます。
 
+## デモサイトの公開方針
+
+ポートフォリオ用の紹介ページ兼デモは、初期公開先としてCloudflare Pagesを想定しています。理由は、Viteの静的ビルドをそのまま配信でき、無料枠で運用しやすく、将来ルール配信・署名検証サーバーをCloudflare Workersで追加する場合に同じ基盤で説明しやすいためです。
+
+GitHub Pagesでも `apps/demo/dist` を公開できますが、初期方針ではCloudflare Pagesを第一候補、GitHub Pagesを代替候補にします。どちらの場合もデモ本文はブラウザ内で処理し、外部LLM APIや独自バックエンドへ送信しません。
+
+初期デプロイ手順の想定:
+
+1. `pnpm build:demo` で `apps/demo/dist` を生成する
+2. Cloudflare PagesのBuild commandを `pnpm build:demo` にする
+3. Output directoryを `apps/demo/dist` にする
+4. 公開後、[docs/portfolio-demo-qa.md](docs/portfolio-demo-qa.md) の1440px / 390px確認観点で表示を確認する
+
 ## 検出対象
 
 高リスク:
@@ -378,3 +391,5 @@ Chrome Web Storeとポートフォリオ掲載用の初期画像案を `docs/ass
 ![Options Page](docs/assets/store/screenshot-04-options.png)
 
 画像の要件、生成コマンド、掲載意図は [docs/store-assets.md](docs/store-assets.md) にまとめています。
+
+ポートフォリオ用LP兼デモの1440px / 390px確認結果は [docs/portfolio-demo-qa.md](docs/portfolio-demo-qa.md) にまとめています。

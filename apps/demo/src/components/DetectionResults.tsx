@@ -57,7 +57,7 @@ function LlmCandidates({
                 <span className={`rounded-card border px-2 py-1 text-xs font-bold ${riskTone[candidate.riskLevel]}`}>
                   危険度: {riskLabel[candidate.riskLevel]}
                 </span>
-                <span className="text-xs text-muted">confidence: {candidate.confidence.toFixed(2)}</span>
+                <span className="text-xs text-muted">信頼度: {candidate.confidence.toFixed(2)}</span>
               </div>
               <p className="break-all rounded-[6px] bg-cloud px-2 py-1 font-mono text-sm">{candidate.surface}</p>
               <p className="mt-2 text-xs leading-5 text-muted">{candidate.reason}</p>
@@ -101,7 +101,7 @@ export function DetectionResults({
       <div>
         <div className="mb-3 flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted">Risk Meter</p>
+            <p className="text-xs font-bold text-muted">リスクメーター</p>
             <h3 className="text-xl font-black text-ink">検出結果</h3>
           </div>
           <div className="rounded-card bg-ink px-3 py-2 text-sm font-black text-white">{summary.total}件</div>
