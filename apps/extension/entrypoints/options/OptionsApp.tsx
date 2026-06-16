@@ -1,27 +1,36 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { CheckCircle2, Database, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
-import { DEFAULT_MODEL_ID, LOW_VRAM_MODEL_ID } from "@ai-mae-check/llm";
+import {
+  DEFAULT_MODEL_ID,
+  JAPANESE_WEBLLM_FALLBACK_MODEL_ID,
+  LOW_VRAM_MODEL_ID,
+  SARASHINA_INSTRUCT_SOURCE_MODEL_ID
+} from "@ai-mae-check/llm";
 import { DEFAULT_SETTINGS, loadSettings, saveSettings, type AiMaeCheckSettings, type LlmRunMode } from "../../src/lib/settings";
 import { targetSites, type SiteId } from "../../src/lib/sites";
 
-const BALANCED_JAPANESE_MODEL_ID = "Qwen2.5-1.5B-Instruct-q4f32_1-MLC";
-
 const modelChoices = [
   {
+    id: SARASHINA_INSTRUCT_SOURCE_MODEL_ID,
+    label: "国産推奨モデル",
+    description:
+      "SB Intuitions Sarashina2.2 1B instructです。現時点ではWebLLM変換済みモデルが未同梱のため、日本語対応のWebLLM互換モデルへフォールバックします。"
+  },
+  {
     id: DEFAULT_MODEL_ID,
-    label: "推奨モデル",
-    description: "初期設定。Llama 3.2 1Bのq4f32版です。f16非対応環境も考慮し、互換性と軽さのバランスを優先します。"
+    label: "互換性優先モデル",
+    description: "Llama 3.2 1Bのq4f32版です。f16非対応環境も考慮し、互換性と軽さのバランスを優先します。"
   },
   {
     id: LOW_VRAM_MODEL_ID,
     label: "低VRAMモデル",
-    description: "SmolLM2 360Mです。軽さを優先しますが、人名や文脈候補の精度は推奨モデルより落ちる場合があります。"
+    description: "SmolLM2 360Mです。軽さを優先しますが、人名や文脈候補の精度は他のモデルより落ちる場合があります。"
   },
   {
-    id: BALANCED_JAPANESE_MODEL_ID,
-    label: "精度重視モデル",
-    description: "Qwen2.5 1.5Bです。日本語の固有名詞や文脈候補に期待できますが、モデル取得量と端末負荷は増えます。"
+    id: JAPANESE_WEBLLM_FALLBACK_MODEL_ID,
+    label: "日本語互換モデル",
+    description: "Gemma 2 2B Japaneseです。WebLLMのprebuiltで利用できる日本語向けモデルとして、Sarashina未変換時の実行候補にします。"
   },
   {
     id: "custom",

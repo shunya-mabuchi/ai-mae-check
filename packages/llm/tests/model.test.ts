@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   COMPATIBLE_LIGHTWEIGHT_MODEL_ID,
   DEFAULT_MODEL_ID,
+  JAPANESE_WEBLLM_FALLBACK_MODEL_ID,
   LEGACY_LIGHTWEIGHT_MODEL_ID,
   LOW_VRAM_MODEL_ID,
+  SARASHINA_INSTRUCT_SOURCE_MODEL_ID,
   resolveModelId
 } from "../src";
 
@@ -32,6 +34,22 @@ describe("resolveModelId", () => {
     );
 
     expect(modelId).toBe(LOW_VRAM_MODEL_ID);
+  });
+
+  it("falls back from the Sarashina source model to the Japanese WebLLM-compatible model", () => {
+    const modelId = resolveModelId(
+      {
+        prebuiltAppConfig: {
+          model_list: [
+            { model_id: DEFAULT_MODEL_ID },
+            { model_id: JAPANESE_WEBLLM_FALLBACK_MODEL_ID }
+          ]
+        }
+      },
+      SARASHINA_INSTRUCT_SOURCE_MODEL_ID
+    );
+
+    expect(modelId).toBe(JAPANESE_WEBLLM_FALLBACK_MODEL_ID);
   });
 
   it("falls back to the lowest-vram instruct/chat model in a custom model list", () => {

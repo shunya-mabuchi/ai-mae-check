@@ -1,8 +1,10 @@
 import {
   COMPATIBLE_LIGHTWEIGHT_MODEL_ID,
   DEFAULT_MODEL_ID,
+  JAPANESE_WEBLLM_FALLBACK_MODEL_ID,
   LEGACY_LIGHTWEIGHT_MODEL_ID,
-  LOW_VRAM_MODEL_ID
+  LOW_VRAM_MODEL_ID,
+  SARASHINA_INSTRUCT_SOURCE_MODEL_ID
 } from "./constants";
 
 export type WebLlmModelListModule = {
@@ -27,6 +29,10 @@ export function resolveModelId(module: WebLlmModelListModule, requestedModelId: 
 
   if (ids.includes(preferredModelId)) {
     return preferredModelId;
+  }
+
+  if (requestedModelId === SARASHINA_INSTRUCT_SOURCE_MODEL_ID && ids.includes(JAPANESE_WEBLLM_FALLBACK_MODEL_ID)) {
+    return JAPANESE_WEBLLM_FALLBACK_MODEL_ID;
   }
 
   if (ids.includes(DEFAULT_MODEL_ID)) {
