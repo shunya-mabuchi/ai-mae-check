@@ -16,7 +16,8 @@
     "test:llm": "pnpm --filter @ai-mae-check/llm test",
     "test:e2e": "pnpm --filter @ai-mae-check/demo test:e2e",
     "lint": "pnpm typecheck",
-    "typecheck": "pnpm -r --sort typecheck"
+    "typecheck": "pnpm -r --sort typecheck",
+    "assets:brand": "node scripts/generate-brand-assets.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
