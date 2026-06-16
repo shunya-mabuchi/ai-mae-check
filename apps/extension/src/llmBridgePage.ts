@@ -4,6 +4,7 @@ import {
   type LlmBridgeRequest,
   type LlmBridgeResponse
 } from "./lib/llmBridgeMessages";
+import { getExtensionResourceUrl } from "./lib/extensionRuntime";
 
 let bridgePort: MessagePort | null = null;
 
@@ -24,7 +25,7 @@ function postProgress(requestId: string): (progress: LlmProgress) => void {
 async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze" }>): Promise<void> {
   const analyzer = createLlmContextAnalyzer({
     modelId: request.modelId,
-    workerUrl: chrome.runtime.getURL("llm-worker.js")
+    workerUrl: getExtensionResourceUrl("llm-worker.js")
   });
 
   try {
@@ -53,7 +54,7 @@ async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze
 async function handleSanitize(request: Extract<LlmBridgeRequest, { type: "sanitize" }>): Promise<void> {
   const analyzer = createLlmContextAnalyzer({
     modelId: request.modelId,
-    workerUrl: chrome.runtime.getURL("llm-worker.js")
+    workerUrl: getExtensionResourceUrl("llm-worker.js")
   });
 
   try {

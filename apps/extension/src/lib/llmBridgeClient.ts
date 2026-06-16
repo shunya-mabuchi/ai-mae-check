@@ -11,6 +11,7 @@ import {
   type LlmBridgeRequest,
   type LlmBridgeResponse
 } from "./llmBridgeMessages";
+import { getExtensionResourceUrl } from "./extensionRuntime";
 
 interface BridgeConnection {
   port: MessagePort;
@@ -104,7 +105,7 @@ function handleBridgeMessage(message: LlmBridgeResponse): void {
 async function createBridgeConnection(): Promise<BridgeConnection> {
   const iframe = createBridgeIframe();
   const loadPromise = waitForIframeLoad(iframe);
-  iframe.src = chrome.runtime.getURL(BRIDGE_PAGE);
+  iframe.src = getExtensionResourceUrl(BRIDGE_PAGE);
   document.documentElement.append(iframe);
   await loadPromise;
 
