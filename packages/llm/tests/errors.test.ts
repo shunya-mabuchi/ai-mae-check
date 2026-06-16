@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { classifyLlmError, DEFAULT_MODEL_ID, formatLlmErrorMessage } from "../src";
 
 describe("formatLlmErrorMessage", () => {
-  it("デフォルトモデルは正式対応モデルのLlama 3.2 1B q4f32にする", () => {
+  it("デフォルトモデルは正式対応モデルのSmolLM2 360M q4f32にする", () => {
     expect(DEFAULT_MODEL_ID).toContain("q4f32_1");
-    expect(DEFAULT_MODEL_ID).toBe("Llama-3.2-1B-Instruct-q4f32_1-MLC");
+    expect(DEFAULT_MODEL_ID).toBe("SmolLM2-360M-Instruct-q4f32_1-MLC");
   });
 
   it("モデル取得のネットワーク失敗を日本語で説明する", () => {

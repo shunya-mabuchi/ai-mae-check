@@ -11,7 +11,7 @@ describe("settings", () => {
     const settings = normalizeSettings({
       llm: {
         enabled: true,
-        modelId: "SmolLM2-360M-Instruct-q4f32_1-MLC",
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
         mode: "manual"
       }
     });
