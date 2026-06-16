@@ -139,7 +139,7 @@ export function classifyLlmError(error: unknown): LlmErrorDetail {
           ? WEBGPU_ADAPTER_UNAVAILABLE_MESSAGE
           : WEBGPU_UNAVAILABLE_MESSAGE,
       isRuntimeFailure
-        ? "設定画面でWebLLMモデルを互換性優先モデルまたは低VRAMモデルに切り替え、ChatGPT側のタブを再読み込みしてから再試行してください。"
+        ? "Chromeの完全再起動、ChatGPT側のタブ再読み込み、通常ウィンドウでの再試行を確認してください。"
         : isAdapterUnavailable
           ? "この状態はWebLLMモデルを変更しても解消しません。chrome://gpu のDawn InfoでD3D12 backendがAvailableか、DawnのWebGPU StatusがBlocklistedではないかを確認してください。"
           : "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。Chromeの完全再起動も有効です。",

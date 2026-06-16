@@ -1,43 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { CheckCircle2, Database, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
-import {
-  DEFAULT_MODEL_ID,
-  JAPANESE_WEBLLM_FALLBACK_MODEL_ID,
-  LOW_VRAM_MODEL_ID,
-  SARASHINA_INSTRUCT_SOURCE_MODEL_ID
-} from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
 import { DEFAULT_SETTINGS, loadSettings, saveSettings, type AiMaeCheckSettings, type LlmRunMode } from "../../src/lib/settings";
 import { targetSites, type SiteId } from "../../src/lib/sites";
-
-const modelChoices = [
-  {
-    id: SARASHINA_INSTRUCT_SOURCE_MODEL_ID,
-    label: "国産推奨モデル（実験）",
-    description:
-      "SB Intuitions Sarashina2.2 1B instructです。現時点ではWebLLM変換済みモデルが未同梱のため、日本語対応のWebLLM互換モデルへフォールバックします。低めのGPU環境では互換性優先モデルをおすすめします。"
-  },
-  {
-    id: DEFAULT_MODEL_ID,
-    label: "互換性優先モデル",
-    description: "Llama 3.2 1Bのq4f32版です。f16非対応環境も考慮し、互換性と軽さのバランスを優先します。"
-  },
-  {
-    id: LOW_VRAM_MODEL_ID,
-    label: "低VRAMモデル",
-    description: "SmolLM2 360Mです。軽さを優先しますが、人名や文脈候補の精度は他のモデルより落ちる場合があります。"
-  },
-  {
-    id: JAPANESE_WEBLLM_FALLBACK_MODEL_ID,
-    label: "日本語互換モデル",
-    description: "Gemma 2 2B Japaneseです。WebLLMのprebuiltで利用できる日本語向けモデルとして、Sarashina未変換時の実行候補にします。"
-  },
-  {
-    id: "custom",
-    label: "手動入力モデルID",
-    description: "WebLLMで利用できるモデルIDを直接指定します。"
-  }
-];
 
 function Toggle({
   checked,
@@ -76,12 +42,10 @@ function Section({ icon, title, children }: { icon: ReactNode; title: string; ch
 export function OptionsApp() {
   const [settings, setSettings] = useState<AiMaeCheckSettings>(DEFAULT_SETTINGS);
   const [savedMessage, setSavedMessage] = useState("設定を読み込んでいます。");
-  const [modelChoice, setModelChoice] = useState(DEFAULT_MODEL_ID);
 
   useEffect(() => {
     void loadSettings().then((loadedSettings) => {
       setSettings(loadedSettings);
-      setModelChoice(modelChoices.some((choice) => choice.id === loadedSettings.llm.modelId) ? loadedSettings.llm.modelId : "custom");
       setSavedMessage("設定は変更時に自動保存されます。");
     });
   }, []);
@@ -194,48 +158,11 @@ export function OptionsApp() {
             />
 
             <div className="rounded-md border border-line bg-white p-4">
-              <label className="block text-sm font-semibold text-ink" htmlFor="model-select">
-                WebLLMモデル選択
-              </label>
-              <select
-                id="model-select"
-                className="mt-2 w-full rounded-md border border-line bg-paper px-3 py-2"
-                value={modelChoice}
-                onChange={(event) => {
-                  const nextChoice = event.target.value;
-                  setModelChoice(nextChoice);
-                  updateSettings((current) => ({
-                    ...current,
-                    llm: {
-                      ...current.llm,
-                      modelId: nextChoice === "custom" ? current.llm.modelId : nextChoice
-                    }
-                  }));
-                }}
-              >
-                {modelChoices.map((choice) => (
-                  <option key={choice.id} value={choice.id}>
-                    {choice.label}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-2 text-sm leading-6 text-stone-600">{modelChoices.find((choice) => choice.id === modelChoice)?.description}</p>
-              {modelChoice === "custom" && (
-                <input
-                  className="mt-3 w-full rounded-md border border-line bg-paper px-3 py-2"
-                  value={settings.llm.modelId}
-                  onChange={(event) =>
-                    updateSettings((current) => ({
-                      ...current,
-                      llm: {
-                        ...current.llm,
-                        modelId: event.target.value
-                      }
-                    }))
-                  }
-                  placeholder="WebLLMのモデルID"
-                />
-              )}
+              <p className="text-sm font-semibold text-ink">WebLLMモデル</p>
+              <p className="mt-2 rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">{DEFAULT_MODEL_ID}</p>
+              <p className="mt-2 text-sm leading-6 text-stone-600">
+                AIまえチェックでは、動作安定性と文脈チェックのバランスを優先し、このWebLLM prebuiltモデルのみを利用します。
+              </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">

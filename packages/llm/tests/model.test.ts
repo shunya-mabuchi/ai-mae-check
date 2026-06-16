@@ -1,58 +1,34 @@
 import { describe, expect, it } from "vitest";
-import {
-  COMPATIBLE_LIGHTWEIGHT_MODEL_ID,
-  DEFAULT_MODEL_ID,
-  JAPANESE_WEBLLM_FALLBACK_MODEL_ID,
-  LEGACY_LIGHTWEIGHT_MODEL_ID,
-  LOW_VRAM_MODEL_ID,
-  SARASHINA_INSTRUCT_SOURCE_MODEL_ID,
-  resolveModelId
-} from "../src";
+import { DEFAULT_MODEL_ID, resolveModelId } from "../src";
 
 describe("resolveModelId", () => {
-  it("maps the legacy f16 default to the f32-compatible model", () => {
+  it("legacy f16指定も正式対応モデルへ正規化する", () => {
     const modelId = resolveModelId(
       {
         prebuiltAppConfig: {
-          model_list: [{ model_id: COMPATIBLE_LIGHTWEIGHT_MODEL_ID }]
+          model_list: [{ model_id: DEFAULT_MODEL_ID }]
         }
       },
-      LEGACY_LIGHTWEIGHT_MODEL_ID
+      "Llama-3.2-1B-Instruct-q4f16_1-MLC"
     );
 
-    expect(modelId).toBe(COMPATIBLE_LIGHTWEIGHT_MODEL_ID);
+    expect(modelId).toBe(DEFAULT_MODEL_ID);
   });
 
-  it("uses the low-vram model when the default model is not available", () => {
+  it("古い保存設定や手動指定が残っていても正式対応モデルへ正規化する", () => {
     const modelId = resolveModelId(
       {
         prebuiltAppConfig: {
-          model_list: [{ model_id: LOW_VRAM_MODEL_ID, vram_required_MB: 579.61 }]
+          model_list: [{ model_id: DEFAULT_MODEL_ID }]
         }
       },
-      DEFAULT_MODEL_ID
+      "gemma-2-2b-jpn-it-q4f32_1-MLC"
     );
 
-    expect(modelId).toBe(LOW_VRAM_MODEL_ID);
+    expect(modelId).toBe(DEFAULT_MODEL_ID);
   });
 
-  it("falls back from the Sarashina source model to the Japanese WebLLM-compatible model", () => {
-    const modelId = resolveModelId(
-      {
-        prebuiltAppConfig: {
-          model_list: [
-            { model_id: DEFAULT_MODEL_ID },
-            { model_id: JAPANESE_WEBLLM_FALLBACK_MODEL_ID }
-          ]
-        }
-      },
-      SARASHINA_INSTRUCT_SOURCE_MODEL_ID
-    );
-
-    expect(modelId).toBe(JAPANESE_WEBLLM_FALLBACK_MODEL_ID);
-  });
-
-  it("falls back to the lowest-vram instruct/chat model in a custom model list", () => {
+  it("prebuilt一覧に正式対応モデルがない場合も未知の代替モデルへは切り替えない", () => {
     const modelId = resolveModelId(
       {
         prebuiltAppConfig: {
@@ -65,6 +41,6 @@ describe("resolveModelId", () => {
       "missing-model"
     );
 
-    expect(modelId).toBe("Small-Chat-q4f32_1-MLC");
+    expect(modelId).toBe(DEFAULT_MODEL_ID);
   });
 });

@@ -69,7 +69,7 @@ export function normalizeSettings(value: unknown): AiMaeCheckSettings {
     rules,
     llm: {
       enabled: typeof llmValue.enabled === "boolean" ? llmValue.enabled : DEFAULT_SETTINGS.llm.enabled,
-      modelId: typeof llmValue.modelId === "string" && llmValue.modelId.length > 0 ? llmValue.modelId : DEFAULT_SETTINGS.llm.modelId,
+      modelId: DEFAULT_SETTINGS.llm.modelId,
       mode: llmValue.mode === "auto" ? "auto" : "manual"
     }
   };
