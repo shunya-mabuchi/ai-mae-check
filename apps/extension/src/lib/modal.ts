@@ -40,6 +40,12 @@ export interface PasteReviewActionState {
   footerNote: string;
 }
 
+export interface SafePromptReviewState {
+  applyButtonText: string;
+  applyButtonDisabled: boolean;
+  previewHidden: boolean;
+}
+
 const RAW_PASTE_BLOCKED_MESSAGE = "高リスクまたはSecret Guard対象のため、そのまま貼り付けはできません。";
 
 export function createPasteReviewActionState(rawPasteAllowed: boolean): PasteReviewActionState {
@@ -48,6 +54,16 @@ export function createPasteReviewActionState(rawPasteAllowed: boolean): PasteRev
     rawButtonDisabled: !rawPasteAllowed,
     rawButtonTitle: rawPasteAllowed ? "" : RAW_PASTE_BLOCKED_MESSAGE,
     footerNote: rawPasteAllowed ? "" : RAW_PASTE_BLOCKED_MESSAGE
+  };
+}
+
+export function createSafePromptReviewState(safePromptText: string | undefined): SafePromptReviewState {
+  const hasSafePrompt = (safePromptText ?? "").trim().length > 0;
+
+  return {
+    applyButtonText: "安全な依頼文を入力",
+    applyButtonDisabled: !hasSafePrompt,
+    previewHidden: !hasSafePrompt
   };
 }
 
@@ -199,6 +215,12 @@ const css = `
     padding: 12px;
     line-height: 1.7;
   }
+  .hm-safe-prompt-preview {
+    min-height: 96px;
+    max-height: 180px;
+    margin-top: 10px;
+    background: #f8faf7;
+  }
   .hm-llm {
     border: 1px solid #dfded8;
     border-radius: 6px;
@@ -275,6 +297,9 @@ const css = `
   }
   .hm-primary:hover {
     background: #276848;
+  }
+  .hm-primary:disabled:hover {
+    background: #2f7d57;
   }
   .hm-dark {
     border-color: #202124;
@@ -464,7 +489,9 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     llmPanel.append(createElement("h3", undefined, "WebLLMによる文脈チェック・依頼文生成"));
     const llmStatus = createElement("p", "hm-llm-status", "AI文脈チェックは手動で実行できます。");
     const candidateList = createElement("div");
-    llmPanel.append(llmStatus, candidateList);
+    const safePromptPreview = createElement("pre", "hm-preview hm-safe-prompt-preview");
+    safePromptPreview.hidden = true;
+    llmPanel.append(llmStatus, candidateList, safePromptPreview);
 
     body.append(summary, grid);
     body.append(llmPanel);
@@ -474,15 +501,16 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     const maskButton = createElement("button", "hm-button hm-primary", isPasteGuard ? "安全化して貼り付け" : "マスクして入力");
     const llmButton = createElement("button", "hm-button hm-dark", "AI文脈チェックも実行");
     const safePromptButton = createElement("button", "hm-button hm-dark", "安全な依頼文に整える");
+    const applySafePromptButton = createElement("button", "hm-button hm-primary", "安全な依頼文を入力");
     const rawButton = createElement("button", "hm-button", "そのまま貼り付け");
     const cancelButton = createElement("button", "hm-button", "キャンセル");
     if (isPasteGuard) {
-      footer.append(footerNote, maskButton, llmButton, safePromptButton, rawButton, cancelButton);
+      footer.append(footerNote, maskButton, llmButton, safePromptButton, applySafePromptButton, rawButton, cancelButton);
     } else if (isContextCheck) {
       maskButton.textContent = "候補をマスクして入力";
-      footer.append(footerNote, maskButton, llmButton, safePromptButton, rawButton, cancelButton);
+      footer.append(footerNote, maskButton, llmButton, safePromptButton, applySafePromptButton, rawButton, cancelButton);
     } else {
-      footer.append(footerNote, maskButton, llmButton, safePromptButton, rawButton, cancelButton);
+      footer.append(footerNote, maskButton, llmButton, safePromptButton, applySafePromptButton, rawButton, cancelButton);
     }
 
     dialog.append(header, body, footer);
@@ -491,6 +519,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     document.documentElement.append(host);
 
     let llmCandidates: ContextRiskCandidate[] = [];
+    let safePromptText = "";
     const selectedRuleFindingIds = new Set(options.detection.findings.map((finding) => finding.id));
     const selectedCandidateIds = new Set<string>();
 
@@ -501,11 +530,20 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       return mergeFindings(selectedRuleFindings, llmFindings);
     };
 
+    const clearSafePrompt = () => {
+      safePromptText = "";
+    };
+
+    const renderAfterSelectionChange = () => {
+      clearSafePrompt();
+      render();
+    };
+
     const render = () => {
       const findings = currentFindings();
-      renderFindingList(list, options.detection.findings, selectedRuleFindingIds, render);
+      renderFindingList(list, options.detection.findings, selectedRuleFindingIds, renderAfterSelectionChange);
       preview.textContent = maskSensitiveText(options.inputText, findings).maskedText;
-      renderCandidates(candidateList, llmCandidates, selectedCandidateIds, render);
+      renderCandidates(candidateList, llmCandidates, selectedCandidateIds, renderAfterSelectionChange);
       if (isContextCheck) {
         maskButton.toggleAttribute("disabled", findings.length === 0);
       }
@@ -515,6 +553,13 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       rawButton.title = actionState.rawButtonTitle;
       footerNote.textContent = actionState.footerNote;
       footerNote.hidden = actionState.footerNote.length === 0;
+
+      const safePromptState = createSafePromptReviewState(safePromptText);
+      applySafePromptButton.textContent = safePromptState.applyButtonText;
+      applySafePromptButton.toggleAttribute("disabled", safePromptState.applyButtonDisabled);
+      applySafePromptButton.hidden = safePromptState.previewHidden;
+      safePromptPreview.textContent = safePromptText;
+      safePromptPreview.hidden = safePromptState.previewHidden;
     };
 
     const cleanup = () => {
@@ -592,11 +637,15 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
         if (result.block || result.safePrompt.trim().length === 0) {
           llmStatus.textContent =
             "安全な依頼文の再スキャンで高リスク情報が残っている可能性があります。安全化して貼り付けを選んでください。";
+          clearSafePrompt();
+          render();
           return;
         }
 
-        cleanup();
-        resolve({ type: "insert", text: result.safePrompt });
+        safePromptText = result.safePrompt;
+        llmStatus.textContent =
+          result.userVisibleExplanation || "安全な依頼文を作成しました。内容を確認してから入力できます。";
+        render();
       } catch (error: unknown) {
         const detail = classifyLlmError(error);
         llmStatus.textContent = formatLlmStatusMessage(detail.message, detail);
@@ -620,6 +669,16 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
 
     safePromptButton.addEventListener("click", () => {
       void runSafePrompt();
+    });
+
+    applySafePromptButton.addEventListener("click", () => {
+      if (safePromptText.trim().length === 0) {
+        llmStatus.textContent = "先に安全な依頼文を作成してください。";
+        return;
+      }
+
+      cleanup();
+      resolve({ type: "insert", text: safePromptText });
     });
 
     rawButton.addEventListener("click", () => {
