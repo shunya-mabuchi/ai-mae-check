@@ -16,6 +16,9 @@ const STORAGE_ERROR_MESSAGE =
 const MEMORY_ERROR_MESSAGE =
   "ローカルAIモデルの実行に必要なメモリを確保できませんでした。ほかのタブやアプリを閉じてから再試行してください。ルールベースの検出結果は引き続き利用できます。";
 
+const WEBGPU_ADAPTER_UNAVAILABLE_MESSAGE =
+  "WebGPUアダプタを取得できませんでした。このブラウザまたは端末ではAI文脈チェックを利用できません。ルールベースの検出は引き続き利用できます。";
+
 const WEBGPU_RUNTIME_ERROR_MESSAGE =
   "ローカルAIモデルのGPU実行が中断されました。ルールベースの検出結果は引き続き利用できます。";
 
@@ -122,12 +125,24 @@ export function classifyLlmError(error: unknown): LlmErrorDetail {
   ) {
     const isRuntimeFailure =
       lowerMessage.includes("gpubuffer") || lowerMessage.includes("mapasync") || lowerMessage.includes("unmapped before mapping");
+    const isAdapterUnavailable =
+      lowerMessage.includes("no available adapters") ||
+      lowerMessage.includes("no available webgpu adapters") ||
+      lowerMessage.includes("gpuadapter") ||
+      lowerMessage.includes("requestadapter") ||
+      lowerMessage.includes("navigator.gpu");
     return detail(
       "webgpu",
-      isRuntimeFailure ? WEBGPU_RUNTIME_ERROR_MESSAGE : WEBGPU_UNAVAILABLE_MESSAGE,
+      isRuntimeFailure
+        ? WEBGPU_RUNTIME_ERROR_MESSAGE
+        : isAdapterUnavailable
+          ? WEBGPU_ADAPTER_UNAVAILABLE_MESSAGE
+          : WEBGPU_UNAVAILABLE_MESSAGE,
       isRuntimeFailure
         ? "設定画面でWebLLMモデルを互換性優先モデルまたは低VRAMモデルに切り替え、ChatGPT側のタブを再読み込みしてから再試行してください。"
-        : "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。Chromeの完全再起動も有効です。",
+        : isAdapterUnavailable
+          ? "この状態はWebLLMモデルを変更しても解消しません。chrome://gpu のDawn InfoでD3D12 backendがAvailableか、DawnのWebGPU StatusがBlocklistedではないかを確認してください。"
+          : "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。Chromeの完全再起動も有効です。",
       message
     );
   }
