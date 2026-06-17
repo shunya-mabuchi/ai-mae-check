@@ -29,9 +29,9 @@ import {
   shouldAutoRunPasteReviewLlm
 } from "./pasteReviewLlmState";
 import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
+import { createPasteReviewModalElements } from "./pasteReviewModalElements";
 import type { AiMaeCheckSettings } from "./settings";
 import { analyzeContextWithBridge } from "./llmBridgeClient";
-import { createElement } from "./domElement";
 import { createShadowHost } from "./shadowHost";
 
 type ModalDecision =
@@ -56,52 +56,24 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     const modalCopy = createPasteReviewModalCopy(mode);
     const { shadow, cleanup } = createShadowHost(pasteReviewModalCss);
 
-    const overlay = createElement("div", "hm-overlay");
-    const dialog = createElement("section", "hm-dialog");
-    const header = createElement("header", "hm-header");
-    header.append(createElement("h2", "hm-title", modalCopy.title));
-    header.append(createElement("p", "hm-description", modalCopy.description));
-
     const policy = evaluateDlpPolicy(options.detection.findings);
     const rawPasteAllowed = !policy.requiresSanitization;
-    const body = createElement("div", "hm-body");
-    const summary = createElement("div", "hm-summary");
-    for (const item of createPasteReviewSummaryItems(options.detection.summary)) {
-      summary.append(createElement("div", item.className, item.text));
-    }
-
-    const grid = createElement("div", "hm-grid");
-    const listPanel = createElement("div", "hm-panel");
-    listPanel.append(createElement("h3", undefined, "検出項目一覧"));
-    const list = createElement("div", "hm-list");
-    listPanel.append(list);
-
-    const previewPanel = createElement("div", "hm-panel");
-    previewPanel.append(createElement("h3", undefined, "マスキング後プレビュー"));
-    const preview = createElement("pre", "hm-preview");
-    previewPanel.append(preview);
-
-    grid.append(listPanel, previewPanel);
-
-    const llmPanel = createElement("div", "hm-llm");
-    llmPanel.append(createElement("h3", undefined, "WebLLMによる文脈チェック"));
-    const llmStatus = createElement("p", "hm-llm-status", PASTE_REVIEW_LLM_INITIAL_MESSAGE);
-    const candidateList = createElement("div");
-    llmPanel.append(llmStatus, candidateList);
-
-    body.append(summary, grid);
-    body.append(llmPanel);
-
-    const footer = createElement("footer", "hm-footer");
-    const footerNote = createElement("p", "hm-footer-note");
-    const maskButton = createElement("button", "hm-button hm-primary", modalCopy.maskButtonText);
-    const llmButton = createElement("button", "hm-button hm-dark", "AI文脈チェックも実行");
-    const rawButton = createElement("button", "hm-button", "そのまま貼り付け");
-    const cancelButton = createElement("button", "hm-button", "キャンセル");
-    footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
-
-    dialog.append(header, body, footer);
-    overlay.append(dialog);
+    const {
+      overlay,
+      list,
+      preview,
+      llmStatus,
+      candidateList,
+      footerNote,
+      maskButton,
+      llmButton,
+      rawButton,
+      cancelButton
+    } = createPasteReviewModalElements({
+      modalCopy,
+      summaryItems: createPasteReviewSummaryItems(options.detection.summary),
+      initialLlmMessage: PASTE_REVIEW_LLM_INITIAL_MESSAGE
+    });
     shadow.append(overlay);
 
     let llmCandidates: ContextRiskCandidate[] = [];

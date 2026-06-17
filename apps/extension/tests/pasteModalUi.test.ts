@@ -11,12 +11,14 @@ import {
 describe("paste review modal UI", () => {
   it("paste_guardモードでも安全な依頼文生成を表示しない", () => {
     const modalSource = readFileSync(resolve(process.cwd(), "src/lib/modal.ts"), "utf8");
+    const elementsSource = readFileSync(resolve(process.cwd(), "src/lib/pasteReviewModalElements.ts"), "utf8");
+    const modalUiSource = `${modalSource}\n${elementsSource}`;
 
-    expect(modalSource).toContain("footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton)");
-    expect(modalSource).not.toContain("安全な依頼文に整える");
-    expect(modalSource).not.toContain("安全な依頼文を入力");
-    expect(modalSource).not.toContain("analyzeSanitizeWithBridge");
-    expect(modalSource).toContain("そのまま貼り付け");
+    expect(elementsSource).toContain("footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton)");
+    expect(modalUiSource).not.toContain("安全な依頼文に整える");
+    expect(modalUiSource).not.toContain("安全な依頼文を入力");
+    expect(modalUiSource).not.toContain("analyzeSanitizeWithBridge");
+    expect(elementsSource).toContain("そのまま貼り付け");
   });
 
   it("安全化必須のときも、そのまま貼り付けを不可状態として見せる", () => {
