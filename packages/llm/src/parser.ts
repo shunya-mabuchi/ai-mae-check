@@ -163,11 +163,11 @@ export function parseContextAnalysisJson(rawText: string, options: ParseContextA
   try {
     parsed = JSON.parse(extractJsonObject(rawText, [...candidateListKeys, ...summaryKeys]));
   } catch {
-    throw new Error("AI文脈チェックの結果を読み取れませんでした");
+    throw new Error("AI文脈チェックの出力形式を読み取れませんでした");
   }
 
   if (!isRecord(parsed) && !Array.isArray(parsed)) {
-    throw new Error("AI文脈チェックの結果を読み取れませんでした");
+    throw new Error("AI文脈チェックの出力形式を読み取れませんでした");
   }
 
   const rawCandidates = candidateValues(parsed);

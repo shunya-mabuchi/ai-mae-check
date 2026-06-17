@@ -2,8 +2,13 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  ANALYZING_MESSAGE,
+  MODEL_LOADING_MESSAGE,
+  WEBGPU_UNAVAILABLE_MESSAGE,
   buildContextRiskPrompt,
+  classifyLlmError,
   convertContextCandidatesToFindings,
+  createJsonParseFallbackMessage,
   mergeResidualContextCandidates,
   parseContextAnalysisJson,
   type ContextRiskCandidate
@@ -16,16 +21,16 @@ describe("buildContextRiskPrompt", () => {
 
     expect(joined).toContain("必ずJSONだけを返す");
     expect(joined).toContain("A社向けの提案資料です。");
-    expect(joined).toContain("surfaceには入力文中に実在する短い文字列");
+    expect(joined).toContain("surfaceには入力文中に実在する短い文字列を入れる");
   });
 
-  it("敬称つき人名や候補者名を優先候補として指示する", () => {
+  it("敬称付き人名や候補者名を優先候補として指示する", () => {
     const messages = buildContextRiskPrompt(
       "佐藤様向けにProject Blue Bridgeの提案を作ります。候補者の山田花子さんについても確認します。"
     );
     const joined = messages.map((message) => message.content).join("\n");
 
-    expect(joined).toContain("敬称つき人名");
+    expect(joined).toContain("敬称付きの人名");
     expect(joined).toContain("候補者名");
     expect(joined).toContain("Project Blue Bridge");
   });
@@ -51,7 +56,7 @@ describe("parseContextAnalysisJson", () => {
             category: "customer_name",
             surface: "A社",
             label: "顧客名候補",
-            reason: "提案文脈に含まれています。",
+            reason: "提案資料に含まれています。",
             riskLevel: "medium",
             suggestedPlaceholder: "[CUSTOMER_1]",
             confidence: 0.82
@@ -67,7 +72,7 @@ describe("parseContextAnalysisJson", () => {
   });
 
   it("不正JSONではエラーにする", () => {
-    expect(() => parseContextAnalysisJson("JSONではありません")).toThrow("AI文脈チェックの結果を読み取れませんでした");
+    expect(() => parseContextAnalysisJson("JSONではありません")).toThrow("AI文脈チェックの出力形式を読み取れませんでした");
   });
 
   it("Markdownコードブロックと前後の説明文が混ざってもJSON部分を読み取る", () => {
@@ -80,7 +85,7 @@ describe("parseContextAnalysisJson", () => {
       "category": "customer_name",
       "surface": "A社",
       "label": "顧客名候補",
-      "reason": "提案文脈に含まれる名称です。",
+      "reason": "提案資料に含まれる名称です。",
       "riskLevel": "medium",
       "suggestedPlaceholder": "[CUSTOMER_1]",
       "confidence": 0.86
@@ -140,7 +145,7 @@ describe("parseContextAnalysisJson", () => {
     expect(result.summary).toBe("案件名候補があります。");
   });
 
-  it("説明文つきの配列JSONと末尾カンマを読み取る", () => {
+  it("説明文付きの配列JSONと末尾カンマを読み取る", () => {
     const result = parseContextAnalysisJson(`候補は以下です。
 [
   {
@@ -164,11 +169,11 @@ describe("parseContextAnalysisJson", () => {
       JSON.stringify({
         候補: [
           {
-            カテゴリ: "person_name",
+            カテゴリ: "人名候補",
             該当テキスト: "佐藤様",
             ラベル: "人名候補",
-            理由: "敬称つきの個人名らしい表現です。",
-            危険度: "medium",
+            理由: "敬称付きの個人名らしい表現です。",
+            危険度: "中",
             プレースホルダー: "[PERSON_1]",
             信頼度: 0.87
           }
@@ -179,11 +184,12 @@ describe("parseContextAnalysisJson", () => {
 
     expect(result.candidates).toHaveLength(1);
     expect(result.candidates[0]?.category).toBe("person_name");
+    expect(result.candidates[0]?.riskLevel).toBe("medium");
     expect(result.candidates[0]?.surface).toBe("佐藤様");
     expect(result.summary).toBe("人名候補があります。");
   });
 
-  it("JSON風のキー未クォート・シングルクォート出力を読み取る", () => {
+  it("JSON風のキー未クォートとシングルクォート入力を読み取る", () => {
     const result = parseContextAnalysisJson(`{
       candidates: [
         {
@@ -228,7 +234,7 @@ describe("parseContextAnalysisJson", () => {
 });
 
 describe("mergeResidualContextCandidates", () => {
-  it("WebLLMが返さなかった敬称つき人名と案件名をローカル補助候補として追加する", () => {
+  it("WebLLMが返さなかった敬称付き人名と案件名をローカル補助候補として追加する", () => {
     const input =
       "A社の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて、最終面談後の評価メモも含めます。";
     const candidates = mergeResidualContextCandidates(input, []);
@@ -244,7 +250,7 @@ describe("mergeResidualContextCandidates", () => {
       {
         id: "llm-candidate-1",
         category: "person_name",
-        surface: "候補者の山田花子さん",
+        surface: "山田花子さん",
         label: "人名候補",
         reason: "採用文脈の候補です。",
         riskLevel: "medium",
@@ -254,7 +260,7 @@ describe("mergeResidualContextCandidates", () => {
     ]);
 
     expect(candidates).toHaveLength(1);
-    expect(candidates[0]?.surface).toBe("候補者の山田花子さん");
+    expect(candidates[0]?.surface).toBe("山田花子さん");
   });
 });
 
@@ -296,5 +302,22 @@ describe("convertContextCandidatesToFindings", () => {
     });
 
     expect(findings).toEqual([]);
+  });
+});
+
+describe("LLMエラー文言", () => {
+  it("ユーザー向け定数が日本語で読める", () => {
+    expect(WEBGPU_UNAVAILABLE_MESSAGE).toContain("このブラウザまたは端末ではAI文脈チェックを利用できません");
+    expect(MODEL_LOADING_MESSAGE).toContain("ローカルAIモデルを準備しています");
+    expect(ANALYZING_MESSAGE).toBe("文脈リスクを確認しています。");
+  });
+
+  it("JSONパース失敗は非致命的な日本語メッセージにする", () => {
+    const detail = classifyLlmError(new Error("AI文脈チェックの出力形式を読み取れませんでした"));
+
+    expect(detail.kind).toBe("json_parse");
+    expect(detail.message).toContain("AI文脈チェックの出力形式を読み取れませんでした");
+    expect(createJsonParseFallbackMessage(0)).toContain("ルールベース検出結果で安全化できます");
+    expect(createJsonParseFallbackMessage(1)).toContain("ブラウザ内の補助検出で注意候補を確認しました");
   });
 });

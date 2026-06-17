@@ -8,7 +8,7 @@ const MODEL_FETCH_ERROR_MESSAGE =
   "ローカルAIモデルの取得に失敗しました。モデル配信元への接続がブロックされている可能性があります。ルールベースの検出結果は引き続き利用できます。";
 
 const JSON_PARSE_ERROR_MESSAGE =
-  "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。";
+  "AI文脈チェックの出力形式を読み取れませんでした。ルールベース検出とブラウザ内の補助検出は引き続き利用できます。";
 const JSON_PARSE_RULE_BASED_FALLBACK_MESSAGE =
   "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。";
 const JSON_PARSE_RESIDUAL_FALLBACK_MESSAGE =
@@ -70,7 +70,12 @@ export function isJsonParseLlmErrorMessage(message: string | undefined): boolean
     normalizedMessage.includes("読み取れ") &&
     (normalizedMessage.includes("AI文脈チェック") || normalizedMessage.includes("出力形式"));
 
-  return message.includes("AI文脈チェックの結果を読み取れませんでした") || lowerMessage.includes("json") || isJapaneseReadFailure;
+  return (
+    message.includes("AI文脈チェックの結果を読み取れませんでした") ||
+    message.includes("AI文脈チェックの出力形式を読み取れませんでした") ||
+    lowerMessage.includes("json") ||
+    isJapaneseReadFailure
+  );
 }
 
 export function classifyLlmError(error: unknown): LlmErrorDetail {
