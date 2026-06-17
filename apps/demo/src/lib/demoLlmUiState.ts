@@ -1,5 +1,6 @@
 import {
-  createJsonParseFallbackMessage,
+  createContextAnalysisCompleteMessage,
+  createContextAnalysisResultMessage,
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE,
   type LlmErrorDetail,
@@ -65,17 +66,9 @@ export function createProgressLlmUiState(progress: LlmProgress): DemoLlmUiState 
 }
 
 export function createLlmCompleteUiState(candidateCount: number): DemoLlmUiState {
-  if (candidateCount > 0) {
-    return {
-      status: "done",
-      message: "AI文脈チェックで注意候補が見つかりました。",
-      errorDetail: null
-    };
-  }
-
   return {
-    status: "empty",
-    message: "AI文脈チェックでは追加の注意候補は見つかりませんでした。ただし、安全を保証するものではありません。",
+    status: candidateCount > 0 ? "done" : "empty",
+    message: createContextAnalysisCompleteMessage(candidateCount),
     errorDetail: null
   };
 }
@@ -84,7 +77,7 @@ export function createLlmResultUiState(candidateCount: number, detail?: LlmError
   if (detail?.kind === "json_parse") {
     return {
       status: candidateCount > 0 ? "done" : "empty",
-      message: createJsonParseFallbackMessage(candidateCount),
+      message: createContextAnalysisResultMessage({ candidateCount, errorDetail: detail }),
       errorDetail: null
     };
   }
