@@ -11,6 +11,11 @@ import {
 } from "./llmBridgeMessages";
 import { getExtensionResourceUrl } from "./extensionRuntime";
 import { createJsonParseBridgeFallbackResult } from "./llmBridgeFallback";
+import {
+  BRIDGE_LOAD_TIMEOUT_MS,
+  createLlmBridgeIframe,
+  waitForLlmBridgeIframeLoad
+} from "./llmBridgeFrame";
 import { createLlmBridgeAnalyzeRequest } from "./llmBridgeRequest";
 
 interface BridgeConnection {
@@ -36,7 +41,6 @@ interface BridgeAnalyzeOptions extends Pick<AnalyzeContextOptions, "existingFind
 }
 
 const BRIDGE_PAGE = "llm-bridge.html";
-const BRIDGE_LOAD_TIMEOUT_MS = 15000;
 
 let bridgePromise: Promise<BridgeConnection> | null = null;
 let requestSeq = 0;
@@ -45,40 +49,6 @@ const pendingRequests = new Map<string, PendingRequest<ContextAnalysisResult>>()
 function nextRequestId(): string {
   requestSeq += 1;
   return `llm-${Date.now()}-${requestSeq}`;
-}
-
-function createBridgeIframe(): HTMLIFrameElement {
-  const iframe = document.createElement("iframe");
-  iframe.title = "AIまえチェック AI文脈チェック";
-  iframe.setAttribute("aria-hidden", "true");
-  iframe.style.cssText = [
-    "position: fixed",
-    "width: 0",
-    "height: 0",
-    "border: 0",
-    "opacity: 0",
-    "pointer-events: none",
-    "left: -9999px",
-    "top: -9999px"
-  ].join(";");
-  return iframe;
-}
-
-function waitForIframeLoad(iframe: HTMLIFrameElement): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timeout = window.setTimeout(() => {
-      reject(new Error("AI文脈チェック用の拡張ページを準備できませんでした。"));
-    }, BRIDGE_LOAD_TIMEOUT_MS);
-
-    iframe.addEventListener(
-      "load",
-      () => {
-        window.clearTimeout(timeout);
-        resolve();
-      },
-      { once: true }
-    );
-  });
 }
 
 export function createBridgeErrorFallbackResult(options: BridgeErrorFallbackOptions): ContextAnalysisResult | null {
@@ -129,8 +99,8 @@ function handleBridgeMessage(message: LlmBridgeResponse): void {
 }
 
 async function createBridgeConnection(): Promise<BridgeConnection> {
-  const iframe = createBridgeIframe();
-  const loadPromise = waitForIframeLoad(iframe);
+  const iframe = createLlmBridgeIframe();
+  const loadPromise = waitForLlmBridgeIframeLoad(iframe);
   iframe.src = getExtensionResourceUrl(BRIDGE_PAGE);
   document.documentElement.append(iframe);
   await loadPromise;
