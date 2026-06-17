@@ -4,7 +4,8 @@ import {
   canSubmitSelection,
   createCategoryGroups,
   createConfirmedText,
-  transformModeOptions
+  transformModeOptions,
+  updateCategorySelection
 } from "../src/ui/confirmModalState";
 
 describe("confirmModal helpers", () => {
@@ -47,5 +48,15 @@ describe("confirmModal helpers", () => {
   it("変換モードはMaskとGeneralizeだけを表示する", () => {
     expect(transformModeOptions.map((option) => option.value)).toEqual(["mask", "generalize"]);
     expect(transformModeOptions.map((option) => option.title)).not.toContain("安全な依頼文に整える");
+  });
+
+  it("カテゴリ単位でfinding IDを選択・解除する", () => {
+    const selectedIds = new Set(["email-1"]);
+
+    updateCategorySelection(selectedIds, ["phone-1", "phone-2"], true);
+    expect([...selectedIds]).toEqual(["email-1", "phone-1", "phone-2"]);
+
+    updateCategorySelection(selectedIds, ["email-1", "phone-2"], false);
+    expect([...selectedIds]).toEqual(["phone-1"]);
   });
 });

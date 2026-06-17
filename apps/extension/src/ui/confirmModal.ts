@@ -10,7 +10,8 @@ import {
   decisionLabels,
   riskLabels,
   selectedFindings,
-  transformModeOptions
+  transformModeOptions,
+  updateCategorySelection
 } from "./confirmModalState";
 import { confirmModalCss } from "./styles";
 
@@ -129,13 +130,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
         checkbox.checked = group.findingIds.every((id) => selectedFindingIds.has(id));
         checkbox.disabled = group.locked;
         checkbox.addEventListener("change", () => {
-          for (const id of group.findingIds) {
-            if (checkbox.checked) {
-              selectedFindingIds.add(id);
-            } else {
-              selectedFindingIds.delete(id);
-            }
-          }
+          updateCategorySelection(selectedFindingIds, group.findingIds, checkbox.checked);
           renderPreview();
         });
 

@@ -117,6 +117,16 @@ export function canSubmitSelection(groups: CategoryGroup[], selectedFindingIds: 
   return groups.every((group) => !group.locked || group.findingIds.every((id) => selectedFindingIds.has(id)));
 }
 
+export function updateCategorySelection(selectedFindingIds: Set<string>, findingIds: string[], selected: boolean): void {
+  for (const id of findingIds) {
+    if (selected) {
+      selectedFindingIds.add(id);
+    } else {
+      selectedFindingIds.delete(id);
+    }
+  }
+}
+
 export function createConfirmedText(
   inputText: string,
   findings: Finding[],
