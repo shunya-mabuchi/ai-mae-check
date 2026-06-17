@@ -1,4 +1,5 @@
 import { chromium } from "@playwright/test";
+import { readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,6 +8,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const outputs = {
   extensionIcons: resolve(root, "apps/extension/public/icon"),
+  readme: resolve(root, "docs/assets/readme"),
   store: resolve(root, "docs/assets/store")
 };
 
@@ -249,6 +251,33 @@ function promoMarquee() {
   );
 }
 
+function dataImage(path) {
+  const buffer = readFileSync(path);
+  return `data:image/png;base64,${buffer.toString("base64")}`;
+}
+
+function realExtensionScreenshot({ title, description, sourceFile, badge }) {
+  const image = dataImage(resolve(outputs.readme, sourceFile));
+
+  return htmlShell(
+    1280,
+    800,
+    `<div class="frame" style="padding:38px 50px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:22px;">
+        <div>
+          <div class="brand"><div class="mark">${markSvg()}</div>AIまえチェック</div>
+          <h1 style="font-size:44px;line-height:1.12;margin:20px 0 8px;font-weight:950;">${title}</h1>
+          <p class="lead" style="font-size:20px;line-height:1.5;">${description}</p>
+        </div>
+        <div class="pill" style="font-size:16px;white-space:nowrap;">${badge}</div>
+      </div>
+      <div class="card" style="padding:16px;display:grid;place-items:center;height:610px;overflow:hidden;background:rgba(255,255,255,.94);">
+        <img src="${image}" alt="" style="max-width:100%;max-height:578px;border-radius:10px;box-shadow:0 24px 70px rgba(24,36,31,.18);border:1px solid ${theme.line};" />
+      </div>
+    </div>`
+  );
+}
+
 async function render(browser, html, width, height, path) {
   await mkdir(dirname(path), { recursive: true });
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
@@ -265,10 +294,42 @@ try {
   }
 
   await render(browser, iconHtml(128), 128, 128, resolve(outputs.store, "icon-128.png"));
-  await render(browser, lpScreenshot(), 1280, 800, resolve(outputs.store, "screenshot-01-lp.png"));
-  await render(browser, demoScreenshot(), 1280, 800, resolve(outputs.store, "screenshot-02-demo.png"));
-  await render(browser, modalScreenshot(), 1280, 800, resolve(outputs.store, "screenshot-03-extension-modal.png"));
-  await render(browser, optionsScreenshot(), 1280, 800, resolve(outputs.store, "screenshot-04-options.png"));
+  await render(
+    browser,
+    realExtensionScreenshot({
+      title: "貼り付け前に、安全化を確認",
+      description: "ChatGPT上で表示した実機モーダルをベースに、検出項目と安全化後プレビューを見せます。",
+      sourceFile: "extension-paste-modal.png",
+      badge: "実機画面ベース"
+    }),
+    1280,
+    800,
+    resolve(outputs.store, "screenshot-01-real-paste-modal.png")
+  );
+  await render(
+    browser,
+    realExtensionScreenshot({
+      title: "送信前に、高リスク情報を止める",
+      description: "高リスクまたは秘密情報保護の対象は、安全化なしでは送信できないことを示します。",
+      sourceFile: "extension-send-modal.png",
+      badge: "実機画面ベース"
+    }),
+    1280,
+    800,
+    resolve(outputs.store, "screenshot-02-real-send-modal.png")
+  );
+  await render(
+    browser,
+    realExtensionScreenshot({
+      title: "ルール検出がなくても、AI文脈チェックへ",
+      description: "文脈によって注意が必要な内容を、ユーザー操作でブラウザ内AIチェックできます。",
+      sourceFile: "extension-context-modal.png",
+      badge: "実機画面ベース"
+    }),
+    1280,
+    800,
+    resolve(outputs.store, "screenshot-03-real-context-modal.png")
+  );
   await render(browser, promoSmall(), 440, 280, resolve(outputs.store, "promo-small-440x280.png"));
   await render(browser, promoMarquee(), 1400, 560, resolve(outputs.store, "promo-marquee-1400x560.png"));
 } finally {

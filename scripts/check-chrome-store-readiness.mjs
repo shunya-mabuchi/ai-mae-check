@@ -44,6 +44,19 @@ function assertPngDimensions(relativePath, expectedWidth, expectedHeight) {
   }
 }
 
+function assertPngFile(relativePath, context) {
+  const path = resolve(rootDir, relativePath);
+  if (!existsSync(path)) {
+    fail(`${context} is missing at ${relativePath}`);
+  }
+
+  const buffer = readFileSync(path);
+  const signature = buffer.subarray(0, 8).toString("hex");
+  if (signature !== "89504e470d0a1a0a") {
+    fail(`${context} must be a PNG file`);
+  }
+}
+
 function assertAsset(asset, context) {
   assertText(asset?.path, `${context}.path`);
 
@@ -198,10 +211,19 @@ for (const [index, screenshot] of assetManifest.screenshots.entries()) {
   if (screenshot.width !== 1280 || screenshot.height !== 800) {
     fail(`screenshots[${index}] must be 1280x800`);
   }
+
+  if (screenshot.sourceKind === "real_extension_capture") {
+    assertText(screenshot.sourceImage, `screenshots[${index}].sourceImage`);
+    assertPngFile(screenshot.sourceImage, `screenshots[${index}].sourceImage`);
+  }
 }
 
-if (assetManifest.screenshots[0]?.primarySurface !== "extension" || assetManifest.screenshots[1]?.primarySurface !== "extension") {
-  fail("the first two screenshots must show the Chrome extension itself");
+if (assetManifest.screenshots.some((screenshot) => screenshot.primarySurface !== "extension")) {
+  fail("store screenshots must show the Chrome extension itself");
+}
+
+if (assetManifest.screenshots.some((screenshot) => screenshot.sourceKind !== "real_extension_capture")) {
+  fail("store screenshots must be based on real extension captures");
 }
 
 if (!Array.isArray(assetManifest.promotionalImages)) {
