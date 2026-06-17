@@ -1,12 +1,17 @@
 import { defineContentScript } from "wxt/utils/define-content-script";
-import { detectSensitiveText, evaluateDlpPolicy, type DetectionResult, type DetectorRule } from "@ai-mae-check/core";
+import { evaluateDlpPolicy, type DetectorRule } from "@ai-mae-check/core";
 import { adapterForHostname } from "../src/content/adapters";
+import {
+  createContentDetection,
+  isContentSiteEnabled,
+  pasteReviewModeForAction
+} from "../src/content/contentReview";
 import { shouldOfferContextCheck } from "../src/content/dom/contextHints";
 import { installFileInterceptor } from "../src/content/dom/fileInterceptor";
 import { evaluatePasteGuard } from "../src/content/dom/pasteGuard";
 import { installSendInterceptor } from "../src/content/dom/sendInterceptor";
 import { captureCurrentRange, findEditableTarget, insertTextAtTarget } from "../src/lib/dom";
-import { DEFAULT_SETTINGS, disabledRuleIds, isSiteEnabled, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
+import { DEFAULT_SETTINGS, disabledRuleIds, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
 import { loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
 import { targetMatches } from "../src/lib/sites";
 import { showPasteReviewModal } from "../src/lib/modal";
@@ -46,7 +51,7 @@ export default defineContentScript({
     );
 
     installFileInterceptor({
-      isEnabled: () => settings.enabled && isSiteEnabled(settings, window.location.hostname),
+      isEnabled: () => isContentSiteEnabled(settings, window.location.hostname),
       disabledRuleIds: () => disabledRuleIds(settings)
     });
 
@@ -54,9 +59,9 @@ export default defineContentScript({
     if (adapter) {
       installSendInterceptor({
         adapter,
-        isEnabled: () => settings.enabled && isSiteEnabled(settings, window.location.hostname),
+        isEnabled: () => isContentSiteEnabled(settings, window.location.hostname),
         prepareReview: (inputText) => {
-          const detection = createDetection(inputText, settings, remoteRules);
+          const detection = createContentDetection(inputText, { settings, remoteRules });
           const policy = evaluateDlpPolicy(detection.findings);
 
           if (detection.findings.length === 0 || policy.action === "allow") {
@@ -88,15 +93,8 @@ export default defineContentScript({
   }
 });
 
-function createDetection(inputText: string, settings: AiMaeCheckSettings, remoteRules: DetectorRule[]): DetectionResult {
-  return detectSensitiveText(inputText, {
-    disabledRuleIds: disabledRuleIds(settings),
-    extraRules: remoteRules
-  });
-}
-
 async function handlePaste(event: ClipboardEvent, settings: AiMaeCheckSettings, remoteRules: DetectorRule[]): Promise<void> {
-  if (!settings.enabled || !isSiteEnabled(settings, window.location.hostname)) {
+  if (!isContentSiteEnabled(settings, window.location.hostname)) {
     return;
   }
 
@@ -144,7 +142,7 @@ async function handlePaste(event: ClipboardEvent, settings: AiMaeCheckSettings, 
     inputText: pastedText,
     detection: guard.detection,
     settings,
-    mode: guard.action === "sanitize_required" ? "paste_guard" : "default"
+    mode: pasteReviewModeForAction(guard.action)
   });
 
   if (decision.type === "insert") {

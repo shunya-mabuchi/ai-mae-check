@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { pasteReviewModeForAction } from "../src/content/contentReview";
 import { createPasteReviewActionState } from "../src/lib/pasteReviewState";
 
 describe("paste review modal UI", () => {
@@ -45,8 +46,7 @@ describe("paste review modal UI", () => {
   });
 
   it("mediumリスクの貼り付けはpaste_guardではなく通常確認として扱う", () => {
-    const contentSource = readFileSync(resolve(process.cwd(), "entrypoints/content.ts"), "utf8");
-
-    expect(contentSource).toContain('mode: guard.action === "sanitize_required" ? "paste_guard" : "default"');
+    expect(pasteReviewModeForAction("confirm")).toBe("default");
+    expect(pasteReviewModeForAction("sanitize_required")).toBe("paste_guard");
   });
 });
