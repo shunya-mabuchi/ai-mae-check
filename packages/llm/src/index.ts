@@ -16,7 +16,8 @@ export {
   classifyLlmError,
   createJsonParseFallbackMessage,
   formatLlmErrorMessage,
-  isContextAnalysisExecutionError
+  isContextAnalysisExecutionError,
+  isJsonParseLlmErrorMessage
 } from "./errors";
 export { getAvailableModelIds, resolveModelId } from "./model";
 export { parseContextAnalysisJson } from "./parser";

@@ -59,6 +59,15 @@ function detail(kind: LlmErrorDetail["kind"], message: string, hint: string, raw
   };
 }
 
+export function isJsonParseLlmErrorMessage(message: string | undefined): boolean {
+  if (!message) {
+    return false;
+  }
+
+  const lowerMessage = message.toLowerCase();
+  return message.includes("AI文脈チェックの結果を読み取れませんでした") || lowerMessage.includes("json");
+}
+
 export function classifyLlmError(error: unknown): LlmErrorDetail {
   const message = errorMessage(error);
   const lowerMessage = message.toLowerCase();
@@ -171,7 +180,7 @@ export function classifyLlmError(error: unknown): LlmErrorDetail {
     return detail("wasm", WASM_ERROR_MESSAGE, "Chromeのサイトデータ削除後、WASMファイルを再取得してから再試行してください。", message);
   }
 
-  if (message.includes("AI文脈チェックの結果を読み取れませんでした") || lowerMessage.includes("json")) {
+  if (isJsonParseLlmErrorMessage(message)) {
     return detail("json_parse", JSON_PARSE_ERROR_MESSAGE, "ルールベース検出結果は維持されています。必要なら再実行してください。", message);
   }
 
@@ -188,7 +197,11 @@ export function formatLlmErrorMessage(error: unknown): string {
 }
 
 export function isContextAnalysisExecutionError(result: Pick<ContextAnalysisResult, "error" | "errorDetail">): boolean {
-  return Boolean(result.error) && result.errorDetail?.kind !== "json_parse";
+  if (!result.error) {
+    return false;
+  }
+
+  return result.errorDetail?.kind !== "json_parse" && !isJsonParseLlmErrorMessage(result.error);
 }
 
 export function createJsonParseFallbackMessage(candidateCount: number): string {

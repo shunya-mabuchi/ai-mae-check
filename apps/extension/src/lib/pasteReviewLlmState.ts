@@ -1,4 +1,4 @@
-import { createJsonParseFallbackMessage, type LlmErrorDetail } from "@ai-mae-check/llm";
+import { createJsonParseFallbackMessage, isJsonParseLlmErrorMessage, type LlmErrorDetail } from "@ai-mae-check/llm";
 import type { PasteReviewModalMode } from "./pasteReviewModalCopy";
 import type { AiMaeCheckSettings } from "./settings";
 
@@ -34,12 +34,12 @@ export function createPasteReviewLlmResultMessage(
 }
 
 export function formatPasteReviewLlmStatusMessage(message: string, detail?: LlmErrorDetail): string {
-  if (!detail) {
-    return message;
+  if (detail?.kind === "json_parse" || isJsonParseLlmErrorMessage(message)) {
+    return createJsonParseFallbackMessage(0);
   }
 
-  if (detail.kind === "json_parse") {
-    return createJsonParseFallbackMessage(0);
+  if (!detail) {
+    return message;
   }
 
   const technical = detail.technicalDetail ? `\n詳細: ${detail.technicalDetail}` : "";
