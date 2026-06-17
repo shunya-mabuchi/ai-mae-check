@@ -26,7 +26,7 @@ import {
   createWebGpuUnavailableLlmUiState
 } from "./lib/demoLlmUiState";
 import { createDemoMaskingViewModel, selectCandidateIdsByConfidence } from "./lib/demoMasking";
-import { toggleSelectedId } from "./lib/demoSelection";
+import { createInitialSelectedFindingIds, toggleSelectedId } from "./lib/demoSelection";
 
 const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
@@ -98,7 +98,7 @@ export function App() {
   const runRuleDetection = () => {
     const result = detectSensitiveText(text);
     setDetection(result);
-    setSelectedRuleFindingIds(result.findings.map((finding) => finding.id));
+    setSelectedRuleFindingIds(createInitialSelectedFindingIds(result.findings));
     resetLlmState();
     setCopyMessage("");
   };
@@ -112,7 +112,7 @@ export function App() {
     const ruleResult = detection ?? detectSensitiveText(text);
     if (!detection) {
       setDetection(ruleResult);
-      setSelectedRuleFindingIds(ruleResult.findings.map((finding) => finding.id));
+      setSelectedRuleFindingIds(createInitialSelectedFindingIds(ruleResult.findings));
     }
 
     if (!isWebGpuAvailable()) {
