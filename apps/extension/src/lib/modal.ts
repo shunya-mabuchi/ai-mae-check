@@ -28,6 +28,7 @@ import {
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
   PASTE_REVIEW_LLM_LOADING_MESSAGE
 } from "./pasteReviewLlmState";
+import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
 import type { AiMaeCheckSettings } from "./settings";
 import { analyzeContextWithBridge } from "./llmBridgeClient";
 
@@ -44,7 +45,7 @@ interface PasteReviewModalOptions {
   inputText: string;
   detection: DetectionResult;
   settings: AiMaeCheckSettings;
-  mode?: "default" | "paste_guard" | "context_check";
+  mode?: PasteReviewModalMode;
 }
 
 function createElement<K extends keyof HTMLElementTagNameMap>(
@@ -141,8 +142,10 @@ function renderCandidates(
 
 export async function showPasteReviewModal(options: PasteReviewModalOptions): Promise<ModalDecision> {
   return new Promise((resolve) => {
-    const isPasteGuard = options.mode === "paste_guard";
-    const isContextCheck = options.mode === "context_check";
+    const mode = options.mode ?? "default";
+    const modalCopy = createPasteReviewModalCopy(mode);
+    const isPasteGuard = mode === "paste_guard";
+    const isContextCheck = mode === "context_check";
     const host = document.createElement("div");
     const shadow = host.attachShadow({ mode: "open" });
     const style = document.createElement("style");
@@ -152,24 +155,8 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     const overlay = createElement("div", "hm-overlay");
     const dialog = createElement("section", "hm-dialog");
     const header = createElement("header", "hm-header");
-    header.append(
-      createElement(
-        "h2",
-        "hm-title",
-        isPasteGuard ? "安全化してから貼り付けますか？" : isContextCheck ? "AI文脈チェックを実行しますか？" : "このまま貼り付けますか？"
-      )
-    );
-    header.append(
-      createElement(
-        "p",
-        "hm-description",
-        isPasteGuard
-          ? "貼り付けようとしている文章に、秘密情報や高リスク情報の可能性があります。そのまま貼り付けず、安全化してから入力できます。"
-          : isContextCheck
-            ? "ルールベースの検出はありませんが、文脈によっては注意が必要な内容の可能性があります。必要に応じてブラウザ内でAI文脈チェックを実行できます。"
-          : "貼り付けようとしている文章に、注意が必要な情報が含まれている可能性があります。"
-      )
-    );
+    header.append(createElement("h2", "hm-title", modalCopy.title));
+    header.append(createElement("p", "hm-description", modalCopy.description));
 
     const policy = evaluateDlpPolicy(options.detection.findings);
     const rawPasteAllowed = !policy.requiresSanitization;
@@ -204,14 +191,13 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
 
     const footer = createElement("footer", "hm-footer");
     const footerNote = createElement("p", "hm-footer-note");
-    const maskButton = createElement("button", "hm-button hm-primary", isPasteGuard ? "安全化して貼り付け" : "マスクして入力");
+    const maskButton = createElement("button", "hm-button hm-primary", modalCopy.maskButtonText);
     const llmButton = createElement("button", "hm-button hm-dark", "AI文脈チェックも実行");
     const rawButton = createElement("button", "hm-button", "そのまま貼り付け");
     const cancelButton = createElement("button", "hm-button", "キャンセル");
     if (isPasteGuard) {
       footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
     } else if (isContextCheck) {
-      maskButton.textContent = "候補をマスクして入力";
       footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
     } else {
       footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
