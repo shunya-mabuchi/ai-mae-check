@@ -24,6 +24,7 @@ export function createPasteReviewLlmCompleteMessage(candidateCount: number, summ
   const normalizedSummary = summary?.trim() ?? "";
   if (
     normalizedSummary.includes("AI文脈チェックの出力形式は読み取れませんでした") ||
+    normalizedSummary.includes("AI文脈チェックの出力形式を読み取れませんでした") ||
     normalizedSummary.includes("AI文脈チェックの結果を読み取れませんでした")
   ) {
     return createJsonParseFallbackMessage(candidateCount);
