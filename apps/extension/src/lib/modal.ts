@@ -28,7 +28,8 @@ import {
   formatPasteReviewLlmStatusMessage,
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
-  PASTE_REVIEW_LLM_LOADING_MESSAGE
+  PASTE_REVIEW_LLM_LOADING_MESSAGE,
+  shouldAutoRunPasteReviewLlm
 } from "./pasteReviewLlmState";
 import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
 import type { AiMaeCheckSettings } from "./settings";
@@ -141,7 +142,6 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
   return new Promise((resolve) => {
     const mode = options.mode ?? "default";
     const modalCopy = createPasteReviewModalCopy(mode);
-    const isPasteGuard = mode === "paste_guard";
     const isContextCheck = mode === "context_check";
     const host = document.createElement("div");
     const shadow = host.attachShadow({ mode: "open" });
@@ -191,13 +191,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     const llmButton = createElement("button", "hm-button hm-dark", "AI文脈チェックも実行");
     const rawButton = createElement("button", "hm-button", "そのまま貼り付け");
     const cancelButton = createElement("button", "hm-button", "キャンセル");
-    if (isPasteGuard) {
-      footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
-    } else if (isContextCheck) {
-      footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
-    } else {
-      footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
-    }
+    footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
 
     dialog.append(header, body, footer);
     overlay.append(dialog);
@@ -315,7 +309,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
 
     render();
 
-    if (!isPasteGuard && !isContextCheck && options.settings.llm.enabled && options.settings.llm.mode === "auto") {
+    if (shouldAutoRunPasteReviewLlm(mode, options.settings.llm)) {
       void runLlm();
     }
   });
