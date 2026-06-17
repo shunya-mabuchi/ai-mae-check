@@ -183,6 +183,27 @@ describe("parseContextAnalysisJson", () => {
     expect(result.summary).toBe("人名候補があります。");
   });
 
+  it("JSON風のキー未クォート・シングルクォート出力を読み取る", () => {
+    const result = parseContextAnalysisJson(`{
+      candidates: [
+        {
+          category: 'person_name',
+          surface: '山田花子さん',
+          label: '人名候補',
+          reason: '採用文脈に含まれる個人名候補です。',
+          riskLevel: 'medium',
+          suggestedPlaceholder: '[PERSON_1]',
+          confidence: 0.88,
+        },
+      ],
+      summary: '人名候補があります。',
+    }`);
+
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]?.surface).toBe("山田花子さん");
+    expect(result.summary).toBe("人名候補があります。");
+  });
+
   it("confidenceThreshold未満を捨てる", () => {
     const result = parseContextAnalysisJson(
       JSON.stringify({
