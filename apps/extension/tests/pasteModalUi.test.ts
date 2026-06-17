@@ -40,7 +40,9 @@ describe("paste review modal UI", () => {
 
     expect(existsSync(stylesPath)).toBe(true);
     expect(modalSource).toContain('import { pasteReviewModalCss } from "./modalStyles"');
-    expect(modalSource).toContain("style.textContent = pasteReviewModalCss");
+    expect(modalSource).toContain('import { createShadowHost } from "./shadowHost"');
+    expect(modalSource).toContain("createShadowHost(pasteReviewModalCss)");
+    expect(modalSource).not.toContain('document.createElement("style")');
     expect(modalSource).not.toContain("const css = `");
 
     const stylesSource = readFileSync(stylesPath, "utf8");

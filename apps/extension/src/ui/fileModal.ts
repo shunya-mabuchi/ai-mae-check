@@ -3,6 +3,7 @@ import { filePreflightModalCss } from "./fileModalStyles";
 import { createElement } from "../lib/domElement";
 import { formatFileSize } from "../lib/fileSize";
 import { decisionRiskLabels } from "../lib/riskLabels";
+import { createShadowHost } from "../lib/shadowHost";
 
 export interface FilePreflightModalItem {
   fileName: string;
@@ -22,10 +23,7 @@ export type FilePreflightModalDecision = "safe" | "allow_raw" | "cancel";
 
 export async function showFilePreflightModal(options: FilePreflightModalOptions): Promise<FilePreflightModalDecision> {
   return new Promise((resolve) => {
-    const host = document.createElement("div");
-    const shadow = host.attachShadow({ mode: "open" });
-    const style = document.createElement("style");
-    style.textContent = filePreflightModalCss;
+    const { shadow, cleanup } = createShadowHost(filePreflightModalCss);
 
     const overlay = createElement("div", "amc-overlay");
     const dialog = createElement("section", "amc-dialog");
@@ -80,10 +78,7 @@ export async function showFilePreflightModal(options: FilePreflightModalOptions)
 
     dialog.append(header, body, footer);
     overlay.append(dialog);
-    shadow.append(style, overlay);
-    document.documentElement.append(host);
-
-    const cleanup = () => host.remove();
+    shadow.append(overlay);
 
     safeButton.addEventListener("click", () => {
       cleanup();
