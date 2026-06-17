@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Finding } from "@ai-mae-check/core";
 import type { ContextRiskCandidate } from "@ai-mae-check/llm";
-import { renderPasteReviewCandidateList, renderPasteReviewFindingList } from "../src/lib/pasteReviewListRenderers";
+import { renderReviewCandidateList, renderReviewFindingList } from "../src/lib/reviewListRenderers";
 
 type Listener = () => void;
 
@@ -99,7 +99,7 @@ describe("pasteReviewListRenderers", () => {
     const selectedIds = new Set(["finding-1"]);
     const onChange = vi.fn();
 
-    renderPasteReviewFindingList(container as unknown as HTMLElement, [finding()], selectedIds, onChange);
+    renderReviewFindingList(container as unknown as HTMLElement, [finding()], selectedIds, onChange);
 
     const text = joinedText(container);
     expect(text).toContain("メールアドレス");
@@ -125,7 +125,7 @@ describe("pasteReviewListRenderers", () => {
     const selectedIds = new Set<string>();
     const onChange = vi.fn();
 
-    renderPasteReviewCandidateList(container as unknown as HTMLElement, [candidate()], selectedIds, onChange);
+    renderReviewCandidateList(container as unknown as HTMLElement, [candidate()], selectedIds, onChange);
 
     const text = joinedText(container);
     expect(text).toContain("人名候補");
@@ -150,7 +150,7 @@ describe("pasteReviewListRenderers", () => {
     stubDocument();
     const container = new FakeElement("div");
 
-    renderPasteReviewCandidateList(container as unknown as HTMLElement, [], new Set(), vi.fn());
+    renderReviewCandidateList(container as unknown as HTMLElement, [], new Set(), vi.fn());
 
     expect(joinedText(container)).toContain("AI文脈チェックの追加候補はありません。");
   });

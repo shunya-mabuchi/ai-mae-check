@@ -21,7 +21,7 @@ describe("createPasteReviewCandidateView", () => {
     const view = createPasteReviewCandidateView(candidate(), true);
 
     expect(view).toMatchObject({
-      riskBadgeClassName: "hm-badge hm-badge-medium",
+      riskBadgeClassName: "review-badge review-badge-medium",
       riskBadgeText: "危険度: 中",
       confidenceText: "confidence: 0.88",
       selectionLabel: "マスク対象"
@@ -32,7 +32,7 @@ describe("createPasteReviewCandidateView", () => {
     const view = createPasteReviewCandidateView(candidate({ riskLevel: "high", confidence: 0.7 }), false);
 
     expect(view).toMatchObject({
-      riskBadgeClassName: "hm-badge hm-badge-high",
+      riskBadgeClassName: "review-badge review-badge-high",
       riskBadgeText: "危険度: 高",
       confidenceText: "confidence: 0.70",
       selectionLabel: "マスク対象外"

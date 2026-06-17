@@ -15,10 +15,10 @@ import {
 } from "./confirmModalState";
 import { confirmModalCss } from "./styles";
 import { createElement } from "../lib/domElement";
-import { renderPasteReviewCandidateList } from "../lib/pasteReviewListRenderers";
-import { runPasteReviewLlm } from "../lib/pasteReviewLlmRunner";
 import { PASTE_REVIEW_LLM_INITIAL_MESSAGE } from "../lib/pasteReviewLlmState";
-import { resolvePasteReviewFindings } from "../lib/pasteReviewSelection";
+import { renderReviewCandidateList } from "../lib/reviewListRenderers";
+import { runReviewLlm } from "../lib/reviewLlmRunner";
+import { resolveReviewFindings } from "../lib/reviewSelection";
 import type { AiMaeCheckSettings } from "../lib/settings";
 import { createShadowHost } from "../lib/shadowHost";
 
@@ -102,7 +102,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     shadow.append(overlay);
 
     const currentFindings = () => {
-      return resolvePasteReviewFindings({
+      return resolveReviewFindings({
         input: options.inputText,
         ruleFindings: options.detection.findings,
         selectedRuleFindingIds: selectedFindingIds,
@@ -125,7 +125,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     };
 
     const renderCandidates = () => {
-      renderPasteReviewCandidateList(candidateList, llmCandidates, selectedCandidateIds, () => {
+      renderReviewCandidateList(candidateList, llmCandidates, selectedCandidateIds, () => {
         renderPreview();
         renderCandidates();
       });
@@ -200,7 +200,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     });
 
     llmButton.addEventListener("click", () => {
-      void runPasteReviewLlm({
+      void runReviewLlm({
         enabled: options.llm?.enabled ?? false,
         inputText: options.inputText,
         modelId: options.llm?.modelId ?? "",

@@ -18,6 +18,17 @@ describe("confirmModal helpers", () => {
     expect(source).not.toContain("AI文脈チェックで追加候補を見る");
   });
 
+  it("送信前UIは貼り付け専用名のAIチェック部品に直接依存しない", () => {
+    const source = readFileSync(new URL("../src/ui/confirmModal.ts", import.meta.url), "utf8");
+    const styles = readFileSync(new URL("../src/ui/styles.ts", import.meta.url), "utf8");
+
+    expect(source).not.toContain("pasteReviewListRenderers");
+    expect(source).not.toContain("pasteReviewSelection");
+    expect(source).not.toContain("pasteReviewLlmRunner");
+    expect(styles).not.toContain(".hm-");
+    expect(styles).toContain(".review-candidate");
+  });
+
   it("検出結果をカテゴリ単位にまとめる", () => {
     const detection = detectSensitiveText("メールは taro@example.com、費用は300万円です。");
     const groups = createCategoryGroups(detection.findings, evaluateDlpPolicy(detection.findings));

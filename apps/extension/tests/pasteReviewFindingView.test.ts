@@ -24,7 +24,7 @@ describe("createPasteReviewFindingView", () => {
     const view = createPasteReviewFindingView(finding(), true);
 
     expect(view).toMatchObject({
-      riskBadgeClassName: "hm-badge hm-badge-high",
+      riskBadgeClassName: "review-badge review-badge-high",
       riskBadgeText: "危険度: 高",
       sourceLabel: "ルール",
       selectionLabel: "マスク対象"
@@ -35,7 +35,7 @@ describe("createPasteReviewFindingView", () => {
     const view = createPasteReviewFindingView(finding({ source: "llm", riskLevel: "medium" }), false);
 
     expect(view).toMatchObject({
-      riskBadgeClassName: "hm-badge hm-badge-medium",
+      riskBadgeClassName: "review-badge review-badge-medium",
       riskBadgeText: "危険度: 中",
       sourceLabel: "AI候補",
       selectionLabel: "マスク対象外"

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ContextAnalysisResult } from "@ai-mae-check/llm";
 import type { Finding } from "@ai-mae-check/core";
 import { PASTE_REVIEW_LLM_DISABLED_MESSAGE } from "../src/lib/pasteReviewLlmState";
-import { runPasteReviewLlm } from "../src/lib/pasteReviewLlmRunner";
+import { runReviewLlm } from "../src/lib/reviewLlmRunner";
 
 class FakeButton {
   readonly attributes = new Map<string, string>();
@@ -32,13 +32,13 @@ function finding(): Finding {
   };
 }
 
-describe("runPasteReviewLlm", () => {
+describe("runReviewLlm", () => {
   it("AI文脈チェックが無効なら実行せず無効メッセージを表示する", async () => {
     const analyze = vi.fn();
     const llmStatus = { textContent: "" };
     const llmButton = new FakeButton();
 
-    await runPasteReviewLlm({
+    await runReviewLlm({
       enabled: false,
       inputText: "テスト",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
@@ -95,7 +95,7 @@ describe("runPasteReviewLlm", () => {
     const setCandidates = vi.fn();
     const render = vi.fn();
 
-    await runPasteReviewLlm({
+    await runReviewLlm({
       enabled: true,
       inputText: "候補者の山田花子さんについて確認します。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
@@ -142,7 +142,7 @@ describe("runPasteReviewLlm", () => {
     const llmButton = new FakeButton();
     const render = vi.fn();
 
-    await runPasteReviewLlm({
+    await runReviewLlm({
       enabled: true,
       inputText: "テスト",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
@@ -192,7 +192,7 @@ describe("runPasteReviewLlm", () => {
     const setCandidates = vi.fn();
     const render = vi.fn();
 
-    await runPasteReviewLlm({
+    await runReviewLlm({
       enabled: true,
       inputText: "候補者の山田花子さんについて確認します。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
@@ -224,7 +224,7 @@ describe("runPasteReviewLlm", () => {
     const setCandidates = vi.fn();
     const render = vi.fn();
 
-    await runPasteReviewLlm({
+    await runReviewLlm({
       enabled: true,
       inputText: "佐藤様向けに Project Blue Bridge の提案メモを作ります。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
