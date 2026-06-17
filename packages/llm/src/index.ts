@@ -22,6 +22,13 @@ export {
 export { getAvailableModelIds, resolveModelId } from "./model";
 export { parseContextAnalysisJson } from "./parser";
 export {
+  CONTEXT_ANALYSIS_EMPTY_MESSAGE,
+  CONTEXT_ANALYSIS_FOUND_MESSAGE,
+  createContextAnalysisCompleteMessage,
+  createContextAnalysisResultMessage,
+  type CreateContextAnalysisResultMessageOptions
+} from "./resultMessage";
+export {
   DEFAULT_SELECTED_CONTEXT_CANDIDATE_CONFIDENCE,
   selectContextCandidateIdsByConfidence
 } from "./selection";
