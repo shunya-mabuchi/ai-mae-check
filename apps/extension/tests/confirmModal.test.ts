@@ -5,7 +5,7 @@ import {
   createCategoryGroups,
   createConfirmedText,
   transformModeOptions
-} from "../src/ui/confirmModal";
+} from "../src/ui/confirmModalState";
 
 describe("confirmModal helpers", () => {
   it("検出結果をカテゴリ単位にまとめる", () => {
