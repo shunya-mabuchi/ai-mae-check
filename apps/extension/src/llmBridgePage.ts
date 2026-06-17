@@ -5,6 +5,7 @@ import {
   type LlmBridgeResponse
 } from "./lib/llmBridgeMessages";
 import { getExtensionResourceUrl } from "./lib/extensionRuntime";
+import { createJsonParseBridgeFallbackResult } from "./lib/llmBridgeFallback";
 
 let bridgePort: MessagePort | null = null;
 
@@ -23,6 +24,7 @@ function postProgress(requestId: string): (progress: LlmProgress) => void {
 }
 
 async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze" }>): Promise<void> {
+  const startedAt = performance.now();
   const analyzer = createLlmContextAnalyzer({
     modelId: request.modelId,
     workerUrl: getExtensionResourceUrl("llm-worker.js")
@@ -46,6 +48,25 @@ async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze
       requestId: request.requestId,
       result
     });
+  } catch (error) {
+    const fallback = createJsonParseBridgeFallbackResult({
+      inputText: request.inputText,
+      modelId: request.modelId,
+      startedAt,
+      error,
+      ...(typeof request.options.maxCandidates === "number" ? { maxCandidates: request.options.maxCandidates } : {})
+    });
+
+    if (fallback) {
+      post({
+        type: "analyze-result",
+        requestId: request.requestId,
+        result: fallback
+      });
+      return;
+    }
+
+    throw error;
   } finally {
     analyzer.dispose();
   }
