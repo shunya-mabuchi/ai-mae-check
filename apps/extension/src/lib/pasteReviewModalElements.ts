@@ -43,7 +43,7 @@ export function createPasteReviewModalElements(
   listPanel.append(list);
 
   const previewPanel = createElement("div", "hm-panel");
-  previewPanel.append(createElement("h3", undefined, "マスキング後プレビュー"));
+  previewPanel.append(createElement("h3", undefined, "安全化後プレビュー"));
   const preview = createElement("pre", "hm-preview");
   previewPanel.append(preview);
 

@@ -68,8 +68,7 @@ export const confirmModalCss = `
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
     gap: 16px;
   }
-  .amc-panel h3,
-  .amc-transform legend {
+  .amc-panel h3 {
     margin: 0 0 8px;
     font-size: 14px;
     font-weight: 700;
@@ -154,27 +153,6 @@ export const confirmModalCss = `
     background: #f5f5f4;
     padding: 8px;
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  }
-  .amc-transform {
-    display: grid;
-    gap: 8px;
-    min-width: 0;
-    border: 0;
-    margin: 0;
-    padding: 0;
-  }
-  .amc-radio {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    border: 1px solid #dfded8;
-    border-radius: 8px;
-    background: #fff;
-    padding: 10px;
-  }
-  .amc-radio input {
-    margin-top: 3px;
-    accent-color: #2f7d57;
   }
   .amc-preview {
     min-height: 170px;

@@ -60,7 +60,7 @@ describe("createPasteReviewModalElements", () => {
       modalCopy: {
         title: "このまま貼り付けますか？",
         description: "注意が必要な情報が含まれている可能性があります。",
-        maskButtonText: "マスクして入力"
+        maskButtonText: "安全化して入力"
       },
       summaryItems,
       initialLlmMessage: "AI文脈チェックは手動で実行できます。"
@@ -71,7 +71,7 @@ describe("createPasteReviewModalElements", () => {
     expect(elements.preview.className).toBe("hm-preview");
     expect(elements.llmStatus.className).toBe("hm-llm-status");
     expect(elements.footerNote.className).toBe("hm-footer-note");
-    expect(elements.maskButton.textContent).toBe("マスクして入力");
+    expect(elements.maskButton.textContent).toBe("安全化して入力");
     expect(elements.llmButton.textContent).toBe("AI文脈チェックも実行");
     expect(elements.rawButton.textContent).toBe("そのまま貼り付け");
     expect(elements.cancelButton.textContent).toBe("キャンセル");
@@ -79,7 +79,7 @@ describe("createPasteReviewModalElements", () => {
     const text = joinedText(elements.overlay as unknown as FakeElement);
     expect(text).toContain("このまま貼り付けますか？");
     expect(text).toContain("検出項目一覧");
-    expect(text).toContain("マスキング後プレビュー");
+    expect(text).toContain("安全化後プレビュー");
     expect(text).toContain("WebLLMによる文脈チェック");
     expect(text).toContain("重大リスク件数\n1");
     expect(text).toContain("AI文脈チェックは手動で実行できます。");

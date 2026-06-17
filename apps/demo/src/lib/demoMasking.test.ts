@@ -50,7 +50,7 @@ function llmCandidate(confidence: number): ContextRiskCandidate {
 }
 
 describe("demoMasking", () => {
-  it("選択されたルール検出とAI候補からマスク後テキストを作る", () => {
+  it("選択されたルール検出とAI候補から安全化後テキストを作る", () => {
     const inputText = "連絡 taro@example.com A社向け提案";
     const viewModel = createDemoMaskingViewModel({
       inputText,
@@ -62,7 +62,7 @@ describe("demoMasking", () => {
 
     expect(viewModel.selectedRuleFindings.map((finding) => finding.id)).toEqual(["rule-email"]);
     expect(viewModel.selectedLlmFindings.map((finding) => finding.text)).toEqual(["A社"]);
-    expect(viewModel.maskedText).toBe("連絡 [EMAIL_1] [CUSTOMER_1]向け提案");
+    expect(viewModel.maskedText).toBe("連絡 [メールアドレス] [組織名]向け提案");
   });
 
   it("検出済みでもマスク対象が未選択なら元テキストを返す", () => {
@@ -79,7 +79,7 @@ describe("demoMasking", () => {
     expect(viewModel.mergedFindings).toEqual([]);
   });
 
-  it("検出前で候補もない場合は空のマスク結果にする", () => {
+  it("検出前で候補もない場合は空の安全化結果にする", () => {
     const viewModel = createDemoMaskingViewModel({
       inputText: "まだ検出していない文章",
       detection: null,

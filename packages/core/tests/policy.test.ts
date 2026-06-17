@@ -39,7 +39,7 @@ describe("evaluateDlpPolicy", () => {
     expect(decision.requiresSanitization).toBe(false);
   });
 
-  it("Secret Guard対象は安全化必須にする", () => {
+  it("秘密情報保護の対象は安全化必須にする", () => {
     const detection = detectSensitiveText("AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE");
     const decision = evaluateDlpPolicy(detection.findings);
 

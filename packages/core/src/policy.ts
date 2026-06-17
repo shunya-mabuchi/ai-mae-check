@@ -10,7 +10,7 @@ export function evaluateDlpPolicy(findings: Finding[]): DlpPolicyDecision {
       canSendRaw: false,
       requiresSanitization: true,
       risk,
-      message: "高リスクまたはSecret Guard対象が含まれるため、安全化が必要です。"
+      message: "高リスクまたは秘密情報保護の対象が含まれるため、安全化が必要です。"
     };
   }
 

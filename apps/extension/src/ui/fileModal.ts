@@ -56,7 +56,7 @@ export async function showFilePreflightModal(options: FilePreflightModalOptions)
       card.append(heading);
       card.append(createElement("p", "amc-note", `安全版候補: ${item.safeFileName}`));
       if (item.policy.requiresSanitization) {
-        card.append(createElement("p", "amc-note", "高リスクまたはSecret Guard対象が含まれるため、そのまま添付はできません。"));
+        card.append(createElement("p", "amc-note", "高リスクまたは秘密情報保護の対象が含まれるため、そのまま添付はできません。"));
       }
       body.append(card);
     }

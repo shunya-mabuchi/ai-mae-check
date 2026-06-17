@@ -7,7 +7,7 @@ describe("createPasteReviewModalCopy", () => {
 
     expect(copy.title).toBe("このまま貼り付けますか？");
     expect(copy.description).toBe("貼り付けようとしている文章に、注意が必要な情報が含まれている可能性があります。");
-    expect(copy.maskButtonText).toBe("マスクして入力");
+    expect(copy.maskButtonText).toBe("安全化して入力");
   });
 
   it("安全化必須モードの文言を返す", () => {
@@ -27,6 +27,6 @@ describe("createPasteReviewModalCopy", () => {
     expect(copy.description).toBe(
       "ルールベースの検出はありませんが、文脈によっては注意が必要な内容の可能性があります。必要に応じてブラウザ内でAI文脈チェックを実行できます。"
     );
-    expect(copy.maskButtonText).toBe("候補をマスクして入力");
+    expect(copy.maskButtonText).toBe("候補を安全化して入力");
   });
 });

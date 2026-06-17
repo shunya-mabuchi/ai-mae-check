@@ -10,12 +10,6 @@ import {
 } from "@ai-mae-check/core";
 import { decisionRiskLabels, findingRiskLabels } from "../lib/riskLabels";
 
-export interface TransformModeOption {
-  value: TransformMode;
-  title: string;
-  description: string;
-}
-
 export interface CategoryGroup {
   category: DlpCategory;
   label: string;
@@ -64,19 +58,6 @@ const riskRank: Record<RiskLevel, number> = {
   high: 3,
   critical: 4
 };
-
-export const transformModeOptions: TransformModeOption[] = [
-  {
-    value: "mask",
-    title: "Mask",
-    description: "検出箇所をプレースホルダーへ置き換えます。"
-  },
-  {
-    value: "generalize",
-    title: "Generalize",
-    description: "カテゴリ名が分かる汎用表現へ置き換えます。"
-  }
-];
 
 function highestRisk(findings: Finding[]): RiskLevel {
   return findings.reduce<RiskLevel>((highest, finding) => {
@@ -132,7 +113,7 @@ export function createConfirmedText(
   inputText: string,
   findings: Finding[],
   selectedFindingIds: Set<string>,
-  mode: TransformMode
+  mode: TransformMode = "generalize"
 ): string {
   const selected = selectedFindings(findings, selectedFindingIds);
 

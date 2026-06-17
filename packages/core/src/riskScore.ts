@@ -106,7 +106,7 @@ export function scoreRisk(findings: Finding[], options: RiskScoreOptions = {}): 
 
     if (isSecretGuardFinding(finding, category)) {
       secretGuard = true;
-      reasons.push(`Secret Guard対象: ${finding.label}`);
+      reasons.push(`秘密情報保護の対象: ${finding.label}`);
     }
   }
 

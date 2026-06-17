@@ -32,7 +32,7 @@ describe("scoreRisk", () => {
     });
   });
 
-  it("Secret Guard対象を検出するとblockedにする", () => {
+  it("秘密情報保護の対象を検出するとblockedにする", () => {
     const detection = detectSensitiveText("GITHUB_TOKEN=ghp_dummyDummyDummyDummyDummyDummy123456");
     const result = scoreRisk(detection.findings);
 
@@ -40,10 +40,10 @@ describe("scoreRisk", () => {
     expect(result.blocked).toBe(true);
     expect(result.score).toBeGreaterThanOrEqual(30);
     expect(result.categoryCounts.secret).toBe(1);
-    expect(result.reasons.some((reason) => reason.includes("Secret Guard"))).toBe(true);
+    expect(result.reasons.some((reason) => reason.includes("秘密情報保護"))).toBe(true);
   });
 
-  it("スコアがhigh以上ならSecret Guard以外でもblockedにする", () => {
+  it("スコアがhigh以上なら秘密情報保護の対象以外でもblockedにする", () => {
     const result = scoreRisk([
       finding({ id: "financial:1", ruleId: "llm:financial_info", category: "financial", label: "金融情報候補" }),
       finding({ id: "legal:1", ruleId: "llm:legal_info", category: "legal", label: "法務情報候補" }),

@@ -5,7 +5,6 @@ import {
   createCategoryGroups,
   createConfirmModalFooterState,
   createConfirmedText,
-  transformModeOptions,
   updateCategorySelection
 } from "../src/ui/confirmModalState";
 
@@ -18,7 +17,7 @@ describe("confirmModal helpers", () => {
     expect(groups.map((group) => group.category)).toContain("financial");
   });
 
-  it("Secret Guard対象はカテゴリをロックする", () => {
+  it("秘密情報保護の対象はカテゴリをロックする", () => {
     const detection = detectSensitiveText("GITHUB_TOKEN=ghp_dummyDummyDummyDummyDummyDummy123456");
     const policy = evaluateDlpPolicy(detection.findings);
     const groups = createCategoryGroups(detection.findings, policy);
@@ -38,17 +37,20 @@ describe("confirmModal helpers", () => {
     expect(canSubmitSelection(groups, new Set())).toBe(true);
   });
 
-  it("Generalizeではカテゴリ表現に置換する", () => {
+  it("安全化ではカテゴリ表現に置換する", () => {
     const inputText = "メールは taro@example.com です。";
     const detection = detectSensitiveText(inputText);
     const selectedIds = new Set(detection.findings.map((finding) => finding.id));
 
-    expect(createConfirmedText(inputText, detection.findings, selectedIds, "generalize")).toBe("メールは [メールアドレス] です。");
+    expect(createConfirmedText(inputText, detection.findings, selectedIds)).toBe("メールは [メールアドレス] です。");
   });
 
-  it("変換モードはMaskとGeneralizeだけを表示する", () => {
-    expect(transformModeOptions.map((option) => option.value)).toEqual(["mask", "generalize"]);
-    expect(transformModeOptions.map((option) => option.title)).not.toContain("安全な依頼文に整える");
+  it("送信前UIの既定安全化は変換モードを選ばせず日本語ラベルへ置換する", () => {
+    const inputText = "メールは taro@example.com です。";
+    const detection = detectSensitiveText(inputText);
+    const selectedIds = new Set(detection.findings.map((finding) => finding.id));
+
+    expect(createConfirmedText(inputText, detection.findings, selectedIds)).toBe("メールは [メールアドレス] です。");
   });
 
   it("カテゴリ単位でfinding IDを選択・解除する", () => {

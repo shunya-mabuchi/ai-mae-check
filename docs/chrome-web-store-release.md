@@ -165,7 +165,7 @@ pnpm package:extension
 - [ ] Claudeでpaste検知を確認する
 - [ ] Geminiでpaste検知を確認する
 - [ ] 送信前確認モーダルを確認する
-- [ ] high / critical / Secret Guard対象が安全化なしでは送信不可になることを確認する
+- [ ] high / critical / 秘密情報保護の対象が安全化なしでは送信不可になることを確認する
 - [ ] mediumが詳細確認から許可可能であることを確認する
 - [ ] WebLLMが使えない環境でもルールベース検出が使えることを確認する
 - [ ] モデル取得失敗時の日本語メッセージを確認する

@@ -1,6 +1,6 @@
 import {
-  maskSensitiveText,
   mergeFindings,
+  transformText,
   type DetectionResult,
   type Finding
 } from "@ai-mae-check/core";
@@ -63,6 +63,6 @@ export function createDemoMaskingViewModel(options: DemoMaskingOptions): DemoMas
     selectedRuleFindings,
     selectedLlmFindings,
     mergedFindings,
-    maskedText: maskSensitiveText(options.inputText, mergedFindings).maskedText
+    maskedText: transformText(options.inputText, mergedFindings, "generalize").transformedText
   };
 }

@@ -10,7 +10,7 @@ const pasteReviewModalCopyByMode: Record<PasteReviewModalMode, PasteReviewModalC
   default: {
     title: "このまま貼り付けますか？",
     description: "貼り付けようとしている文章に、注意が必要な情報が含まれている可能性があります。",
-    maskButtonText: "マスクして入力"
+    maskButtonText: "安全化して入力"
   },
   paste_guard: {
     title: "安全化してから貼り付けますか？",
@@ -22,7 +22,7 @@ const pasteReviewModalCopyByMode: Record<PasteReviewModalMode, PasteReviewModalC
     title: "AI文脈チェックを実行しますか？",
     description:
       "ルールベースの検出はありませんが、文脈によっては注意が必要な内容の可能性があります。必要に応じてブラウザ内でAI文脈チェックを実行できます。",
-    maskButtonText: "候補をマスクして入力"
+    maskButtonText: "候補を安全化して入力"
   }
 };
 

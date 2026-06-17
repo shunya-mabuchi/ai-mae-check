@@ -13,11 +13,11 @@
 ## 決定事項
 
 - 初期対象サイトは ChatGPT / Claude / Gemini。Perplexityは後続adapterとして扱う。
-- mediumは確認モーダルの詳細から素通し可能。high / critical とSecret Guard対象は安全化なしでは送信不可。
-- Secret Guard対象は、APIキー、private key、SSH/PEM秘密鍵、JWT、`.env`、DATABASE_URL、AWS/GitHub/Slack/Stripe/OAuth token、webhook URL、クレカ風、マイナンバー風。
+- mediumは確認モーダルの詳細から素通し可能。high / critical と秘密情報保護の対象は安全化なしでは送信不可。
+- 秘密情報保護の対象は、APIキー、private key、SSH/PEM秘密鍵、JWT、`.env`、DATABASE_URL、AWS/GitHub/Slack/Stripe/OAuth token、webhook URL、クレカ風、マイナンバー風。
 - WebLLMは文脈リスク候補チェックに限定する。失敗時は外部APIへfallbackせず、ルールベース検出は継続する。
 - ユーザー入力文、検出結果、マスク対応表、送信履歴、ファイル本文は保存しない。保存してよいのは設定とWebLLMモデルキャッシュだけ。
-- UIは送信時確認モーダル、カテゴリ別チェックボックス、詳細展開、変換モード選択、ファイル検査結果モーダルに限定する。常時表示のrisk badgeは貼り付け前チェックと意味が重なりやすいため表示しない。
+- UIは送信時確認モーダル、カテゴリ別チェックボックス、詳細展開、安全化後プレビュー、ファイル検査結果モーダルに限定する。常時表示のrisk badgeは貼り付け前チェックと意味が重なりやすいため表示しない。
 
 ## Issue分割
 
@@ -61,7 +61,7 @@ export interface RiskScoreResult {
 
 - [x] `scoreRisk(findings, options)`を実装する。目安は secret +30、クレカ/マイナンバー +25、医療/法務/人事/金融文脈 +20、氏名+住所 +15、氏名+電話 +15、メール +10、顧客ID +10、ファイル +10、会社名 +5、日付 +5。
 - [x] `level`は 0=safe、1-19=low、20-49=medium、50-79=high、80-100=critical とする。
-- [x] Secret Guard対象が含まれる場合は`secretGuard=true`、原則`blocked=true`にする。
+- [x] 秘密情報保護の対象が含まれる場合は`secretGuard=true`、原則`blocked=true`にする。
 - [x] `TransformMode = "mask" | "generalize"`を追加する。
 - [x] `transformText(input, findings, mode)`を追加する。`mask`は既存`maskSensitiveText`を使い、`generalize`はルールカテゴリ別の固定表現へ置換する。`minimize`はsafe_prompt生成と一緒に削除した。
 - [x] 既存の`detectSensitiveText`、`maskSensitiveText`、`mergeFindings`の公開APIを壊さない。
@@ -112,7 +112,7 @@ export interface SiteAdapter {
 
 - [x] 入力中は軽量検出だけを行い、モーダルは出さない。
 - [x] 右下固定のrisk badgeは削除し、貼り付け前/送信前の確認モーダルへ判断UIを集約する。
-- [x] paste内容にSecret Guard対象が含まれる場合、可能な限り`preventDefault()`して生データを入力欄に入れない。
+- [x] paste内容に秘密情報保護の対象が含まれる場合、可能な限り`preventDefault()`して生データを入力欄に入れない。
 - [x] high/critical paste UIは「安全化して貼り付け」「キャンセル」のみにする。
 - [x] medium以下のpasteは必要に応じて既存の確認モーダルに流せるが、デフォルトで「そのまま入力」を強調しない。
 - [x] ユーザー本文や検出文字列を`console.log`しない。
@@ -131,8 +131,8 @@ export interface SiteAdapter {
 - [x] 個別文字列は「詳細を開く」で表示する。
 - [x] 変換方法は`抽象化 / マスク / 最小化`のラジオボタンにする。初期値は設定のdefaultTransformModeを使う。
 - [x] `安全化して送信`、`編集`、`キャンセル`を表示する。
-- [x] mediumは詳細から素通し許可可能にする。high/criticalとSecret Guard対象は安全化なしでは送信不可。
-- [x] Secret Guard対象はカテゴリチェックを外せないか、外す操作を無効表示にする。
+- [x] mediumは詳細から素通し許可可能にする。high/criticalと秘密情報保護の対象は安全化なしでは送信不可。
+- [x] 秘密情報保護の対象はカテゴリチェックを外せないか、外す操作を無効表示にする。
 - [x] Shadow DOMを維持し、対象ページCSSとの衝突を避ける。
 - [x] `pnpm build:extension`、`pnpm typecheck`を通す。
 
@@ -180,7 +180,7 @@ export interface SiteAdapter {
 - Test: `apps/demo/tests/demo.spec.ts`
 
 - [x] LPコピーを「AIに送る前」から「LLMに送信される前に検出・安全化」へ寄せる。
-- [x] デモはrisk score、カテゴリ単位チェック、Mask / Generalize、安全化後テキストを体験できる構成にする。
+- [x] デモはrisk score、カテゴリ単位チェック、日本語ラベルによる安全化後テキストを体験できる構成にする。
 - [x] WebLLMモデルファイル取得、private browserでの保存容量制限、WebGPU非対応時の挙動をREADMEに明記する。
 - [x] 「完全に安全」「ゼロリスク」「生データが対象サイトに一切見えない」といった表現を避ける。
 - [x] Perplexityは後続adapterであることをREADMEに記載する。
@@ -189,9 +189,9 @@ export interface SiteAdapter {
 ## 横断テスト計画
 
 - Core: `pnpm test:core`
-  - Secret Guard対象がcriticalまたはblockedになる
+  - 秘密情報保護の対象がcriticalまたはblockedになる
   - mediumの個人情報は確認対象になる
-  - Mask / Generalizeが検出範囲の重複を壊さない
+  - 安全化処理が検出範囲の重複を壊さない
 - LLM: `pnpm test:llm`
   - 文脈リスク候補JSONをパースできる
   - 不正JSONで本文を含まないエラーになる
@@ -200,10 +200,10 @@ export interface SiteAdapter {
   - ChatGPT送信ボタンclickを止められる
   - Enter送信を止められる
   - bypassNextSubmitで無限ループしない
-  - Secret Guard pasteをpreventDefaultできる
+  - 秘密情報保護の対象を含むpasteをpreventDefaultできる
 - Demo: `pnpm test:e2e`, `pnpm build:demo`
   - サンプル文からrisk scoreを表示できる
-  - 変換モードを切り替えられる
+  - 検出カテゴリごとに安全化対象を選択できる
   - 安全化後テキストを表示できる
 - Full: `pnpm test`, `pnpm typecheck`, `pnpm build`
 

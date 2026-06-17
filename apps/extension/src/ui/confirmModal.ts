@@ -10,7 +10,6 @@ import {
   createConfirmedText,
   decisionLabels,
   riskLabels,
-  transformModeOptions,
   updateCategorySelection
 } from "./confirmModalState";
 import { confirmModalCss } from "./styles";
@@ -40,7 +39,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     const policy = evaluateDlpPolicy(options.detection.findings);
     const groups = createCategoryGroups(options.detection.findings, policy);
     const selectedFindingIds = new Set(options.detection.findings.map((finding) => finding.id));
-    let mode: TransformMode = options.defaultMode ?? "mask";
+    const mode: TransformMode = options.defaultMode ?? "generalize";
 
     const { shadow, cleanup } = createShadowHost(confirmModalCss);
 
@@ -53,7 +52,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
         "p",
         "amc-description",
         policy.requiresSanitization
-          ? "高リスクまたはSecret Guard対象が含まれるため、安全化なしでは送信できません。"
+          ? "高リスクまたは秘密情報保護の対象が含まれるため、安全化なしでは送信できません。"
           : "注意が必要なカテゴリを確認できます。不要なカテゴリは詳細から外して、そのまま送信することもできます。"
       )
     );
@@ -72,12 +71,11 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     categoryPanel.append(categoryList);
 
     const transformPanel = createElement("div", "amc-panel");
-    const transform = createElement("fieldset", "amc-transform");
-    transform.append(createElement("legend", undefined, "変換モード"));
-    const previewTitle = createElement("h3", undefined, "送信される内容");
+    const previewTitle = createElement("h3", undefined, "安全化後の内容");
     const preview = createElement("pre", "amc-preview");
     const status = createElement("p", "amc-note");
-    transformPanel.append(transform, status, previewTitle, preview);
+    status.textContent = "具体的な値を、メールアドレス・電話番号などの日本語ラベルへ置き換えます。";
+    transformPanel.append(previewTitle, status, preview);
 
     const footer = createElement("footer", "amc-footer");
     const submitButton = createElement("button", "amc-button amc-primary");
@@ -154,28 +152,6 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
       }
     };
 
-    const renderModeOptions = () => {
-      for (const option of transformModeOptions) {
-        const label = createElement("label", "amc-radio");
-        const radio = createElement("input") as HTMLInputElement;
-        radio.type = "radio";
-        radio.name = "amc-transform-mode";
-        radio.value = option.value;
-        radio.checked = mode === option.value;
-        radio.addEventListener("change", () => {
-          mode = option.value;
-          status.textContent = "";
-          renderPreview();
-        });
-
-        const copy = createElement("span");
-        copy.append(createElement("strong", undefined, option.title));
-        copy.append(createElement("p", "amc-note", option.description));
-        label.append(radio, copy);
-        transform.append(label);
-      }
-    };
-
     submitButton.addEventListener("click", () => {
       if (!canSubmitSelection(groups, selectedFindingIds)) {
         return;
@@ -206,7 +182,6 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     });
 
     renderCategories();
-    renderModeOptions();
     renderPreview();
   });
 }

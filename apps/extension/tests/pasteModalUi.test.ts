@@ -26,7 +26,7 @@ describe("paste review modal UI", () => {
 
     expect(state.rawButtonText).toBe("そのまま貼り付け（不可）");
     expect(state.rawButtonDisabled).toBe(true);
-    expect(state.footerNote).toBe("高リスクまたはSecret Guard対象のため、そのまま貼り付けはできません。");
+    expect(state.footerNote).toBe("高リスクまたは秘密情報保護の対象のため、そのまま貼り付けはできません。");
   });
 
   it("そのまま貼り付け可能なときは通常ラベルで表示する", () => {
@@ -75,8 +75,8 @@ describe("paste review modal UI", () => {
     expect(state.maskButtonDisabled).toBe(true);
     expect(state.rawButtonText).toBe("そのまま貼り付け（不可）");
     expect(state.rawButtonDisabled).toBe(true);
-    expect(state.rawButtonTitle).toBe("高リスクまたはSecret Guard対象のため、そのまま貼り付けはできません。");
-    expect(state.footerNote).toBe("高リスクまたはSecret Guard対象のため、そのまま貼り付けはできません。");
+    expect(state.rawButtonTitle).toBe("高リスクまたは秘密情報保護の対象のため、そのまま貼り付けはできません。");
+    expect(state.footerNote).toBe("高リスクまたは秘密情報保護の対象のため、そのまま貼り付けはできません。");
     expect(state.footerNoteHidden).toBe(false);
   });
 

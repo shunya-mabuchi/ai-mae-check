@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createPasteReplacement, evaluatePasteGuard } from "../src/content/dom/pasteGuard";
 
 describe("pasteGuard", () => {
-  it("Secret Guard対象を含むpasteは安全化必須にする", () => {
+  it("秘密情報保護の対象を含むpasteは安全化必須にする", () => {
     const result = evaluatePasteGuard("GITHUB_TOKEN=ghp_dummyDummyDummyDummyDummyDummy123456");
 
     expect(result.action).toBe("sanitize_required");

@@ -20,7 +20,7 @@ export interface PasteReviewFooterStateOptions {
   rawPasteAllowed: boolean;
 }
 
-export const RAW_PASTE_BLOCKED_MESSAGE = "高リスクまたはSecret Guard対象のため、そのまま貼り付けはできません。";
+export const RAW_PASTE_BLOCKED_MESSAGE = "高リスクまたは秘密情報保護の対象のため、そのまま貼り付けはできません。";
 
 export const pasteReviewRiskLabel: Record<RiskLevel, string> = findingRiskLabels;
 

@@ -14,7 +14,7 @@ import { MaskResult } from "./MaskResult";
 const workflowSteps = [
   { label: "1", title: "サンプルを入れる", text: "拡張の動きをページ上で先に確認できます" },
   { label: "2", title: "候補を確認", text: "検出項目ごとにマスク対象を選べます" },
-  { label: "3", title: "マスク結果を見る", text: "実際の拡張では貼り付け前に同じ判断をします" }
+  { label: "3", title: "安全化結果を見る", text: "実際の拡張では貼り付け前に同じ判断をします" }
 ];
 
 const actionIcons: Record<DemoWorkbenchActionIcon, LucideIcon> = {

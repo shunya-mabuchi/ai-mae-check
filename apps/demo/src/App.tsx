@@ -160,7 +160,7 @@ export function App() {
     }
 
     await navigator.clipboard.writeText(maskedText);
-    setCopyMessage("マスキング後テキストをコピーしました。");
+    setCopyMessage("安全化後テキストをコピーしました。");
   };
 
   const toggleCandidate = (id: string) => {
