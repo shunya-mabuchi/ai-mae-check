@@ -19,10 +19,11 @@ import {
   createEmptyInputLlmUiState,
   createErrorLlmUiState,
   createIdleLlmUiState,
-  createLlmCompleteUiState,
+  createLlmResultUiState,
   createLoadingLlmUiState,
   createProgressLlmUiState,
-  createWebGpuUnavailableLlmUiState
+  createWebGpuUnavailableLlmUiState,
+  shouldShowDemoLlmError
 } from "./lib/demoLlmUiState";
 import { createDemoMaskingViewModel, selectCandidateIdsByConfidence } from "./lib/demoMasking";
 
@@ -127,13 +128,13 @@ export function App() {
         onProgress: (progress) => setLlmUiState(createProgressLlmUiState(progress))
       });
 
-      if (result.error) {
+      if (shouldShowDemoLlmError(result)) {
         setLlmUiState(
           result.errorDetail
             ? createErrorLlmUiState(result.errorDetail)
             : {
                 status: "error",
-                message: result.error,
+                message: result.error ?? "AI文脈チェックを実行できませんでした。",
                 errorDetail: null
               }
         );
@@ -143,7 +144,7 @@ export function App() {
 
       setLlmCandidates(result.candidates);
       setSelectedCandidateIds(selectCandidateIdsByConfidence(result.candidates));
-      setLlmUiState(createLlmCompleteUiState(result.candidates.length));
+      setLlmUiState(createLlmResultUiState(result.candidates.length, result.errorDetail));
     } catch (error) {
       const errorDetail = classifyLlmError(error);
       setLlmUiState(createErrorLlmUiState(errorDetail));

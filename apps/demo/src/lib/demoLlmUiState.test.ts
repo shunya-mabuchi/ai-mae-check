@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
-import type { LlmErrorDetail, LlmProgress } from "@ai-mae-check/llm";
+import type { ContextAnalysisResult, LlmErrorDetail, LlmProgress } from "@ai-mae-check/llm";
 import {
   createEmptyInputLlmUiState,
   createErrorLlmUiState,
   createIdleLlmUiState,
   createLlmCompleteUiState,
+  createLlmResultUiState,
   createLoadingLlmUiState,
   createProgressLlmUiState,
-  createWebGpuUnavailableLlmUiState
+  createWebGpuUnavailableLlmUiState,
+  shouldShowDemoLlmError
 } from "./demoLlmUiState";
 
 describe("demoLlmUiState", () => {
@@ -76,5 +78,41 @@ describe("demoLlmUiState", () => {
       message: "AI文脈チェックの結果を読み取れませんでした。",
       errorDetail
     });
+  });
+
+  it("json_parseはデモでも非致命的な結果として扱う", () => {
+    const result: ContextAnalysisResult = {
+      candidates: [],
+      summary: "AI文脈チェックの結果を読み取れませんでした。",
+      rawText: "",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      elapsedMs: 10,
+      error: "AI文脈チェックの結果を読み取れませんでした。",
+      errorDetail: {
+        kind: "json_parse",
+        message: "AI文脈チェックの結果を読み取れませんでした。",
+        hint: "必要なら再実行してください。"
+      }
+    };
+
+    expect(shouldShowDemoLlmError(result)).toBe(false);
+    expect(createLlmResultUiState(result.candidates.length, result.errorDetail)).toEqual({
+      status: "empty",
+      message: "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。",
+      errorDetail: null
+    });
+  });
+
+  it("WorkerやWebGPUの失敗はデモでも実行不能エラーとして扱う", () => {
+    const result: Pick<ContextAnalysisResult, "error" | "errorDetail"> = {
+      error: "AI文脈チェックを実行できませんでした。",
+      errorDetail: {
+        kind: "worker",
+        message: "AI文脈チェックを実行できませんでした。",
+        hint: "ページを再読み込みしてから再試行してください。"
+      }
+    };
+
+    expect(shouldShowDemoLlmError(result)).toBe(true);
   });
 });

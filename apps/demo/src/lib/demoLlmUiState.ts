@@ -1,6 +1,7 @@
 import {
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE,
+  type ContextAnalysisResult,
   type LlmErrorDetail,
   type LlmProgress
 } from "@ai-mae-check/llm";
@@ -72,10 +73,29 @@ export function createLlmCompleteUiState(candidateCount: number): DemoLlmUiState
   };
 }
 
+export function createLlmResultUiState(candidateCount: number, detail?: LlmErrorDetail): DemoLlmUiState {
+  if (detail?.kind === "json_parse") {
+    return {
+      status: candidateCount > 0 ? "done" : "empty",
+      message:
+        candidateCount > 0
+          ? "AI文脈チェックの出力形式は読み取れませんでしたが、ブラウザ内の補助検出で注意候補を確認しました。"
+          : "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。",
+      errorDetail: null
+    };
+  }
+
+  return createLlmCompleteUiState(candidateCount);
+}
+
 export function createErrorLlmUiState(errorDetail: LlmErrorDetail): DemoLlmUiState {
   return {
     status: "error",
     message: errorDetail.message,
     errorDetail
   };
+}
+
+export function shouldShowDemoLlmError(result: Pick<ContextAnalysisResult, "error" | "errorDetail">): boolean {
+  return Boolean(result.error) && result.errorDetail?.kind !== "json_parse";
 }

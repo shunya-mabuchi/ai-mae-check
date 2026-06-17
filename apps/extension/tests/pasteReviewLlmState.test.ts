@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { LlmErrorDetail } from "@ai-mae-check/llm";
+import type { ContextAnalysisResult, LlmErrorDetail } from "@ai-mae-check/llm";
 import {
   createPasteReviewLlmCompleteMessage,
+  createPasteReviewLlmResultMessage,
   formatPasteReviewLlmStatusMessage,
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
   PASTE_REVIEW_LLM_LOADING_MESSAGE,
-  shouldAutoRunPasteReviewLlm
+  shouldAutoRunPasteReviewLlm,
+  shouldShowPasteReviewLlmError
 } from "../src/lib/pasteReviewLlmState";
 
 describe("pasteReviewLlmState", () => {
@@ -32,6 +34,40 @@ describe("pasteReviewLlmState", () => {
     ).toBe(
       "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。"
     );
+  });
+
+  it("json_parseは実行不能エラーではなく非致命的な結果として扱う", () => {
+    const result: ContextAnalysisResult = {
+      candidates: [],
+      summary: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
+      rawText: "",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      elapsedMs: 10,
+      error: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
+      errorDetail: {
+        kind: "json_parse",
+        message: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
+        hint: "ルールベース検出結果は維持されています。必要なら再実行してください。"
+      }
+    };
+
+    expect(shouldShowPasteReviewLlmError(result)).toBe(false);
+    expect(createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail)).toBe(
+      "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。"
+    );
+  });
+
+  it("WorkerやWebGPUの失敗は実行不能エラーとして扱う", () => {
+    const result: Pick<ContextAnalysisResult, "error" | "errorDetail"> = {
+      error: "AI文脈チェックを実行できませんでした。",
+      errorDetail: {
+        kind: "worker",
+        message: "AI文脈チェックを実行できませんでした。",
+        hint: "ページを再読み込みしてから再試行してください。"
+      }
+    };
+
+    expect(shouldShowPasteReviewLlmError(result)).toBe(true);
   });
 
   it("診断メモと技術詳細を追加してエラー文言を整形する", () => {

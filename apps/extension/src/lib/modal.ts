@@ -24,12 +24,13 @@ import { createPasteReviewFindingView } from "./pasteReviewFindingView";
 import { createPasteReviewSummaryItems } from "./pasteReviewSummaryView";
 import { createPasteReviewInsertText, createPasteReviewPreviewText } from "./pasteReviewTextTransform";
 import {
-  createPasteReviewLlmCompleteMessage,
+  createPasteReviewLlmResultMessage,
   formatPasteReviewLlmStatusMessage,
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
   PASTE_REVIEW_LLM_LOADING_MESSAGE,
-  shouldAutoRunPasteReviewLlm
+  shouldAutoRunPasteReviewLlm,
+  shouldShowPasteReviewLlmError
 } from "./pasteReviewLlmState";
 import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
 import type { AiMaeCheckSettings } from "./settings";
@@ -254,8 +255,11 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
           }
         });
 
-        if (result.error) {
-          llmStatus.textContent = formatPasteReviewLlmStatusMessage(result.error, result.errorDetail);
+        if (shouldShowPasteReviewLlmError(result)) {
+          llmStatus.textContent = formatPasteReviewLlmStatusMessage(
+            result.error ?? "AI文脈チェックを実行できませんでした。",
+            result.errorDetail
+          );
           return;
         }
 
@@ -265,7 +269,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
           selectedCandidateIds.add(candidateId);
         }
 
-        llmStatus.textContent = createPasteReviewLlmCompleteMessage(result.candidates.length, result.summary);
+        llmStatus.textContent = createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail);
         render();
       } catch (error: unknown) {
         const detail = classifyLlmError(error);
