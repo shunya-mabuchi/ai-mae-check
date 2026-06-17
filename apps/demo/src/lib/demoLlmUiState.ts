@@ -1,7 +1,6 @@
 import {
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE,
-  type ContextAnalysisResult,
   type LlmErrorDetail,
   type LlmProgress
 } from "@ai-mae-check/llm";
@@ -94,8 +93,4 @@ export function createErrorLlmUiState(errorDetail: LlmErrorDetail): DemoLlmUiSta
     message: errorDetail.message,
     errorDetail
   };
-}
-
-export function shouldShowDemoLlmError(result: Pick<ContextAnalysisResult, "error" | "errorDetail">): boolean {
-  return Boolean(result.error) && result.errorDetail?.kind !== "json_parse";
 }

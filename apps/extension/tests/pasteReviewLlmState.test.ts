@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { ContextAnalysisResult, LlmErrorDetail } from "@ai-mae-check/llm";
+import {
+  isContextAnalysisExecutionError,
+  type ContextAnalysisResult,
+  type LlmErrorDetail
+} from "@ai-mae-check/llm";
 import {
   createPasteReviewLlmCompleteMessage,
   createPasteReviewLlmResultMessage,
@@ -7,8 +11,7 @@ import {
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
   PASTE_REVIEW_LLM_LOADING_MESSAGE,
-  shouldAutoRunPasteReviewLlm,
-  shouldShowPasteReviewLlmError
+  shouldAutoRunPasteReviewLlm
 } from "../src/lib/pasteReviewLlmState";
 
 describe("pasteReviewLlmState", () => {
@@ -51,7 +54,7 @@ describe("pasteReviewLlmState", () => {
       }
     };
 
-    expect(shouldShowPasteReviewLlmError(result)).toBe(false);
+    expect(isContextAnalysisExecutionError(result)).toBe(false);
     expect(createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail)).toBe(
       "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。"
     );
@@ -67,7 +70,7 @@ describe("pasteReviewLlmState", () => {
       }
     };
 
-    expect(shouldShowPasteReviewLlmError(result)).toBe(true);
+    expect(isContextAnalysisExecutionError(result)).toBe(true);
   });
 
   it("診断メモと技術詳細を追加してエラー文言を整形する", () => {

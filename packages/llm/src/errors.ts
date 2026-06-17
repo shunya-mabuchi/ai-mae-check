@@ -1,5 +1,5 @@
 import { WEBGPU_UNAVAILABLE_MESSAGE } from "./constants";
-import type { LlmErrorDetail } from "./types";
+import type { ContextAnalysisResult, LlmErrorDetail } from "./types";
 
 const GENERIC_LLM_ERROR_MESSAGE =
   "AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。";
@@ -181,4 +181,8 @@ export function classifyLlmError(error: unknown): LlmErrorDetail {
 
 export function formatLlmErrorMessage(error: unknown): string {
   return classifyLlmError(error).message;
+}
+
+export function isContextAnalysisExecutionError(result: Pick<ContextAnalysisResult, "error" | "errorDetail">): boolean {
+  return Boolean(result.error) && result.errorDetail?.kind !== "json_parse";
 }

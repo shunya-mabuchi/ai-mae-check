@@ -3,6 +3,7 @@ import { detectSensitiveText, type DetectionResult } from "@ai-mae-check/core";
 import {
   classifyLlmError,
   createLlmContextAnalyzer,
+  isContextAnalysisExecutionError,
   isWebGpuAvailable,
   type ContextRiskCandidate,
   type LlmContextAnalyzer
@@ -22,8 +23,7 @@ import {
   createLlmResultUiState,
   createLoadingLlmUiState,
   createProgressLlmUiState,
-  createWebGpuUnavailableLlmUiState,
-  shouldShowDemoLlmError
+  createWebGpuUnavailableLlmUiState
 } from "./lib/demoLlmUiState";
 import { createDemoMaskingViewModel, selectCandidateIdsByConfidence } from "./lib/demoMasking";
 
@@ -128,7 +128,7 @@ export function App() {
         onProgress: (progress) => setLlmUiState(createProgressLlmUiState(progress))
       });
 
-      if (shouldShowDemoLlmError(result)) {
+      if (isContextAnalysisExecutionError(result)) {
         setLlmUiState(
           result.errorDetail
             ? createErrorLlmUiState(result.errorDetail)

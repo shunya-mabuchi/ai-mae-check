@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { ContextAnalysisResult, LlmErrorDetail, LlmProgress } from "@ai-mae-check/llm";
+import {
+  isContextAnalysisExecutionError,
+  type ContextAnalysisResult,
+  type LlmErrorDetail,
+  type LlmProgress
+} from "@ai-mae-check/llm";
 import {
   createEmptyInputLlmUiState,
   createErrorLlmUiState,
@@ -8,8 +13,7 @@ import {
   createLlmResultUiState,
   createLoadingLlmUiState,
   createProgressLlmUiState,
-  createWebGpuUnavailableLlmUiState,
-  shouldShowDemoLlmError
+  createWebGpuUnavailableLlmUiState
 } from "./demoLlmUiState";
 
 describe("demoLlmUiState", () => {
@@ -95,7 +99,7 @@ describe("demoLlmUiState", () => {
       }
     };
 
-    expect(shouldShowDemoLlmError(result)).toBe(false);
+    expect(isContextAnalysisExecutionError(result)).toBe(false);
     expect(createLlmResultUiState(result.candidates.length, result.errorDetail)).toEqual({
       status: "empty",
       message: "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。",
@@ -113,6 +117,6 @@ describe("demoLlmUiState", () => {
       }
     };
 
-    expect(shouldShowDemoLlmError(result)).toBe(true);
+    expect(isContextAnalysisExecutionError(result)).toBe(true);
   });
 });

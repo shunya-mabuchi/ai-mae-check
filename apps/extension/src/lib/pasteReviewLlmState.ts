@@ -1,4 +1,4 @@
-import type { ContextAnalysisResult, LlmErrorDetail } from "@ai-mae-check/llm";
+import type { LlmErrorDetail } from "@ai-mae-check/llm";
 import type { PasteReviewModalMode } from "./pasteReviewModalCopy";
 import type { AiMaeCheckSettings } from "./settings";
 
@@ -46,10 +46,6 @@ export function formatPasteReviewLlmStatusMessage(message: string, detail?: LlmE
 
   const technical = detail.technicalDetail ? `\n詳細: ${detail.technicalDetail}` : "";
   return `${message}\n診断メモ: ${detail.hint}${technical}`;
-}
-
-export function shouldShowPasteReviewLlmError(result: Pick<ContextAnalysisResult, "error" | "errorDetail">): boolean {
-  return Boolean(result.error) && result.errorDetail?.kind !== "json_parse";
 }
 
 export function shouldAutoRunPasteReviewLlm(

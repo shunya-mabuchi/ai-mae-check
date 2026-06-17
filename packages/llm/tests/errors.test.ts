@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { classifyLlmError, DEFAULT_MODEL_ID, formatLlmErrorMessage } from "../src";
+import {
+  classifyLlmError,
+  DEFAULT_MODEL_ID,
+  formatLlmErrorMessage,
+  isContextAnalysisExecutionError,
+  type ContextAnalysisResult
+} from "../src";
 
 describe("formatLlmErrorMessage", () => {
   it("デフォルトモデルは動作実績を優先したLlama 3.2 1B q4f32にする", () => {
@@ -88,5 +94,51 @@ describe("formatLlmErrorMessage", () => {
     const message = formatLlmErrorMessage(new Error("unknown internal error"));
 
     expect(message).toBe("AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。");
+  });
+
+  it("json_parseは実行不能エラーとして扱わない", () => {
+    const result: ContextAnalysisResult = {
+      candidates: [],
+      summary: "AI文脈チェックの結果を読み取れませんでした。",
+      rawText: "",
+      modelId: DEFAULT_MODEL_ID,
+      elapsedMs: 1,
+      error: "AI文脈チェックの結果を読み取れませんでした。",
+      errorDetail: {
+        kind: "json_parse",
+        message: "AI文脈チェックの結果を読み取れませんでした。",
+        hint: "必要なら再実行してください。"
+      }
+    };
+
+    expect(isContextAnalysisExecutionError(result)).toBe(false);
+  });
+
+  it("WorkerやWebGPUの失敗は実行不能エラーとして扱う", () => {
+    expect(
+      isContextAnalysisExecutionError({
+        error: "AI文脈チェックを実行できませんでした。",
+        errorDetail: {
+          kind: "worker",
+          message: "AI文脈チェックを実行できませんでした。",
+          hint: "ページを再読み込みしてから再試行してください。"
+        }
+      })
+    ).toBe(true);
+
+    expect(
+      isContextAnalysisExecutionError({
+        error: "AI文脈チェックを利用できません。",
+        errorDetail: {
+          kind: "webgpu",
+          message: "AI文脈チェックを利用できません。",
+          hint: "WebGPUを確認してください。"
+        }
+      })
+    ).toBe(true);
+  });
+
+  it("errorがない結果は実行不能エラーとして扱わない", () => {
+    expect(isContextAnalysisExecutionError({})).toBe(false);
   });
 });

@@ -6,6 +6,7 @@ import {
 import {
   classifyLlmError,
   type ContextRiskCandidate,
+  isContextAnalysisExecutionError,
   type LlmProgress
 } from "@ai-mae-check/llm";
 import { pasteReviewModalCss } from "./modalStyles";
@@ -30,8 +31,7 @@ import {
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
   PASTE_REVIEW_LLM_LOADING_MESSAGE,
-  shouldAutoRunPasteReviewLlm,
-  shouldShowPasteReviewLlmError
+  shouldAutoRunPasteReviewLlm
 } from "./pasteReviewLlmState";
 import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
 import type { AiMaeCheckSettings } from "./settings";
@@ -253,7 +253,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
           }
         });
 
-        if (shouldShowPasteReviewLlmError(result)) {
+        if (isContextAnalysisExecutionError(result)) {
           llmStatus.textContent = formatPasteReviewLlmStatusMessage(
             result.error ?? "AI文脈チェックを実行できませんでした。",
             result.errorDetail
