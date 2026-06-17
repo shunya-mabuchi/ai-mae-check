@@ -37,6 +37,7 @@ import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteRe
 import type { AiMaeCheckSettings } from "./settings";
 import { analyzeContextWithBridge } from "./llmBridgeClient";
 import { createElement } from "./domElement";
+import { createShadowHost } from "./shadowHost";
 
 type ModalDecision =
   | {
@@ -143,11 +144,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
   return new Promise((resolve) => {
     const mode = options.mode ?? "default";
     const modalCopy = createPasteReviewModalCopy(mode);
-    const host = document.createElement("div");
-    const shadow = host.attachShadow({ mode: "open" });
-    const style = document.createElement("style");
-    style.textContent = pasteReviewModalCss;
-    shadow.append(style);
+    const { shadow, cleanup } = createShadowHost(pasteReviewModalCss);
 
     const overlay = createElement("div", "hm-overlay");
     const dialog = createElement("section", "hm-dialog");
@@ -196,7 +193,6 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     dialog.append(header, body, footer);
     overlay.append(dialog);
     shadow.append(overlay);
-    document.documentElement.append(host);
 
     let llmCandidates: ContextRiskCandidate[] = [];
     const selectedRuleFindingIds = createInitialSelectedFindingIds(options.detection.findings);
@@ -228,10 +224,6 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       rawButton.title = actionState.rawButtonTitle;
       footerNote.textContent = actionState.footerNote;
       footerNote.hidden = actionState.footerNote.length === 0;
-    };
-
-    const cleanup = () => {
-      host.remove();
     };
 
     const runLlm = async () => {

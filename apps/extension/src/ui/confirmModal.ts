@@ -15,6 +15,7 @@ import {
 } from "./confirmModalState";
 import { confirmModalCss } from "./styles";
 import { createElement } from "../lib/domElement";
+import { createShadowHost } from "../lib/shadowHost";
 
 export type ConfirmModalDecision =
   | {
@@ -41,10 +42,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     const selectedFindingIds = new Set(options.detection.findings.map((finding) => finding.id));
     let mode: TransformMode = options.defaultMode ?? "mask";
 
-    const host = document.createElement("div");
-    const shadow = host.attachShadow({ mode: "open" });
-    const style = document.createElement("style");
-    style.textContent = confirmModalCss;
+    const { shadow, cleanup } = createShadowHost(confirmModalCss);
 
     const overlay = createElement("div", "amc-overlay");
     const dialog = createElement("section", "amc-dialog");
@@ -91,12 +89,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     body.append(summary, grid);
     dialog.append(header, body, footer);
     overlay.append(dialog);
-    shadow.append(style, overlay);
-    document.documentElement.append(host);
-
-    const cleanup = () => {
-      host.remove();
-    };
+    shadow.append(overlay);
 
     const renderPreview = () => {
       preview.textContent = createConfirmedText(options.inputText, options.detection.findings, selectedFindingIds, mode);

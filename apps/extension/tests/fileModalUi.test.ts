@@ -9,7 +9,9 @@ describe("file preflight modal UI", () => {
 
     expect(existsSync(stylesPath)).toBe(true);
     expect(modalSource).toContain('import { filePreflightModalCss } from "./fileModalStyles"');
-    expect(modalSource).toContain("style.textContent = filePreflightModalCss");
+    expect(modalSource).toContain('import { createShadowHost } from "../lib/shadowHost"');
+    expect(modalSource).toContain("createShadowHost(filePreflightModalCss)");
+    expect(modalSource).not.toContain('document.createElement("style")');
     expect(modalSource).not.toContain("const css = `");
   });
 });
