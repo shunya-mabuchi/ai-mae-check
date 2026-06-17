@@ -8,11 +8,10 @@ import {
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
-import { classifyLlmError, createJsonParseFallbackMessage } from "./errors";
+import { createContextAnalysisResultFromRawText } from "./analysisResult";
+import { classifyLlmError } from "./errors";
 import { resolveModelId, type WebLlmModelListModule } from "./model";
-import { parseContextAnalysisJson } from "./parser";
 import { buildContextRiskPrompt } from "./prompt";
-import { mergeResidualContextCandidates } from "./residualMasking";
 import { isWebGpuAvailable } from "./webgpu";
 import type {
   AnalyzeContextOptions,
@@ -150,38 +149,15 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
         max_tokens: this.options.maxTokens
       });
       const rawText = completion.choices?.[0]?.message?.content ?? "";
-      let parsed: ReturnType<typeof parseContextAnalysisJson>;
 
-      try {
-        parsed = parseContextAnalysisJson(rawText, {
-          ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {}),
-          confidenceThreshold: this.options.confidenceThreshold
-        });
-      } catch {
-        const fallbackCandidates = mergeResidualContextCandidates(inputForModel, [], {
-          ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
-        });
-
-        return {
-          candidates: fallbackCandidates,
-          summary: createJsonParseFallbackMessage(fallbackCandidates.length),
-          rawText,
-          modelId,
-          elapsedMs: Math.max(0, performance.now() - startedAt)
-        };
-      }
-
-      const candidates = mergeResidualContextCandidates(inputForModel, parsed.candidates, {
-        ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
-      });
-
-      return {
-        candidates,
-        summary: parsed.summary,
+      return createContextAnalysisResultFromRawText({
+        input: inputForModel,
         rawText,
         modelId,
-        elapsedMs: Math.max(0, performance.now() - startedAt)
-      };
+        elapsedMs: Math.max(0, performance.now() - startedAt),
+        ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {}),
+        confidenceThreshold: this.options.confidenceThreshold
+      });
     } catch (error) {
       const detail = classifyLlmError(error);
       this.dispose();
