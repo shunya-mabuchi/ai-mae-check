@@ -80,6 +80,8 @@ function normalizeJsonCandidate(candidate: string): string {
     .replace(/^\uFEFF/, "")
     .replace(/[“”]/g, "\"")
     .replace(/[‘’]/g, "'")
+    .replace(/([{\[,]\s*)([A-Za-z_$][\w$]*|[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー々]+)\s*:/gu, "$1\"$2\":")
+    .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_match, value: string) => JSON.stringify(value.replace(/\\'/g, "'")))
     .replace(/,\s*([}\]])/g, "$1");
 }
 
