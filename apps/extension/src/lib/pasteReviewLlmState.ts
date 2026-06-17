@@ -38,6 +38,10 @@ export function formatPasteReviewLlmStatusMessage(message: string, detail?: LlmE
     return message;
   }
 
+  if (detail.kind === "json_parse") {
+    return createJsonParseFallbackMessage(0);
+  }
+
   const technical = detail.technicalDetail ? `\n詳細: ${detail.technicalDetail}` : "";
   return `${message}\n診断メモ: ${detail.hint}${technical}`;
 }

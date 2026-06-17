@@ -94,6 +94,19 @@ describe("pasteReviewLlmState", () => {
     );
   });
 
+  it("json_parseのエラー詳細は診断メモではなく非致命メッセージとして表示する", () => {
+    const detail: LlmErrorDetail = {
+      kind: "json_parse",
+      message: "AI文脈チェックの結果を読み取れませんでした。",
+      hint: "ルールベース検出結果は維持されています。必要なら再実行してください。",
+      technicalDetail: "AI文脈チェックの結果を読み取れませんでした"
+    };
+
+    expect(formatPasteReviewLlmStatusMessage(detail.message, detail)).toBe(
+      "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
+    );
+  });
+
   it("エラー詳細がない場合は元メッセージだけを返す", () => {
     expect(formatPasteReviewLlmStatusMessage("文脈リスクを確認しています。")).toBe("文脈リスクを確認しています。");
   });
