@@ -4,12 +4,8 @@ import {
   classifyLlmError,
   createLlmContextAnalyzer,
   isWebGpuAvailable,
-  MODEL_LOADING_MESSAGE,
-  WEBGPU_UNAVAILABLE_MESSAGE,
   type ContextRiskCandidate,
-  type LlmContextAnalyzer,
-  type LlmErrorDetail,
-  type LlmProgress
+  type LlmContextAnalyzer
 } from "@ai-mae-check/llm";
 import { DemoCard } from "./components/DemoCard";
 import { DetectionTargetCards } from "./components/DetectionTargetCards";
@@ -18,7 +14,16 @@ import { Hero } from "./components/Hero";
 import { PrivacySection } from "./components/PrivacySection";
 import { StepCards } from "./components/StepCards";
 import { TechStrip } from "./components/TechStrip";
-import { contextSampleText, initialLlmMessage, sampleText, type LlmStatus } from "./lib/demoConstants";
+import { contextSampleText, sampleText } from "./lib/demoConstants";
+import {
+  createEmptyInputLlmUiState,
+  createErrorLlmUiState,
+  createIdleLlmUiState,
+  createLlmCompleteUiState,
+  createLoadingLlmUiState,
+  createProgressLlmUiState,
+  createWebGpuUnavailableLlmUiState
+} from "./lib/demoLlmUiState";
 import { createDemoMaskingViewModel, selectCandidateIdsByConfidence } from "./lib/demoMasking";
 
 const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
@@ -30,9 +35,7 @@ export function App() {
   const [selectedRuleFindingIds, setSelectedRuleFindingIds] = useState<string[]>([]);
   const [llmCandidates, setLlmCandidates] = useState<ContextRiskCandidate[]>([]);
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
-  const [llmStatus, setLlmStatus] = useState<LlmStatus>("idle");
-  const [llmMessage, setLlmMessage] = useState(initialLlmMessage);
-  const [llmErrorDetail, setLlmErrorDetail] = useState<LlmErrorDetail | null>(null);
+  const [llmUiState, setLlmUiState] = useState(createIdleLlmUiState);
   const [copyMessage, setCopyMessage] = useState("");
 
   const maskingViewModel = useMemo(
@@ -71,9 +74,7 @@ export function App() {
   const resetLlmState = () => {
     setLlmCandidates([]);
     setSelectedCandidateIds([]);
-    setLlmStatus("idle");
-    setLlmMessage(initialLlmMessage);
-    setLlmErrorDetail(null);
+    setLlmUiState(createIdleLlmUiState());
   };
 
   const insertSample = () => {
@@ -102,9 +103,7 @@ export function App() {
 
   const runLlmDetection = async () => {
     if (text.trim().length === 0) {
-      setLlmStatus("error");
-      setLlmMessage("先に送信前テキストを入力してください。");
-      setLlmErrorDetail(null);
+      setLlmUiState(createEmptyInputLlmUiState());
       return;
     }
 
@@ -115,53 +114,39 @@ export function App() {
     }
 
     if (!isWebGpuAvailable()) {
-      setLlmStatus("error");
-      setLlmMessage(WEBGPU_UNAVAILABLE_MESSAGE);
-      setLlmErrorDetail({
-        kind: "webgpu",
-        message: WEBGPU_UNAVAILABLE_MESSAGE,
-        hint: "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。"
-      });
+      setLlmUiState(createWebGpuUnavailableLlmUiState());
       return;
     }
 
-    setLlmStatus("loading");
-    setLlmMessage(MODEL_LOADING_MESSAGE);
-    setLlmErrorDetail(null);
+    setLlmUiState(createLoadingLlmUiState());
     const analyzer = getAnalyzer();
 
     try {
       const result = await analyzer.analyze(text, {
         existingFindings: ruleResult.findings,
-        onProgress: (progress: LlmProgress) => {
-          setLlmStatus(progress.phase === "analyzing" ? "analyzing" : "loading");
-          setLlmMessage(progress.message);
-        }
+        onProgress: (progress) => setLlmUiState(createProgressLlmUiState(progress))
       });
 
       if (result.error) {
-        setLlmStatus("error");
-        setLlmMessage(result.error);
-        setLlmErrorDetail(result.errorDetail ?? null);
+        setLlmUiState(
+          result.errorDetail
+            ? createErrorLlmUiState(result.errorDetail)
+            : {
+                status: "error",
+                message: result.error,
+                errorDetail: null
+              }
+        );
         resetAnalyzer();
         return;
       }
 
       setLlmCandidates(result.candidates);
       setSelectedCandidateIds(selectCandidateIdsByConfidence(result.candidates));
-
-      if (result.candidates.length > 0) {
-        setLlmStatus("done");
-        setLlmMessage("AI文脈チェックで注意候補が見つかりました。");
-      } else {
-        setLlmStatus("empty");
-        setLlmMessage("AI文脈チェックでは追加の注意候補は見つかりませんでした。ただし、安全を保証するものではありません。");
-      }
+      setLlmUiState(createLlmCompleteUiState(result.candidates.length));
     } catch (error) {
       const errorDetail = classifyLlmError(error);
-      setLlmStatus("error");
-      setLlmMessage(errorDetail.message);
-      setLlmErrorDetail(errorDetail);
+      setLlmUiState(createErrorLlmUiState(errorDetail));
       resetAnalyzer();
     }
   };
@@ -219,9 +204,9 @@ export function App() {
           llmCandidates={llmCandidates}
           selectedCandidateIds={selectedCandidateIds}
           onToggleCandidate={toggleCandidate}
-          llmStatus={llmStatus}
-          llmMessage={llmMessage}
-          llmErrorDetail={llmErrorDetail}
+          llmStatus={llmUiState.status}
+          llmMessage={llmUiState.message}
+          llmErrorDetail={llmUiState.errorDetail}
           maskedText={maskedText}
           copyMessage={copyMessage}
         />
