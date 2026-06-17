@@ -6,10 +6,10 @@ import {
 import {
   canSubmitSelection,
   createCategoryGroups,
+  createConfirmModalFooterState,
   createConfirmedText,
   decisionLabels,
   riskLabels,
-  selectedFindings,
   transformModeOptions,
   updateCategorySelection
 } from "./confirmModalState";
@@ -93,9 +93,14 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
 
     const renderPreview = () => {
       preview.textContent = createConfirmedText(options.inputText, options.detection.findings, selectedFindingIds, mode);
-      const currentSelected = selectedFindings(options.detection.findings, selectedFindingIds);
-      submitButton.textContent = policy.canSendRaw && currentSelected.length === 0 ? "そのまま送信" : "安全化して送信";
-      submitButton.toggleAttribute("disabled", !canSubmitSelection(groups, selectedFindingIds));
+      const footerState = createConfirmModalFooterState({
+        policy,
+        groups,
+        findings: options.detection.findings,
+        selectedFindingIds
+      });
+      submitButton.textContent = footerState.submitButtonText;
+      submitButton.toggleAttribute("disabled", footerState.submitButtonDisabled);
     };
 
     const renderCategories = () => {

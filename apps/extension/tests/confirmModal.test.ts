@@ -3,6 +3,7 @@ import { detectSensitiveText, evaluateDlpPolicy } from "@ai-mae-check/core";
 import {
   canSubmitSelection,
   createCategoryGroups,
+  createConfirmModalFooterState,
   createConfirmedText,
   transformModeOptions,
   updateCategorySelection
@@ -58,5 +59,60 @@ describe("confirmModal helpers", () => {
 
     updateCategorySelection(selectedIds, ["email-1", "phone-2"], false);
     expect([...selectedIds]).toEqual(["phone-1"]);
+  });
+
+  it("footer状態はraw送信可能かつ選択0件ならそのまま送信を返す", () => {
+    const detection = detectSensitiveText("初期費用は300万円です。");
+    const policy = evaluateDlpPolicy(detection.findings);
+    const groups = createCategoryGroups(detection.findings, policy);
+
+    expect(
+      createConfirmModalFooterState({
+        policy,
+        groups,
+        findings: detection.findings,
+        selectedFindingIds: new Set()
+      })
+    ).toEqual({
+      submitButtonText: "そのまま送信",
+      submitButtonDisabled: false
+    });
+  });
+
+  it("footer状態は安全化対象がある場合は安全化して送信を返す", () => {
+    const detection = detectSensitiveText("初期費用は300万円です。");
+    const policy = evaluateDlpPolicy(detection.findings);
+    const groups = createCategoryGroups(detection.findings, policy);
+    const selectedFindingIds = new Set(detection.findings.map((finding) => finding.id));
+
+    expect(
+      createConfirmModalFooterState({
+        policy,
+        groups,
+        findings: detection.findings,
+        selectedFindingIds
+      })
+    ).toEqual({
+      submitButtonText: "安全化して送信",
+      submitButtonDisabled: false
+    });
+  });
+
+  it("footer状態は安全化必須カテゴリが未選択なら送信不可を返す", () => {
+    const detection = detectSensitiveText("GITHUB_TOKEN=ghp_dummyDummyDummyDummyDummyDummy123456");
+    const policy = evaluateDlpPolicy(detection.findings);
+    const groups = createCategoryGroups(detection.findings, policy);
+
+    expect(
+      createConfirmModalFooterState({
+        policy,
+        groups,
+        findings: detection.findings,
+        selectedFindingIds: new Set()
+      })
+    ).toEqual({
+      submitButtonText: "安全化して送信",
+      submitButtonDisabled: true
+    });
   });
 });

@@ -26,6 +26,18 @@ export interface CategoryGroup {
   findings: Finding[];
 }
 
+export interface ConfirmModalFooterState {
+  submitButtonText: string;
+  submitButtonDisabled: boolean;
+}
+
+export interface ConfirmModalFooterStateOptions {
+  policy: Pick<DlpPolicyDecision, "canSendRaw">;
+  groups: CategoryGroup[];
+  findings: Finding[];
+  selectedFindingIds: Set<string>;
+}
+
 const categoryLabels: Record<DlpCategory, string> = {
   person: "人名",
   organization: "組織名・会社名",
@@ -133,4 +145,13 @@ export function createConfirmedText(
 
 export function selectedFindings(findings: Finding[], selectedFindingIds: Set<string>): Finding[] {
   return findings.filter((finding) => selectedFindingIds.has(finding.id));
+}
+
+export function createConfirmModalFooterState(options: ConfirmModalFooterStateOptions): ConfirmModalFooterState {
+  const currentSelected = selectedFindings(options.findings, options.selectedFindingIds);
+
+  return {
+    submitButtonText: options.policy.canSendRaw && currentSelected.length === 0 ? "そのまま送信" : "安全化して送信",
+    submitButtonDisabled: !canSubmitSelection(options.groups, options.selectedFindingIds)
+  };
 }
