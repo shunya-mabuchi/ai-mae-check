@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, ListChecks, Sparkles } from "lucide-react"
 import type { DetectionSummary, Finding } from "@ai-mae-check/core";
 import type { ContextRiskCandidate, LlmErrorDetail } from "@ai-mae-check/llm";
 import { riskLabel, riskMeterTone, riskTone, type LlmStatus } from "../lib/demoConstants";
+import { createDemoFindingItemViewModel } from "../lib/demoFindingItem";
 import { createLlmStatusPanelViewModel } from "../lib/demoLlmUiState";
 import { createRiskCountTiles, createRiskSummaryViewModel } from "../lib/demoRiskSummary";
 
@@ -131,29 +132,25 @@ export function DetectionResults({
           </p>
         ) : (
           findings.map((finding) => {
-            const checked = selectedFindingIds.includes(finding.id);
+            const item = createDemoFindingItemViewModel(finding, selectedFindingIds.includes(finding.id));
             return (
-              <label key={finding.id} className="block rounded-card border border-line bg-white p-3 shadow-soft">
+              <label key={item.id} className="block rounded-card border border-line bg-white p-3 shadow-soft">
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
                     className="mt-1 h-4 w-4 accent-leaf"
-                    checked={checked}
-                    onChange={() => onToggleFinding(finding.id)}
+                    checked={item.selected}
+                    onChange={() => onToggleFinding(item.id)}
                   />
                   <div className="min-w-0 flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span className={`rounded-card border px-2 py-1 text-xs font-bold ${riskTone[finding.riskLevel]}`}>
-                        危険度: {riskLabel[finding.riskLevel]}
-                      </span>
-                      <span className="text-sm font-black text-ink">{finding.label}</span>
-                      <span className="text-xs text-muted">{finding.source === "llm" ? "AI候補" : "ルール"}</span>
-                      <span className={`text-xs font-black ${checked ? "text-leaf" : "text-muted"}`}>
-                        {checked ? "マスク対象" : "対象外"}
-                      </span>
+                      <span className={item.riskBadgeClassName}>{item.riskBadgeText}</span>
+                      <span className="text-sm font-black text-ink">{item.label}</span>
+                      <span className="text-xs text-muted">{item.sourceLabel}</span>
+                      <span className={item.selectionClassName}>{item.selectionLabel}</span>
                     </div>
-                    <p className="break-all rounded-[6px] bg-cloud px-2 py-1 font-mono text-sm text-ink">{finding.text}</p>
-                    <p className="mt-2 text-xs leading-5 text-muted">{finding.message}</p>
+                    <p className="break-all rounded-[6px] bg-cloud px-2 py-1 font-mono text-sm text-ink">{item.text}</p>
+                    <p className="mt-2 text-xs leading-5 text-muted">{item.message}</p>
                   </div>
                 </div>
               </label>
