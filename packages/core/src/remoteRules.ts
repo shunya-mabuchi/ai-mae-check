@@ -5,6 +5,13 @@ import {
   type RemoteRuleBundlePayload,
   type SignedRemoteRuleBundle
 } from "./remoteRuleSchema";
+import {
+  base64UrlToBytes,
+  bytesToBase64Url,
+  createRemoteRuleSigningTarget,
+  textBytes,
+  toArrayBuffer
+} from "./remoteRuleSignature";
 import type { DetectorRule, Finding } from "./types";
 
 export {
@@ -33,67 +40,8 @@ export interface RemoteRuleVerificationOptions {
   expectedKeyId?: string;
 }
 
-type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue | undefined };
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function canonicalize(value: JsonValue): string {
-  if (value === null || typeof value !== "object") {
-    return JSON.stringify(value);
-  }
-
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => canonicalize(item)).join(",")}]`;
-  }
-
-  return `{${Object.keys(value)
-    .filter((key) => value[key] !== undefined)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonicalize(value[key] as JsonValue)}`)
-    .join(",")}}`;
-}
-
-function textBytes(value: string): Uint8Array {
-  return new TextEncoder().encode(value);
-}
-
-function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  return copy.buffer;
-}
-
-function bytesToBase64Url(bytes: ArrayBuffer): string {
-  const array = new Uint8Array(bytes);
-  let binary = "";
-  for (const byte of array) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/u, "");
-}
-
-function base64UrlToBytes(value: string): Uint8Array {
-  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
-  const binary = atob(padded);
-  const bytes = new Uint8Array(binary.length);
-
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
-  }
-
-  return bytes;
-}
-
-function signingTarget(bundle: Pick<SignedRemoteRuleBundle, "alg" | "keyId" | "payload">): string {
-  return canonicalize({
-    alg: bundle.alg,
-    keyId: bundle.keyId,
-    payload: bundle.payload as unknown as JsonValue
-  });
 }
 
 function subtleCrypto(): SubtleCrypto {
@@ -179,7 +127,11 @@ export async function signRemoteRuleBundle(
     keyId,
     payload: normalizedPayload
   } satisfies Pick<SignedRemoteRuleBundle, "alg" | "keyId" | "payload">;
-  const signature = await subtle.sign({ name: "ECDSA", hash: "SHA-256" }, privateKey, toArrayBuffer(textBytes(signingTarget(unsigned))));
+  const signature = await subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    privateKey,
+    toArrayBuffer(textBytes(createRemoteRuleSigningTarget(unsigned)))
+  );
 
   return {
     ...unsigned,
@@ -222,7 +174,7 @@ export async function verifySignedRemoteRuleBundle(
       { name: "ECDSA", hash: "SHA-256" },
       publicKey,
       toArrayBuffer(base64UrlToBytes(signature)),
-      toArrayBuffer(textBytes(signingTarget({ alg: REMOTE_RULE_SIGNATURE_ALG, keyId, payload })))
+      toArrayBuffer(textBytes(createRemoteRuleSigningTarget({ alg: REMOTE_RULE_SIGNATURE_ALG, keyId, payload })))
     );
 
     if (!ok) {
