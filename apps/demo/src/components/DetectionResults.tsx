@@ -1,52 +1,8 @@
 import { AlertTriangle, CheckCircle2, ListChecks, Sparkles } from "lucide-react";
-import type { DetectionSummary, Finding, RiskLevel } from "@ai-mae-check/core";
+import type { DetectionSummary, Finding } from "@ai-mae-check/core";
 import type { ContextRiskCandidate, LlmErrorDetail } from "@ai-mae-check/llm";
 import { riskLabel, riskMeterTone, riskTone, type LlmStatus } from "../lib/demoConstants";
-
-function riskPercent(summary: DetectionSummary): number {
-  const score = summary.critical * 42 + summary.high * 34 + summary.medium * 18 + summary.low * 8;
-  return Math.min(100, score);
-}
-
-function strongestRisk(summary: DetectionSummary): RiskLevel {
-  if (summary.critical > 0) {
-    return "critical";
-  }
-  if (summary.high > 0) {
-    return "high";
-  }
-  if (summary.medium > 0) {
-    return "medium";
-  }
-  return "low";
-}
-
-function statusCopy(summary: DetectionSummary): { label: string; text: string } {
-  if (summary.critical > 0 || summary.high > 0) {
-    return {
-      label: "要マスク",
-      text: "秘密情報や個人情報の可能性があります。送る前に対象を確認してください。"
-    };
-  }
-  if (summary.medium > 0) {
-    return {
-      label: "確認推奨",
-      text: "文脈によって注意が必要な情報があります。必要なものだけ残せます。"
-    };
-  }
-  return {
-    label: "未検出",
-    text: "検出を実行すると、リスクとカテゴリがここに表示されます。"
-  };
-}
-
-function categoryCounts(findings: Finding[]): Array<{ label: string; count: number }> {
-  const counts = new Map<string, number>();
-  for (const finding of findings) {
-    counts.set(finding.label, (counts.get(finding.label) ?? 0) + 1);
-  }
-  return [...counts.entries()].map(([label, count]) => ({ label, count }));
-}
+import { createRiskSummaryViewModel } from "../lib/demoRiskSummary";
 
 function LlmCandidates({
   candidates,
@@ -114,10 +70,7 @@ export function DetectionResults({
   selectedCandidateIds: string[];
   onToggleCandidate: (id: string) => void;
 }) {
-  const meterRisk = strongestRisk(summary);
-  const meterWidth = riskPercent(summary);
-  const categories = categoryCounts(findings);
-  const currentStatus = statusCopy(summary);
+  const riskSummary = createRiskSummaryViewModel(summary, findings);
 
   return (
     <div className="space-y-5">
@@ -130,13 +83,16 @@ export function DetectionResults({
           <div className="rounded-card bg-ink px-3 py-2 text-sm font-black text-white">{summary.total}件</div>
         </div>
         <div className="mb-3 flex items-center justify-between gap-3">
-          <p className="text-sm font-black text-ink">{currentStatus.label}</p>
-          <p className="text-xs font-bold text-muted">{meterWidth}%</p>
+          <p className="text-sm font-black text-ink">{riskSummary.status.label}</p>
+          <p className="text-xs font-bold text-muted">{riskSummary.meterWidth}%</p>
         </div>
         <div className="h-3 overflow-hidden rounded-full bg-cloud">
-          <div className={`h-full rounded-full ${riskMeterTone[meterRisk]}`} style={{ width: `${meterWidth}%` }} />
+          <div
+            className={`h-full rounded-full ${riskMeterTone[riskSummary.meterRisk]}`}
+            style={{ width: `${riskSummary.meterWidth}%` }}
+          />
         </div>
-        <p className="mt-3 text-sm leading-6 text-muted">{currentStatus.text}</p>
+        <p className="mt-3 text-sm leading-6 text-muted">{riskSummary.status.text}</p>
         <div className="mt-4 grid grid-cols-3 gap-2">
           <div className="rounded-card bg-rose-50 p-3">
             <p className="text-xs font-black text-rose-700">高</p>
@@ -158,11 +114,11 @@ export function DetectionResults({
           <ListChecks size={17} className="text-leaf" aria-hidden="true" />
           <p className="text-sm font-black text-ink">検出カテゴリ</p>
         </div>
-        {categories.length === 0 ? (
+        {riskSummary.categories.length === 0 ? (
           <p className="rounded-card bg-cloud p-3 text-sm text-muted">まだ検出結果はありません。</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
+            {riskSummary.categories.map((category) => (
               <span key={category.label} className="rounded-card border border-line bg-white px-3 py-2 text-xs font-black text-ink">
                 {category.label} {category.count}
               </span>
