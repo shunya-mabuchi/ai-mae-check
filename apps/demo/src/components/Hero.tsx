@@ -1,10 +1,13 @@
 import { ArrowDown, Chrome, Github, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import type { DetectionSummary } from "@ai-mae-check/core";
+import { createProductLaunchFlow } from "../lib/productLaunchFlow";
 import { Button } from "./ui";
 
-const proofItems = ["Chrome拡張が本体", "本文は保存しない", "外部LLM APIなし"];
+const proofItems = ["Chrome拡張が本体", "ストア公開準備中", "本文は保存しない", "外部LLM APIなし"];
 
 export function Hero({ summary }: { summary: DetectionSummary }) {
+  const flow = createProductLaunchFlow();
+
   return (
     <header className="relative overflow-hidden">
       <div className="absolute inset-0 -z-10 bg-page-texture" />
@@ -13,8 +16,8 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
           AIまえチェック
         </a>
         <div className="flex items-center gap-4 text-sm font-semibold text-muted">
-          <a className="hover:text-ink" href="#extension">
-            拡張機能
+          <a className="hover:text-ink" href="#install">
+            導入手順
           </a>
           <a className="hover:text-ink" href="#demo">
             ミニデモ
@@ -25,7 +28,7 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
         </div>
       </nav>
 
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-16 pt-8 md:grid-cols-[0.95fr_1.05fr] md:pb-24 md:pt-14">
+      <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-10 pt-8 md:grid-cols-[0.95fr_1.05fr] md:pb-24 md:pt-14">
         <div className="max-w-3xl">
           <p className="mb-5 inline-flex items-center gap-2 rounded-card border border-line bg-white/85 px-3 py-2 text-sm font-bold text-leaf shadow-soft">
             <Chrome size={16} aria-hidden="true" />
@@ -48,28 +51,28 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
             ))}
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#extension">
+            <a href={flow.primaryCta.href}>
               <Button variant="primary">
                 <Chrome size={17} aria-hidden="true" />
-                拡張機能の使い方を見る
+                {flow.primaryCta.label}
               </Button>
             </a>
-            <a href="#demo">
+            <a href={flow.demoCta.href}>
               <Button variant="ghost">
                 <ArrowDown size={17} aria-hidden="true" />
-                ミニデモで試す
+                {flow.demoCta.label}
               </Button>
             </a>
-            <a href="https://github.com/shunya-mabuchi/ai-mae-check">
+            <a href={flow.githubCta.href}>
               <Button variant="ghost">
                 <Github size={17} aria-hidden="true" />
-                GitHub
+                {flow.githubCta.label}
               </Button>
             </a>
           </div>
         </div>
 
-        <div className="rounded-card border border-line bg-white/80 p-3 shadow-panel backdrop-blur">
+        <div className="hidden rounded-card border border-line bg-white/80 p-3 shadow-panel backdrop-blur md:block">
           <div className="overflow-hidden rounded-[6px] border border-ink/10 bg-[#f8faf8]">
             <div className="flex items-center justify-between border-b border-line bg-ink px-4 py-3 text-white">
               <div className="flex items-center gap-2">

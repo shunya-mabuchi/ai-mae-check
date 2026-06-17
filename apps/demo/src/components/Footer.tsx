@@ -7,6 +7,9 @@ export function Footer() {
           <p className="mt-1 text-xs font-semibold text-muted">Chrome拡張が本体の、貼り付け前チェックツールです。</p>
         </div>
         <div className="flex flex-wrap gap-4 font-semibold text-muted">
+          <a href="#install" className="hover:text-ink">
+            導入手順
+          </a>
           <a href="#extension" className="hover:text-ink">
             拡張機能の使い方
           </a>

@@ -12,6 +12,7 @@ import { DemoCard } from "./components/DemoCard";
 import { DetectionTargetCards } from "./components/DetectionTargetCards";
 import { Footer } from "./components/Footer";
 import { Hero } from "./components/Hero";
+import { LaunchFlowSection } from "./components/LaunchFlowSection";
 import { PrivacySection } from "./components/PrivacySection";
 import { StepCards } from "./components/StepCards";
 import { TechStrip } from "./components/TechStrip";
@@ -175,6 +176,7 @@ export function App() {
     <div className="page-shell min-h-screen text-ink">
       <Hero summary={summary} />
       <main>
+        <LaunchFlowSection />
         <DetectionTargetCards />
         <DemoCard
           text={text}
