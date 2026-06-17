@@ -1,8 +1,8 @@
-import { ArrowDown, Github, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowDown, Chrome, Github, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import type { DetectionSummary } from "@ai-mae-check/core";
 import { Button } from "./ui";
 
-const proofItems = ["本文は保存しない", "外部LLM APIなし", "Chrome拡張で動作"];
+const proofItems = ["Chrome拡張が本体", "本文は保存しない", "外部LLM APIなし"];
 
 export function Hero({ summary }: { summary: DetectionSummary }) {
   return (
@@ -13,8 +13,11 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
           AIまえチェック
         </a>
         <div className="flex items-center gap-4 text-sm font-semibold text-muted">
+          <a className="hover:text-ink" href="#extension">
+            拡張機能
+          </a>
           <a className="hover:text-ink" href="#demo">
-            デモ
+            ミニデモ
           </a>
           <a className="hover:text-ink" href="#privacy">
             プライバシー
@@ -25,16 +28,17 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-16 pt-8 md:grid-cols-[0.95fr_1.05fr] md:pb-24 md:pt-14">
         <div className="max-w-3xl">
           <p className="mb-5 inline-flex items-center gap-2 rounded-card border border-line bg-white/85 px-3 py-2 text-sm font-bold text-leaf shadow-soft">
-            <ShieldCheck size={16} aria-hidden="true" />
-            AIに送る前に、消し忘れを見つける。
+            <Chrome size={16} aria-hidden="true" />
+            本体は、AIサービス上で動くChrome拡張です。
           </p>
           <h1 className="text-5xl font-black leading-[1.02] tracking-normal text-ink md:text-7xl">
-            そのまま
+            Chrome拡張で、
             <br />
-            送らない。
+            そのまま貼らない。
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
-            ChatGPTやClaudeに送る直前、個人情報・秘密情報・社内情報をブラウザ内で確認。怖がらせるのではなく、最後に気づくための小さな安全レイヤーです。
+            ChatGPT・Claude・Geminiに文章を貼る前に、個人情報・秘密情報・社内情報の消し忘れに気づくための確認レイヤーです。
+            このページのデモは、拡張機能を入れる前に動きを試すための小さな体験版です。
           </p>
           <div className="mt-7 flex flex-wrap gap-2">
             {proofItems.map((item) => (
@@ -44,16 +48,22 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
             ))}
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#demo">
+            <a href="#extension">
               <Button variant="primary">
+                <Chrome size={17} aria-hidden="true" />
+                拡張機能の使い方を見る
+              </Button>
+            </a>
+            <a href="#demo">
+              <Button variant="ghost">
                 <ArrowDown size={17} aria-hidden="true" />
-                デモで試す
+                ミニデモで試す
               </Button>
             </a>
             <a href="https://github.com/shunya-mabuchi/ai-mae-check">
               <Button variant="ghost">
                 <Github size={17} aria-hidden="true" />
-                GitHubを見る
+                GitHub
               </Button>
             </a>
           </div>
@@ -67,20 +77,20 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
                 <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
               </div>
-              <span className="text-xs font-black text-white/70">AI送信前の確認</span>
+              <span className="text-xs font-black text-white/70">Chrome拡張の確認モーダル</span>
             </div>
             <div className="grid gap-4 p-4 md:grid-cols-[1fr_0.86fr]">
               <div className="rounded-[6px] border border-line bg-white p-4">
-                <p className="mb-3 text-xs font-black text-muted">ChatGPTへ送る下書き</p>
+                <p className="mb-3 text-xs font-black text-muted">ChatGPTへ貼る直前の文章</p>
                 <div className="space-y-2 text-sm leading-6 text-ink">
                   <p>佐藤様向けの提案メモを要約してください。</p>
                   <p className="rounded-[6px] bg-cloud px-2 py-1 font-mono text-xs">GITHUB_TOKEN=ghp_...</p>
-                  <p>来月の契約更新と月額80万円の条件も含めます。</p>
+                  <p>来月の契約更新と年間120万円の条件も含めます。</p>
                 </div>
               </div>
               <div className="rounded-[6px] border border-line bg-white p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <p className="text-xs font-black text-muted">検出サマリー</p>
+                  <p className="text-xs font-black text-muted">貼り付け前チェック</p>
                   <span className="rounded-card bg-rose-50 px-2 py-1 text-xs font-black text-rose-700">要確認</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
@@ -102,7 +112,9 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
                     <Sparkles size={16} className="text-leaf" aria-hidden="true" />
                     AI文脈チェック
                   </div>
-                  <p className="text-xs leading-5 text-muted">顧客名・案件名・採用情報など、文脈上の注意候補を確認します。</p>
+                  <p className="text-xs leading-5 text-muted">
+                    顧客名・案件名・採用情報など、ルールだけでは拾いにくい候補をブラウザ内で確認します。
+                  </p>
                 </div>
               </div>
             </div>
@@ -110,9 +122,12 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
               <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-muted">
                 <span className="inline-flex items-center gap-1 text-leaf">
                   <LockKeyhole size={14} aria-hidden="true" />
-                  ブラウザ内で検出
+                  対象サイト上で動作
                 </span>
-                <span>設定だけ保存</span>
+                <span className="inline-flex items-center gap-1">
+                  <ShieldCheck size={14} aria-hidden="true" />
+                  設定だけ保存
+                </span>
                 <span>本文ログなし</span>
               </div>
             </div>

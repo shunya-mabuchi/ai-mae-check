@@ -15,9 +15,9 @@ export function DetectionTargetCards() {
   return (
     <section className="mx-auto max-w-7xl px-5 py-16 md:py-24">
       <SectionHeading
-        eyebrow="チェック対象"
-        title="AIに送る前、こんな情報が混ざっていませんか？"
-        description="日常の入力文に混ざりがちな情報を、送信前にブラウザ内で確認します。"
+        eyebrow="Chrome拡張でチェックする対象"
+        title="AIに貼る前、こんな情報が混ざっていませんか？"
+        description="対象サイトの入力欄に貼り付ける直前に、消し忘れが起きやすい情報をブラウザ内で確認します。"
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
         {targets.map((target) => {
