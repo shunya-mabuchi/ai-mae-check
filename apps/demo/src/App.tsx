@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { detectSensitiveText, type DetectionResult } from "@ai-mae-check/core";
 import {
-  detectSensitiveText,
-  maskSensitiveText,
-  mergeFindings,
-  type DetectionResult
-} from "@ai-mae-check/core";
-import {
-  convertContextCandidatesToFindings,
   classifyLlmError,
   createLlmContextAnalyzer,
   isWebGpuAvailable,
@@ -25,6 +19,7 @@ import { PrivacySection } from "./components/PrivacySection";
 import { StepCards } from "./components/StepCards";
 import { TechStrip } from "./components/TechStrip";
 import { contextSampleText, initialLlmMessage, sampleText, type LlmStatus } from "./lib/demoConstants";
+import { createDemoMaskingViewModel, selectCandidateIdsByConfidence } from "./lib/demoMasking";
 
 const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
@@ -40,38 +35,19 @@ export function App() {
   const [llmErrorDetail, setLlmErrorDetail] = useState<LlmErrorDetail | null>(null);
   const [copyMessage, setCopyMessage] = useState("");
 
-  const selectedRuleFindings = useMemo(() => {
-    if (!detection) {
-      return [];
-    }
+  const maskingViewModel = useMemo(
+    () =>
+      createDemoMaskingViewModel({
+        inputText: text,
+        detection,
+        selectedRuleFindingIds,
+        llmCandidates,
+        selectedCandidateIds
+      }),
+    [detection, llmCandidates, selectedCandidateIds, selectedRuleFindingIds, text]
+  );
 
-    return detection.findings.filter((finding) => selectedRuleFindingIds.includes(finding.id));
-  }, [detection, selectedRuleFindingIds]);
-
-  const selectedLlmFindings = useMemo(() => {
-    const selectedCandidates = llmCandidates.filter((candidate) => selectedCandidateIds.includes(candidate.id));
-    return convertContextCandidatesToFindings(text, selectedCandidates);
-  }, [llmCandidates, selectedCandidateIds, text]);
-
-  const mergedFindings = useMemo(() => {
-    if (!detection) {
-      return selectedLlmFindings;
-    }
-
-    return mergeFindings(selectedRuleFindings, selectedLlmFindings);
-  }, [detection, selectedLlmFindings, selectedRuleFindings]);
-
-  const maskedText = useMemo(() => {
-    if (!detection && mergedFindings.length === 0) {
-      return "";
-    }
-
-    if (mergedFindings.length === 0) {
-      return text;
-    }
-
-    return maskSensitiveText(text, mergedFindings).maskedText;
-  }, [detection, mergedFindings, text]);
+  const maskedText = maskingViewModel.maskedText;
 
   const summary = detection?.summary ?? emptySummary;
 
@@ -172,9 +148,7 @@ export function App() {
       }
 
       setLlmCandidates(result.candidates);
-      setSelectedCandidateIds(
-        result.candidates.filter((candidate) => candidate.confidence >= 0.75).map((candidate) => candidate.id)
-      );
+      setSelectedCandidateIds(selectCandidateIdsByConfidence(result.candidates));
 
       if (result.candidates.length > 0) {
         setLlmStatus("done");
