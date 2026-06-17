@@ -3,45 +3,45 @@ import { SectionHeading, Surface } from "./ui";
 
 const steps = [
   {
-    label: "1. 入力",
-    title: "AIに送る直前を検知",
-    text: "ChatGPTやClaudeなどの対象サイトで、送信前の操作をきっかけに確認します。",
+    label: "1. 拡張を入れる",
+    title: "Chrome拡張として利用",
+    text: "AIまえチェックの本体は、ChatGPT・Claude・Gemini上で動くChrome拡張です。",
+    icon: Chrome
+  },
+  {
+    label: "2. 貼り付ける",
+    title: "対象サイトでpasteを検知",
+    text: "入力欄へ文章を貼り付ける直前に、確認モーダルを表示します。",
     icon: MousePointerClick
   },
   {
-    label: "2. 見つける",
+    label: "3. 見つける",
     title: "確定情報はルールで検出",
     text: "メール、電話番号、APIキー、認証付きURLなどはブラウザ内のルールで検出します。",
     icon: ShieldCheck
   },
   {
-    label: "3. 確認する",
+    label: "4. 補助する",
     title: "文脈リスクはAI候補に",
     text: "WebLLMで顧客名や契約前情報などの候補を補助的に確認します。",
     icon: BrainCircuit
   },
   {
-    label: "4. 選ぶ",
-    title: "マスク対象を自分で選択",
-    text: "検出項目ごとに、マスクするか、そのまま残すかをユーザーが決められます。",
+    label: "5. 選んで貼る",
+    title: "ユーザーが最終判断",
+    text: "どれをマスクするか、貼り付けを続けるかはユーザーが選べます。",
     icon: LockKeyhole
-  },
-  {
-    label: "5. 使う",
-    title: "Chrome拡張として利用",
-    text: "バックエンドなしで動き、設定だけをブラウザ内に保存します。",
-    icon: Chrome
   }
 ];
 
 export function StepCards() {
   return (
-    <section className="px-5 py-16 md:py-24">
+    <section id="extension" className="px-5 py-16 md:py-24">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
-          eyebrow="仕組み"
-          title="送る前の確認を、ひとつの流れに。"
-          description="不安を煽るセキュリティ製品ではなく、送信前に自分で確認するための小さなレイヤーです。"
+          eyebrow="Chrome拡張としての使い方"
+          title="本体は、AIサービス上で動く貼り付け前チェックです。"
+          description="紹介ページのデモは体験用です。実際には対象サイトの入力欄に貼り付ける瞬間に、確認とマスキングの選択肢を表示します。"
         />
         <div className="grid gap-3 md:grid-cols-5">
           {steps.map((step) => {
