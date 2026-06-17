@@ -4,7 +4,7 @@
 
 **Goal:** AIまえチェックを、paste前チェック中心の拡張から、ChatGPT / Claude / Gemini の通常入力体験を維持した送信前DLPレイヤーへ移行する。
 
-**Architecture:** 既存monorepoを維持し、`packages/core`をサイト非依存のDLPエンジン、`packages/llm`をWebLLMによる文脈リスク候補チェック、`apps/extension`をサイトadapter・送信インターセプト・UI、`apps/demo`をLP兼体験デモとして分離する。サイドパネルや独自入力欄は作らず、対象サイトの通常入力欄を使う。
+**Architecture:** 既存monorepoを維持し、`packages/core`をサイト非依存のDLPエンジン、`packages/llm`をWebLLMによる文脈リスク候補チェック、`apps/extension`をサイトadapter・送信インターセプト・UI、`apps/demo`を紹介LP兼ミニデモとして分離する。サイドパネルや独自入力欄は作らず、対象サイトの通常入力欄を使う。
 
 **Tech Stack:** TypeScript, pnpm workspace, React, WXT, Vite, Tailwind CSS, Vitest, Playwright, Chrome Extension Manifest V3, WebLLM, Web Worker, WebGPU, chrome.storage.local.
 
