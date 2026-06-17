@@ -2,12 +2,7 @@ import {
   evaluateDlpPolicy,
   type DetectionResult
 } from "@ai-mae-check/core";
-import {
-  classifyLlmError,
-  type ContextRiskCandidate,
-  isContextAnalysisExecutionError,
-  type LlmProgress
-} from "@ai-mae-check/llm";
+import type { ContextRiskCandidate } from "@ai-mae-check/llm";
 import { pasteReviewModalCss } from "./modalStyles";
 import {
   createPasteReviewFooterState,
@@ -21,17 +16,13 @@ import { renderPasteReviewCandidateList, renderPasteReviewFindingList } from "./
 import { createPasteReviewSummaryItems } from "./pasteReviewSummaryView";
 import { createPasteReviewInsertText, createPasteReviewPreviewText } from "./pasteReviewTextTransform";
 import {
-  createPasteReviewLlmResultState,
-  formatPasteReviewLlmStatusMessage,
-  PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
-  PASTE_REVIEW_LLM_LOADING_MESSAGE,
   shouldAutoRunPasteReviewLlm
 } from "./pasteReviewLlmState";
+import { runPasteReviewLlm } from "./pasteReviewLlmRunner";
 import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
 import { createPasteReviewModalElements } from "./pasteReviewModalElements";
 import type { AiMaeCheckSettings } from "./settings";
-import { analyzeContextWithBridge } from "./llmBridgeClient";
 import { createShadowHost } from "./shadowHost";
 
 type ModalDecision =
@@ -113,46 +104,19 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     };
 
     const runLlm = async () => {
-      if (!options.settings.llm.enabled) {
-        llmStatus.textContent = PASTE_REVIEW_LLM_DISABLED_MESSAGE;
-        return;
-      }
-
-      llmButton.setAttribute("disabled", "true");
-      llmStatus.textContent = PASTE_REVIEW_LLM_LOADING_MESSAGE;
-
-      try {
-        const result = await analyzeContextWithBridge(options.inputText, {
-          modelId: options.settings.llm.modelId,
-          existingFindings: options.detection.findings,
-          onProgress: (progress: LlmProgress) => {
-            llmStatus.textContent = progress.message;
-          }
-        });
-
-        if (isContextAnalysisExecutionError(result)) {
-          llmStatus.textContent = formatPasteReviewLlmStatusMessage(
-            result.error ?? "AI文脈チェックを実行できませんでした。",
-            result.errorDetail
-          );
-          return;
-        }
-
-        const resultState = createPasteReviewLlmResultState(result);
-        llmCandidates = resultState.candidates;
-        selectedCandidateIds.clear();
-        for (const candidateId of resultState.selectedCandidateIds) {
-          selectedCandidateIds.add(candidateId);
-        }
-
-        llmStatus.textContent = resultState.statusMessage;
-        render();
-      } catch (error: unknown) {
-        const detail = classifyLlmError(error);
-        llmStatus.textContent = formatPasteReviewLlmStatusMessage(detail.message, detail);
-      } finally {
-        llmButton.removeAttribute("disabled");
-      }
+      await runPasteReviewLlm({
+        enabled: options.settings.llm.enabled,
+        inputText: options.inputText,
+        modelId: options.settings.llm.modelId,
+        existingFindings: options.detection.findings,
+        llmStatus,
+        llmButton,
+        selectedCandidateIds,
+        setCandidates: (candidates) => {
+          llmCandidates = candidates;
+        },
+        render
+      });
     };
 
     maskButton.addEventListener("click", () => {
