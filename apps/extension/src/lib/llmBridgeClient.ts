@@ -10,6 +10,7 @@ import {
   type LlmBridgeResponse
 } from "./llmBridgeMessages";
 import { getExtensionResourceUrl } from "./extensionRuntime";
+import { createJsonParseBridgeFallbackResult } from "./llmBridgeFallback";
 
 interface BridgeConnection {
   port: MessagePort;
@@ -18,7 +19,15 @@ interface BridgeConnection {
 interface PendingRequest<T> {
   resolve: (value: T) => void;
   reject: (reason?: unknown) => void;
+  request: LlmBridgeRequest;
+  startedAt: number;
   onProgress?: (progress: LlmProgress) => void;
+}
+
+interface BridgeErrorFallbackOptions {
+  request: LlmBridgeRequest;
+  startedAt: number;
+  message: string;
 }
 
 interface BridgeAnalyzeOptions extends Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates" | "onProgress"> {
@@ -71,6 +80,18 @@ function waitForIframeLoad(iframe: HTMLIFrameElement): Promise<void> {
   });
 }
 
+export function createBridgeErrorFallbackResult(options: BridgeErrorFallbackOptions): ContextAnalysisResult | null {
+  return createJsonParseBridgeFallbackResult({
+    inputText: options.request.inputText,
+    modelId: options.request.modelId,
+    startedAt: options.startedAt,
+    error: new Error(options.message),
+    ...(typeof options.request.options.maxCandidates === "number"
+      ? { maxCandidates: options.request.options.maxCandidates }
+      : {})
+  });
+}
+
 function handleBridgeMessage(message: LlmBridgeResponse): void {
   if (message.type === "ready") {
     return;
@@ -89,6 +110,16 @@ function handleBridgeMessage(message: LlmBridgeResponse): void {
   pendingRequests.delete(message.requestId);
 
   if (message.type === "error") {
+    const fallback = createBridgeErrorFallbackResult({
+      request: pending.request,
+      startedAt: pending.startedAt,
+      message: message.message
+    });
+    if (fallback) {
+      pending.resolve(fallback);
+      return;
+    }
+
     pending.reject(new Error(message.message));
     return;
   }
@@ -151,7 +182,9 @@ async function sendBridgeRequest<T extends ContextAnalysisResult>(
   return new Promise<T>((resolve, reject) => {
     const pending: PendingRequest<ContextAnalysisResult> = {
       resolve: (value) => resolve(value as T),
-      reject
+      reject,
+      request,
+      startedAt: performance.now()
     };
     if (onProgress) {
       pending.onProgress = onProgress;
