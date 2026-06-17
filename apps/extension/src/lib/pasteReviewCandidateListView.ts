@@ -1,11 +1,14 @@
 import type { ContextRiskCandidate } from "@ai-mae-check/llm";
 import { createPasteReviewCandidateView } from "./pasteReviewCandidateView";
+import {
+  createPasteReviewEmptySelectableListView,
+  type PasteReviewSelectableListItemBase,
+  type PasteReviewSelectableListView
+} from "./pasteReviewSelectableListView";
 
 export const PASTE_REVIEW_CANDIDATE_EMPTY_MESSAGE = "AI文脈チェックの追加候補はありません。";
 
-export interface PasteReviewCandidateListItemView {
-  id: string;
-  selected: boolean;
+export interface PasteReviewCandidateListItemView extends PasteReviewSelectableListItemBase {
   label: string;
   surface: string;
   reason: string;
@@ -15,20 +18,14 @@ export interface PasteReviewCandidateListItemView {
   selectionLabel: string;
 }
 
-export interface PasteReviewCandidateListView {
-  emptyMessage?: string;
-  items: PasteReviewCandidateListItemView[];
-}
+export type PasteReviewCandidateListView = PasteReviewSelectableListView<PasteReviewCandidateListItemView>;
 
 export function createPasteReviewCandidateListView(
   candidates: ContextRiskCandidate[],
   selectedCandidateIds: Set<string>
 ): PasteReviewCandidateListView {
   if (candidates.length === 0) {
-    return {
-      emptyMessage: PASTE_REVIEW_CANDIDATE_EMPTY_MESSAGE,
-      items: []
-    };
+    return createPasteReviewEmptySelectableListView(PASTE_REVIEW_CANDIDATE_EMPTY_MESSAGE);
   }
 
   return {

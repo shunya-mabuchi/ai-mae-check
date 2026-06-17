@@ -1,11 +1,14 @@
 import type { Finding } from "@ai-mae-check/core";
 import { createPasteReviewFindingView } from "./pasteReviewFindingView";
+import {
+  createPasteReviewEmptySelectableListView,
+  type PasteReviewSelectableListItemBase,
+  type PasteReviewSelectableListView
+} from "./pasteReviewSelectableListView";
 
 export const PASTE_REVIEW_FINDING_EMPTY_MESSAGE = "検出項目はありません。";
 
-export interface PasteReviewFindingListItemView {
-  id: string;
-  selected: boolean;
+export interface PasteReviewFindingListItemView extends PasteReviewSelectableListItemBase {
   label: string;
   text: string;
   message: string;
@@ -15,20 +18,14 @@ export interface PasteReviewFindingListItemView {
   selectionLabel: string;
 }
 
-export interface PasteReviewFindingListView {
-  emptyMessage?: string;
-  items: PasteReviewFindingListItemView[];
-}
+export type PasteReviewFindingListView = PasteReviewSelectableListView<PasteReviewFindingListItemView>;
 
 export function createPasteReviewFindingListView(
   findings: Finding[],
   selectedFindingIds: Set<string>
 ): PasteReviewFindingListView {
   if (findings.length === 0) {
-    return {
-      emptyMessage: PASTE_REVIEW_FINDING_EMPTY_MESSAGE,
-      items: []
-    };
+    return createPasteReviewEmptySelectableListView(PASTE_REVIEW_FINDING_EMPTY_MESSAGE);
   }
 
   return {
