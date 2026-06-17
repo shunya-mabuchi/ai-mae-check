@@ -8,7 +8,7 @@ import {
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
-import { classifyLlmError } from "./errors";
+import { classifyLlmError, createJsonParseFallbackMessage } from "./errors";
 import { resolveModelId, type WebLlmModelListModule } from "./model";
 import { parseContextAnalysisJson } from "./parser";
 import { buildContextRiskPrompt } from "./prompt";
@@ -70,12 +70,6 @@ type NavigatorWithGpu = Navigator & {
     requestAdapter(options?: { powerPreference?: "low-power" | "high-performance" }): Promise<unknown | null>;
   };
 };
-
-const UNREADABLE_OUTPUT_SUMMARY =
-  "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。";
-
-const UNREADABLE_OUTPUT_WITH_FALLBACK_SUMMARY =
-  "ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。";
 
 type NormalizedLlmAnalyzerOptions = Required<Omit<LlmAnalyzerOptions, "workerUrl">> & {
   workerUrl?: string;
@@ -170,7 +164,7 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
 
         return {
           candidates: fallbackCandidates,
-          summary: fallbackCandidates.length > 0 ? UNREADABLE_OUTPUT_WITH_FALLBACK_SUMMARY : UNREADABLE_OUTPUT_SUMMARY,
+          summary: createJsonParseFallbackMessage(fallbackCandidates.length),
           rawText,
           modelId,
           elapsedMs: Math.max(0, performance.now() - startedAt)

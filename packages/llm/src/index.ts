@@ -12,7 +12,12 @@ export {
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
 export { convertContextCandidatesToFindings } from "./convert";
-export { classifyLlmError, formatLlmErrorMessage, isContextAnalysisExecutionError } from "./errors";
+export {
+  classifyLlmError,
+  createJsonParseFallbackMessage,
+  formatLlmErrorMessage,
+  isContextAnalysisExecutionError
+} from "./errors";
 export { getAvailableModelIds, resolveModelId } from "./model";
 export { parseContextAnalysisJson } from "./parser";
 export { extractResidualContextTerms, mergeResidualContextCandidates } from "./residualMasking";

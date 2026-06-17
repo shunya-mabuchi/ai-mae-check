@@ -9,6 +9,10 @@ const MODEL_FETCH_ERROR_MESSAGE =
 
 const JSON_PARSE_ERROR_MESSAGE =
   "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。";
+const JSON_PARSE_RULE_BASED_FALLBACK_MESSAGE =
+  "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。";
+const JSON_PARSE_RESIDUAL_FALLBACK_MESSAGE =
+  "ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。";
 
 const STORAGE_ERROR_MESSAGE =
   "ローカルAIモデルの保存領域を確保できませんでした。ブラウザのサイトデータや空き容量を確認してください。ルールベースの検出結果は引き続き利用できます。";
@@ -185,4 +189,8 @@ export function formatLlmErrorMessage(error: unknown): string {
 
 export function isContextAnalysisExecutionError(result: Pick<ContextAnalysisResult, "error" | "errorDetail">): boolean {
   return Boolean(result.error) && result.errorDetail?.kind !== "json_parse";
+}
+
+export function createJsonParseFallbackMessage(candidateCount: number): string {
+  return candidateCount > 0 ? JSON_PARSE_RESIDUAL_FALLBACK_MESSAGE : JSON_PARSE_RULE_BASED_FALLBACK_MESSAGE;
 }
