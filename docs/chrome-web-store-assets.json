@@ -1,0 +1,62 @@
+{
+  "storeIcon": {
+    "path": "docs/assets/store/icon-128.png",
+    "width": 128,
+    "height": 128,
+    "purpose": "Chrome Web Storeのストアアイコン"
+  },
+  "screenshots": [
+    {
+      "order": 1,
+      "path": "docs/assets/store/screenshot-03-extension-modal.png",
+      "title": "拡張機能の安全化モーダル",
+      "purpose": "ChatGPTなどに貼り付ける前に、検出項目と安全化後プレビューを確認できることを見せる。",
+      "primarySurface": "extension",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "order": 2,
+      "path": "docs/assets/store/screenshot-04-options.png",
+      "title": "拡張機能の設定画面",
+      "purpose": "対象サイト、検出ルール、AI文脈チェック、本文を保存しない設計を設定画面として見せる。",
+      "primarySurface": "extension",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "order": 3,
+      "path": "docs/assets/store/screenshot-02-demo.png",
+      "title": "ミニデモ画面",
+      "purpose": "拡張を入れる前に、ルール検出とマスク対象選択の流れを試せる補助体験として見せる。",
+      "primarySurface": "demo",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "order": 4,
+      "path": "docs/assets/store/screenshot-01-lp.png",
+      "title": "紹介LPのファーストビュー",
+      "purpose": "プロダクト名、Chrome拡張であること、ブラウザ内処理の価値を補助的に伝える。",
+      "primarySurface": "landing",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "promotionalImages": [
+    {
+      "type": "small",
+      "path": "docs/assets/store/promo-small-440x280.png",
+      "width": 440,
+      "height": 280,
+      "purpose": "Chrome Web Store一覧や小さな訴求枠で、貼り付け前チェックの価値を短く伝える。"
+    },
+    {
+      "type": "marquee",
+      "path": "docs/assets/store/promo-marquee-1400x560.png",
+      "width": 1400,
+      "height": 560,
+      "purpose": "任意の大きな訴求枠で、AIへ送る前の確認レイヤーであることを伝える。"
+    }
+  ]
+}

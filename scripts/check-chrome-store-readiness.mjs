@@ -5,18 +5,9 @@ const rootDir = resolve(".");
 const manifestPath = resolve(rootDir, "apps/extension/.output/chrome-mv3/manifest.json");
 const outputDir = resolve(rootDir, "apps/extension/.output");
 const listingPath = resolve(rootDir, "docs/chrome-web-store-listing.json");
+const assetManifestPath = resolve(rootDir, "docs/chrome-web-store-assets.json");
 const privacyPolicyPath = resolve(rootDir, "docs/privacy-policy.md");
 const maxZipBytes = 2 * 1024 * 1024 * 1024;
-
-const requiredAssets = [
-  ["docs/assets/store/icon-128.png", 128, 128],
-  ["docs/assets/store/screenshot-01-lp.png", 1280, 800],
-  ["docs/assets/store/screenshot-02-demo.png", 1280, 800],
-  ["docs/assets/store/screenshot-03-extension-modal.png", 1280, 800],
-  ["docs/assets/store/screenshot-04-options.png", 1280, 800],
-  ["docs/assets/store/promo-small-440x280.png", 440, 280],
-  ["docs/assets/store/promo-marquee-1400x560.png", 1400, 560]
-];
 
 const forbiddenPhrases = ["完全に安全", "100%", "すべての情報漏洩を防ぎます"];
 
@@ -53,6 +44,16 @@ function assertPngDimensions(relativePath, expectedWidth, expectedHeight) {
   }
 }
 
+function assertAsset(asset, context) {
+  assertText(asset?.path, `${context}.path`);
+
+  if (!Number.isInteger(asset.width) || !Number.isInteger(asset.height)) {
+    fail(`${context}.width and ${context}.height must be integers`);
+  }
+
+  assertPngDimensions(asset.path, asset.width, asset.height);
+}
+
 if (!existsSync(manifestPath)) {
   fail(`manifest not found at ${manifestPath}. Run pnpm build:extension first.`);
 }
@@ -82,11 +83,16 @@ if (!existsSync(listingPath)) {
   fail("docs/chrome-web-store-listing.json is missing");
 }
 
+if (!existsSync(assetManifestPath)) {
+  fail("docs/chrome-web-store-assets.json is missing");
+}
+
 if (!existsSync(privacyPolicyPath)) {
   fail("docs/privacy-policy.md is missing");
 }
 
 const manifest = readJson(manifestPath);
+const assetManifest = readJson(assetManifestPath);
 const listingText = readFileSync(listingPath, "utf8");
 const listing = JSON.parse(listingText);
 
@@ -165,8 +171,55 @@ if (!Array.isArray(listing.testInstructions) || listing.testInstructions.length 
   fail("testInstructions must contain 6 reviewer steps");
 }
 
-for (const [relativePath, width, height] of requiredAssets) {
-  assertPngDimensions(relativePath, width, height);
+assertAsset(assetManifest.storeIcon, "storeIcon");
+if (assetManifest.storeIcon.width !== 128 || assetManifest.storeIcon.height !== 128) {
+  fail("storeIcon must be 128x128");
+}
+
+if (!Array.isArray(assetManifest.screenshots)) {
+  fail("screenshots must be an array");
+}
+
+if (assetManifest.screenshots.length < 1 || assetManifest.screenshots.length > 5) {
+  fail("screenshots must contain 1 to 5 images");
+}
+
+const screenshotOrders = assetManifest.screenshots.map((screenshot) => screenshot.order);
+const expectedOrders = assetManifest.screenshots.map((_, index) => index + 1);
+if (JSON.stringify(screenshotOrders) !== JSON.stringify(expectedOrders)) {
+  fail(`screenshot orders must be sequential from 1. actual=${JSON.stringify(screenshotOrders)}`);
+}
+
+for (const [index, screenshot] of assetManifest.screenshots.entries()) {
+  assertAsset(screenshot, `screenshots[${index}]`);
+  assertText(screenshot.title, `screenshots[${index}].title`);
+  assertText(screenshot.purpose, `screenshots[${index}].purpose`);
+
+  if (screenshot.width !== 1280 || screenshot.height !== 800) {
+    fail(`screenshots[${index}] must be 1280x800`);
+  }
+}
+
+if (assetManifest.screenshots[0]?.primarySurface !== "extension" || assetManifest.screenshots[1]?.primarySurface !== "extension") {
+  fail("the first two screenshots must show the Chrome extension itself");
+}
+
+if (!Array.isArray(assetManifest.promotionalImages)) {
+  fail("promotionalImages must be an array");
+}
+
+for (const promo of assetManifest.promotionalImages) {
+  assertAsset(promo, `promotionalImages.${promo?.type ?? "unknown"}`);
+}
+
+const smallPromo = assetManifest.promotionalImages.find((promo) => promo.type === "small");
+if (!smallPromo || smallPromo.width !== 440 || smallPromo.height !== 280) {
+  fail("small promotional image must be 440x280");
+}
+
+const marqueePromo = assetManifest.promotionalImages.find((promo) => promo.type === "marquee");
+if (!marqueePromo || marqueePromo.width !== 1400 || marqueePromo.height !== 560) {
+  fail("marquee promotional image must be 1400x560");
 }
 
 console.log("Chrome Web Store readiness QA passed");

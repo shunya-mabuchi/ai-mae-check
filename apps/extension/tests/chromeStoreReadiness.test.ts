@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const rootDir = resolve(__dirname, "../../..");
 const listingPath = resolve(rootDir, "docs/chrome-web-store-listing.json");
+const assetManifestPath = resolve(rootDir, "docs/chrome-web-store-assets.json");
 const qaScriptPath = resolve(rootDir, "scripts/check-chrome-store-readiness.mjs");
 
 function readJson<T>(path: string): T {
@@ -51,6 +52,28 @@ describe("Chrome Web Store readiness", () => {
     expect(listingText).not.toContain("完全に安全");
     expect(listingText).not.toContain("100%");
     expect(listingText).not.toContain("すべての情報漏洩を防ぎます");
+  });
+
+  it("ストア掲載素材の最終アップロード順をJSONで管理する", () => {
+    expect(existsSync(assetManifestPath)).toBe(true);
+
+    const assetManifest = readJson<{
+      screenshots: Array<{ order: number; path: string; purpose: string; primarySurface: "extension" | "demo" | "landing" }>;
+      promotionalImages: Array<{ type: string; path: string; width: number; height: number }>;
+    }>(assetManifestPath);
+
+    expect(assetManifest.screenshots).toHaveLength(4);
+    expect(assetManifest.screenshots.map((screenshot) => screenshot.order)).toEqual([1, 2, 3, 4]);
+    expect(assetManifest.screenshots[0]?.primarySurface).toBe("extension");
+    expect(assetManifest.screenshots[0]?.path).toContain("screenshot-03-extension-modal.png");
+    expect(assetManifest.screenshots[1]?.primarySurface).toBe("extension");
+    expect(assetManifest.screenshots[1]?.path).toContain("screenshot-04-options.png");
+    expect(assetManifest.promotionalImages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "small", width: 440, height: 280 }),
+        expect.objectContaining({ type: "marquee", width: 1400, height: 560 })
+      ])
+    );
   });
 
   it("Chrome Web Store提出前QAコマンドをroot scriptsに用意する", () => {

@@ -1,6 +1,6 @@
 # Chrome Web Store / ポートフォリオ用ブランド資産
 
-このドキュメントは、AIまえチェックの公開前提画像を管理するためのメモです。画像内の文章とデータはすべて実在しないダミーです。プロダクト本体はChrome拡張であり、READMEでは実機確認時の拡張機能画面だけを掲載します。ストア掲載用の生成画像案は、このドキュメントで別管理します。
+このドキュメントは、AIまえチェックの公開前提画像を管理するためのメモです。画像内の文章とデータはすべて実在しないダミーです。プロダクト本体はChrome拡張であり、READMEでは実機確認時の拡張機能画面だけを掲載します。Chrome Web Storeでは `docs/assets/store/` 配下の1280x800画像を最終セットとして使います。
 
 ## 参照した公式要件
 
@@ -36,19 +36,28 @@ apps/extension/public/icon/48.png
 apps/extension/public/icon/128.png
 ```
 
-## ストア掲載用画像案
+## ストア掲載用最終セット
 
-以下はChrome Web Storeやポートフォリオ掲載に向けた生成画像案です。READMEに掲載している実機スクリーンショットとは別物です。
+Chrome Web Storeへアップロードする画像の最終セットと順番は [chrome-web-store-assets.json](./chrome-web-store-assets.json) で管理します。READMEに掲載している実機スクリーンショットとは別物です。
 
 ```text
 docs/assets/store/icon-128.png
 docs/assets/store/screenshot-03-extension-modal.png
 docs/assets/store/screenshot-04-options.png
-docs/assets/store/screenshot-01-lp.png
 docs/assets/store/screenshot-02-demo.png
+docs/assets/store/screenshot-01-lp.png
 docs/assets/store/promo-small-440x280.png
 docs/assets/store/promo-marquee-1400x560.png
 ```
+
+スクリーンショットのアップロード順:
+
+1. `screenshot-03-extension-modal.png`: 拡張機能の安全化モーダル
+2. `screenshot-04-options.png`: 拡張機能の設定画面
+3. `screenshot-02-demo.png`: 拡張を入れる前のミニデモ
+4. `screenshot-01-lp.png`: 紹介LPのファーストビュー
+
+最初の2枚はChrome拡張本体の画面にします。LPとミニデモは補助体験であり、ストア上では後ろに置きます。
 
 ## README掲載用の実機クロップ画像
 
@@ -62,10 +71,10 @@ docs/assets/readme/extension-context-modal.png
 
 ## 掲載意図
 
-- `screenshot-03-extension-modal.png`: Chrome拡張の貼り付け前確認モーダルを見せる生成画像案
+- `screenshot-03-extension-modal.png`: Chrome拡張の貼り付け前確認モーダルを見せる
 - `screenshot-04-options.png`: 拡張機能の設定、対象サイト、AI文脈チェック、本文を保存しない設計を見せる
-- `screenshot-01-lp.png`: Chrome拡張が本体であることと、プロダクト価値をファーストビューで伝える
 - `screenshot-02-demo.png`: 拡張を入れる前に、検出とマスク対象選択の流れを試せるミニデモとして見せる
+- `screenshot-01-lp.png`: Chrome拡張が本体であることと、プロダクト価値をファーストビューで伝える
 - `extension-paste-modal.png`: 実機上の貼り付け前安全化モーダルを見せる
 - `extension-send-modal.png`: 実機上の送信前安全化モーダルを見せる
 - `extension-context-modal.png`: ルール検出なしでAI文脈チェックへ進む実機モーダルを見せる
@@ -76,7 +85,7 @@ docs/assets/readme/extension-context-modal.png
 
 - 画像内には実在の個人情報、実APIキー、実トークンを入れない
 - 本文を保存しない設計と、WebLLMモデル取得が発生する場合があることは、ストア説明文でも別途明記する
-- READMEには実機クロップ画像だけを掲載し、生成画像案は直接掲載しない
+- READMEには実機クロップ画像だけを掲載し、ストア用1280x800画像は直接掲載しない
 - ストア掲載のスクリーンショット順は、Chrome拡張の画面を優先し、LP/ミニデモは補助体験として後ろに置く
 - README用の実機クロップ画像は、Chrome Web Storeの1280x800要件を満たすための画像ではない。ストア提出時はDeveloper Dashboardの要件に合わせて別途最終調整する
 - ストア提出時にはDeveloper Dashboard上の最新バリデーションに従って最終確認する
