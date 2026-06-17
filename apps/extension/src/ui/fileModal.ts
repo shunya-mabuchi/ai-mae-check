@@ -1,5 +1,6 @@
 import type { DetectionResult, DlpPolicyDecision, RiskDecisionLevel } from "@ai-mae-check/core";
 import { filePreflightModalCss } from "./fileModalStyles";
+import { createElement } from "../lib/domElement";
 
 export interface FilePreflightModalItem {
   fileName: string;
@@ -24,21 +25,6 @@ const riskLabel: Record<RiskDecisionLevel, string> = {
   high: "高",
   critical: "重大"
 };
-
-function createElement<K extends keyof HTMLElementTagNameMap>(
-  tagName: K,
-  className?: string,
-  text?: string
-): HTMLElementTagNameMap[K] {
-  const element = document.createElement(tagName);
-  if (className) {
-    element.className = className;
-  }
-  if (text !== undefined) {
-    element.textContent = text;
-  }
-  return element;
-}
 
 function formatSize(size: number): string {
   if (size < 1024) {

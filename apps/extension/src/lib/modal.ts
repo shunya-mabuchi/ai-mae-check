@@ -36,6 +36,7 @@ import {
 import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
 import type { AiMaeCheckSettings } from "./settings";
 import { analyzeContextWithBridge } from "./llmBridgeClient";
+import { createElement } from "./domElement";
 
 type ModalDecision =
   | {
@@ -51,21 +52,6 @@ interface PasteReviewModalOptions {
   detection: DetectionResult;
   settings: AiMaeCheckSettings;
   mode?: PasteReviewModalMode;
-}
-
-function createElement<K extends keyof HTMLElementTagNameMap>(
-  tagName: K,
-  className?: string,
-  text?: string
-): HTMLElementTagNameMap[K] {
-  const element = document.createElement(tagName);
-  if (className) {
-    element.className = className;
-  }
-  if (text !== undefined) {
-    element.textContent = text;
-  }
-  return element;
 }
 
 function renderFindingList(

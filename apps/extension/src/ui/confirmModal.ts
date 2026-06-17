@@ -14,6 +14,7 @@ import {
   updateCategorySelection
 } from "./confirmModalState";
 import { confirmModalCss } from "./styles";
+import { createElement } from "../lib/domElement";
 
 export type ConfirmModalDecision =
   | {
@@ -31,21 +32,6 @@ export interface SendConfirmModalOptions {
   inputText: string;
   detection: DetectionResult;
   defaultMode?: TransformMode;
-}
-
-function createElement<K extends keyof HTMLElementTagNameMap>(
-  tagName: K,
-  className?: string,
-  text?: string
-): HTMLElementTagNameMap[K] {
-  const element = document.createElement(tagName);
-  if (className) {
-    element.className = className;
-  }
-  if (text !== undefined) {
-    element.textContent = text;
-  }
-  return element;
 }
 
 export async function showSendConfirmModal(options: SendConfirmModalOptions): Promise<ConfirmModalDecision> {
