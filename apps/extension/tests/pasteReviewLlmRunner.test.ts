@@ -159,4 +159,35 @@ describe("runPasteReviewLlm", () => {
     expect(llmStatus.textContent).toContain("診断メモ: ページを再読み込みしてから再試行してください。");
     expect(render).not.toHaveBeenCalled();
   });
+
+  it("JSON読み取り失敗でrejectされても補助候補を表示して続行できる状態にする", async () => {
+    const analyze = vi.fn(async () => {
+      throw new Error("AI文脈チェックの結果を読み取れませんでした");
+    });
+    const llmStatus = { textContent: "" };
+    const llmButton = new FakeButton();
+    const selectedCandidateIds = new Set<string>();
+    const setCandidates = vi.fn();
+    const render = vi.fn();
+
+    await runPasteReviewLlm({
+      enabled: true,
+      inputText: "佐藤様向けに Project Blue Bridge の提案メモを作ります。",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      existingFindings: [],
+      llmStatus: llmStatus as HTMLElement,
+      llmButton: llmButton as unknown as HTMLButtonElement,
+      selectedCandidateIds,
+      setCandidates,
+      render,
+      analyze
+    });
+
+    const candidates = setCandidates.mock.calls[0]?.[0] as ContextAnalysisResult["candidates"];
+    expect(candidates.map((candidate) => candidate.surface)).toEqual(["Project Blue Bridge", "佐藤様"]);
+    expect(Array.from(selectedCandidateIds)).toEqual(["local-context-project_name-1", "local-context-person_name-1"]);
+    expect(llmStatus.textContent).toBe("ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。");
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(llmButton.attributes.has("disabled")).toBe(false);
+  });
 });
