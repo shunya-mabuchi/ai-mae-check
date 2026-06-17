@@ -18,8 +18,8 @@ import {
 import {
   createInitialSelectedCandidateIds,
   createInitialSelectedFindingIds,
+  handlePasteReviewSelectionToggle,
   resolvePasteReviewFindings,
-  updateSelectedIdSet
 } from "./pasteReviewSelection";
 import { createPasteReviewCandidateListView } from "./pasteReviewCandidateListView";
 import { createPasteReviewFindingListView } from "./pasteReviewFindingListView";
@@ -88,8 +88,12 @@ function renderFindingList(
     checkbox.type = "checkbox";
     checkbox.checked = view.selected;
     checkbox.addEventListener("change", () => {
-      updateSelectedIdSet(selectedFindingIds, view.id, checkbox.checked);
-      onChange();
+      handlePasteReviewSelectionToggle({
+        selectedIds: selectedFindingIds,
+        id: view.id,
+        checked: checkbox.checked,
+        onChange
+      });
     });
 
     const body = createElement("div");
@@ -126,8 +130,12 @@ function renderCandidates(
     checkbox.type = "checkbox";
     checkbox.checked = view.selected;
     checkbox.addEventListener("change", () => {
-      updateSelectedIdSet(selectedCandidateIds, view.id, checkbox.checked);
-      onChange();
+      handlePasteReviewSelectionToggle({
+        selectedIds: selectedCandidateIds,
+        id: view.id,
+        checked: checkbox.checked,
+        onChange
+      });
     });
 
     const body = createElement("div");

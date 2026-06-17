@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   createInitialSelectedCandidateIds,
   createInitialSelectedFindingIds,
+  handlePasteReviewSelectionToggle,
   resolvePasteReviewFindings,
   updateSelectedIdSet
 } from "../src/lib/pasteReviewSelection";
@@ -91,5 +92,30 @@ describe("pasteReviewSelection", () => {
 
     updateSelectedIdSet(selectedIds, "phone", false);
     expect([...selectedIds]).toEqual(["email", "project"]);
+  });
+
+  it("選択トグル時にID Setを更新して変更通知を呼ぶ", () => {
+    const selectedIds = new Set(["email"]);
+    let changeCount = 0;
+
+    handlePasteReviewSelectionToggle({
+      selectedIds,
+      id: "project",
+      checked: true,
+      onChange: () => {
+        changeCount += 1;
+      }
+    });
+    handlePasteReviewSelectionToggle({
+      selectedIds,
+      id: "email",
+      checked: false,
+      onChange: () => {
+        changeCount += 1;
+      }
+    });
+
+    expect([...selectedIds]).toEqual(["project"]);
+    expect(changeCount).toBe(2);
   });
 });
