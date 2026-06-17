@@ -65,7 +65,12 @@ export function isJsonParseLlmErrorMessage(message: string | undefined): boolean
   }
 
   const lowerMessage = message.toLowerCase();
-  return message.includes("AI文脈チェックの結果を読み取れませんでした") || lowerMessage.includes("json");
+  const normalizedMessage = message.replace(/\s+/g, "");
+  const isJapaneseReadFailure =
+    normalizedMessage.includes("読み取れ") &&
+    (normalizedMessage.includes("AI文脈チェック") || normalizedMessage.includes("出力形式"));
+
+  return message.includes("AI文脈チェックの結果を読み取れませんでした") || lowerMessage.includes("json") || isJapaneseReadFailure;
 }
 
 export function classifyLlmError(error: unknown): LlmErrorDetail {

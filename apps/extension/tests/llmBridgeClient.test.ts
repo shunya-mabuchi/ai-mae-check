@@ -26,6 +26,25 @@ describe("createBridgeErrorFallbackResult", () => {
     expect(result?.candidates.map((candidate) => candidate.surface)).toContain("山田花子さん");
   });
 
+  it("bridgeの出力形式読み取り失敗errorも非致命の文脈チェック結果に変換する", () => {
+    const result = createBridgeErrorFallbackResult({
+      request: {
+        type: "analyze",
+        requestId: "request-output-format",
+        inputText: "佐藤様向けに Project Blue Bridge の提案メモを作ります。",
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        options: {}
+      },
+      startedAt: performance.now(),
+      message: "AI文脈チェックの出力形式は読み取れませんでした"
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.error).toBeUndefined();
+    expect(result?.summary).toBe("ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。");
+    expect(result?.candidates.map((candidate) => candidate.surface)).toContain("Project Blue Bridge");
+  });
+
   it("WebGPUやWorkerの実行不能errorはfallbackにしない", () => {
     const result = createBridgeErrorFallbackResult({
       request: {

@@ -166,6 +166,12 @@ describe("pasteReviewLlmState", () => {
     ).toBe("ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。");
   });
 
+  it("出力形式を読み取れない日本語メッセージも非致命メッセージとして表示する", () => {
+    expect(formatPasteReviewLlmStatusMessage("AI文脈チェックの出力形式は読み取れませんでした")).toBe(
+      "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
+    );
+  });
+
   it("エラー詳細がない場合は元メッセージだけを返す", () => {
     expect(formatPasteReviewLlmStatusMessage("文脈リスクを確認しています。")).toBe("文脈リスクを確認しています。");
   });

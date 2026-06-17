@@ -91,6 +91,13 @@ describe("formatLlmErrorMessage", () => {
     expect(detail.message).toContain("実行ファイル");
   });
 
+  it("出力形式を読み取れない日本語メッセージもjson_parseとして分類する", () => {
+    const detail = classifyLlmError(new Error("AI文脈チェックの出力形式は読み取れませんでした"));
+
+    expect(detail.kind).toBe("json_parse");
+    expect(detail.message).toBe("AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。");
+  });
+
   it("不明なエラーでは汎用メッセージにする", () => {
     const message = formatLlmErrorMessage(new Error("unknown internal error"));
 
