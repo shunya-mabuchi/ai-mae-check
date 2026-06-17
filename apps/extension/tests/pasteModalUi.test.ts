@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createPasteReviewActionState } from "../src/lib/modal";
+import { createPasteReviewActionState } from "../src/lib/pasteReviewState";
 
 describe("paste review modal UI", () => {
   it("paste_guardモードでも安全な依頼文生成を表示しない", () => {
@@ -31,10 +31,17 @@ describe("paste review modal UI", () => {
   });
 
   it("disabled状態のprimaryボタンにhoverしても白いボタンに変わらない", () => {
+    const stylesPath = resolve(process.cwd(), "src/lib/modalStyles.ts");
     const modalSource = readFileSync(resolve(process.cwd(), "src/lib/modal.ts"), "utf8");
 
-    expect(modalSource).toContain(".hm-primary:disabled:hover");
-    expect(modalSource).toContain("background: #2f7d57");
+    expect(existsSync(stylesPath)).toBe(true);
+    expect(modalSource).toContain('import { pasteReviewModalCss } from "./modalStyles"');
+    expect(modalSource).toContain("style.textContent = pasteReviewModalCss");
+    expect(modalSource).not.toContain("const css = `");
+
+    const stylesSource = readFileSync(stylesPath, "utf8");
+    expect(stylesSource).toContain(".hm-primary:disabled:hover");
+    expect(stylesSource).toContain("background: #2f7d57");
   });
 
   it("mediumリスクの貼り付けはpaste_guardではなく通常確認として扱う", () => {
