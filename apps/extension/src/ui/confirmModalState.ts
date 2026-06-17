@@ -117,11 +117,19 @@ export function createConfirmedText(
 ): string {
   const selected = selectedFindings(findings, selectedFindingIds);
 
-  if (selected.length === 0) {
+  return createConfirmedTextFromFindings(inputText, selected, mode);
+}
+
+export function createConfirmedTextFromFindings(
+  inputText: string,
+  findings: Finding[],
+  mode: TransformMode = "generalize"
+): string {
+  if (findings.length === 0) {
     return inputText;
   }
 
-  return transformText(inputText, selected, mode).transformedText;
+  return transformText(inputText, findings, mode).transformedText;
 }
 
 export function selectedFindings(findings: Finding[], selectedFindingIds: Set<string>): Finding[] {

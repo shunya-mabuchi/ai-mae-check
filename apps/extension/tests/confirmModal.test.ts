@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { detectSensitiveText, evaluateDlpPolicy } from "@ai-mae-check/core";
 import {
@@ -9,6 +10,14 @@ import {
 } from "../src/ui/confirmModalState";
 
 describe("confirmModal helpers", () => {
+  it("送信前UIは編集ではなく短いAIチェック導線を表示する", () => {
+    const source = readFileSync(new URL("../src/ui/confirmModal.ts", import.meta.url), "utf8");
+
+    expect(source).toContain('"AIチェック"');
+    expect(source).not.toContain('"編集"');
+    expect(source).not.toContain("AI文脈チェックで追加候補を見る");
+  });
+
   it("検出結果をカテゴリ単位にまとめる", () => {
     const detection = detectSensitiveText("メールは taro@example.com、費用は300万円です。");
     const groups = createCategoryGroups(detection.findings, evaluateDlpPolicy(detection.findings));

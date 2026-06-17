@@ -76,7 +76,8 @@ export default defineContentScript({
         review: async ({ inputText, detection }) => {
           const decision = await showSendConfirmModal({
             inputText,
-            detection
+            detection,
+            llm: settings.llm
           });
 
           if (decision.type === "submit") {

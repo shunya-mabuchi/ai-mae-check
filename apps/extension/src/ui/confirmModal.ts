@@ -3,26 +3,29 @@ import {
   type DetectionResult,
   type TransformMode
 } from "@ai-mae-check/core";
+import type { ContextRiskCandidate } from "@ai-mae-check/llm";
 import {
   canSubmitSelection,
   createCategoryGroups,
   createConfirmModalFooterState,
-  createConfirmedText,
+  createConfirmedTextFromFindings,
   decisionLabels,
   riskLabels,
   updateCategorySelection
 } from "./confirmModalState";
 import { confirmModalCss } from "./styles";
 import { createElement } from "../lib/domElement";
+import { renderPasteReviewCandidateList } from "../lib/pasteReviewListRenderers";
+import { runPasteReviewLlm } from "../lib/pasteReviewLlmRunner";
+import { PASTE_REVIEW_LLM_INITIAL_MESSAGE } from "../lib/pasteReviewLlmState";
+import { resolvePasteReviewFindings } from "../lib/pasteReviewSelection";
+import type { AiMaeCheckSettings } from "../lib/settings";
 import { createShadowHost } from "../lib/shadowHost";
 
 export type ConfirmModalDecision =
   | {
       type: "submit";
       text: string;
-    }
-  | {
-      type: "edit";
     }
   | {
       type: "cancel";
@@ -32,6 +35,7 @@ export interface SendConfirmModalOptions {
   inputText: string;
   detection: DetectionResult;
   defaultMode?: TransformMode;
+  llm?: AiMaeCheckSettings["llm"];
 }
 
 export async function showSendConfirmModal(options: SendConfirmModalOptions): Promise<ConfirmModalDecision> {
@@ -39,6 +43,8 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     const policy = evaluateDlpPolicy(options.detection.findings);
     const groups = createCategoryGroups(options.detection.findings, policy);
     const selectedFindingIds = new Set(options.detection.findings.map((finding) => finding.id));
+    const selectedCandidateIds = new Set<string>();
+    let llmCandidates: ContextRiskCandidate[] = [];
     const mode: TransformMode = options.defaultMode ?? "generalize";
 
     const { shadow, cleanup } = createShadowHost(confirmModalCss);
@@ -75,13 +81,19 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     const preview = createElement("pre", "amc-preview");
     const status = createElement("p", "amc-note");
     status.textContent = "具体的な値を、メールアドレス・電話番号などの日本語ラベルへ置き換えます。";
-    transformPanel.append(previewTitle, status, preview);
+    const llmPanel = createElement("div", "amc-llm-panel");
+    const llmTitle = createElement("h3", undefined, "AI文脈チェック");
+    const llmStatus = createElement("p", "amc-note", PASTE_REVIEW_LLM_INITIAL_MESSAGE);
+    const candidateList = createElement("div", "amc-candidates");
+    llmPanel.append(llmTitle, llmStatus, candidateList);
+    transformPanel.append(previewTitle, status, preview, llmPanel);
 
     const footer = createElement("footer", "amc-footer");
     const submitButton = createElement("button", "amc-button amc-primary");
-    const editButton = createElement("button", "amc-button", "編集");
+    const llmButton = createElement("button", "amc-button", "AIチェック") as HTMLButtonElement;
+    llmButton.title = "AI文脈チェックを実行";
     const cancelButton = createElement("button", "amc-button", "キャンセル");
-    footer.append(submitButton, editButton, cancelButton);
+    footer.append(submitButton, llmButton, cancelButton);
 
     grid.append(categoryPanel, transformPanel);
     body.append(summary, grid);
@@ -89,16 +101,39 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     overlay.append(dialog);
     shadow.append(overlay);
 
+    const currentFindings = () => {
+      return resolvePasteReviewFindings({
+        input: options.inputText,
+        ruleFindings: options.detection.findings,
+        selectedRuleFindingIds: selectedFindingIds,
+        candidates: llmCandidates,
+        selectedCandidateIds
+      });
+    };
+
     const renderPreview = () => {
-      preview.textContent = createConfirmedText(options.inputText, options.detection.findings, selectedFindingIds, mode);
+      const findings = currentFindings();
+      preview.textContent = createConfirmedTextFromFindings(options.inputText, findings, mode);
       const footerState = createConfirmModalFooterState({
         policy,
         groups,
-        findings: options.detection.findings,
-        selectedFindingIds
+        findings,
+        selectedFindingIds: new Set(findings.map((finding) => finding.id))
       });
       submitButton.textContent = footerState.submitButtonText;
       submitButton.toggleAttribute("disabled", footerState.submitButtonDisabled);
+    };
+
+    const renderCandidates = () => {
+      renderPasteReviewCandidateList(candidateList, llmCandidates, selectedCandidateIds, () => {
+        renderPreview();
+        renderCandidates();
+      });
+    };
+
+    const renderAfterLlm = () => {
+      renderPreview();
+      renderCandidates();
     };
 
     const renderCategories = () => {
@@ -160,13 +195,24 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
       cleanup();
       resolve({
         type: "submit",
-        text: createConfirmedText(options.inputText, options.detection.findings, selectedFindingIds, mode)
+        text: createConfirmedTextFromFindings(options.inputText, currentFindings(), mode)
       });
     });
 
-    editButton.addEventListener("click", () => {
-      cleanup();
-      resolve({ type: "edit" });
+    llmButton.addEventListener("click", () => {
+      void runPasteReviewLlm({
+        enabled: options.llm?.enabled ?? false,
+        inputText: options.inputText,
+        modelId: options.llm?.modelId ?? "",
+        existingFindings: options.detection.findings,
+        llmStatus,
+        llmButton,
+        selectedCandidateIds,
+        setCandidates: (candidates) => {
+          llmCandidates = candidates;
+        },
+        render: renderAfterLlm
+      });
     });
 
     cancelButton.addEventListener("click", () => {
@@ -182,6 +228,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     });
 
     renderCategories();
+    renderCandidates();
     renderPreview();
   });
 }

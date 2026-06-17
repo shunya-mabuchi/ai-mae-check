@@ -162,6 +162,74 @@ export const confirmModalCss = `
     border: 1px solid #dfded8;
     line-height: 1.7;
   }
+  .amc-llm-panel {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .amc-candidates {
+    display: grid;
+    gap: 8px;
+    max-height: 220px;
+    overflow: auto;
+  }
+  .hm-candidate {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border: 1px solid #dfded8;
+    border-radius: 8px;
+    background: #fff;
+    padding: 10px;
+  }
+  .hm-candidate input {
+    margin-top: 4px;
+    accent-color: #2f7d57;
+  }
+  .hm-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .hm-message {
+    color: #5f6368;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .hm-text {
+    display: block;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    border-radius: 6px;
+    background: #f5f5f4;
+    padding: 6px 8px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+  .hm-badge {
+    border: 1px solid #dfded8;
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .hm-badge-critical,
+  .hm-badge-high {
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+  .hm-badge-medium {
+    border-color: #fde68a;
+    background: #fffbeb;
+    color: #92400e;
+  }
+  .hm-badge-low {
+    border-color: #e7e5e4;
+    background: #f5f5f4;
+    color: #57534e;
+  }
   .amc-footer {
     display: flex;
     flex-wrap: wrap;
