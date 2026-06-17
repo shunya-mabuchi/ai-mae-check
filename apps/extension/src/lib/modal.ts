@@ -15,7 +15,6 @@ import {
   RAW_PASTE_BLOCKED_MESSAGE,
 } from "./pasteReviewState";
 import {
-  createInitialSelectedCandidateIds,
   createInitialSelectedFindingIds,
   handlePasteReviewSelectionToggle,
   resolvePasteReviewFindings,
@@ -25,7 +24,7 @@ import { createPasteReviewFindingListView } from "./pasteReviewFindingListView";
 import { createPasteReviewSummaryItems } from "./pasteReviewSummaryView";
 import { createPasteReviewInsertText, createPasteReviewPreviewText } from "./pasteReviewTextTransform";
 import {
-  createPasteReviewLlmResultMessage,
+  createPasteReviewLlmResultState,
   formatPasteReviewLlmStatusMessage,
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
@@ -255,13 +254,14 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
           return;
         }
 
-        llmCandidates = result.candidates;
+        const resultState = createPasteReviewLlmResultState(result);
+        llmCandidates = resultState.candidates;
         selectedCandidateIds.clear();
-        for (const candidateId of createInitialSelectedCandidateIds(result.candidates)) {
+        for (const candidateId of resultState.selectedCandidateIds) {
           selectedCandidateIds.add(candidateId);
         }
 
-        llmStatus.textContent = createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail);
+        llmStatus.textContent = resultState.statusMessage;
         render();
       } catch (error: unknown) {
         const detail = classifyLlmError(error);

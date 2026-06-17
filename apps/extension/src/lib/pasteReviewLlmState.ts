@@ -1,6 +1,19 @@
-import { createJsonParseFallbackMessage, isJsonParseLlmErrorMessage, type LlmErrorDetail } from "@ai-mae-check/llm";
+import {
+  createJsonParseFallbackMessage,
+  selectContextCandidateIdsByConfidence,
+  isJsonParseLlmErrorMessage,
+  type ContextAnalysisResult,
+  type ContextRiskCandidate,
+  type LlmErrorDetail
+} from "@ai-mae-check/llm";
 import type { PasteReviewModalMode } from "./pasteReviewModalCopy";
 import type { AiMaeCheckSettings } from "./settings";
+
+export interface PasteReviewLlmResultState {
+  candidates: ContextRiskCandidate[];
+  selectedCandidateIds: string[];
+  statusMessage: string;
+}
 
 export const PASTE_REVIEW_LLM_INITIAL_MESSAGE = "AI文脈チェックは手動で実行できます。";
 export const PASTE_REVIEW_LLM_DISABLED_MESSAGE = "設定でAI文脈チェックが無効になっています。";
@@ -31,6 +44,16 @@ export function createPasteReviewLlmResultMessage(
   }
 
   return createPasteReviewLlmCompleteMessage(candidateCount, summary);
+}
+
+export function createPasteReviewLlmResultState(
+  result: Pick<ContextAnalysisResult, "candidates" | "summary" | "errorDetail">
+): PasteReviewLlmResultState {
+  return {
+    candidates: result.candidates,
+    selectedCandidateIds: selectContextCandidateIdsByConfidence(result.candidates),
+    statusMessage: createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail)
+  };
 }
 
 export function formatPasteReviewLlmStatusMessage(message: string, detail?: LlmErrorDetail): string {

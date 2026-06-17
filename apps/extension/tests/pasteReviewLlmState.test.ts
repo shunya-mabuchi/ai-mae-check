@@ -7,6 +7,7 @@ import {
 import {
   createPasteReviewLlmCompleteMessage,
   createPasteReviewLlmResultMessage,
+  createPasteReviewLlmResultState,
   formatPasteReviewLlmStatusMessage,
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
@@ -66,6 +67,56 @@ describe("pasteReviewLlmState", () => {
         hint: "必要なら再実行してください。"
       })
     ).toBe("ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。");
+  });
+
+  it("AI文脈チェック結果を候補・初期選択ID・表示文言にまとめる", () => {
+    const result = createPasteReviewLlmResultState({
+      candidates: [
+        {
+          id: "high-confidence",
+          category: "person_name",
+          surface: "山田花子さん",
+          label: "人名候補",
+          reason: "採用文脈のため注意候補です。",
+          riskLevel: "medium",
+          suggestedPlaceholder: "[PERSON_1]",
+          confidence: 0.86
+        },
+        {
+          id: "low-confidence",
+          category: "project_name",
+          surface: "Project Alpha",
+          label: "案件名候補",
+          reason: "案件名の可能性があります。",
+          riskLevel: "low",
+          suggestedPlaceholder: "[PROJECT_1]",
+          confidence: 0.62
+        }
+      ],
+      summary: "注意候補があります。"
+    });
+
+    expect(result.statusMessage).toBe("AI文脈チェックで注意候補が見つかりました。");
+    expect(result.candidates.map((candidate) => candidate.id)).toEqual(["high-confidence", "low-confidence"]);
+    expect(result.selectedCandidateIds).toEqual(["high-confidence"]);
+  });
+
+  it("AI文脈チェック結果状態でもjson_parseは非致命メッセージを維持する", () => {
+    const result = createPasteReviewLlmResultState({
+      candidates: [],
+      summary: "AI文脈チェックの結果を読み取れませんでした。",
+      errorDetail: {
+        kind: "json_parse",
+        message: "AI文脈チェックの結果を読み取れませんでした。",
+        hint: "必要なら再実行してください。"
+      }
+    });
+
+    expect(result).toEqual({
+      candidates: [],
+      selectedCandidateIds: [],
+      statusMessage: "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
+    });
   });
 
   it("WorkerやWebGPUの失敗は実行不能エラーとして扱う", () => {
