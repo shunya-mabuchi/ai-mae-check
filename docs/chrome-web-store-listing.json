@@ -1,0 +1,30 @@
+{
+  "name": "AIまえチェック",
+  "shortDescription": "AIに送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認します。",
+  "detailedDescription": "AIまえチェックは、ChatGPT、Claude、Geminiなどに文章を貼る前・送る前に、個人情報・秘密情報・APIキー・社外秘に近い内容の消し忘れに気づくためのChrome拡張です。\n\nメールアドレス、電話番号、APIキー、秘密鍵、.env形式の秘密情報、Basic認証URL、クレジットカード風番号、社外秘に近い注意語などをブラウザ内で検出します。\n\nWebLLMを利用したAI文脈チェックにより、正規表現では拾いにくい顧客名候補、人名候補、会社名候補、案件名候補、契約・採用・給与・法務などの文脈リスク候補を確認できます。\n\n貼り付け本文や送信本文は永続保存しません。外部LLM APIや開発者サーバーへ本文を送信しません。設定のみChromeのローカル保存領域に保存します。\n\n本拡張は情報漏洩を完全に防ぐものではありません。検出漏れや誤検出が発生する可能性があります。最終的に送信するかどうかはユーザーが判断してください。",
+  "category": "仕事効率化",
+  "language": "日本語",
+  "supportUrl": "https://github.com/shunya-mabuchi/ai-mae-check/issues",
+  "privacyPolicyUrl": "https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/privacy-policy.md",
+  "singlePurpose": "AIに文章を送る前に、個人情報・秘密情報・APIキーなどの消し忘れをブラウザ内で確認し、安全化候補を提示する。",
+  "permissionJustifications": {
+    "storage": "拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデルIDなどの設定を、ユーザーのブラウザ内に保存するために使います。貼り付け本文や送信本文は保存しません。",
+    "host_permissions": "ChatGPT、Claude、Gemini上の通常入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使います。初期対象サイトに限定し、<all_urls> は要求しません。"
+  },
+  "remoteCode": {
+    "usesRemoteCode": false,
+    "explanation": "拡張機能のロジックとして外部から任意コードを取得して実行しません。WebLLMの初回利用時にはローカル推論用のモデルファイルを取得する場合がありますが、これは推論用モデルデータであり、ユーザー本文を外部LLM APIへ送るものではありません。"
+  },
+  "dataUsage": {
+    "collectsUserData": false,
+    "explanation": "貼り付け本文、送信本文、検出結果、マスキング用placeholderMap、送信履歴は収集・販売・共有しません。本文は永続保存せず、設定のみ chrome.storage.local に保存します。"
+  },
+  "testInstructions": [
+    "拡張機能をインストールします。",
+    "https://chatgpt.com/ を開きます。",
+    "通常の入力欄に、実在しないダミーのメールアドレス、電話番号、APIキー風文字列を含む文章を貼り付けます。",
+    "貼り付け前または送信前の確認モーダルが表示されることを確認します。",
+    "安全化して貼り付け、または安全化して送信で、検出箇所が日本語ラベルのプレースホルダーに置き換わることを確認します。",
+    "Options Pageを開き、対象サイトや検出ルールのON/OFF設定が保存されることを確認します。"
+  ]
+}

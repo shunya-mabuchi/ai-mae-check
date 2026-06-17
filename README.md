@@ -225,6 +225,7 @@ pnpm build:demo
 pnpm build:worker
 pnpm package:extension
 pnpm qa:extension:manifest
+pnpm qa:chrome-store
 pnpm test
 pnpm test:core
 pnpm test:llm
@@ -240,6 +241,8 @@ pnpm typecheck
 `pnpm package:extension` はChrome Web Store提出用のZIPを作成するためのコマンドです。
 
 `pnpm qa:extension:manifest` は、ビルド済み拡張のmanifestが初期対象サイト、最小権限、WebLLM bridge公開リソースを満たしているか確認するQAコマンドです。
+
+`pnpm qa:chrome-store` は、提出用ZIP、Chrome Web Store掲載情報、ストア用画像寸法、プライバシーポリシー、誇大表現の混入をまとめて確認する公開前QAコマンドです。
 
 `pnpm rules:keygen` は、ルール配信API用のECDSA P-256鍵ペアを生成します。署名方式とAPI仕様は [docs/rule-delivery.md](docs/rule-delivery.md) にまとめています。
 

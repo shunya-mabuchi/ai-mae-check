@@ -23,7 +23,8 @@
     "typecheck": "pnpm -r --sort typecheck",
     "assets:brand": "node scripts/generate-brand-assets.mjs",
     "rules:keygen": "node scripts/generate-rule-keypair.mjs",
-    "qa:extension:manifest": "node scripts/check-extension-manifest.mjs"
+    "qa:extension:manifest": "node scripts/check-extension-manifest.mjs",
+    "qa:chrome-store": "node scripts/check-chrome-store-readiness.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
