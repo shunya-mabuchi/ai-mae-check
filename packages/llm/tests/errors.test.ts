@@ -115,6 +115,20 @@ describe("formatLlmErrorMessage", () => {
     expect(isContextAnalysisExecutionError(result)).toBe(false);
   });
 
+  it("errorDetailが欠けたjson_parseメッセージも実行不能エラーとして扱わない", () => {
+    expect(
+      isContextAnalysisExecutionError({
+        error: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。"
+      })
+    ).toBe(false);
+
+    expect(
+      isContextAnalysisExecutionError({
+        error: "JSON parse failed while reading WebLLM output"
+      })
+    ).toBe(false);
+  });
+
   it("WorkerやWebGPUの失敗は実行不能エラーとして扱う", () => {
     expect(
       isContextAnalysisExecutionError({

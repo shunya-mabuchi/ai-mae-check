@@ -107,6 +107,14 @@ describe("pasteReviewLlmState", () => {
     );
   });
 
+  it("エラー詳細が欠けたjson_parseメッセージも非致命メッセージとして表示する", () => {
+    expect(
+      formatPasteReviewLlmStatusMessage(
+        "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。"
+      )
+    ).toBe("ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。");
+  });
+
   it("エラー詳細がない場合は元メッセージだけを返す", () => {
     expect(formatPasteReviewLlmStatusMessage("文脈リスクを確認しています。")).toBe("文脈リスクを確認しています。");
   });
