@@ -26,6 +26,7 @@ import {
   createWebGpuUnavailableLlmUiState
 } from "./lib/demoLlmUiState";
 import { createDemoMaskingViewModel, selectCandidateIdsByConfidence } from "./lib/demoMasking";
+import { toggleSelectedId } from "./lib/demoSelection";
 
 const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
@@ -170,15 +171,11 @@ export function App() {
   };
 
   const toggleCandidate = (id: string) => {
-    setSelectedCandidateIds((current) =>
-      current.includes(id) ? current.filter((candidateId) => candidateId !== id) : [...current, id]
-    );
+    setSelectedCandidateIds((current) => toggleSelectedId(current, id));
   };
 
   const toggleRuleFinding = (id: string) => {
-    setSelectedRuleFindingIds((current) =>
-      current.includes(id) ? current.filter((findingId) => findingId !== id) : [...current, id]
-    );
+    setSelectedRuleFindingIds((current) => toggleSelectedId(current, id));
   };
 
   return (
