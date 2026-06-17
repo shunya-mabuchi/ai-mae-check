@@ -5,7 +5,8 @@ import {
   formatPasteReviewLlmStatusMessage,
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
-  PASTE_REVIEW_LLM_LOADING_MESSAGE
+  PASTE_REVIEW_LLM_LOADING_MESSAGE,
+  shouldAutoRunPasteReviewLlm
 } from "../src/lib/pasteReviewLlmState";
 
 describe("pasteReviewLlmState", () => {
@@ -48,5 +49,34 @@ describe("pasteReviewLlmState", () => {
 
   it("エラー詳細がない場合は元メッセージだけを返す", () => {
     expect(formatPasteReviewLlmStatusMessage("文脈リスクを確認しています。")).toBe("文脈リスクを確認しています。");
+  });
+
+  it("通常モードだけAI文脈チェックの自動実行を許可する", () => {
+    const autoLlm = {
+      enabled: true,
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      mode: "auto" as const
+    };
+
+    expect(shouldAutoRunPasteReviewLlm("default", autoLlm)).toBe(true);
+    expect(shouldAutoRunPasteReviewLlm("paste_guard", autoLlm)).toBe(false);
+    expect(shouldAutoRunPasteReviewLlm("context_check", autoLlm)).toBe(false);
+  });
+
+  it("AI文脈チェックが無効または手動モードなら自動実行しない", () => {
+    expect(
+      shouldAutoRunPasteReviewLlm("default", {
+        enabled: false,
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        mode: "auto"
+      })
+    ).toBe(false);
+    expect(
+      shouldAutoRunPasteReviewLlm("default", {
+        enabled: true,
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        mode: "manual"
+      })
+    ).toBe(false);
   });
 });
