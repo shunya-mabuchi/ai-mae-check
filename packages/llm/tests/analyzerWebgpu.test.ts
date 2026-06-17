@@ -79,4 +79,20 @@ describe("WebGPU事前チェック", () => {
     expect(result.summary).toBe("AI文脈チェックの出力形式は読み取れませんでしたが、ブラウザ内の補助検出で注意候補を確認しました。");
     expect(result.candidates.map((candidate) => candidate.surface)).toContain("山田花子さん");
   });
+
+  it("WebLLMのJSONを読み取れずローカル補助候補もない場合は非致命的な結果として返す", async () => {
+    completionText = "この文章では、追加でマスクすべき候補は特に見当たりません。";
+    vi.stubGlobal("navigator", { gpu: { requestAdapter: vi.fn(async () => ({})) } });
+    vi.stubGlobal("Worker", TestWorker);
+
+    const analyzer = createLlmContextAnalyzer({ workerUrl: "/llm-worker.js" });
+    const result = await analyzer.analyze("来週の定例会議の議事録を整理します。");
+
+    expect(result.error).toBeUndefined();
+    expect(result.errorDetail).toBeUndefined();
+    expect(result.candidates).toEqual([]);
+    expect(result.summary).toBe(
+      "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。"
+    );
+  });
 });

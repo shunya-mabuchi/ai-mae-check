@@ -71,6 +71,12 @@ type NavigatorWithGpu = Navigator & {
   };
 };
 
+const UNREADABLE_OUTPUT_SUMMARY =
+  "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。";
+
+const UNREADABLE_OUTPUT_WITH_FALLBACK_SUMMARY =
+  "AI文脈チェックの出力形式は読み取れませんでしたが、ブラウザ内の補助検出で注意候補を確認しました。";
+
 type NormalizedLlmAnalyzerOptions = Required<Omit<LlmAnalyzerOptions, "workerUrl">> & {
   workerUrl?: string;
 };
@@ -157,18 +163,14 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
           ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {}),
           confidenceThreshold: this.options.confidenceThreshold
         });
-      } catch (error) {
+      } catch {
         const fallbackCandidates = mergeResidualContextCandidates(inputForModel, [], {
           ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
         });
 
-        if (fallbackCandidates.length === 0) {
-          throw error;
-        }
-
         return {
           candidates: fallbackCandidates,
-          summary: "AI文脈チェックの出力形式は読み取れませんでしたが、ブラウザ内の補助検出で注意候補を確認しました。",
+          summary: fallbackCandidates.length > 0 ? UNREADABLE_OUTPUT_WITH_FALLBACK_SUMMARY : UNREADABLE_OUTPUT_SUMMARY,
           rawText,
           modelId,
           elapsedMs: Math.max(0, performance.now() - startedAt)

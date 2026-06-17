@@ -279,7 +279,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
           selectedCandidateIds.add(candidateId);
         }
 
-        llmStatus.textContent = createPasteReviewLlmCompleteMessage(result.candidates.length);
+        llmStatus.textContent = createPasteReviewLlmCompleteMessage(result.candidates.length, result.summary);
         render();
       } catch (error: unknown) {
         const detail = classifyLlmError(error);

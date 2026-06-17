@@ -22,6 +22,17 @@ describe("pasteReviewLlmState", () => {
     );
   });
 
+  it("出力形式を読み取れなかった非致命メッセージを候補なし文言で上書きしない", () => {
+    expect(
+      createPasteReviewLlmCompleteMessage(
+        0,
+        "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。"
+      )
+    ).toBe(
+      "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。"
+    );
+  });
+
   it("診断メモと技術詳細を追加してエラー文言を整形する", () => {
     const detail: LlmErrorDetail = {
       kind: "worker",
