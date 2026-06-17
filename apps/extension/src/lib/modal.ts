@@ -11,7 +11,8 @@ import {
 import { pasteReviewModalCss } from "./modalStyles";
 import {
   createPasteReviewActionState,
-  RAW_PASTE_BLOCKED_MESSAGE
+  RAW_PASTE_BLOCKED_MESSAGE,
+  shouldDisablePasteReviewMaskAction
 } from "./pasteReviewState";
 import {
   createInitialSelectedCandidateIds,
@@ -143,7 +144,6 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
   return new Promise((resolve) => {
     const mode = options.mode ?? "default";
     const modalCopy = createPasteReviewModalCopy(mode);
-    const isContextCheck = mode === "context_check";
     const host = document.createElement("div");
     const shadow = host.attachShadow({ mode: "open" });
     const style = document.createElement("style");
@@ -222,9 +222,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       renderFindingList(list, options.detection.findings, selectedRuleFindingIds, renderAfterSelectionChange);
       preview.textContent = createPasteReviewPreviewText(options.inputText, findings);
       renderCandidates(candidateList, llmCandidates, selectedCandidateIds, renderAfterSelectionChange);
-      if (isContextCheck) {
-        maskButton.toggleAttribute("disabled", findings.length === 0);
-      }
+      maskButton.toggleAttribute("disabled", shouldDisablePasteReviewMaskAction(mode, findings.length));
       const actionState = createPasteReviewActionState(rawPasteAllowed);
       rawButton.textContent = actionState.rawButtonText;
       rawButton.toggleAttribute("disabled", actionState.rawButtonDisabled);

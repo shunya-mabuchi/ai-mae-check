@@ -1,4 +1,5 @@
 import type { RiskLevel } from "@ai-mae-check/core";
+import type { PasteReviewModalMode } from "./pasteReviewModalCopy";
 
 export interface PasteReviewActionState {
   rawButtonText: string;
@@ -23,4 +24,8 @@ export function createPasteReviewActionState(rawPasteAllowed: boolean): PasteRev
     rawButtonTitle: rawPasteAllowed ? "" : RAW_PASTE_BLOCKED_MESSAGE,
     footerNote: rawPasteAllowed ? "" : RAW_PASTE_BLOCKED_MESSAGE
   };
+}
+
+export function shouldDisablePasteReviewMaskAction(mode: PasteReviewModalMode, selectedFindingCount: number): boolean {
+  return mode === "context_check" && selectedFindingCount === 0;
 }

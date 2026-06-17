@@ -2,7 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { pasteReviewModeForAction } from "../src/content/contentReview";
-import { createPasteReviewActionState } from "../src/lib/pasteReviewState";
+import {
+  createPasteReviewActionState,
+  shouldDisablePasteReviewMaskAction
+} from "../src/lib/pasteReviewState";
 
 describe("paste review modal UI", () => {
   it("paste_guardモードでも安全な依頼文生成を表示しない", () => {
@@ -48,5 +51,12 @@ describe("paste review modal UI", () => {
   it("mediumリスクの貼り付けはpaste_guardではなく通常確認として扱う", () => {
     expect(pasteReviewModeForAction("confirm")).toBe("default");
     expect(pasteReviewModeForAction("sanitize_required")).toBe("paste_guard");
+  });
+
+  it("AI文脈チェック確認だけマスク対象が0件なら実行ボタンを無効にする", () => {
+    expect(shouldDisablePasteReviewMaskAction("default", 0)).toBe(false);
+    expect(shouldDisablePasteReviewMaskAction("paste_guard", 0)).toBe(false);
+    expect(shouldDisablePasteReviewMaskAction("context_check", 0)).toBe(true);
+    expect(shouldDisablePasteReviewMaskAction("context_check", 1)).toBe(false);
   });
 });
