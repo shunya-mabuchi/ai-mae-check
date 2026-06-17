@@ -1,6 +1,7 @@
 import type { DetectionResult, DlpPolicyDecision } from "@ai-mae-check/core";
 import { filePreflightModalCss } from "./fileModalStyles";
 import { createElement } from "../lib/domElement";
+import { formatFileSize } from "../lib/fileSize";
 import { decisionRiskLabels } from "../lib/riskLabels";
 
 export interface FilePreflightModalItem {
@@ -18,18 +19,6 @@ export interface FilePreflightModalOptions {
 }
 
 export type FilePreflightModalDecision = "safe" | "allow_raw" | "cancel";
-
-function formatSize(size: number): string {
-  if (size < 1024) {
-    return `${size} B`;
-  }
-
-  if (size < 1024 * 1024) {
-    return `${(size / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(size / 1024 / 1024).toFixed(1)} MB`;
-}
 
 export async function showFilePreflightModal(options: FilePreflightModalOptions): Promise<FilePreflightModalDecision> {
   return new Promise((resolve) => {
@@ -65,7 +54,7 @@ export async function showFilePreflightModal(options: FilePreflightModalOptions)
       heading.append(createElement("span", "amc-name", item.fileName));
       heading.append(createElement("span", `amc-badge amc-${item.policy.risk.level}`, `判定: ${decisionRiskLabels[item.policy.risk.level]}`));
       heading.append(createElement("span", "amc-badge", `${item.detection.findings.length}件`));
-      heading.append(createElement("span", "amc-badge", formatSize(item.size)));
+      heading.append(createElement("span", "amc-badge", formatFileSize(item.size)));
       card.append(heading);
       card.append(createElement("p", "amc-note", `安全版候補: ${item.safeFileName}`));
       if (item.policy.requiresSanitization) {
