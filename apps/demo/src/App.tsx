@@ -27,6 +27,11 @@ import {
 } from "./lib/demoLlmUiState";
 import { createDemoMaskingViewModel, selectCandidateIdsByConfidence } from "./lib/demoMasking";
 import { createInitialSelectedFindingIds, toggleSelectedId } from "./lib/demoSelection";
+import {
+  createDemoRuleDetectionState,
+  createDemoTextReplacementState,
+  type DemoWorkbenchStateSnapshot
+} from "./lib/demoWorkbenchState";
 
 const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
@@ -73,34 +78,26 @@ export function App() {
     analyzerRef.current = null;
   };
 
-  const resetLlmState = () => {
-    setLlmCandidates([]);
-    setSelectedCandidateIds([]);
-    setLlmUiState(createIdleLlmUiState());
+  const applyWorkbenchState = (state: DemoWorkbenchStateSnapshot) => {
+    setText(state.text);
+    setDetection(state.detection);
+    setSelectedRuleFindingIds(state.selectedRuleFindingIds);
+    setLlmCandidates(state.llmCandidates);
+    setSelectedCandidateIds(state.selectedCandidateIds);
+    setLlmUiState(state.llmUiState);
+    setCopyMessage(state.copyMessage);
   };
 
   const insertSample = () => {
-    setText(sampleText);
-    setDetection(null);
-    setSelectedRuleFindingIds([]);
-    resetLlmState();
-    setCopyMessage("");
+    applyWorkbenchState(createDemoTextReplacementState(sampleText));
   };
 
   const insertContextSample = () => {
-    setText(contextSampleText);
-    setDetection(null);
-    setSelectedRuleFindingIds([]);
-    resetLlmState();
-    setCopyMessage("");
+    applyWorkbenchState(createDemoTextReplacementState(contextSampleText));
   };
 
   const runRuleDetection = () => {
-    const result = detectSensitiveText(text);
-    setDetection(result);
-    setSelectedRuleFindingIds(createInitialSelectedFindingIds(result.findings));
-    resetLlmState();
-    setCopyMessage("");
+    applyWorkbenchState(createDemoRuleDetectionState(text));
   };
 
   const runLlmDetection = async () => {
@@ -154,11 +151,7 @@ export function App() {
   };
 
   const reset = () => {
-    setText("");
-    setDetection(null);
-    setSelectedRuleFindingIds([]);
-    resetLlmState();
-    setCopyMessage("");
+    applyWorkbenchState(createDemoTextReplacementState(""));
   };
 
   const copyMaskedText = async () => {
