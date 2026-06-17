@@ -1,4 +1,4 @@
-import type { RiskLevel } from "@ai-mae-check/core";
+import { findingRiskLabels, type RiskLevel } from "@ai-mae-check/core";
 
 export const sampleText = `田中太郎です。メールは taro@example.com、電話番号は 090-1234-5678 です。
 
@@ -23,12 +23,7 @@ export const contextSampleText = `A社の佐藤様向けに、Project Blue Bridg
 
 この内容をAIで読みやすく整理したいです。`;
 
-export const riskLabel: Record<RiskLevel, string> = {
-  critical: "重大",
-  high: "高",
-  medium: "中",
-  low: "低"
-};
+export const riskLabel: Record<RiskLevel, string> = findingRiskLabels;
 
 export const riskTone: Record<RiskLevel, string> = {
   critical: "border-red-300 bg-red-50 text-red-800",

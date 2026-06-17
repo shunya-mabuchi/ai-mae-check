@@ -9,6 +9,7 @@ export {
   supportedTextFileExtensions
 } from "./fileText";
 export { categoryForFinding, scoreRisk } from "./riskScore";
+export { decisionRiskLabels, findingRiskLabels } from "./riskLabels";
 export { detectorRules } from "./rules";
 export {
   createRemoteDetectorRules,
