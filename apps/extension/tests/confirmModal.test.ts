@@ -44,20 +44,8 @@ describe("confirmModal helpers", () => {
     expect(createConfirmedText(inputText, detection.findings, selectedIds, "generalize")).toBe("メールは [メールアドレス] です。");
   });
 
-  it("Minimizeでは検出範囲を削除する", () => {
-    const inputText = "メールは taro@example.com です。";
-    const detection = detectSensitiveText(inputText);
-    const selectedIds = new Set(detection.findings.map((finding) => finding.id));
-
-    expect(createConfirmedText(inputText, detection.findings, selectedIds, "minimize")).toBe("メールは  です。");
-  });
-
-  it("MinimizeのUI文言は安全な依頼文生成として説明する", () => {
-    const minimizeOption = transformModeOptions.find((option) => option.value === "minimize");
-
-    expect(minimizeOption?.title).toBe("安全な依頼文に整える");
-    expect(minimizeOption?.description).toContain("外部AIへ貼るため");
-    expect(minimizeOption?.description).toContain("削った/抽象化したカテゴリ");
-    expect(minimizeOption?.description).toContain("再スキャン");
+  it("変換モードはMaskとGeneralizeだけを表示する", () => {
+    expect(transformModeOptions.map((option) => option.value)).toEqual(["mask", "generalize"]);
+    expect(transformModeOptions.map((option) => option.title)).not.toContain("安全な依頼文に整える");
   });
 });

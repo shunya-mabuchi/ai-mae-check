@@ -4,7 +4,7 @@
 
 **Goal:** AIまえチェックを、paste前チェック中心の拡張から、ChatGPT / Claude / Gemini の通常入力体験を維持した送信前DLPレイヤーへ移行する。
 
-**Architecture:** 既存monorepoを維持し、`packages/core`をサイト非依存のDLPエンジン、`packages/llm`をWebLLMによるGeneralize / safe_prompt生成、`apps/extension`をサイトadapter・送信インターセプト・UI、`apps/demo`をLP兼体験デモとして分離する。サイドパネルや独自入力欄は作らず、対象サイトの通常入力欄を使う。
+**Architecture:** 既存monorepoを維持し、`packages/core`をサイト非依存のDLPエンジン、`packages/llm`をWebLLMによる文脈リスク候補チェック、`apps/extension`をサイトadapter・送信インターセプト・UI、`apps/demo`をLP兼体験デモとして分離する。サイドパネルや独自入力欄は作らず、対象サイトの通常入力欄を使う。
 
 **Tech Stack:** TypeScript, pnpm workspace, React, WXT, Vite, Tailwind CSS, Vitest, Playwright, Chrome Extension Manifest V3, WebLLM, Web Worker, WebGPU, chrome.storage.local.
 
@@ -15,7 +15,7 @@
 - 初期対象サイトは ChatGPT / Claude / Gemini。Perplexityは後続adapterとして扱う。
 - mediumは確認モーダルの詳細から素通し可能。high / critical とSecret Guard対象は安全化なしでは送信不可。
 - Secret Guard対象は、APIキー、private key、SSH/PEM秘密鍵、JWT、`.env`、DATABASE_URL、AWS/GitHub/Slack/Stripe/OAuth token、webhook URL、クレカ風、マイナンバー風。
-- WebLLMは必須だが、失敗時は外部APIへfallbackしない。ルールベース検出は継続し、安全な依頼文生成だけ無効化する。
+- WebLLMは文脈リスク候補チェックに限定する。失敗時は外部APIへfallbackせず、ルールベース検出は継続する。
 - ユーザー入力文、検出結果、マスク対応表、送信履歴、ファイル本文は保存しない。保存してよいのは設定とWebLLMモデルキャッシュだけ。
 - UIは送信時確認モーダル、カテゴリ別チェックボックス、詳細展開、変換モード選択、ファイル検査結果モーダルに限定する。常時表示のrisk badgeは貼り付け前チェックと意味が重なりやすいため表示しない。
 
@@ -26,7 +26,8 @@
 - #19 extension: site adapter / send interception
 - #20 extension: paste guard / confirmation UI
 - #21 extension: category confirmation modal
-- #22 llm: WebLLM Generalize / Minimize / safe_prompt
+- #22 llm: WebLLM文脈チェック
+- #92 refactor: 安全な依頼文生成機能を削除する
 - #23 extension: text file preflight
 - #24 demo/docs: LP兼デモとREADME更新
 
@@ -61,8 +62,8 @@ export interface RiskScoreResult {
 - [x] `scoreRisk(findings, options)`を実装する。目安は secret +30、クレカ/マイナンバー +25、医療/法務/人事/金融文脈 +20、氏名+住所 +15、氏名+電話 +15、メール +10、顧客ID +10、ファイル +10、会社名 +5、日付 +5。
 - [x] `level`は 0=safe、1-19=low、20-49=medium、50-79=high、80-100=critical とする。
 - [x] Secret Guard対象が含まれる場合は`secretGuard=true`、原則`blocked=true`にする。
-- [x] `TransformMode = "mask" | "generalize" | "minimize"`を追加する。
-- [x] `transformText(input, findings, mode)`を追加する。`mask`は既存`maskSensitiveText`を使い、`generalize`はルールカテゴリ別の固定表現へ置換する。`minimize`は`packages/llm`側のsafe_promptを使うためcoreでは直接実装しない。
+- [x] `TransformMode = "mask" | "generalize"`を追加する。
+- [x] `transformText(input, findings, mode)`を追加する。`mask`は既存`maskSensitiveText`を使い、`generalize`はルールカテゴリ別の固定表現へ置換する。`minimize`はsafe_prompt生成と一緒に削除した。
 - [x] 既存の`detectSensitiveText`、`maskSensitiveText`、`mergeFindings`の公開APIを壊さない。
 - [x] `pnpm test:core`、`pnpm typecheck`を通す。
 
@@ -135,42 +136,21 @@ export interface SiteAdapter {
 - [x] Shadow DOMを維持し、対象ページCSSとの衝突を避ける。
 - [x] `pnpm build:extension`、`pnpm typecheck`を通す。
 
-### Task 5: WebLLM Generalize / Minimize (#22)
+### Task 5: WebLLM文脈チェック (#22 / #92)
 
 **Files:**
 - Modify: `packages/llm/src/types.ts`
-- Create: `packages/llm/src/sanitizePrompt.ts`
-- Create: `packages/llm/src/sanitizeParser.ts`
 - Modify: `packages/llm/src/analyzer.ts`
 - Modify: `packages/llm/src/index.ts`
-- Test: `packages/llm/tests/sanitize.test.ts`
+- Modify: `packages/llm/src/prompt.ts`
+- Test: `packages/llm/tests/llm.test.ts`
 
-- [x] `SanitizeAnalysisResult`を追加する。
-
-```ts
-export interface SanitizeAnalysisResult {
-  block: boolean;
-  riskLevel: "low" | "medium" | "high" | "critical";
-  detectedCategories: Array<{
-    type: "person" | "organization" | "address" | "email" | "phone" | "id" | "secret" | "financial" | "medical" | "legal" | "other";
-    risk: "low" | "medium" | "high" | "critical";
-    action: "mask" | "generalize" | "remove" | "block";
-  }>;
-  safePrompt: string;
-  userVisibleExplanation: string;
-  rawText: string;
-  modelId: string;
-  elapsedMs: number;
-  error?: string;
-}
-```
-
-- [x] WebLLM内部指示は仕様の英語プロンプトをベースにし、strict JSONだけを返すようにする。
-- [x] `safe_prompt`を`safePrompt`へ正規化して返す。
+- [x] WebLLM内部指示は日本語プロンプトをベースにし、文脈リスク候補のJSONだけを返すようにする。
+- [x] `ContextRiskCandidate`をFindingへ変換し、ユーザーがマスク対象に含めるか確認できるようにする。
 - [x] 不正JSON時は本文を含めず、既存の日本語エラー分類へ流す。
-- [x] WebLLM出力後、extension側で必ず`detectSensitiveText(safePrompt)`を再実行する。
-- [x] 再スキャンでSecret Guard対象が残った場合は送信不可にする。
-- [x] WebGPU非対応、QuotaExceeded、OOM、Worker失敗時はMinimizeだけ無効化し、外部APIへfallbackしない。
+- [x] 敬称つき人名、候補者名、Project形式の案件名をローカル補助候補として追加する。
+- [x] safe_prompt生成、Minimize、依頼文自動生成UIは精度不足のため削除する。
+- [x] WebGPU非対応、QuotaExceeded、OOM、Worker失敗時も外部APIへfallbackしない。
 - [x] `pnpm test:llm`、`pnpm typecheck`を通す。
 
 ### Task 6: ファイル添付前チェック (#23)
@@ -200,7 +180,7 @@ export interface SanitizeAnalysisResult {
 - Test: `apps/demo/tests/demo.spec.ts`
 
 - [x] LPコピーを「AIに送る前」から「LLMに送信される前に検出・安全化」へ寄せる。
-- [x] デモはrisk score、カテゴリ単位チェック、Mask / Generalize / 安全な依頼文切替、安全化後テキストを体験できる構成にする。
+- [x] デモはrisk score、カテゴリ単位チェック、Mask / Generalize、安全化後テキストを体験できる構成にする。
 - [x] WebLLMモデルファイル取得、private browserでの保存容量制限、WebGPU非対応時の挙動をREADMEに明記する。
 - [x] 「完全に安全」「ゼロリスク」「生データが対象サイトに一切見えない」といった表現を避ける。
 - [x] Perplexityは後続adapterであることをREADMEに記載する。
@@ -213,9 +193,9 @@ export interface SanitizeAnalysisResult {
   - mediumの個人情報は確認対象になる
   - Mask / Generalizeが検出範囲の重複を壊さない
 - LLM: `pnpm test:llm`
-  - safe_prompt JSONをパースできる
+  - 文脈リスク候補JSONをパースできる
   - 不正JSONで本文を含まないエラーになる
-  - WebLLM出力後再スキャンでsecret残存を検出できる
+  - safe_prompt生成APIが公開されていない
 - Extension: `pnpm build:extension`, `pnpm typecheck`
   - ChatGPT送信ボタンclickを止められる
   - Enter送信を止められる

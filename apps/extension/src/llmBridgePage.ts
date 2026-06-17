@@ -1,4 +1,4 @@
-import { createLlmContextAnalyzer, type AnalyzeContextOptions, type AnalyzeSanitizeOptions, type LlmProgress } from "@ai-mae-check/llm";
+import { createLlmContextAnalyzer, type AnalyzeContextOptions, type LlmProgress } from "@ai-mae-check/llm";
 import {
   LLM_BRIDGE_CONNECT,
   type LlmBridgeRequest,
@@ -51,43 +51,9 @@ async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze
   }
 }
 
-async function handleSanitize(request: Extract<LlmBridgeRequest, { type: "sanitize" }>): Promise<void> {
-  const analyzer = createLlmContextAnalyzer({
-    modelId: request.modelId,
-    workerUrl: getExtensionResourceUrl("llm-worker.js")
-  });
-
-  try {
-    const options: AnalyzeSanitizeOptions = {
-      onProgress: postProgress(request.requestId)
-    };
-    if (request.options.existingFindings) {
-      options.existingFindings = request.options.existingFindings;
-    }
-    if (request.options.mode) {
-      options.mode = request.options.mode;
-    }
-
-    const result = await analyzer.analyzeSanitize(request.inputText, options);
-
-    post({
-      type: "sanitize-result",
-      requestId: request.requestId,
-      result
-    });
-  } finally {
-    analyzer.dispose();
-  }
-}
-
 async function handleRequest(request: LlmBridgeRequest): Promise<void> {
   try {
-    if (request.type === "analyze") {
-      await handleAnalyze(request);
-      return;
-    }
-
-    await handleSanitize(request);
+    await handleAnalyze(request);
   } catch (error) {
     post({
       type: "error",

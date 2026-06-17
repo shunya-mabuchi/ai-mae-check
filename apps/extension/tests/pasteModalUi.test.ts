@@ -1,16 +1,16 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createPasteReviewActionState, createSafePromptReviewState } from "../src/lib/modal";
+import { createPasteReviewActionState } from "../src/lib/modal";
 
 describe("paste review modal UI", () => {
-  it("paste_guardモードでも主要アクションをフッターに表示する", () => {
+  it("paste_guardモードでも安全な依頼文生成を表示しない", () => {
     const modalSource = readFileSync(resolve(process.cwd(), "src/lib/modal.ts"), "utf8");
 
-    expect(modalSource).toContain(
-      "footer.append(footerNote, maskButton, llmButton, safePromptButton, applySafePromptButton, rawButton, cancelButton)"
-    );
-    expect(modalSource).toContain("安全な依頼文に整える");
+    expect(modalSource).toContain("footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton)");
+    expect(modalSource).not.toContain("安全な依頼文に整える");
+    expect(modalSource).not.toContain("安全な依頼文を入力");
+    expect(modalSource).not.toContain("analyzeSanitizeWithBridge");
     expect(modalSource).toContain("そのまま貼り付け");
   });
 
@@ -35,31 +35,6 @@ describe("paste review modal UI", () => {
 
     expect(modalSource).toContain(".hm-primary:disabled:hover");
     expect(modalSource).toContain("background: #2f7d57");
-  });
-
-  it("安全な依頼文は生成後すぐ挿入せず、プレビューしてから選択する", () => {
-    const modalSource = readFileSync(resolve(process.cwd(), "src/lib/modal.ts"), "utf8");
-
-    expect(modalSource).not.toContain('resolve({ type: "insert", text: result.safePrompt })');
-    expect(modalSource).toContain("safePromptPreview");
-    expect(modalSource).toContain("applySafePromptButton");
-    expect(modalSource).toContain("applySafePromptButton.hidden = safePromptState.previewHidden");
-  });
-
-  it("安全な依頼文がない間は入力ボタンを選べない", () => {
-    const state = createSafePromptReviewState("");
-
-    expect(state.applyButtonText).toBe("安全な依頼文を入力");
-    expect(state.applyButtonDisabled).toBe(true);
-    expect(state.previewHidden).toBe(true);
-  });
-
-  it("安全な依頼文が生成されたら入力ボタンを選べる", () => {
-    const state = createSafePromptReviewState("顧客名を伏せた依頼文です。");
-
-    expect(state.applyButtonText).toBe("安全な依頼文を入力");
-    expect(state.applyButtonDisabled).toBe(false);
-    expect(state.previewHidden).toBe(false);
   });
 
   it("mediumリスクの貼り付けはpaste_guardではなく通常確認として扱う", () => {

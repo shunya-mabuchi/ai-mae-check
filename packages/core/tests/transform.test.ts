@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { detectSensitiveText, transformText } from "../src";
 
@@ -24,13 +26,11 @@ describe("transformText", () => {
     expect(result.placeholderMap.map((entry) => entry.placeholder)).toEqual(["[メールアドレス]", "[URL]"]);
   });
 
-  it("minimize modeはLLM側のsafe_prompt生成に委ねる", () => {
-    const input = "A社向けの提案です。";
-    const detection = detectSensitiveText(input);
-    const result = transformText(input, detection.findings, "minimize");
+  it("TransformModeにsafe_prompt前提のminimizeを含めない", () => {
+    const typesSource = readFileSync(resolve(process.cwd(), "src/types.ts"), "utf8");
+    const transformSource = readFileSync(resolve(process.cwd(), "src/transform.ts"), "utf8");
 
-    expect(result.mode).toBe("minimize");
-    expect(result.requiresLlm).toBe(true);
-    expect(result.transformedText).toBe(input);
+    expect(typesSource).not.toContain('"minimize"');
+    expect(transformSource).not.toContain('mode === "minimize"');
   });
 });

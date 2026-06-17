@@ -1,9 +1,9 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildContextRiskPrompt,
-  buildSanitizePrompt,
   convertContextCandidatesToFindings,
-  createSanitizeAnalysisResult,
   mergeResidualContextCandidates,
   parseContextAnalysisJson,
   type ContextRiskCandidate
@@ -31,13 +31,14 @@ describe("buildContextRiskPrompt", () => {
   });
 });
 
-describe("buildSanitizePrompt", () => {
-  it("安全化でも敬称つき人名を残さないよう指示する", () => {
-    const messages = buildSanitizePrompt("佐藤様向けの提案です。候補者の山田花子さんも含めます。");
-    const joined = messages.map((message) => message.content).join("\n");
+describe("public API", () => {
+  it("safe_prompt生成APIを公開しない", () => {
+    const indexSource = readFileSync(resolve(process.cwd(), "src/index.ts"), "utf8");
 
-    expect(joined).toContain("敬称つき人名");
-    expect(joined).toContain("safe_promptに残さない");
+    expect(indexSource).not.toContain("analyzeSanitizePrompt");
+    expect(indexSource).not.toContain("buildSanitizePrompt");
+    expect(indexSource).not.toContain("createSanitizeAnalysisResult");
+    expect(indexSource).not.toContain("SanitizeAnalysisResult");
   });
 });
 
@@ -116,58 +117,6 @@ describe("parseContextAnalysisJson", () => {
     );
 
     expect(result.candidates).toEqual([]);
-  });
-});
-
-describe("createSanitizeAnalysisResult", () => {
-  it("安全化結果に残った入力由来の敬称つき人名と案件名を追加でマスクする", () => {
-    const input =
-      "佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて、最終面談後の評価メモも含めます。";
-    const result = createSanitizeAnalysisResult(
-      JSON.stringify({
-        block: false,
-        risk_level: "medium",
-        detected_categories: [
-          { type: "person", risk: "medium", action: "mask" },
-          { type: "other", risk: "medium", action: "mask" }
-        ],
-        safe_prompt:
-          "佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて確認します。",
-        user_visible_explanation: "文脈情報を安全化しました。"
-      }),
-      "test-model",
-      10,
-      input
-    );
-
-    expect(result.safePrompt).not.toContain("佐藤様");
-    expect(result.safePrompt).not.toContain("山田花子さん");
-    expect(result.safePrompt).not.toContain("Project Blue Bridge");
-    expect(result.safePrompt).toContain("[PERSON_1]");
-    expect(result.safePrompt).toContain("[PERSON_2]");
-    expect(result.safePrompt).toContain("[PROJECT_1]");
-  });
-
-  it("LLMが顧客名だけを置換して人名を残した場合も追加でマスクする", () => {
-    const input =
-      "A社の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて、最終面談後の評価メモも含めます。";
-    const result = createSanitizeAnalysisResult(
-      JSON.stringify({
-        block: false,
-        risk_level: "medium",
-        detected_categories: [{ type: "organization", risk: "medium", action: "mask" }],
-        safe_prompt:
-          "[CUSTOMER_1]の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて確認します。",
-        user_visible_explanation: "顧客名を置換しました。"
-      }),
-      "test-model",
-      10,
-      input
-    );
-
-    expect(result.safePrompt).not.toContain("佐藤様");
-    expect(result.safePrompt).not.toContain("山田花子さん");
-    expect(result.safePrompt).not.toContain("Project Blue Bridge");
   });
 });
 

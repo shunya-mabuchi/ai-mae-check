@@ -1,9 +1,7 @@
 import type {
   AnalyzeContextOptions,
-  AnalyzeSanitizeOptions,
   ContextAnalysisResult,
-  LlmProgress,
-  SanitizeAnalysisResult
+  LlmProgress
 } from "@ai-mae-check/llm";
 import {
   LLM_BRIDGE_CONNECT,
@@ -27,16 +25,12 @@ interface BridgeAnalyzeOptions extends Pick<AnalyzeContextOptions, "existingFind
   modelId: string;
 }
 
-interface BridgeSanitizeOptions extends Pick<AnalyzeSanitizeOptions, "existingFindings" | "mode" | "onProgress"> {
-  modelId: string;
-}
-
 const BRIDGE_PAGE = "llm-bridge.html";
 const BRIDGE_LOAD_TIMEOUT_MS = 15000;
 
 let bridgePromise: Promise<BridgeConnection> | null = null;
 let requestSeq = 0;
-const pendingRequests = new Map<string, PendingRequest<ContextAnalysisResult | SanitizeAnalysisResult>>();
+const pendingRequests = new Map<string, PendingRequest<ContextAnalysisResult>>();
 
 function nextRequestId(): string {
   requestSeq += 1;
@@ -148,14 +142,14 @@ function getBridgeConnection(): Promise<BridgeConnection> {
   return bridgePromise;
 }
 
-async function sendBridgeRequest<T extends ContextAnalysisResult | SanitizeAnalysisResult>(
+async function sendBridgeRequest<T extends ContextAnalysisResult>(
   request: LlmBridgeRequest,
   onProgress?: (progress: LlmProgress) => void
 ): Promise<T> {
   const bridge = await getBridgeConnection();
 
   return new Promise<T>((resolve, reject) => {
-    const pending: PendingRequest<ContextAnalysisResult | SanitizeAnalysisResult> = {
+    const pending: PendingRequest<ContextAnalysisResult> = {
       resolve: (value) => resolve(value as T),
       reject
     };
@@ -176,21 +170,6 @@ export function analyzeContextWithBridge(inputText: string, options: BridgeAnaly
     options: {
       ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
       ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
-    }
-  };
-
-  return sendBridgeRequest(request, options.onProgress);
-}
-
-export function analyzeSanitizeWithBridge(inputText: string, options: BridgeSanitizeOptions): Promise<SanitizeAnalysisResult> {
-  const request: LlmBridgeRequest = {
-    type: "sanitize",
-    requestId: nextRequestId(),
-    inputText,
-    modelId: options.modelId,
-    options: {
-      ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
-      ...(options.mode ? { mode: options.mode } : {})
     }
   };
 

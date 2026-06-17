@@ -121,24 +121,3 @@ export function mergeResidualContextCandidates(
 
   return merged;
 }
-
-export function maskResidualContextTerms(safePrompt: string, originalInput?: string): string {
-  if (!originalInput || safePrompt.length === 0) {
-    return safePrompt;
-  }
-
-  let masked = safePrompt;
-  const counters = new Map<ResidualContextTerm["prefix"], number>();
-
-  for (const term of extractResidualContextTerms(originalInput)) {
-    if (!masked.includes(term.surface)) {
-      continue;
-    }
-
-    const count = (counters.get(term.prefix) ?? 0) + 1;
-    counters.set(term.prefix, count);
-    masked = masked.split(term.surface).join(`[${term.prefix}_${count}]`);
-  }
-
-  return masked;
-}

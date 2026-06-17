@@ -1,6 +1,5 @@
 import { defineContentScript } from "wxt/utils/define-content-script";
 import { detectSensitiveText, evaluateDlpPolicy, type DetectionResult, type DetectorRule } from "@ai-mae-check/core";
-import { classifyLlmError } from "@ai-mae-check/llm";
 import { adapterForHostname } from "../src/content/adapters";
 import { shouldOfferContextCheck } from "../src/content/dom/contextHints";
 import { installFileInterceptor } from "../src/content/dom/fileInterceptor";
@@ -8,11 +7,10 @@ import { evaluatePasteGuard } from "../src/content/dom/pasteGuard";
 import { installSendInterceptor } from "../src/content/dom/sendInterceptor";
 import { captureCurrentRange, findEditableTarget, insertTextAtTarget } from "../src/lib/dom";
 import { DEFAULT_SETTINGS, disabledRuleIds, isSiteEnabled, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
-import { analyzeSanitizeWithBridge } from "../src/lib/llmBridgeClient";
 import { loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
 import { targetMatches } from "../src/lib/sites";
 import { showPasteReviewModal } from "../src/lib/modal";
-import { showSendConfirmModal, type MinimizeResult, type SendConfirmModalOptions } from "../src/ui/confirmModal";
+import { showSendConfirmModal } from "../src/ui/confirmModal";
 
 export default defineContentScript({
   matches: targetMatches,
@@ -71,16 +69,10 @@ export default defineContentScript({
           };
         },
         review: async ({ inputText, detection }) => {
-          const confirmOptions: SendConfirmModalOptions = {
+          const decision = await showSendConfirmModal({
             inputText,
             detection
-          };
-          const onMinimize = createMinimizeRunner(inputText, detection, settings);
-          if (onMinimize) {
-            confirmOptions.onMinimize = onMinimize;
-          }
-
-          const decision = await showSendConfirmModal(confirmOptions);
+          });
 
           if (decision.type === "submit") {
             return {
@@ -101,55 +93,6 @@ function createDetection(inputText: string, settings: AiMaeCheckSettings, remote
     disabledRuleIds: disabledRuleIds(settings),
     extraRules: remoteRules
   });
-}
-
-function createMinimizeRunner(
-  inputText: string,
-  detection: DetectionResult,
-  settings: AiMaeCheckSettings
-): ((onProgress: (message: string) => void) => Promise<MinimizeResult>) | undefined {
-  if (!settings.llm.enabled) {
-    return undefined;
-  }
-
-  return async (onProgress) => {
-    try {
-      const result = await analyzeSanitizeWithBridge(inputText, {
-        modelId: settings.llm.modelId,
-        existingFindings: detection.findings,
-        mode: "minimize",
-        onProgress: (progress) => {
-          onProgress(progress.message);
-        }
-      });
-
-      if (result.error) {
-        return {
-          blocked: true,
-          error: result.error
-        };
-      }
-
-      if (result.block) {
-        return {
-          blocked: true,
-          message:
-            "安全な依頼文の再スキャンで高リスク情報が残っている可能性があります。MaskまたはGeneralizeを選んでください。"
-        };
-      }
-
-      return {
-        text: result.safePrompt,
-        message: result.userVisibleExplanation
-      };
-    } catch (error) {
-      const detail = classifyLlmError(error);
-      return {
-        blocked: true,
-        error: detail.message
-      };
-    }
-  };
 }
 
 async function handlePaste(event: ClipboardEvent, settings: AiMaeCheckSettings, remoteRules: DetectorRule[]): Promise<void> {

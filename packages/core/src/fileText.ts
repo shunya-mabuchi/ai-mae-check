@@ -79,6 +79,6 @@ export function createSafeTextFileName(fileName: string): string {
   return `${fileName.slice(0, lastDot)}.safe${fileName.slice(lastDot)}`;
 }
 
-export function createSafeTextContent(input: string, findings: Finding[], mode: Exclude<TransformMode, "minimize"> = "mask"): string {
+export function createSafeTextContent(input: string, findings: Finding[], mode: TransformMode = "mask"): string {
   return transformText(input, findings, mode).transformedText;
 }

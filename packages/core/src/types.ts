@@ -18,7 +18,7 @@ export type DlpCategory =
   | "file"
   | "other";
 
-export type TransformMode = "mask" | "generalize" | "minimize";
+export type TransformMode = "mask" | "generalize";
 
 export type FindingSource = "rule" | "llm";
 

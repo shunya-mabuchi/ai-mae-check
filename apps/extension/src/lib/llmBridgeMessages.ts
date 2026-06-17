@@ -1,29 +1,20 @@
 import type {
   AnalyzeContextOptions,
-  AnalyzeSanitizeOptions,
   ContextAnalysisResult,
-  LlmProgress,
-  SanitizeAnalysisResult
+  LlmProgress
 } from "@ai-mae-check/llm";
 
 export const LLM_BRIDGE_CONNECT = "ai-mae-check:llm-bridge-connect";
 export const LLM_BRIDGE_READY = "ai-mae-check:llm-bridge-ready";
 
 export type LlmBridgeRequest =
-  | {
-      type: "analyze";
-      requestId: string;
-      inputText: string;
-      modelId: string;
-      options: Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates">;
-    }
-  | {
-      type: "sanitize";
-      requestId: string;
-      inputText: string;
-      modelId: string;
-      options: Pick<AnalyzeSanitizeOptions, "existingFindings" | "mode">;
-    };
+  {
+    type: "analyze";
+    requestId: string;
+    inputText: string;
+    modelId: string;
+    options: Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates">;
+  };
 
 export type LlmBridgeResponse =
   | {
@@ -38,11 +29,6 @@ export type LlmBridgeResponse =
       type: "analyze-result";
       requestId: string;
       result: ContextAnalysisResult;
-    }
-  | {
-      type: "sanitize-result";
-      requestId: string;
-      result: SanitizeAnalysisResult;
     }
   | {
       type: "error";

@@ -100,9 +100,9 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
                 <div className="mt-4 rounded-[6px] border border-dashed border-line p-3">
                   <div className="mb-2 flex items-center gap-2 text-sm font-black">
                     <Sparkles size={16} className="text-leaf" aria-hidden="true" />
-                    安全な依頼文に整える
+                    AI文脈チェック
                   </div>
-                  <p className="text-xs leading-5 text-muted">顧客名・金額・秘密情報を伏せた候補文を作成します。</p>
+                  <p className="text-xs leading-5 text-muted">顧客名・案件名・採用情報など、文脈上の注意候補を確認します。</p>
                 </div>
               </div>
             </div>

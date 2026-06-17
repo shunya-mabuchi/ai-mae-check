@@ -45,7 +45,7 @@
 - マスキング、risk score、policy、transform modelは `packages/core` に置く。
 - WebLLM関連は `packages/llm` に集約する。
 - 署名付きルール配信APIは `apps/worker` に置き、署名検証とリモートルールのDetectorRule化は `packages/core` に置く。
-- WebLLMは文脈チェック、Generalize、Minimize、`safe_prompt` 生成に使う。
+- WebLLMは文脈チェック専用に使う。依頼文生成や最終的な安全判定には使わない。
 - メール、電話番号、APIキーなどの確定情報検出をWebLLMの主役にしない。
 - 拡張機能とデモサイトは同じcore検出エンジンを使う。
 - WebLLMが失敗してもルールベース検出は利用できるようにする。

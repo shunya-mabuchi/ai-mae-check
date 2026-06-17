@@ -11,22 +11,18 @@ import {
 import { classifyLlmError } from "./errors";
 import { resolveModelId, type WebLlmModelListModule } from "./model";
 import { parseContextAnalysisJson } from "./parser";
-import { buildContextRiskPrompt, buildSanitizePrompt } from "./prompt";
+import { buildContextRiskPrompt } from "./prompt";
 import { mergeResidualContextCandidates } from "./residualMasking";
-import { createSanitizeAnalysisResult } from "./sanitizeParser";
 import { isWebGpuAvailable } from "./webgpu";
 import type {
   AnalyzeContextOptions,
-  AnalyzeSanitizeOptions,
   ContextAnalysisResult,
   LlmAnalyzerOptions,
   LlmContextAnalyzer,
   LlmErrorDetail,
-  LlmProgress,
-  SanitizeAnalysisResult
+  LlmProgress
 } from "./types";
 import WebLlmWorker from "./webllmWorker?worker";
-import { evaluateDlpPolicy } from "@ai-mae-check/core";
 
 type WebLlmProgressReport = {
   progress?: number;
@@ -86,28 +82,6 @@ function createErrorResult(inputModelId: string, startedAt: number, error: strin
     rawText: "",
     modelId: inputModelId,
     elapsedMs: Math.max(0, performance.now() - startedAt),
-    error,
-    ...(errorDetail ? { errorDetail } : {})
-  };
-}
-
-function createSanitizeErrorResult(
-  inputModelId: string,
-  startedAt: number,
-  error: string,
-  errorDetail?: LlmErrorDetail
-): SanitizeAnalysisResult {
-  return {
-    block: true,
-    riskLevel: "high",
-    detectedCategories: [],
-    safePrompt: "",
-    userVisibleExplanation: error,
-    rawText: "",
-    modelId: inputModelId,
-    elapsedMs: Math.max(0, performance.now() - startedAt),
-    residualFindings: [],
-    residualPolicy: evaluateDlpPolicy([]),
     error,
     ...(errorDetail ? { errorDetail } : {})
   };
@@ -199,52 +173,6 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
     }
   }
 
-  async analyzeSanitize(input: string, options: AnalyzeSanitizeOptions = {}): Promise<SanitizeAnalysisResult> {
-    const startedAt = performance.now();
-
-    if (typeof Worker === "undefined") {
-      return createSanitizeErrorResult(this.options.modelId, startedAt, WEBGPU_UNAVAILABLE_MESSAGE);
-    }
-
-    if (options.signal?.aborted) {
-      return createSanitizeErrorResult(this.options.modelId, startedAt, "AI安全化が中断されました。");
-    }
-
-    const webGpuError = await ensureWebGpuAdapter();
-    if (webGpuError) {
-      return createSanitizeErrorResult(this.options.modelId, startedAt, webGpuError.message, webGpuError);
-    }
-
-    const inputForModel = input.slice(0, this.options.maxInputChars);
-
-    try {
-      const { engine, modelId } = await this.getEngine(options.onProgress);
-
-      if (options.signal?.aborted) {
-        return createSanitizeErrorResult(modelId, startedAt, "AI安全化が中断されました。");
-      }
-
-      options.onProgress?.({ phase: "analyzing", message: "安全化候補を作成しています。" });
-      const messages = buildSanitizePrompt(inputForModel, {
-        existingFindings: options.existingFindings ?? [],
-        mode: options.mode ?? "minimize"
-      });
-
-      const completion = await engine.chat.completions.create({
-        messages,
-        temperature: this.options.temperature,
-        max_tokens: this.options.maxTokens
-      });
-      const rawText = completion.choices?.[0]?.message?.content ?? "";
-
-      return createSanitizeAnalysisResult(rawText, modelId, Math.max(0, performance.now() - startedAt), inputForModel);
-    } catch (error) {
-      const detail = classifyLlmError(error);
-      this.dispose();
-      return createSanitizeErrorResult(this.options.modelId, startedAt, detail.message, detail);
-    }
-  }
-
   dispose(): void {
     void this.engine?.unload?.();
     this.worker?.terminate();
@@ -326,15 +254,6 @@ export async function analyzeContextRisk(input: string, options: AnalyzeContextO
   const analyzer = createLlmContextAnalyzer();
   try {
     return await analyzer.analyze(input, options);
-  } finally {
-    analyzer.dispose();
-  }
-}
-
-export async function analyzeSanitizePrompt(input: string, options: AnalyzeSanitizeOptions = {}): Promise<SanitizeAnalysisResult> {
-  const analyzer = createLlmContextAnalyzer();
-  try {
-    return await analyzer.analyzeSanitize(input, options);
   } finally {
     analyzer.dispose();
   }

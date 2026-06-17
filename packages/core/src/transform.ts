@@ -48,16 +48,6 @@ export function transformText(input: string, findings: Finding[], mode: Transfor
     };
   }
 
-  if (mode === "minimize") {
-    return {
-      mode,
-      transformedText: input,
-      placeholderMap: [],
-      findings: normalizeFindings(findings),
-      requiresLlm: true
-    };
-  }
-
   const generalizedFindings = generalizeFindings(findings);
   return {
     mode,

@@ -1,7 +1,6 @@
 import {
   categoryForFinding,
   evaluateDlpPolicy,
-  normalizeFindings,
   transformText,
   type DetectionResult,
   type DlpCategory,
@@ -25,18 +24,10 @@ export type ConfirmModalDecision =
       type: "cancel";
     };
 
-export interface MinimizeResult {
-  text?: string;
-  message?: string;
-  blocked?: boolean;
-  error?: string;
-}
-
 export interface SendConfirmModalOptions {
   inputText: string;
   detection: DetectionResult;
   defaultMode?: TransformMode;
-  onMinimize?: (onProgress: (message: string) => void) => Promise<MinimizeResult>;
 }
 
 export interface TransformModeOption {
@@ -104,12 +95,6 @@ export const transformModeOptions: TransformModeOption[] = [
     value: "generalize",
     title: "Generalize",
     description: "カテゴリ名が分かる汎用表現へ置き換えます。"
-  },
-  {
-    value: "minimize",
-    title: "安全な依頼文に整える",
-    description:
-      "ローカルAIで、外部AIへ貼るための自然な依頼文に整えます。削った/抽象化したカテゴリと再スキャン結果を確認します。"
   }
 ];
 
@@ -117,16 +102,6 @@ function highestRisk(findings: Finding[]): RiskLevel {
   return findings.reduce<RiskLevel>((highest, finding) => {
     return riskRank[finding.riskLevel] > riskRank[highest] ? finding.riskLevel : highest;
   }, "low");
-}
-
-function removeFindings(inputText: string, findings: Finding[]): string {
-  let result = inputText;
-
-  for (const finding of [...normalizeFindings(findings)].sort((left, right) => right.start - left.start)) {
-    result = `${result.slice(0, finding.start)}${result.slice(finding.end)}`;
-  }
-
-  return result;
 }
 
 export function createCategoryGroups(findings: Finding[], policy: DlpPolicyDecision): CategoryGroup[] {
@@ -175,10 +150,6 @@ export function createConfirmedText(
     return inputText;
   }
 
-  if (mode === "minimize") {
-    return removeFindings(inputText, selectedFindings);
-  }
-
   return transformText(inputText, selectedFindings, mode).transformedText;
 }
 
@@ -206,8 +177,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     const policy = evaluateDlpPolicy(options.detection.findings);
     const groups = createCategoryGroups(options.detection.findings, policy);
     const selectedFindingIds = new Set(options.detection.findings.map((finding) => finding.id));
-    let mode: TransformMode = options.defaultMode === "minimize" && !options.onMinimize ? "mask" : options.defaultMode ?? "mask";
-    let minimizeInFlight = false;
+    let mode: TransformMode = options.defaultMode ?? "mask";
 
     const host = document.createElement("div");
     const shadow = host.attachShadow({ mode: "open" });
@@ -270,7 +240,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
       preview.textContent = createConfirmedText(options.inputText, options.detection.findings, selectedFindingIds, mode);
       const currentSelected = selectedFindings(options.detection.findings, selectedFindingIds);
       submitButton.textContent = policy.canSendRaw && currentSelected.length === 0 ? "そのまま送信" : "安全化して送信";
-      submitButton.toggleAttribute("disabled", minimizeInFlight || !canSubmitSelection(groups, selectedFindingIds));
+      submitButton.toggleAttribute("disabled", !canSubmitSelection(groups, selectedFindingIds));
     };
 
     const renderCategories = () => {
@@ -338,7 +308,6 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
         radio.name = "amc-transform-mode";
         radio.value = option.value;
         radio.checked = mode === option.value;
-        radio.disabled = option.value === "minimize" && !options.onMinimize;
         radio.addEventListener("change", () => {
           mode = option.value;
           status.textContent = "";
@@ -347,15 +316,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
 
         const copy = createElement("span");
         copy.append(createElement("strong", undefined, option.title));
-        copy.append(
-          createElement(
-            "p",
-            "amc-note",
-            option.value === "minimize" && !options.onMinimize
-              ? "AI文脈チェックが無効なため、現在は選択できません。"
-              : option.description
-          )
-        );
+        copy.append(createElement("p", "amc-note", option.description));
         label.append(radio, copy);
         transform.append(label);
       }
@@ -363,37 +324,6 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
 
     submitButton.addEventListener("click", () => {
       if (!canSubmitSelection(groups, selectedFindingIds)) {
-        return;
-      }
-
-      if (mode === "minimize" && options.onMinimize) {
-        minimizeInFlight = true;
-        status.textContent = "ローカルAIで安全な依頼文を作成しています。";
-        renderPreview();
-
-        void options
-          .onMinimize((message) => {
-            status.textContent = message;
-          })
-          .then((result) => {
-            if (result.blocked || result.error || !result.text || result.text.trim().length === 0) {
-              status.textContent =
-                result.error ??
-                result.message ??
-                "安全な依頼文を送信できませんでした。MaskまたはGeneralizeを選んでください。";
-              return;
-            }
-
-            cleanup();
-            resolve({
-              type: "submit",
-              text: result.text
-            });
-          })
-          .finally(() => {
-            minimizeInFlight = false;
-            renderPreview();
-          });
         return;
       }
 
