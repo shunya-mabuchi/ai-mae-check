@@ -1,4 +1,5 @@
 import {
+  createJsonParseFallbackMessage,
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE,
   type LlmErrorDetail,
@@ -76,10 +77,7 @@ export function createLlmResultUiState(candidateCount: number, detail?: LlmError
   if (detail?.kind === "json_parse") {
     return {
       status: candidateCount > 0 ? "done" : "empty",
-      message:
-        candidateCount > 0
-          ? "ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。"
-          : "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。",
+      message: createJsonParseFallbackMessage(candidateCount),
       errorDetail: null
     };
   }

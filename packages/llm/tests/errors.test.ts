@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyLlmError,
+  createJsonParseFallbackMessage,
   DEFAULT_MODEL_ID,
   formatLlmErrorMessage,
   isContextAnalysisExecutionError,
@@ -140,5 +141,14 @@ describe("formatLlmErrorMessage", () => {
 
   it("errorがない結果は実行不能エラーとして扱わない", () => {
     expect(isContextAnalysisExecutionError({})).toBe(false);
+  });
+
+  it("json_parseの非致命フォールバック文言を候補数から返す", () => {
+    expect(createJsonParseFallbackMessage(0)).toBe(
+      "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
+    );
+    expect(createJsonParseFallbackMessage(2)).toBe(
+      "ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。"
+    );
   });
 });
