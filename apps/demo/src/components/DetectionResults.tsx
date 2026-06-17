@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, ListChecks, Sparkles } from "lucide-react"
 import type { DetectionSummary, Finding } from "@ai-mae-check/core";
 import type { ContextRiskCandidate, LlmErrorDetail } from "@ai-mae-check/llm";
 import { riskLabel, riskMeterTone, riskTone, type LlmStatus } from "../lib/demoConstants";
+import { createLlmStatusPanelViewModel } from "../lib/demoLlmUiState";
 import { createRiskCountTiles, createRiskSummaryViewModel } from "../lib/demoRiskSummary";
 
 function LlmCandidates({
@@ -72,6 +73,7 @@ export function DetectionResults({
 }) {
   const riskSummary = createRiskSummaryViewModel(summary, findings);
   const riskCountTiles = createRiskCountTiles(summary);
+  const llmStatusPanel = createLlmStatusPanelViewModel(llmStatus);
 
   return (
     <div className="space-y-5">
@@ -160,17 +162,13 @@ export function DetectionResults({
         )}
       </div>
 
-      <div
-        className={`rounded-card border p-3 text-sm ${
-          llmStatus === "error"
-            ? "border-rose-200 bg-rose-50 text-rose-800"
-            : llmStatus === "done"
-              ? "border-leaf/30 bg-emerald-50 text-emerald-900"
-              : "border-line bg-white text-muted"
-        }`}
-      >
+      <div className={llmStatusPanel.className}>
         <div className="flex items-start gap-2">
-          {llmStatus === "done" ? <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}
+          {llmStatusPanel.icon === "check" ? (
+            <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
+          ) : (
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          )}
           <p>{llmMessage}</p>
         </div>
         {llmStatus === "error" && llmErrorDetail && (

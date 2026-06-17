@@ -13,6 +13,13 @@ export interface DemoLlmUiState {
   errorDetail: LlmErrorDetail | null;
 }
 
+export type LlmStatusPanelIcon = "check" | "alert";
+
+export interface LlmStatusPanelViewModel {
+  icon: LlmStatusPanelIcon;
+  className: string;
+}
+
 export function createIdleLlmUiState(): DemoLlmUiState {
   return {
     status: "idle",
@@ -90,5 +97,28 @@ export function createErrorLlmUiState(errorDetail: LlmErrorDetail): DemoLlmUiSta
     status: "error",
     message: errorDetail.message,
     errorDetail
+  };
+}
+
+export function createLlmStatusPanelViewModel(status: LlmStatus): LlmStatusPanelViewModel {
+  const baseClassName = "rounded-card border p-3 text-sm";
+
+  if (status === "error") {
+    return {
+      icon: "alert",
+      className: `${baseClassName} border-rose-200 bg-rose-50 text-rose-800`
+    };
+  }
+
+  if (status === "done") {
+    return {
+      icon: "check",
+      className: `${baseClassName} border-leaf/30 bg-emerald-50 text-emerald-900`
+    };
+  }
+
+  return {
+    icon: "alert",
+    className: `${baseClassName} border-line bg-white text-muted`
   };
 }

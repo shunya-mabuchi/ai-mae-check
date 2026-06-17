@@ -11,6 +11,7 @@ import {
   createIdleLlmUiState,
   createLlmCompleteUiState,
   createLlmResultUiState,
+  createLlmStatusPanelViewModel,
   createLoadingLlmUiState,
   createProgressLlmUiState,
   createWebGpuUnavailableLlmUiState
@@ -118,5 +119,22 @@ describe("demoLlmUiState", () => {
     };
 
     expect(isContextAnalysisExecutionError(result)).toBe(true);
+  });
+
+  it("AI文脈チェック状態バナーの表示情報を返す", () => {
+    expect(createLlmStatusPanelViewModel("done")).toEqual({
+      icon: "check",
+      className: "rounded-card border p-3 text-sm border-leaf/30 bg-emerald-50 text-emerald-900"
+    });
+
+    expect(createLlmStatusPanelViewModel("error")).toEqual({
+      icon: "alert",
+      className: "rounded-card border p-3 text-sm border-rose-200 bg-rose-50 text-rose-800"
+    });
+
+    expect(createLlmStatusPanelViewModel("loading")).toEqual({
+      icon: "alert",
+      className: "rounded-card border p-3 text-sm border-line bg-white text-muted"
+    });
   });
 });
