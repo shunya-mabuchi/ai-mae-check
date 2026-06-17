@@ -13,7 +13,6 @@ import {
 import { pasteReviewModalCss } from "./modalStyles";
 import {
   createPasteReviewActionState,
-  pasteReviewRiskLabel,
   RAW_PASTE_BLOCKED_MESSAGE
 } from "./pasteReviewState";
 import {
@@ -21,6 +20,7 @@ import {
   createInitialSelectedFindingIds,
   resolvePasteReviewFindings
 } from "./pasteReviewSelection";
+import { createPasteReviewCandidateView } from "./pasteReviewCandidateView";
 import { createPasteReviewFindingView } from "./pasteReviewFindingView";
 import { createPasteReviewSummaryItems } from "./pasteReviewSummaryView";
 import {
@@ -131,9 +131,11 @@ function renderCandidates(
 
     const body = createElement("div");
     const meta = createElement("div", "hm-meta");
+    const view = createPasteReviewCandidateView(candidate, selectedCandidateIds.has(candidate.id));
     meta.append(createElement("strong", undefined, candidate.label));
-    meta.append(createElement("span", `hm-badge hm-badge-${candidate.riskLevel}`, `危険度: ${pasteReviewRiskLabel[candidate.riskLevel]}`));
-    meta.append(createElement("span", "hm-message", `confidence: ${candidate.confidence.toFixed(2)}`));
+    meta.append(createElement("span", view.riskBadgeClassName, view.riskBadgeText));
+    meta.append(createElement("span", "hm-message", view.confidenceText));
+    meta.append(createElement("span", "hm-message", view.selectionLabel));
     body.append(meta);
     body.append(createElement("code", "hm-text", candidate.surface));
     body.append(createElement("p", "hm-message", candidate.reason));
