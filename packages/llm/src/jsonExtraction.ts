@@ -21,7 +21,15 @@ function findFencedJsonBlocks(rawText: string): string[] {
 }
 
 function findBalancedObjects(rawText: string): string[] {
-  const objects: string[] = [];
+  return findBalancedJsonValues(rawText, "{", "}");
+}
+
+function findBalancedArrays(rawText: string): string[] {
+  return findBalancedJsonValues(rawText, "[", "]");
+}
+
+function findBalancedJsonValues(rawText: string, openChar: "{" | "[", closeChar: "}" | "]"): string[] {
+  const values: string[] = [];
   let start = -1;
   let depth = 0;
   let inString = false;
@@ -46,7 +54,7 @@ function findBalancedObjects(rawText: string): string[] {
       continue;
     }
 
-    if (char === "{") {
+    if (char === openChar) {
       if (depth === 0) {
         start = index;
       }
@@ -54,16 +62,40 @@ function findBalancedObjects(rawText: string): string[] {
       continue;
     }
 
-    if (char === "}" && depth > 0) {
+    if (char === closeChar && depth > 0) {
       depth -= 1;
       if (depth === 0 && start >= 0) {
-        objects.push(rawText.slice(start, index + 1));
+        values.push(rawText.slice(start, index + 1));
         start = -1;
       }
     }
   }
 
-  return objects;
+  return values;
+}
+
+function normalizeJsonCandidate(candidate: string): string {
+  return candidate
+    .trim()
+    .replace(/^\uFEFF/, "")
+    .replace(/[“”]/g, "\"")
+    .replace(/[‘’]/g, "'")
+    .replace(/,\s*([}\]])/g, "$1");
+}
+
+function parseJsonCandidate(candidate: string): { parsed: unknown; source: string } | null {
+  const trimmedCandidate = candidate.trim().replace(/^\uFEFF/, "");
+
+  try {
+    return { parsed: JSON.parse(trimmedCandidate), source: trimmedCandidate };
+  } catch {
+    const normalizedCandidate = normalizeJsonCandidate(candidate);
+    try {
+      return { parsed: JSON.parse(normalizedCandidate), source: normalizedCandidate };
+    } catch {
+      return null;
+    }
+  }
 }
 
 function hasPreferredKey(parsed: unknown, preferredKeys: string[]): boolean {
@@ -79,25 +111,26 @@ function hasPreferredKey(parsed: unknown, preferredKeys: string[]): boolean {
 }
 
 export function extractJsonObject(rawText: string, preferredKeys: string[] = []): string {
-  const candidates = unique([rawText, ...findFencedJsonBlocks(rawText), ...findBalancedObjects(rawText)]);
+  const candidates = unique([
+    rawText,
+    ...findFencedJsonBlocks(rawText),
+    ...findBalancedObjects(rawText),
+    ...findBalancedArrays(rawText)
+  ]);
   let firstJsonValue = "";
 
   for (const candidate of candidates) {
-    try {
-      const parsed = JSON.parse(candidate);
-      if (!isRecord(parsed) && !Array.isArray(parsed)) {
-        continue;
-      }
+    const result = parseJsonCandidate(candidate);
+    if (!result || (!isRecord(result.parsed) && !Array.isArray(result.parsed))) {
+      continue;
+    }
 
-      if (firstJsonValue.length === 0) {
-        firstJsonValue = candidate;
-      }
+    if (firstJsonValue.length === 0) {
+      firstJsonValue = result.source;
+    }
 
-      if (hasPreferredKey(parsed, preferredKeys)) {
-        return candidate;
-      }
-    } catch {
-      // LLM出力に混ざった説明文や壊れた候補は無視し、次の候補を試す。
+    if (hasPreferredKey(result.parsed, preferredKeys)) {
+      return result.source;
     }
   }
 

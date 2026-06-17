@@ -140,6 +140,49 @@ describe("parseContextAnalysisJson", () => {
     expect(result.summary).toBe("案件名候補があります。");
   });
 
+  it("説明文つきの配列JSONと末尾カンマを読み取る", () => {
+    const result = parseContextAnalysisJson(`候補は以下です。
+[
+  {
+    "category": "project_name",
+    "surface": "Project Blue Bridge",
+    "label": "案件名候補",
+    "reason": "未公開の提案メモに含まれる案件名候補です。",
+    "riskLevel": "medium",
+    "suggestedPlaceholder": "[PROJECT_1]",
+    "confidence": 0.84,
+  },
+]
+補足: 最終判断はユーザーが行ってください。`);
+
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]?.surface).toBe("Project Blue Bridge");
+  });
+
+  it("日本語キーで返された候補JSONを読み取る", () => {
+    const result = parseContextAnalysisJson(
+      JSON.stringify({
+        候補: [
+          {
+            カテゴリ: "person_name",
+            該当テキスト: "佐藤様",
+            ラベル: "人名候補",
+            理由: "敬称つきの個人名らしい表現です。",
+            危険度: "medium",
+            プレースホルダー: "[PERSON_1]",
+            信頼度: 0.87
+          }
+        ],
+        要約: "人名候補があります。"
+      })
+    );
+
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]?.category).toBe("person_name");
+    expect(result.candidates[0]?.surface).toBe("佐藤様");
+    expect(result.summary).toBe("人名候補があります。");
+  });
+
   it("confidenceThreshold未満を捨てる", () => {
     const result = parseContextAnalysisJson(
       JSON.stringify({
