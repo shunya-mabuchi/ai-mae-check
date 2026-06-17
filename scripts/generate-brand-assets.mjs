@@ -102,13 +102,13 @@ function lpScreenshot() {
       <div class="brand"><div class="mark">${markSvg()}</div>AIまえチェック</div>
       <div class="grid cols-2" style="align-items:center; height:650px;">
         <section>
-          <div class="pill">AIに送る前の確認レイヤー</div>
-          <h1 class="h1">そのまま<br>送らない。</h1>
-          <p class="lead">ChatGPTや外部フォームへ貼る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内でチェック。</p>
-          <div style="display:flex;gap:14px;margin-top:34px"><div class="button">デモで試す</div><div class="button secondary">GitHubを見る</div></div>
+          <div class="pill">本体は、AIサービス上で動くChrome拡張です。</div>
+          <h1 class="h1">Chrome拡張で、<br>そのまま貼らない。</h1>
+          <p class="lead">ChatGPT・Claude・Geminiに文章を貼る前に、個人情報・秘密情報・社内情報の消し忘れに気づくための確認レイヤーです。</p>
+          <div style="display:flex;gap:14px;margin-top:34px"><div class="button">拡張機能の使い方を見る</div><div class="button secondary">ミニデモで試す</div></div>
         </section>
         <section class="card" style="padding:26px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;"><b style="font-size:22px;">送信前チェック</b><span class="pill">ブラウザ内処理</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;"><b style="font-size:22px;">貼り付け前チェック</b><span class="pill">ブラウザ内処理</span></div>
           <div class="grid cols-3">
             <div class="metric risk-high">高リスク<b>5</b></div>
             <div class="metric risk-mid">中リスク<b>3</b></div>
@@ -129,13 +129,13 @@ function demoScreenshot() {
     800,
     `<div class="frame">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
-        <div><div class="pill">ライブデモ</div><h2 class="h2" style="margin-top:14px;">貼る前に、消す場所を選ぶ。</h2></div>
+        <div><div class="pill">拡張を入れる前のミニデモ</div><h2 class="h2" style="margin-top:14px;">貼り付け前チェックの動きを試す</h2></div>
         <div style="display:flex;gap:12px;"><div class="button">ルールで検出</div><div class="button secondary">AI文脈チェック</div></div>
       </div>
       <div class="card" style="padding:22px;">
         <div class="grid cols-2">
           <div>
-            <b style="font-size:22px;">送信前テキスト</b>
+            <b style="font-size:22px;">外部AIへ送る前の下書き</b>
             <div class="textarea mono" style="margin-top:14px;">
               田中太郎です。メールは taro@example.com、電話番号は 090-1234-5678 です。<br><br>
               A社向けの提案資料について、NDA締結前なので関係者限りで確認してください。<br><br>
@@ -162,22 +162,34 @@ function modalScreenshot() {
     1280,
     800,
     `<div class="frame" style="display:grid;place-items:center;">
-      <div class="card" style="width:910px;padding:34px;">
+      <div style="position:absolute; inset:0; background:rgba(24,36,31,.18);"></div>
+      <div class="card" style="width:1020px;padding:30px;position:relative;">
         <div style="display:flex;justify-content:space-between;gap:24px;align-items:flex-start;">
-          <div><div class="pill">Chrome拡張</div><h2 class="h2" style="margin-top:14px;">送信前に安全化しますか？</h2><p class="lead" style="font-size:20px;margin-top:14px;">注意が必要な情報が含まれている可能性があります。</p></div>
+          <div><div class="pill">Chrome拡張の確認モーダル</div><h2 class="h2" style="margin-top:14px;">安全化してから貼り付けますか？</h2><p class="lead" style="font-size:20px;margin-top:14px;">貼り付けようとしている文章に、秘密情報や高リスク情報の可能性があります。</p></div>
           <div class="metric risk-high" style="width:150px;text-align:center;">判定<b>高</b></div>
         </div>
-        <div class="grid cols-2" style="margin-top:28px;">
+        <div class="grid cols-2" style="margin-top:24px;">
           <div>
-            ${["個人情報", "秘密情報", "契約・採用文脈"].map((label, index) => `<div class="finding"><div class="check">${index + 1}</div><div><b>${label}</b><div class="mini">詳細から確認できます</div></div></div>`).join("")}
+            ${[
+              ["メールアドレス", "高リスク / マスク対象に含める"],
+              ["GitHub token風文字列", "高リスク / Secret Guard対象"],
+              ["顧客名候補", "AI文脈チェック候補"],
+              ["契約・採用文脈", "中リスク / 確認対象"]
+            ].map(([label, detail], index) => `<div class="finding"><div class="check">${index + 1}</div><div><b>${label}</b><div class="mini">${detail}</div></div></div>`).join("")}
+            <div class="card" style="padding:16px;margin-top:16px;box-shadow:none;">
+              <b>WebLLMによる文脈チェック結果</b>
+              <p class="mini" style="margin:8px 0 0;">顧客名や契約前情報と思われる注意候補が見つかりました。候補はユーザーがマスク対象に含めるか選べます。</p>
+            </div>
           </div>
           <div class="preview mono">
-            [PERSON_1]向けの[PROJECT_1]提案メモです。<br>
-            候補者の[PERSON_2]について、評価メモを確認します。<br><br>
+            [CUSTOMER_1]向けの[PROJECT_1]提案メモです。<br>
+            連絡先は [EMAIL_1] です。<br>
+            GITHUB_TOKEN=[GITHUB_TOKEN_1]<br><br>
+            候補者の[PERSON_1]さんについて、評価メモを確認します。<br><br>
             ※安全を保証するものではありません。
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:28px;"><div class="button secondary">編集に戻る</div><div class="button">安全化して送信</div></div>
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px;"><div class="button">安全化して貼り付け</div><div class="button secondary">AI文脈チェックも実行</div><div class="button secondary">キャンセル</div></div>
       </div>
     </div>`
   );
@@ -197,8 +209,8 @@ function optionsScreenshot() {
         <div class="card" style="padding:26px;">
           <h2 class="h2" style="font-size:34px;">AI文脈チェック</h2>
           <div class="finding"><div class="check">✓</div><div><b>手動実行</b><div class="mini">初期設定では自動実行しません</div></div></div>
-          <div class="finding"><div class="check">✓</div><div><b>推奨モデル</b><div class="mini">Llama 3.2 1B q4f32</div></div></div>
-          <div class="preview">本文は永続保存しません。設定のみChromeのローカル保存領域に保存します。</div>
+          <div class="finding"><div class="check">✓</div><div><b>標準モデル</b><div class="mini">Llama 3.2 1B q4f32</div></div></div>
+          <div class="preview">貼り付け本文は永続保存しません。設定のみChromeのローカル保存領域に保存します。WebLLMの初回利用時にはモデルファイルを取得する場合があります。</div>
         </div>
       </div>
     </div>`
