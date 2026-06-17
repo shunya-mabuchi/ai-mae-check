@@ -21,7 +21,7 @@ import {
   resolvePasteReviewFindings,
   updateSelectedIdSet
 } from "./pasteReviewSelection";
-import { createPasteReviewCandidateView } from "./pasteReviewCandidateView";
+import { createPasteReviewCandidateListView } from "./pasteReviewCandidateListView";
 import { createPasteReviewFindingView } from "./pasteReviewFindingView";
 import { createPasteReviewSummaryItems } from "./pasteReviewSummaryView";
 import { createPasteReviewInsertText, createPasteReviewPreviewText } from "./pasteReviewTextTransform";
@@ -114,26 +114,31 @@ function renderCandidates(
   onChange: () => void
 ): void {
   container.replaceChildren();
-  for (const candidate of candidates) {
+  const listView = createPasteReviewCandidateListView(candidates, selectedCandidateIds);
+  if (listView.emptyMessage) {
+    container.append(createElement("p", "hm-message", listView.emptyMessage));
+    return;
+  }
+
+  for (const view of listView.items) {
     const label = createElement("label", "hm-candidate");
     const checkbox = createElement("input") as HTMLInputElement;
     checkbox.type = "checkbox";
-    checkbox.checked = selectedCandidateIds.has(candidate.id);
+    checkbox.checked = view.selected;
     checkbox.addEventListener("change", () => {
-      updateSelectedIdSet(selectedCandidateIds, candidate.id, checkbox.checked);
+      updateSelectedIdSet(selectedCandidateIds, view.id, checkbox.checked);
       onChange();
     });
 
     const body = createElement("div");
     const meta = createElement("div", "hm-meta");
-    const view = createPasteReviewCandidateView(candidate, selectedCandidateIds.has(candidate.id));
-    meta.append(createElement("strong", undefined, candidate.label));
+    meta.append(createElement("strong", undefined, view.label));
     meta.append(createElement("span", view.riskBadgeClassName, view.riskBadgeText));
     meta.append(createElement("span", "hm-message", view.confidenceText));
     meta.append(createElement("span", "hm-message", view.selectionLabel));
     body.append(meta);
-    body.append(createElement("code", "hm-text", candidate.surface));
-    body.append(createElement("p", "hm-message", candidate.reason));
+    body.append(createElement("code", "hm-text", view.surface));
+    body.append(createElement("p", "hm-message", view.reason));
 
     label.append(checkbox, body);
     container.append(label);
