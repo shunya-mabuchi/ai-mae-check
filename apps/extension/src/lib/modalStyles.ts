@@ -88,30 +88,37 @@ export const pasteReviewModalCss = `
     max-height: 270px;
     overflow: auto;
   }
-  .hm-item {
+  .hm-item,
+  .review-item {
     border: 1px solid #dfded8;
     border-radius: 6px;
     background: white;
     padding: 10px;
   }
-  .hm-meta {
+  .hm-meta,
+  .review-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
     align-items: center;
     margin-bottom: 8px;
   }
-  .hm-badge {
+  .hm-badge,
+  .review-badge {
     border-radius: 6px;
     border: 1px solid #dfded8;
     padding: 3px 7px;
     font-size: 12px;
     font-weight: 700;
   }
-  .hm-badge-critical, .hm-badge-high { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
-  .hm-badge-medium { border-color: #fde68a; background: #fffbeb; color: #92400e; }
-  .hm-badge-low { border-color: #e7e5e4; background: #f5f5f4; color: #57534e; }
-  .hm-text {
+  .hm-badge-critical, .hm-badge-high,
+  .review-badge-critical, .review-badge-high { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+  .hm-badge-medium,
+  .review-badge-medium { border-color: #fde68a; background: #fffbeb; color: #92400e; }
+  .hm-badge-low,
+  .review-badge-low { border-color: #e7e5e4; background: #f5f5f4; color: #57534e; }
+  .hm-text,
+  .review-text {
     display: block;
     max-width: 100%;
     overflow-wrap: anywhere;
@@ -121,7 +128,8 @@ export const pasteReviewModalCss = `
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
     white-space: pre-wrap;
   }
-  .hm-message {
+  .hm-message,
+  .review-message {
     margin: 8px 0 0;
     color: #5f6368;
     line-height: 1.6;
@@ -150,19 +158,23 @@ export const pasteReviewModalCss = `
     color: #5f6368;
     line-height: 1.6;
   }
-  .hm-candidate {
+  .hm-candidate,
+  .review-candidate {
     display: flex;
     gap: 10px;
     border-top: 1px solid #eee;
     padding-top: 10px;
     margin-top: 10px;
   }
-  .hm-select-row {
+  .hm-select-row,
+  .review-select-row {
     display: flex;
     gap: 10px;
   }
   .hm-select-row input,
-  .hm-candidate input {
+  .hm-candidate input,
+  .review-select-row input,
+  .review-candidate input {
     margin-top: 3px;
     accent-color: #2f7d57;
   }

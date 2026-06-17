@@ -10,7 +10,7 @@ export interface PasteReviewFindingView {
 
 export function createPasteReviewFindingView(finding: Finding, selected: boolean): PasteReviewFindingView {
   return {
-    riskBadgeClassName: `hm-badge hm-badge-${finding.riskLevel}`,
+    riskBadgeClassName: `review-badge review-badge-${finding.riskLevel}`,
     riskBadgeText: `危険度: ${pasteReviewRiskLabel[finding.riskLevel]}`,
     sourceLabel: finding.source === "llm" ? "AI候補" : "ルール",
     selectionLabel: selected ? "マスク対象" : "マスク対象外"

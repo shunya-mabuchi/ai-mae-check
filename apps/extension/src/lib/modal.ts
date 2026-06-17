@@ -10,16 +10,16 @@ import {
 } from "./pasteReviewState";
 import {
   createInitialSelectedFindingIds,
-  resolvePasteReviewFindings,
-} from "./pasteReviewSelection";
-import { renderPasteReviewCandidateList, renderPasteReviewFindingList } from "./pasteReviewListRenderers";
+  resolveReviewFindings,
+} from "./reviewSelection";
+import { renderReviewCandidateList, renderReviewFindingList } from "./reviewListRenderers";
 import { createPasteReviewSummaryItems } from "./pasteReviewSummaryView";
 import { createPasteReviewInsertText, createPasteReviewPreviewText } from "./pasteReviewTextTransform";
 import {
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
   shouldAutoRunPasteReviewLlm
 } from "./pasteReviewLlmState";
-import { runPasteReviewLlm } from "./pasteReviewLlmRunner";
+import { runReviewLlm } from "./reviewLlmRunner";
 import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
 import { createPasteReviewModalElements } from "./pasteReviewModalElements";
 import type { AiMaeCheckSettings } from "./settings";
@@ -72,7 +72,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     const selectedCandidateIds = new Set<string>();
 
     const currentFindings = () => {
-      return resolvePasteReviewFindings({
+      return resolveReviewFindings({
         input: options.inputText,
         ruleFindings: options.detection.findings,
         selectedRuleFindingIds,
@@ -87,9 +87,9 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
 
     const render = () => {
       const findings = currentFindings();
-      renderPasteReviewFindingList(list, options.detection.findings, selectedRuleFindingIds, renderAfterSelectionChange);
+      renderReviewFindingList(list, options.detection.findings, selectedRuleFindingIds, renderAfterSelectionChange);
       preview.textContent = createPasteReviewPreviewText(options.inputText, findings);
-      renderPasteReviewCandidateList(candidateList, llmCandidates, selectedCandidateIds, renderAfterSelectionChange);
+      renderReviewCandidateList(candidateList, llmCandidates, selectedCandidateIds, renderAfterSelectionChange);
       const footerState = createPasteReviewFooterState({
         mode,
         selectedFindingCount: findings.length,
@@ -104,7 +104,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     };
 
     const runLlm = async () => {
-      await runPasteReviewLlm({
+      await runReviewLlm({
         enabled: options.settings.llm.enabled,
         inputText: options.inputText,
         modelId: options.settings.llm.modelId,

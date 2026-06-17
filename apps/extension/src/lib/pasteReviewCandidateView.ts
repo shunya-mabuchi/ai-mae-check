@@ -13,7 +13,7 @@ export function createPasteReviewCandidateView(
   selected: boolean
 ): PasteReviewCandidateView {
   return {
-    riskBadgeClassName: `hm-badge hm-badge-${candidate.riskLevel}`,
+    riskBadgeClassName: `review-badge review-badge-${candidate.riskLevel}`,
     riskBadgeText: `危険度: ${pasteReviewRiskLabel[candidate.riskLevel]}`,
     confidenceText: `confidence: ${candidate.confidence.toFixed(2)}`,
     selectionLabel: selected ? "マスク対象" : "マスク対象外"
