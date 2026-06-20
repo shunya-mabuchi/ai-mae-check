@@ -29,6 +29,17 @@ test("プライバシーポリシーを公開URLとして直接開ける", async
   await expect(page.getByRole("link", { name: "トップへ戻る" })).toHaveAttribute("href", "/");
 });
 
+test("公開ページのナビはカード風に浮かせずページ導線として表示する", async ({ page }) => {
+  await page.goto("/privacy");
+
+  const publicNavigation = page.getByRole("navigation", { name: "公開ページ" });
+  await expect(publicNavigation).toBeVisible();
+  await expect(publicNavigation).not.toHaveClass(/bg-white/);
+  await expect(publicNavigation).not.toHaveClass(/shadow-soft/);
+  await expect(publicNavigation).not.toHaveClass(/rounded-card/);
+  await expect(publicNavigation).not.toHaveClass(/border-line/);
+});
+
 test("サポートページを公開URLとして直接開ける", async ({ page }) => {
   await page.goto("/support");
 

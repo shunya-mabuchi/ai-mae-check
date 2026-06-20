@@ -12,25 +12,25 @@ export function PublicPageLayout({
 }) {
   return (
     <div className="page-shell min-h-screen text-ink">
-      <header className="px-5 py-5">
+      <header className="border-b border-line/70 px-5 py-5">
         <nav
           aria-label="公開ページ"
-          className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 rounded-card border border-line bg-white/80 px-5 py-4 shadow-soft"
+          className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-1 py-1"
         >
           <a href="/" className="text-base font-black text-ink">
             AIまえチェック
           </a>
-          <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-muted">
-            <a href="/#install" className="hover:text-ink">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-muted">
+            <a href="/#install" className="transition hover:text-ink">
               拡張機能
             </a>
-            <a href="/#demo" className="hover:text-ink">
+            <a href="/#demo" className="transition hover:text-ink">
               デモ
             </a>
-            <a href="/privacy" className="hover:text-ink">
+            <a href="/privacy" className="transition hover:text-ink">
               プライバシー
             </a>
-            <a href="/support" className="hover:text-ink">
+            <a href="/support" className="transition hover:text-ink">
               サポート
             </a>
           </div>
