@@ -150,12 +150,12 @@ if (listing.language !== "日本語") {
   fail("language must be 日本語");
 }
 
-if (!listing.supportUrl.includes("github.com/shunya-mabuchi/ai-mae-check/issues")) {
-  fail("supportUrl must point to GitHub Issues");
+if (listing.supportUrl !== "https://ai-mae-check.pages.dev/support") {
+  fail("supportUrl must point to the Cloudflare Pages support page");
 }
 
-if (!listing.privacyPolicyUrl.includes("privacy")) {
-  fail("privacyPolicyUrl must point to the privacy policy");
+if (listing.privacyPolicyUrl !== "https://ai-mae-check.pages.dev/privacy") {
+  fail("privacyPolicyUrl must point to the Cloudflare Pages privacy policy");
 }
 
 if (!listing.singlePurpose.includes("AIに文章を送る前")) {

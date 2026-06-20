@@ -13,8 +13,10 @@ import { DetectionTargetCards } from "./components/DetectionTargetCards";
 import { Footer } from "./components/Footer";
 import { Hero } from "./components/Hero";
 import { LaunchFlowSection } from "./components/LaunchFlowSection";
+import { PrivacyPolicyPage } from "./components/PrivacyPolicyPage";
 import { PrivacySection } from "./components/PrivacySection";
 import { StepCards } from "./components/StepCards";
+import { SupportPage } from "./components/SupportPage";
 import { TechStrip } from "./components/TechStrip";
 import { contextSampleText, sampleText } from "./lib/demoConstants";
 import {
@@ -33,10 +35,25 @@ import {
   createDemoTextReplacementState,
   type DemoWorkbenchStateSnapshot
 } from "./lib/demoWorkbenchState";
+import { resolveSiteRoute } from "./lib/siteRoutes";
 
 const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
 export function App() {
+  const route = resolveSiteRoute(window.location.pathname);
+
+  if (route === "privacy") {
+    return <PrivacyPolicyPage />;
+  }
+
+  if (route === "support") {
+    return <SupportPage />;
+  }
+
+  return <DemoLandingPage />;
+}
+
+function DemoLandingPage() {
   const analyzerRef = useRef<LlmContextAnalyzer | null>(null);
   const [text, setText] = useState("");
   const [detection, setDetection] = useState<DetectionResult | null>(null);

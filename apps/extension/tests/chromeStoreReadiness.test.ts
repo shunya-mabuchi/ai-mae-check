@@ -35,8 +35,8 @@ describe("Chrome Web Store readiness", () => {
     expect(listing.shortDescription.length).toBeLessThanOrEqual(132);
     expect(listing.category).toBe("仕事効率化");
     expect(listing.language).toBe("日本語");
-    expect(listing.supportUrl).toContain("github.com/shunya-mabuchi/ai-mae-check/issues");
-    expect(listing.privacyPolicyUrl).toContain("privacy");
+    expect(listing.supportUrl).toBe("https://ai-mae-check.pages.dev/support");
+    expect(listing.privacyPolicyUrl).toBe("https://ai-mae-check.pages.dev/privacy");
     expect(listing.singlePurpose).toContain("AIに文章を送る前");
     expect(listing.permissionJustifications.storage).toContain("設定");
     expect(listing.permissionJustifications.host_permissions).toContain("ChatGPT");

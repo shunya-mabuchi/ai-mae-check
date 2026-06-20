@@ -278,6 +278,8 @@ pnpm dev:demo
 
 GitHub Pagesでも `apps/demo/dist` を公開できますが、初期方針ではCloudflare Pagesを第一候補、GitHub Pagesを代替候補にします。どちらの場合もデモ本文はブラウザ内で処理し、外部LLM APIや独自バックエンドへ送信しません。
 
+Cloudflare Pagesの設定値、公開URL、公開後の確認手順は [docs/cloudflare-pages.md](docs/cloudflare-pages.md) にまとめています。
+
 LP上では、Chrome Web Store公開前の状態を「公開準備中」として表示し、GitHubからのローカル読み込み手順へ誘導します。Chrome Web Store公開後は、この導線をストア追加ボタンに差し替え、GitHubとミニデモは補助リンクとして残す想定です。
 
 初期デプロイ手順の想定:

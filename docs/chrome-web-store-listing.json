@@ -4,8 +4,8 @@
   "detailedDescription": "AIまえチェックは、ChatGPT、Claude、Geminiなどに文章を貼る前・送る前に、個人情報・秘密情報・APIキー・社外秘に近い内容の消し忘れに気づくためのChrome拡張です。\n\nメールアドレス、電話番号、APIキー、秘密鍵、.env形式の秘密情報、Basic認証URL、クレジットカード風番号、社外秘に近い注意語などをブラウザ内で検出します。\n\n高リスク情報や秘密情報保護の対象が含まれる場合は、そのまま送信せず、安全化した内容を確認してから送れるようにします。中リスクの内容は、詳細を確認したうえでユーザーが送信可否を判断できます。\n\nWebLLMを利用したAI文脈チェックにより、正規表現では拾いにくい顧客名候補、人名候補、会社名候補、案件名候補、契約・採用・給与・法務などの文脈リスク候補を確認できます。AI文脈チェックは補助的な候補提示であり、最終的な安全判定を断言するものではありません。\n\n貼り付け本文や送信本文は永続保存しません。外部LLM APIや開発者サーバーへ本文を送信しません。設定のみChromeのローカル保存領域に保存します。\n\nWebLLMの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュやブラウザ管理下の保存領域を利用します。\n\n本拡張は情報漏洩を完全に防ぐものではありません。検出漏れや誤検出が発生する可能性があります。最終的に送信するかどうかはユーザーが判断してください。",
   "category": "仕事効率化",
   "language": "日本語",
-  "supportUrl": "https://github.com/shunya-mabuchi/ai-mae-check/issues",
-  "privacyPolicyUrl": "https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/privacy-policy.md",
+  "supportUrl": "https://ai-mae-check.pages.dev/support",
+  "privacyPolicyUrl": "https://ai-mae-check.pages.dev/privacy",
   "singlePurpose": "AIに文章を送る前に、個人情報・秘密情報・APIキーなどの消し忘れをブラウザ内で確認し、安全化候補を提示する。",
   "permissionJustifications": {
     "storage": "拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデルIDなどの設定を、ユーザーのブラウザ内に保存するために使います。貼り付け本文や送信本文は保存しません。",
