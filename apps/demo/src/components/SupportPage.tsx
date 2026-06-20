@@ -16,7 +16,9 @@ export function SupportPage() {
       <div className="space-y-7">
         <section>
           <h2 className="text-lg font-black text-ink">問い合わせ先</h2>
-          <p className="mt-2 text-sm leading-7 text-muted">不具合報告や相談はGitHub Issuesで受け付けます。</p>
+          <p className="mt-2 text-sm leading-7 text-muted">
+            不具合報告や改善相談はGitHub Issuesで受け付けます。個別連絡が必要な場合は、Chrome Web Store掲載ページに表示されるデベロッパー連絡先を利用してください。
+          </p>
           <a
             href="https://github.com/shunya-mabuchi/ai-mae-check/issues"
             className="mt-4 inline-flex min-h-11 items-center rounded-card border border-ink bg-ink px-4 text-sm font-bold text-white hover:bg-[#343638]"

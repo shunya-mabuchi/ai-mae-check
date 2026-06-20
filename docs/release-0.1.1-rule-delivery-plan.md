@@ -1,0 +1,64 @@
+# 0.1.1 ルール配信署名対応計画
+
+0.1.0の審査中ZIPは触りません。署名付きルール配信の本番有効化は、審査結果を待ってから0.1.1で対応します。
+
+## 背景
+
+- 0.1.0の拡張ZIPには、`apps/extension/config/rule-delivery.release.json` の公開鍵が埋め込まれています。
+- その公開鍵に対応する `privateJwk` は手元に残っていません。
+- 秘密鍵は公開鍵から復元できないため、Cloudflare Secretへ既存鍵として設定することはできません。
+- 現在の本番API `https://ai-mae-check.pages.dev/api/rules/latest` は、署名鍵未設定時に本文なしのエラーJSONを返します。
+- 拡張側は通信失敗・署名検証失敗時に同梱ルールへフォールバックする設計です。
+
+## 0.1.1でやること
+
+1. `pnpm rules:keygen` で新しいECDSA P-256鍵ペアを生成する。
+2. 生成した `publicJwk` と `keyId` を `apps/extension/config/rule-delivery.release.json` へ反映する。
+3. 生成した `privateJwk` をCloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` に設定する。
+4. `https://ai-mae-check.pages.dev/api/rules/latest` が署名付きルールJSONを返すことを確認する。
+5. `pnpm build:extension`、`pnpm package:extension`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
+6. Chrome Web Storeへ0.1.1として新しいZIPを提出する。
+
+## やらないこと
+
+- 0.1.0審査中のZIP差し替え
+- 既存公開鍵から秘密鍵を復元しようとすること
+- ユーザー本文や検出結果をルール配信Workerへ送ること
+- 外部LLM APIへのフォールバック
+
+## Cloudflare Secret設定
+
+Cloudflare Dashboardで設定する場合:
+
+1. Workers & Pages > `ai-mae-check` > 設定 > 変数とシークレットを開く。
+2. Production環境にSecretとして `RULE_SIGNING_PRIVATE_JWK` を追加する。
+3. 値には `pnpm rules:keygen` が出力した `privateJwk` JSONを1行のJSON文字列として入れる。
+4. 保存後にProduction deployを実行する。
+
+Wranglerで設定する場合は、Cloudflareログイン状態と対象プロジェクトを確認してから行います。秘密鍵の値はターミナル履歴やGitに残さない運用にします。
+
+## 検証
+
+本番API確認:
+
+```bash
+Invoke-RestMethod -Uri https://ai-mae-check.pages.dev/api/rules/latest
+```
+
+期待する状態:
+
+- `alg` が `ECDSA-P256-SHA256`
+- `keyId` が拡張側設定と一致
+- `payload.rules` が配列
+- `signature` が空でない文字列
+
+拡張側確認:
+
+- ビルド済みContent Script内に本番URL、`keyId`、公開JWKの `x` / `y` が含まれる
+- 署名検証に成功した場合だけ追加ルールが使われる
+- 署名検証に失敗した場合は同梱ルールで動く
+
+## Issue
+
+- #287: 0.1.1でルール配信署名鍵を再発行してCloudflare本番Secretへ反映する
+

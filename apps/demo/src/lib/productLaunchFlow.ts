@@ -17,6 +17,7 @@ export interface ProductLaunchFlow {
     description: string;
   };
   primaryCta: LaunchCta;
+  postApprovalCta: LaunchCta;
   demoCta: LaunchCta;
   githubCta: LaunchCta;
   installSteps: ProductLaunchStep[];
@@ -26,12 +27,17 @@ export interface ProductLaunchFlow {
 export function createProductLaunchFlow(): ProductLaunchFlow {
   return {
     status: {
-      label: "Chrome Web Store公開準備中",
-      description: "現在はGitHubからローカル読み込みで確認できます。ストア公開後は追加リンクへ差し替えます。"
+      label: "Chrome Web Store審査中",
+      description: "現在はGitHubからローカル読み込みで確認できます。ストア公開後は主ボタンをChrome Web Store追加リンクへ差し替えます。"
     },
     primaryCta: {
       label: "拡張機能の導入手順を見る",
       href: "#install",
+      kind: "primary"
+    },
+    postApprovalCta: {
+      label: "Chrome Web Storeで追加",
+      href: "https://chromewebstore.google.com/detail/idedmkfplfieijdcflcogkngplhkkecc",
       kind: "primary"
     },
     demoCta: {

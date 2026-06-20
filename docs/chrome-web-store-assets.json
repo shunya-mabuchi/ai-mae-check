@@ -10,7 +10,7 @@
       "order": 1,
       "path": "docs/assets/store/screenshot-01-real-paste-modal.png",
       "title": "貼り付け前の安全化モーダル",
-      "purpose": "README掲載用の実機クロップ画像をベースに、ChatGPT上で貼り付け前確認が動くことを見せる。",
+      "purpose": "ChatGPT上で貼り付け前確認が動くことを示す実機スクリーンショット。",
       "primarySurface": "extension",
       "sourceKind": "real_extension_capture",
       "sourceImage": "docs/assets/readme/extension-paste-modal.png",
@@ -21,7 +21,7 @@
       "order": 2,
       "path": "docs/assets/store/screenshot-02-real-send-modal.png",
       "title": "送信前の安全化モーダル",
-      "purpose": "README掲載用の実機クロップ画像をベースに、高リスク情報を安全化なしで送信できない体験を見せる。",
+      "purpose": "高リスク情報を安全化なしでは送信できない体験を示す実機スクリーンショット。",
       "primarySurface": "extension",
       "sourceKind": "real_extension_capture",
       "sourceImage": "docs/assets/readme/extension-send-modal.png",
@@ -32,7 +32,7 @@
       "order": 3,
       "path": "docs/assets/store/screenshot-03-real-context-modal.png",
       "title": "AI文脈チェック入口",
-      "purpose": "README掲載用の実機クロップ画像をベースに、ルール検出がない文章でもAI文脈チェックを実行できることを見せる。",
+      "purpose": "ルール検出がない文章でも、必要に応じてAI文脈チェックを実行できることを示す実機スクリーンショット。",
       "primarySurface": "extension",
       "sourceKind": "real_extension_capture",
       "sourceImage": "docs/assets/readme/extension-context-modal.png",
@@ -46,14 +46,14 @@
       "path": "docs/assets/store/promo-small-440x280.png",
       "width": 440,
       "height": 280,
-      "purpose": "Chrome Web Store一覧や小さな訴求枠で、貼り付け前チェックの価値を短く伝える。"
+      "purpose": "Chrome Web Store一覧や小さな訴求枠で、貼り付け前チェックの価値を短く伝える画像。"
     },
     {
       "type": "marquee",
       "path": "docs/assets/store/promo-marquee-1400x560.png",
       "width": 1400,
       "height": 560,
-      "purpose": "任意の大きな訴求枠で、AIへ送る前の確認レイヤーであることを伝える。"
+      "purpose": "大きな訴求枠で、AIへ送る前の確認レイヤーであることを伝える画像。"
     }
   ]
 }

@@ -3,7 +3,7 @@ import { PublicPageLayout } from "./PublicPageLayout";
 const policySections = [
   {
     title: "収集しない情報",
-    body: "貼り付け本文、送信本文、検出結果、マスキング用の対応表、送信履歴は収集・販売・共有しません。貼り付け本文は永続保存しません。"
+    body: "貼り付け本文、送信本文、検出結果、マスキング用の対応表、送信履歴は開発者のサーバーへ送信・収集しません。貼り付け本文は永続保存しません。"
   },
   {
     title: "保存する情報",
@@ -37,7 +37,7 @@ export function PrivacyPolicyPage() {
           </section>
         ))}
         <div className="rounded-card border border-line bg-cloud p-4 text-sm leading-7 text-muted">
-          モデルファイルの取得は、WebLLMがローカル推論に必要なファイルを準備するためのものです。貼り付け本文を外部LLM APIへ送るものではありません。
+          モデルファイルの取得は、WebLLMがローカル推論に必要なファイルを準備するためのものです。貼り付け本文を外部LLM APIへ送信するものではありません。
         </div>
         <a href="/" className="inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud">
           トップへ戻る

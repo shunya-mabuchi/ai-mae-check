@@ -5,11 +5,17 @@ describe("createProductLaunchFlow", () => {
   it("公開前はChrome拡張本体への導線を最優先にする", () => {
     const flow = createProductLaunchFlow();
 
-    expect(flow.status.label).toBe("Chrome Web Store公開準備中");
+    expect(flow.status.label).toBe("Chrome Web Store審査中");
     expect(flow.status.description).toContain("現在はGitHubからローカル読み込みで確認できます");
+    expect(flow.status.description).toContain("Chrome Web Store追加リンクへ差し替えます");
     expect(flow.primaryCta).toEqual({
       label: "拡張機能の導入手順を見る",
       href: "#install",
+      kind: "primary"
+    });
+    expect(flow.postApprovalCta).toEqual({
+      label: "Chrome Web Storeで追加",
+      href: "https://chromewebstore.google.com/detail/idedmkfplfieijdcflcogkngplhkkecc",
       kind: "primary"
     });
     expect(flow.demoCta).toEqual({
