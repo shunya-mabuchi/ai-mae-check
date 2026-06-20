@@ -33,7 +33,7 @@ pnpm build:demo
 pnpm test:e2e
 ```
 
-`apps/demo/public/_redirects` に `/* /index.html 200` を置いているため、`/privacy` と `/support` を直接開いてもViteのSPAとして表示できます。
+Cloudflare Pagesはトップ階層に `404.html` がない場合、ReactなどのSPAとして扱い、存在しないパスをrootへ渡します。この標準挙動を利用するため、`_redirects` に `/* /index.html 200` は置きません。Cloudflare側で無限ループ扱いの警告になるためです。
 
 ## 公開後の確認
 

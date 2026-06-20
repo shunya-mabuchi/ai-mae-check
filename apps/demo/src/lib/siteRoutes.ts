@@ -8,6 +8,7 @@ export const cloudflarePagesConfig = {
   buildOutputDirectory: "apps/demo/dist",
   nodeVersion: "22",
   pnpmVersion: "10.12.1",
+  spaFallback: "cloudflare-pages-default",
   urls: {
     home: "https://ai-mae-check.pages.dev/",
     privacy: "https://ai-mae-check.pages.dev/privacy",
