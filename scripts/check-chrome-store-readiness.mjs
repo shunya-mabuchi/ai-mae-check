@@ -12,7 +12,7 @@ const submissionCopyPath = resolve(rootDir, "docs/chrome-web-store-submission-co
 const privacyPolicyPath = resolve(rootDir, "docs/privacy-policy.md");
 const maxZipBytes = 2 * 1024 * 1024 * 1024;
 
-const forbiddenPhrases = ["完全に安全", "100%", "すべての情報漏洩を防ぎます"];
+const forbiddenPhrases = ["絶対安全", "100%", "すべての情報漏洩を防ぎます", "完全に通信しません"];
 
 function fail(message) {
   throw new Error(`Chrome Web Store readiness QA failed: ${message}`);
@@ -149,8 +149,8 @@ for (const field of ["detailedDescription", "category", "language", "supportUrl"
   assertText(listing[field], field);
 }
 
-if (listing.category !== "仕事効率化") {
-  fail("category must be 仕事効率化");
+if (listing.category !== "ツール") {
+  fail("category must be ツール");
 }
 
 if (listing.language !== "日本語") {
@@ -165,7 +165,7 @@ if (listing.privacyPolicyUrl !== "https://ai-mae-check.pages.dev/privacy") {
   fail("privacyPolicyUrl must point to the Cloudflare Pages privacy policy");
 }
 
-if (!listing.singlePurpose.includes("AIに文章を送る前")) {
+if (!listing.singlePurpose.includes("AIまえチェック")) {
   fail("singlePurpose must describe the send-before safety layer");
 }
 
@@ -181,15 +181,23 @@ if (listing.remoteCode?.usesRemoteCode !== false) {
   fail("remoteCode.usesRemoteCode must be false");
 }
 
-if (!listing.remoteCode?.explanation?.includes("任意コード")) {
+if (!listing.remoteCode?.explanation?.includes("任意のコード")) {
   fail("remote code explanation must mention that arbitrary code is not fetched");
 }
 
-if (listing.dataUsage?.collectsUserData !== false) {
-  fail("dataUsage.collectsUserData must be false");
+if (listing.dataUsage?.collectsUserData !== true) {
+  fail("dataUsage.collectsUserData must be true because Chrome Web Store disclosure treats inspected page text as handled user data");
 }
 
-if (!listing.dataUsage?.explanation?.includes("本文")) {
+if (!Array.isArray(listing.dataUsage?.collectedDataTypes) || !listing.dataUsage.collectedDataTypes.includes("ウェブサイトのコンテンツ")) {
+  fail("dataUsage.collectedDataTypes must include ウェブサイトのコンテンツ");
+}
+
+if (!Array.isArray(listing.dataUsage?.notCollectedDataTypes) || !listing.dataUsage.notCollectedDataTypes.includes("ウェブ履歴")) {
+  fail("dataUsage.notCollectedDataTypes must include ウェブ履歴");
+}
+
+if (!listing.dataUsage?.explanation?.includes("販売・第三者提供")) {
   fail("data usage explanation must state how pasted/sent text is handled");
 }
 
@@ -199,8 +207,9 @@ if (!Array.isArray(listing.testInstructions) || listing.testInstructions.length 
 
 for (const requiredPhrase of [
   "GET /api/rules/latest",
-  "リクエスト本文は使いません",
-  "外部LLM APIへ送るものではありません"
+  "リクエスト本文は使用しません",
+  "外部LLM API",
+  "chrome.storage.local"
 ]) {
   if (!listingText.includes(requiredPhrase) && !submissionCopyText.includes(requiredPhrase)) {
     fail(`public docs must include: ${requiredPhrase}`);

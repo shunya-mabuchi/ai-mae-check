@@ -11,7 +11,7 @@ export function LaunchFlowSection() {
     <section id="install" className="px-5 py-16 md:py-24">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
-          eyebrow="公開前の試し方"
+          eyebrow="審査中の試し方"
           title="まずはChrome拡張として触ってください。"
           description="このページは紹介とミニデモです。実際のプロダクト価値は、ChatGPT・Claude・Geminiの入力欄で送信前に止まる拡張機能として確認できます。"
         />

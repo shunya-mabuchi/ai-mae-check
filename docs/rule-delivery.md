@@ -2,6 +2,8 @@
 
 AIまえチェックでは、ユーザー本文をサーバーへ送らずに、検出ルールだけを安全に更新できる仕組みを追加しています。
 
+0.1.0では、拡張ZIPに埋め込まれた公開鍵に対応する `privateJwk` が手元に残っていないため、署名付きルール配信の本番有効化は見送っています。0.1.1で鍵ペアを再発行し、Cloudflare Production Secretへ反映する予定です。詳細は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) を参照してください。
+
 ## 方針
 
 - サーバーへユーザーの貼り付け本文、送信本文、添付ファイル本文、検出結果、placeholderMapを送らない

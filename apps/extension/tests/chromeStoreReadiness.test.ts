@@ -28,25 +28,32 @@ describe("Chrome Web Store readiness", () => {
       singlePurpose: string;
       permissionJustifications: Record<string, string>;
       remoteCode: { usesRemoteCode: boolean; explanation: string };
-      dataUsage: { collectsUserData: boolean; explanation: string };
+      dataUsage: {
+        collectsUserData: boolean;
+        collectedDataTypes: string[];
+        notCollectedDataTypes: string[];
+        explanation: string;
+      };
       testInstructions: string[];
     }>(listingPath);
 
     expect(listing.name).toBe("AIまえチェック");
     expect(listing.shortDescription.length).toBeLessThanOrEqual(132);
-    expect(listing.category).toBe("仕事効率化");
+    expect(listing.category).toBe("ツール");
     expect(listing.language).toBe("日本語");
     expect(listing.supportUrl).toBe("https://ai-mae-check.pages.dev/support");
     expect(listing.privacyPolicyUrl).toBe("https://ai-mae-check.pages.dev/privacy");
-    expect(listing.singlePurpose).toContain("AIに文章を送る前に");
+    expect(listing.singlePurpose).toContain("AIまえチェック");
     expect(listing.permissionJustifications.storage).toContain("設定");
     expect(listing.permissionJustifications.host_permissions).toContain("ChatGPT");
-    expect(listing.permissionJustifications.host_permissions).toContain("<all_urls> は要求しません");
+    expect(listing.permissionJustifications.host_permissions).toContain("<all_urls> は要求していません");
     expect(listing.remoteCode.usesRemoteCode).toBe(false);
-    expect(listing.remoteCode.explanation).toContain("外部から任意コードを取得して実行しません");
-    expect(listing.remoteCode.explanation).toContain("外部LLM APIへ送るものではありません");
-    expect(listing.dataUsage.collectsUserData).toBe(false);
-    expect(listing.dataUsage.explanation).toContain("収集・販売・共有しません");
+    expect(listing.remoteCode.explanation).toContain("外部から任意のコードを取得して実行しません");
+    expect(listing.remoteCode.explanation).toContain("外部LLM APIへ送信するものではありません");
+    expect(listing.dataUsage.collectsUserData).toBe(true);
+    expect(listing.dataUsage.collectedDataTypes).toContain("ウェブサイトのコンテンツ");
+    expect(listing.dataUsage.notCollectedDataTypes).toContain("ウェブ履歴");
+    expect(listing.dataUsage.explanation).toContain("販売・第三者提供");
     expect(listing.dataUsage.explanation).toContain("chrome.storage.local");
     expect(listing.testInstructions).toHaveLength(6);
   });
@@ -56,7 +63,8 @@ describe("Chrome Web Store readiness", () => {
 
     expect(listingText).not.toContain("絶対安全");
     expect(listingText).not.toContain("100%");
-    expect(listingText).not.toContain("すべての情報漏洩を確実に防ぐ");
+    expect(listingText).not.toContain("すべての情報漏洩を防ぎます");
+    expect(listingText).not.toContain("完全に通信しません");
   });
 
   it("keeps the store asset manifest in JSON", () => {
@@ -122,9 +130,9 @@ describe("Chrome Web Store readiness", () => {
     expect(copy).toContain(listing.privacyPolicyUrl);
     expect(copy).toContain(listing.permissionJustifications.storage);
     expect(copy).toContain(listing.permissionJustifications.host_permissions);
-    expect(copy).toContain("外部から任意コードを取得して実行しません");
-    expect(copy).toContain("ユーザー本文を外部LLM APIへ送るものではありません");
-    expect(copy).toContain("収集・販売・共有しません");
+    expect(copy).toContain("外部から任意のコードを取得して実行しません");
+    expect(copy).toContain("ユーザー本文を外部LLM APIへ送信するものではありません");
+    expect(copy).toContain("販売・第三者提供");
     expect(copy).toContain("chrome.storage.local");
     expect(copy).toContain("screenshot-01-real-paste-modal.png");
     expect(copy).toContain("screenshot-02-real-send-modal.png");
