@@ -1,29 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SELECTED_CONTEXT_CANDIDATE_CONFIDENCE,
-  selectContextCandidateIdsByConfidence,
-  type ContextRiskCandidate
+  selectContextCandidateIdsByConfidence
 } from "../src";
-
-function candidate(id: string, confidence: number): ContextRiskCandidate {
-  return {
-    id,
-    category: "person_name",
-    surface: "山田花子さん",
-    label: "人名候補",
-    reason: "採用文脈に含まれる人名候補です。",
-    riskLevel: "medium",
-    suggestedPlaceholder: "[PERSON_1]",
-    confidence
-  };
-}
+import { buildContextRiskCandidate } from "./testBuilders";
 
 describe("selectContextCandidateIdsByConfidence", () => {
   it("既定ではconfidence 0.75以上の候補IDだけを返す", () => {
     const selectedIds = selectContextCandidateIdsByConfidence([
-      candidate("low", 0.74),
-      candidate("border", DEFAULT_SELECTED_CONTEXT_CANDIDATE_CONFIDENCE),
-      candidate("high", 0.9)
+      buildContextRiskCandidate({ id: "low", confidence: 0.74 }),
+      buildContextRiskCandidate({ id: "border", confidence: DEFAULT_SELECTED_CONTEXT_CANDIDATE_CONFIDENCE }),
+      buildContextRiskCandidate({ id: "high", confidence: 0.9 })
     ]);
 
     expect(selectedIds).toEqual(["border", "high"]);
@@ -31,7 +18,7 @@ describe("selectContextCandidateIdsByConfidence", () => {
 
   it("しきい値を指定できる", () => {
     const selectedIds = selectContextCandidateIdsByConfidence(
-      [candidate("mid", 0.7), candidate("high", 0.9)],
+      [buildContextRiskCandidate({ id: "mid", confidence: 0.7 }), buildContextRiskCandidate({ id: "high", confidence: 0.9 })],
       0.8
     );
 

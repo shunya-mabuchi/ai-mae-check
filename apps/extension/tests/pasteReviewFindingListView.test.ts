@@ -1,23 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Finding } from "@ai-mae-check/core";
 import { createPasteReviewFindingListView } from "../src/lib/pasteReviewFindingListView";
-
-function finding(overrides: Partial<Finding> = {}): Finding {
-  return {
-    id: "finding-1",
-    ruleId: "email",
-    source: "rule",
-    label: "メールアドレス",
-    riskLevel: "high",
-    start: 0,
-    end: 16,
-    text: "taro@example.com",
-    placeholder: "[EMAIL_1]",
-    message: "外部へ貼り付ける前に確認したい情報です。",
-    confidence: 0.99,
-    ...overrides
-  };
-}
+import { buildFinding } from "./testBuilders";
 
 describe("createPasteReviewFindingListView", () => {
   it("検出項目がない場合は空状態メッセージを返す", () => {
@@ -32,8 +15,8 @@ describe("createPasteReviewFindingListView", () => {
   it("検出項目がある場合は表示情報と選択状態を返す", () => {
     const view = createPasteReviewFindingListView(
       [
-        finding(),
-        finding({
+        buildFinding(),
+        buildFinding({
           id: "finding-2",
           source: "llm",
           label: "顧客名候補",

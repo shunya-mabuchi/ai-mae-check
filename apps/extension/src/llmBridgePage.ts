@@ -1,13 +1,22 @@
 import { createLlmContextAnalyzer, type AnalyzeContextOptions, type LlmProgress } from "@ai-mae-check/llm";
 import {
-  LLM_BRIDGE_CONNECT,
+  getLlmBridgeExpectedNonce,
+  getLlmBridgeRequestId,
+  isLlmBridgeRequest,
+  LLM_BRIDGE_READY,
+  shouldAcceptLlmBridgeConnection,
   type LlmBridgeRequest,
   type LlmBridgeResponse
 } from "./lib/llmBridgeMessages";
 import { getExtensionResourceUrl } from "./lib/extensionRuntime";
 import { createJsonParseBridgeFallbackResult } from "./lib/llmBridgeFallback";
 
+const BRIDGE_EXECUTION_ERROR_MESSAGE = "AI文脈チェックを実行できませんでした。";
+const BRIDGE_REQUEST_ERROR_MESSAGE = "AI文脈チェック用のリクエスト形式が正しくありません。";
+const expectedBridgeNonce = getLlmBridgeExpectedNonce(window.location.href);
+
 let bridgePort: MessagePort | null = null;
+let bridgeConnected = false;
 
 function post(message: LlmBridgeResponse): void {
   bridgePort?.postMessage(message);
@@ -75,17 +84,40 @@ async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze
 async function handleRequest(request: LlmBridgeRequest): Promise<void> {
   try {
     await handleAnalyze(request);
-  } catch (error) {
+  } catch {
     post({
       type: "error",
       requestId: request.requestId,
-      message: error instanceof Error ? error.message : "AI文脈チェックを実行できませんでした。"
+      message: BRIDGE_EXECUTION_ERROR_MESSAGE
     });
   }
 }
 
-window.addEventListener("message", (event: MessageEvent<{ type?: string }>) => {
-  if (event.data?.type !== LLM_BRIDGE_CONNECT || event.ports.length === 0) {
+async function handlePortMessage(message: unknown): Promise<void> {
+  if (!isLlmBridgeRequest(message)) {
+    const requestId = getLlmBridgeRequestId(message);
+    if (requestId) {
+      post({
+        type: "error",
+        requestId,
+        message: BRIDGE_REQUEST_ERROR_MESSAGE
+      });
+    }
+    return;
+  }
+
+  await handleRequest(message);
+}
+
+window.addEventListener("message", (event: MessageEvent<unknown>) => {
+  if (
+    !shouldAcceptLlmBridgeConnection({
+      expectedNonce: expectedBridgeNonce,
+      isConnected: bridgeConnected,
+      message: event.data,
+      portCount: event.ports.length
+    })
+  ) {
     return;
   }
 
@@ -93,10 +125,11 @@ window.addEventListener("message", (event: MessageEvent<{ type?: string }>) => {
   if (!bridgePort) {
     return;
   }
+  bridgeConnected = true;
 
-  bridgePort.onmessage = (portEvent: MessageEvent<LlmBridgeRequest>) => {
-    void handleRequest(portEvent.data);
+  bridgePort.onmessage = (portEvent: MessageEvent<unknown>) => {
+    void handlePortMessage(portEvent.data);
   };
   bridgePort.start();
-  post({ type: "ready" });
+  post({ type: LLM_BRIDGE_READY });
 });

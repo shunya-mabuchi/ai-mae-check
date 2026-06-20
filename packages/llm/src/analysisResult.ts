@@ -1,7 +1,7 @@
 import { classifyLlmError, createJsonParseFallbackMessage } from "./errors";
 import { parseContextAnalysisJson } from "./parser";
 import { mergeResidualContextCandidates } from "./residualMasking";
-import type { ContextAnalysisResult } from "./types";
+import type { ContextAnalysisResult, LlmErrorDetail } from "./types";
 
 export interface CreateContextAnalysisResultFromRawTextOptions {
   input: string;
@@ -10,6 +10,16 @@ export interface CreateContextAnalysisResultFromRawTextOptions {
   elapsedMs: number;
   maxCandidates?: number;
   confidenceThreshold?: number;
+}
+
+export interface CreateContextAnalysisFallbackResultOptions {
+  input: string;
+  modelId: string;
+  elapsedMs: number;
+  error: string;
+  errorDetail?: LlmErrorDetail;
+  rawText?: string;
+  maxCandidates?: number;
 }
 
 export function createContextAnalysisResultFromRawText(
@@ -44,4 +54,21 @@ export function createContextAnalysisResultFromRawText(
       errorDetail
     };
   }
+}
+
+export function createContextAnalysisFallbackResult(
+  options: CreateContextAnalysisFallbackResultOptions
+): ContextAnalysisResult {
+  const candidateLimitOptions = typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {};
+  const candidates = mergeResidualContextCandidates(options.input, [], candidateLimitOptions);
+
+  return {
+    candidates,
+    summary: options.error,
+    rawText: options.rawText ?? "",
+    modelId: options.modelId,
+    elapsedMs: options.elapsedMs,
+    error: options.error,
+    ...(options.errorDetail ? { errorDetail: options.errorDetail } : {})
+  };
 }

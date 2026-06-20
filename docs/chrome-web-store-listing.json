@@ -13,11 +13,11 @@
   },
   "remoteCode": {
     "usesRemoteCode": false,
-    "explanation": "拡張機能のロジックとして外部から任意コードを取得して実行しません。WebLLMの初回利用時にはローカル推論用のモデルファイルを取得する場合がありますが、これは推論用モデルデータであり、ユーザー本文を外部LLM APIへ送るものではありません。"
+    "explanation": "拡張機能のロジックとして外部から任意コードを取得して実行しません。ルール配信を有効にしている場合も、取得するのは GET /api/rules/latest の署名付きルールJSONだけで、リクエスト本文は使いません。WebLLMの初回利用時にはローカル推論用のモデルファイルを取得する場合がありますが、これは推論用モデルデータであり、ユーザー本文を外部LLM APIへ送るものではありません。"
   },
   "dataUsage": {
     "collectsUserData": false,
-    "explanation": "貼り付け本文、送信本文、検出結果、マスキング用placeholderMap、送信履歴は収集・販売・共有しません。本文は永続保存せず、設定のみ chrome.storage.local に保存します。"
+    "explanation": "貼り付け本文、送信本文、検出結果、マスキング用placeholderMap、送信履歴は収集・販売・共有しません。ルール配信Workerへも本文や検出対象テキストは送信しません。本文は永続保存せず、設定のみ chrome.storage.local に保存します。"
   },
   "testInstructions": [
     "拡張機能をインストールします。",

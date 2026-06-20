@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifyLlmErrorSignal,
   createJsonParseFallbackMessage,
+  getLlmErrorSignalCopy,
   isJsonParseLlmErrorMessage
 } from "../src/errorSignals";
 
@@ -45,5 +46,15 @@ describe("errorSignals", () => {
     expect(createJsonParseFallbackMessage(1)).toBe(
       "ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。"
     );
+  });
+
+  it("共通関数から日本語UI文言を参照できる", () => {
+    expect(getLlmErrorSignalCopy("model_fetch")).toEqual({
+      kind: "model_fetch",
+      message: "ローカルAIモデルの取得に失敗しました。モデル配信元への接続がブロックされている可能性があります。ルールベースの検出結果は引き続き利用できます。",
+      hint: "Hugging FaceやGitHub rawへのアクセス、プロキシ、セキュリティソフト、広告ブロック、社内ネットワーク制限を確認してください。"
+    });
+    expect(getLlmErrorSignalCopy("webgpu", "adapter_unavailable").message).toContain("WebGPUアダプタを取得できませんでした");
+    expect(getLlmErrorSignalCopy("json_parse").hint).toContain("ルールベース検出結果は維持されています");
   });
 });

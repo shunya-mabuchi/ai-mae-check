@@ -7,6 +7,7 @@ import {
   isContextAnalysisExecutionError,
   type ContextAnalysisResult
 } from "../src";
+import { buildLlmErrorDetail } from "./testBuilders";
 
 describe("formatLlmErrorMessage", () => {
   it("デフォルトモデルは動作実績を優先したLlama 3.2 1B q4f32にする", () => {
@@ -114,11 +115,7 @@ describe("formatLlmErrorMessage", () => {
       modelId: DEFAULT_MODEL_ID,
       elapsedMs: 1,
       error: "AI文脈チェックの結果を読み取れませんでした。",
-      errorDetail: {
-        kind: "json_parse",
-        message: "AI文脈チェックの結果を読み取れませんでした。",
-        hint: "必要なら再実行してください。"
-      }
+      errorDetail: buildLlmErrorDetail()
     };
 
     expect(isContextAnalysisExecutionError(result)).toBe(false);
@@ -142,22 +139,22 @@ describe("formatLlmErrorMessage", () => {
     expect(
       isContextAnalysisExecutionError({
         error: "AI文脈チェックを実行できませんでした。",
-        errorDetail: {
+        errorDetail: buildLlmErrorDetail({
           kind: "worker",
           message: "AI文脈チェックを実行できませんでした。",
           hint: "ページを再読み込みしてから再試行してください。"
-        }
+        })
       })
     ).toBe(true);
 
     expect(
       isContextAnalysisExecutionError({
         error: "AI文脈チェックを利用できません。",
-        errorDetail: {
+        errorDetail: buildLlmErrorDetail({
           kind: "webgpu",
           message: "AI文脈チェックを利用できません。",
           hint: "WebGPUを確認してください。"
-        }
+        })
       })
     ).toBe(true);
   });
@@ -173,5 +170,19 @@ describe("formatLlmErrorMessage", () => {
     expect(createJsonParseFallbackMessage(2)).toBe(
       "ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。"
     );
+  });
+
+  it("technicalDetailへユーザー本文を混ぜない", () => {
+    const detail = classifyLlmError(
+      new Error(
+        'Failed to construct "Worker". prompt: 候補者の山田花子さんへ Project Blue Bridge の評価メモを送ります。 input: "顧客Aの社外秘方針も転記します。"'
+      )
+    );
+
+    expect(detail.kind).toBe("worker");
+    expect(detail.technicalDetail).toContain("[redacted]");
+    expect(detail.technicalDetail).not.toContain("山田花子");
+    expect(detail.technicalDetail).not.toContain("Project Blue Bridge");
+    expect(detail.technicalDetail).not.toContain("顧客Aの社外秘方針");
   });
 });

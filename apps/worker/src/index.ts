@@ -9,7 +9,11 @@ interface Env {
   RULE_KEY_ID?: string;
 }
 
-const jsonHeaders = {
+const HEALTH_PATH = "/health";
+const LATEST_RULES_PATH = "/api/rules/latest";
+const DEFAULT_RULE_KEY_ID = "ai-mae-check-demo-rules-2026-06";
+
+const publicJsonHeaders = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "public, max-age=300",
   "access-control-allow-origin": "*",
@@ -25,13 +29,13 @@ const latestRules: RemoteRuleBundlePayload = {
   rules: [
     {
       id: "slack_webhook_url",
-      label: "Slack webhook URL風文字列",
+      label: "Slack webhook URL",
       riskLevel: "high",
       category: "secret",
       placeholderPrefix: "WEBHOOK_URL",
       pattern: "https://hooks\\.slack\\.com/services/[A-Za-z0-9/_-]+",
       flags: "g",
-      message: "Webhook URLは外部へ送る前に確認したい秘密情報です。",
+      message: "Slack webhook URLs should be masked before sharing.",
       confidence: 0.96
     }
   ]
@@ -41,9 +45,16 @@ function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(body), {
     ...init,
     headers: {
-      ...jsonHeaders,
+      ...publicJsonHeaders,
       ...init.headers
     }
+  });
+}
+
+function noStoreJsonResponse(body: unknown, status: number): Response {
+  return jsonResponse(body, {
+    status,
+    headers: { "cache-control": "no-store" }
   });
 }
 
@@ -60,40 +71,57 @@ function readPrivateJwk(env: Env): JsonWebKey | null {
   }
 }
 
-async function latestRuleResponse(env: Env): Promise<Response> {
-  const privateJwk = readPrivateJwk(env);
-  const keyId = env.RULE_KEY_ID ?? "ai-mae-check-demo-rules-2026-06";
-
-  if (!privateJwk) {
-    return jsonResponse(
-      {
-        error: "RULE_SIGNING_PRIVATE_JWK is not configured"
-      },
-      { status: 503, headers: { "cache-control": "no-store" } }
-    );
+function routeFor(url: URL): "health" | "latest" | "not-found" {
+  if (url.pathname === HEALTH_PATH) {
+    return "health";
   }
 
-  const signed = await signRemoteRuleBundle(latestRules, privateJwk, keyId);
-  return jsonResponse(signed);
+  if (url.pathname === LATEST_RULES_PATH) {
+    return "latest";
+  }
+
+  return "not-found";
+}
+
+async function createSignedLatestRuleBundle(env: Env) {
+  const privateJwk = readPrivateJwk(env);
+  if (!privateJwk) {
+    return null;
+  }
+
+  return signRemoteRuleBundle(latestRules, privateJwk, env.RULE_KEY_ID ?? DEFAULT_RULE_KEY_ID);
+}
+
+async function latestRuleResponse(env: Env): Promise<Response> {
+  try {
+    const signedBundle = await createSignedLatestRuleBundle(env);
+    if (!signedBundle) {
+      return noStoreJsonResponse({ error: "rule signing is not configured" }, 503);
+    }
+
+    return jsonResponse(signedBundle);
+  } catch {
+    return noStoreJsonResponse({ error: "rule signing is unavailable" }, 500);
+  }
 }
 
 export async function handleRequest(request: Request, env: Env): Promise<Response> {
-  const url = new URL(request.url);
+  const route = routeFor(new URL(request.url));
 
-  if (url.pathname === "/health") {
+  if (route === "health") {
     return jsonResponse({ ok: true });
   }
 
   if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: jsonHeaders });
+    return new Response(null, { status: 204, headers: publicJsonHeaders });
   }
 
-  if (url.pathname !== "/api/rules/latest") {
-    return jsonResponse({ error: "not found" }, { status: 404, headers: { "cache-control": "no-store" } });
+  if (route === "not-found") {
+    return noStoreJsonResponse({ error: "not found" }, 404);
   }
 
   if (request.method !== "GET") {
-    return jsonResponse({ error: "method not allowed" }, { status: 405, headers: { "cache-control": "no-store" } });
+    return noStoreJsonResponse({ error: "method not allowed" }, 405);
   }
 
   return latestRuleResponse(env);

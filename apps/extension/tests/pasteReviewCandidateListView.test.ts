@@ -1,20 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ContextRiskCandidate } from "@ai-mae-check/llm";
 import { createPasteReviewCandidateListView } from "../src/lib/pasteReviewCandidateListView";
-
-function candidate(overrides: Partial<ContextRiskCandidate> = {}): ContextRiskCandidate {
-  return {
-    id: "candidate-1",
-    category: "person_name",
-    surface: "山田花子さん",
-    label: "人名候補",
-    reason: "採用文脈に含まれる個人名候補です。",
-    riskLevel: "medium",
-    suggestedPlaceholder: "[PERSON_1]",
-    confidence: 0.876,
-    ...overrides
-  };
-}
+import { buildContextRiskCandidate } from "./testBuilders";
 
 describe("createPasteReviewCandidateListView", () => {
   it("候補がない場合は空状態メッセージを返す", () => {
@@ -28,7 +14,10 @@ describe("createPasteReviewCandidateListView", () => {
 
   it("候補がある場合は表示情報と選択状態を返す", () => {
     const view = createPasteReviewCandidateListView(
-      [candidate(), candidate({ id: "candidate-2", surface: "Project Blue Bridge", riskLevel: "low", confidence: 0.7 })],
+      [
+        buildContextRiskCandidate(),
+        buildContextRiskCandidate({ id: "candidate-2", surface: "Project Blue Bridge", riskLevel: "low", confidence: 0.7 })
+      ],
       new Set(["candidate-1"])
     );
 

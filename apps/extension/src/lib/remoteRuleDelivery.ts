@@ -3,17 +3,11 @@ import {
   type DetectorRule,
   type RemoteRuleVerificationResult
 } from "@ai-mae-check/core";
+import releaseConfig from "../../config/rule-delivery.release.json";
 
-export const RULE_DELIVERY_KEY_ID = "ai-mae-check-demo-rules-2026-06";
+export const RULE_DELIVERY_KEY_ID = releaseConfig.keyId;
 
-export const RULE_DELIVERY_PUBLIC_JWK: JsonWebKey = {
-  key_ops: ["verify"],
-  ext: true,
-  kty: "EC",
-  x: "2rm7jWFWA7lWaLKf3hgpouksKaAsDUdkvvWwmyttBjc",
-  y: "LPHSECPxHyFozs_gDoK-8Mi77lumT3zQBnHWqY3A6tI",
-  crv: "P-256"
-};
+export const RULE_DELIVERY_PUBLIC_JWK: JsonWebKey = releaseConfig.publicJwk;
 
 export type RemoteRuleLoadStatus = "disabled" | "verified" | "fallback";
 

@@ -14,8 +14,22 @@ function errorMessage(error: unknown): string {
   return typeof error === "string" ? error : "";
 }
 
+const REDACTED_TECHNICAL_DETAIL = "[redacted]";
+const TECHNICAL_DETAIL_FIELD_PATTERN =
+  /\b(prompt|input|content|body|user(?:\s+(?:text|message))?)\s*[:=]\s*("[^"]*"|'[^']*'|`[^`]*`|.+?)(?=(?:\s+\w+\s*[:=])|$)/gi;
+const LONG_QUOTED_SEGMENT_PATTERN = /"[^"]{24,}"|'[^']{24,}'|`[^`]{24,}`/g;
+
+function sanitizeSensitiveSegments(message: string): string {
+  const redactedFields = message.replace(
+    TECHNICAL_DETAIL_FIELD_PATTERN,
+    (_match: string, label: string) => `${label}: ${REDACTED_TECHNICAL_DETAIL}`
+  );
+
+  return redactedFields.replace(LONG_QUOTED_SEGMENT_PATTERN, REDACTED_TECHNICAL_DETAIL);
+}
+
 function sanitizeTechnicalDetail(message: string): string | undefined {
-  const normalized = message.replace(/\s+/g, " ").trim();
+  const normalized = sanitizeSensitiveSegments(message).replace(/\s+/g, " ").trim();
   if (normalized.length === 0) {
     return undefined;
   }

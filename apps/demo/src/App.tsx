@@ -1,13 +1,3 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { detectSensitiveText, type DetectionResult } from "@ai-mae-check/core";
-import {
-  classifyLlmError,
-  createLlmContextAnalyzer,
-  isContextAnalysisExecutionError,
-  isWebGpuAvailable,
-  type ContextRiskCandidate,
-  type LlmContextAnalyzer
-} from "@ai-mae-check/llm";
 import { DemoCard } from "./components/DemoCard";
 import { DetectionTargetCards } from "./components/DetectionTargetCards";
 import { Footer } from "./components/Footer";
@@ -18,26 +8,8 @@ import { PrivacySection } from "./components/PrivacySection";
 import { StepCards } from "./components/StepCards";
 import { SupportPage } from "./components/SupportPage";
 import { TechStrip } from "./components/TechStrip";
-import { contextSampleText, sampleText } from "./lib/demoConstants";
-import {
-  createEmptyInputLlmUiState,
-  createErrorLlmUiState,
-  createIdleLlmUiState,
-  createLlmResultUiState,
-  createLoadingLlmUiState,
-  createProgressLlmUiState,
-  createWebGpuUnavailableLlmUiState
-} from "./lib/demoLlmUiState";
-import { createDemoMaskingViewModel, selectCandidateIdsByConfidence } from "./lib/demoMasking";
-import { createInitialSelectedFindingIds, toggleSelectedId } from "./lib/demoSelection";
-import {
-  createDemoRuleDetectionState,
-  createDemoTextReplacementState,
-  type DemoWorkbenchStateSnapshot
-} from "./lib/demoWorkbenchState";
+import { useDemoWorkbench } from "./hooks/useDemoWorkbench";
 import { resolveSiteRoute } from "./lib/siteRoutes";
-
-const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} };
 
 export function App() {
   const route = resolveSiteRoute(window.location.pathname);
@@ -54,140 +26,26 @@ export function App() {
 }
 
 function DemoLandingPage() {
-  const analyzerRef = useRef<LlmContextAnalyzer | null>(null);
-  const [text, setText] = useState("");
-  const [detection, setDetection] = useState<DetectionResult | null>(null);
-  const [selectedRuleFindingIds, setSelectedRuleFindingIds] = useState<string[]>([]);
-  const [llmCandidates, setLlmCandidates] = useState<ContextRiskCandidate[]>([]);
-  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
-  const [llmUiState, setLlmUiState] = useState(createIdleLlmUiState);
-  const [copyMessage, setCopyMessage] = useState("");
-
-  const maskingViewModel = useMemo(
-    () =>
-      createDemoMaskingViewModel({
-        inputText: text,
-        detection,
-        selectedRuleFindingIds,
-        llmCandidates,
-        selectedCandidateIds
-      }),
-    [detection, llmCandidates, selectedCandidateIds, selectedRuleFindingIds, text]
-  );
-
-  const maskedText = maskingViewModel.maskedText;
-
-  const summary = detection?.summary ?? emptySummary;
-
-  useEffect(() => {
-    return () => {
-      analyzerRef.current?.dispose();
-      analyzerRef.current = null;
-    };
-  }, []);
-
-  const getAnalyzer = () => {
-    analyzerRef.current ??= createLlmContextAnalyzer();
-    return analyzerRef.current;
-  };
-
-  const resetAnalyzer = () => {
-    analyzerRef.current?.dispose();
-    analyzerRef.current = null;
-  };
-
-  const applyWorkbenchState = (state: DemoWorkbenchStateSnapshot) => {
-    setText(state.text);
-    setDetection(state.detection);
-    setSelectedRuleFindingIds(state.selectedRuleFindingIds);
-    setLlmCandidates(state.llmCandidates);
-    setSelectedCandidateIds(state.selectedCandidateIds);
-    setLlmUiState(state.llmUiState);
-    setCopyMessage(state.copyMessage);
-  };
-
-  const insertSample = () => {
-    applyWorkbenchState(createDemoTextReplacementState(sampleText));
-  };
-
-  const insertContextSample = () => {
-    applyWorkbenchState(createDemoTextReplacementState(contextSampleText));
-  };
-
-  const runRuleDetection = () => {
-    applyWorkbenchState(createDemoRuleDetectionState(text));
-  };
-
-  const runLlmDetection = async () => {
-    if (text.trim().length === 0) {
-      setLlmUiState(createEmptyInputLlmUiState());
-      return;
-    }
-
-    const ruleResult = detection ?? detectSensitiveText(text);
-    if (!detection) {
-      setDetection(ruleResult);
-      setSelectedRuleFindingIds(createInitialSelectedFindingIds(ruleResult.findings));
-    }
-
-    if (!isWebGpuAvailable()) {
-      setLlmUiState(createWebGpuUnavailableLlmUiState());
-      return;
-    }
-
-    setLlmUiState(createLoadingLlmUiState());
-    const analyzer = getAnalyzer();
-
-    try {
-      const result = await analyzer.analyze(text, {
-        existingFindings: ruleResult.findings,
-        onProgress: (progress) => setLlmUiState(createProgressLlmUiState(progress))
-      });
-
-      if (isContextAnalysisExecutionError(result)) {
-        setLlmUiState(
-          result.errorDetail
-            ? createErrorLlmUiState(result.errorDetail)
-            : {
-                status: "error",
-                message: result.error ?? "AI文脈チェックを実行できませんでした。",
-                errorDetail: null
-              }
-        );
-        resetAnalyzer();
-        return;
-      }
-
-      setLlmCandidates(result.candidates);
-      setSelectedCandidateIds(selectCandidateIdsByConfidence(result.candidates));
-      setLlmUiState(createLlmResultUiState(result.candidates.length, result.errorDetail));
-    } catch (error) {
-      const errorDetail = classifyLlmError(error);
-      setLlmUiState(createErrorLlmUiState(errorDetail));
-      resetAnalyzer();
-    }
-  };
-
-  const reset = () => {
-    applyWorkbenchState(createDemoTextReplacementState(""));
-  };
-
-  const copyMaskedText = async () => {
-    if (!maskedText) {
-      return;
-    }
-
-    await navigator.clipboard.writeText(maskedText);
-    setCopyMessage("安全化後テキストをコピーしました。");
-  };
-
-  const toggleCandidate = (id: string) => {
-    setSelectedCandidateIds((current) => toggleSelectedId(current, id));
-  };
-
-  const toggleRuleFinding = (id: string) => {
-    setSelectedRuleFindingIds((current) => toggleSelectedId(current, id));
-  };
+  const {
+    text,
+    detection,
+    summary,
+    selectedRuleFindingIds,
+    llmCandidates,
+    selectedCandidateIds,
+    maskedText,
+    copyMessage,
+    llmUiState,
+    setText,
+    insertSample,
+    insertContextSample,
+    runRuleDetection,
+    runLlmDetection,
+    copyMaskedText,
+    reset,
+    toggleRuleFinding,
+    toggleCandidate
+  } = useDemoWorkbench();
 
   return (
     <div className="page-shell min-h-screen text-ink">
@@ -197,10 +55,7 @@ function DemoLandingPage() {
         <DetectionTargetCards />
         <DemoCard
           text={text}
-          onTextChange={(value) => {
-            setText(value);
-            setCopyMessage("");
-          }}
+          onTextChange={setText}
           onInsertSample={insertSample}
           onInsertContextSample={insertContextSample}
           onRuleDetection={runRuleDetection}

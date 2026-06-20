@@ -1,7 +1,43 @@
+const confirmModalColors = {
+  text: "#202124",
+  mutedText: "#5f6368",
+  overlay: "rgba(32, 33, 36, 0.42)",
+  border: "#dfded8",
+  surface: "#fff",
+  surfaceAlt: "#fbfaf7",
+  surfaceMuted: "#f5f5f4",
+  accent: "#2f7d57",
+  accentHover: "#276848",
+  dangerBorder: "#fecaca",
+  dangerSurface: "#fef2f2",
+  dangerText: "#b91c1c",
+  warningBorder: "#fde68a",
+  warningSurface: "#fffbeb",
+  warningText: "#92400e",
+  neutralBorder: "#e7e5e4",
+  neutralSurface: "#f5f5f4",
+  neutralText: "#57534e",
+  divider: "#eee"
+} as const;
+
+export const confirmModalTokens = {
+  colors: confirmModalColors,
+  radius: {
+    card: "8px",
+    content: "6px",
+    pill: "999px"
+  },
+  shadow: {
+    dialog: "0 24px 80px rgba(0, 0, 0, 0.24)"
+  }
+} as const;
+
+const { colors, radius, shadow } = confirmModalTokens;
+
 export const confirmModalCss = `
   :host {
     all: initial;
-    color: #202124;
+    color: ${colors.text};
     font-family: system-ui, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
     font-size: 14px;
   }
@@ -11,25 +47,25 @@ export const confirmModalCss = `
     z-index: 2147483647;
     display: grid;
     place-items: center;
-    background: rgba(32, 33, 36, 0.42);
+    background: ${colors.overlay};
     padding: 20px;
   }
   .amc-dialog {
     width: min(960px, 100%);
     max-height: min(820px, calc(100vh - 40px));
     overflow: auto;
-    border: 1px solid #dfded8;
-    border-radius: 8px;
-    background: #fbfaf7;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+    border: 1px solid ${colors.border};
+    border-radius: ${radius.card};
+    background: ${colors.surfaceAlt};
+    box-shadow: ${shadow.dialog};
   }
   .amc-header,
   .amc-footer {
     padding: 18px 20px;
-    background: #fff;
+    background: ${colors.surface};
   }
   .amc-header {
-    border-bottom: 1px solid #dfded8;
+    border-bottom: 1px solid ${colors.border};
   }
   .amc-title {
     margin: 0 0 8px;
@@ -39,7 +75,7 @@ export const confirmModalCss = `
   }
   .amc-description {
     margin: 0;
-    color: #5f6368;
+    color: ${colors.mutedText};
     line-height: 1.7;
   }
   .amc-body {
@@ -53,9 +89,9 @@ export const confirmModalCss = `
     gap: 10px;
   }
   .amc-metric {
-    border: 1px solid #dfded8;
-    border-radius: 8px;
-    background: #fff;
+    border: 1px solid ${colors.border};
+    border-radius: ${radius.card};
+    background: ${colors.surface};
     padding: 12px;
   }
   .amc-metric strong {
@@ -78,9 +114,9 @@ export const confirmModalCss = `
     gap: 10px;
   }
   .amc-category {
-    border: 1px solid #dfded8;
-    border-radius: 8px;
-    background: #fff;
+    border: 1px solid ${colors.border};
+    border-radius: ${radius.card};
+    background: ${colors.surface};
     padding: 12px;
   }
   .amc-category-main {
@@ -90,7 +126,7 @@ export const confirmModalCss = `
   }
   .amc-category-main input {
     margin-top: 4px;
-    accent-color: #2f7d57;
+    accent-color: ${colors.accent};
   }
   .amc-category-heading {
     display: flex;
@@ -103,31 +139,31 @@ export const confirmModalCss = `
     font-weight: 700;
   }
   .amc-badge {
-    border: 1px solid #dfded8;
-    border-radius: 999px;
+    border: 1px solid ${colors.border};
+    border-radius: ${radius.pill};
     padding: 3px 8px;
     font-size: 12px;
     font-weight: 700;
   }
   .amc-critical,
   .amc-high {
-    border-color: #fecaca;
-    background: #fef2f2;
-    color: #b91c1c;
+    border-color: ${colors.dangerBorder};
+    background: ${colors.dangerSurface};
+    color: ${colors.dangerText};
   }
   .amc-medium {
-    border-color: #fde68a;
-    background: #fffbeb;
-    color: #92400e;
+    border-color: ${colors.warningBorder};
+    background: ${colors.warningSurface};
+    color: ${colors.warningText};
   }
   .amc-low {
-    border-color: #e7e5e4;
-    background: #f5f5f4;
-    color: #57534e;
+    border-color: ${colors.neutralBorder};
+    background: ${colors.neutralSurface};
+    color: ${colors.neutralText};
   }
   .amc-note {
     margin: 0;
-    color: #5f6368;
+    color: ${colors.mutedText};
     font-size: 12px;
     line-height: 1.6;
   }
@@ -141,7 +177,7 @@ export const confirmModalCss = `
   }
   .amc-finding {
     margin-top: 8px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid ${colors.divider};
     padding-top: 8px;
   }
   .amc-code,
@@ -149,8 +185,8 @@ export const confirmModalCss = `
     display: block;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
-    border-radius: 6px;
-    background: #f5f5f4;
+    border-radius: ${radius.content};
+    background: ${colors.surfaceMuted};
     padding: 8px;
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   }
@@ -158,8 +194,8 @@ export const confirmModalCss = `
     min-height: 170px;
     max-height: 280px;
     overflow: auto;
-    background: #fff;
-    border: 1px solid #dfded8;
+    background: ${colors.surface};
+    border: 1px solid ${colors.border};
     line-height: 1.7;
   }
   .amc-llm-panel {
@@ -177,14 +213,14 @@ export const confirmModalCss = `
     display: flex;
     gap: 10px;
     align-items: flex-start;
-    border: 1px solid #dfded8;
-    border-radius: 8px;
-    background: #fff;
+    border: 1px solid ${colors.border};
+    border-radius: ${radius.card};
+    background: ${colors.surface};
     padding: 10px;
   }
   .review-candidate input {
     margin-top: 4px;
-    accent-color: #2f7d57;
+    accent-color: ${colors.accent};
   }
   .review-meta {
     display: flex;
@@ -194,7 +230,7 @@ export const confirmModalCss = `
     margin-bottom: 6px;
   }
   .review-message {
-    color: #5f6368;
+    color: ${colors.mutedText};
     font-size: 12px;
     line-height: 1.6;
   }
@@ -202,66 +238,72 @@ export const confirmModalCss = `
     display: block;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
-    border-radius: 6px;
-    background: #f5f5f4;
+    border-radius: ${radius.content};
+    background: ${colors.surfaceMuted};
     padding: 6px 8px;
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   }
   .review-badge {
-    border: 1px solid #dfded8;
-    border-radius: 999px;
+    border: 1px solid ${colors.border};
+    border-radius: ${radius.pill};
     padding: 3px 8px;
     font-size: 12px;
     font-weight: 700;
   }
   .review-badge-critical,
   .review-badge-high {
-    border-color: #fecaca;
-    background: #fef2f2;
-    color: #b91c1c;
+    border-color: ${colors.dangerBorder};
+    background: ${colors.dangerSurface};
+    color: ${colors.dangerText};
   }
   .review-badge-medium {
-    border-color: #fde68a;
-    background: #fffbeb;
-    color: #92400e;
+    border-color: ${colors.warningBorder};
+    background: ${colors.warningSurface};
+    color: ${colors.warningText};
   }
   .review-badge-low {
-    border-color: #e7e5e4;
-    background: #f5f5f4;
-    color: #57534e;
+    border-color: ${colors.neutralBorder};
+    background: ${colors.neutralSurface};
+    color: ${colors.neutralText};
   }
   .amc-footer {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 10px;
-    border-top: 1px solid #dfded8;
+    border-top: 1px solid ${colors.border};
   }
   .amc-button {
     min-height: 40px;
-    border: 1px solid #dfded8;
-    border-radius: 8px;
-    background: #fff;
-    color: #202124;
+    border: 1px solid ${colors.border};
+    border-radius: ${radius.card};
+    background: ${colors.surface};
+    color: ${colors.text};
     padding: 8px 13px;
     font: inherit;
     font-weight: 700;
     cursor: pointer;
   }
   .amc-button:hover {
-    background: #f5f5f4;
-  }
-  .amc-primary {
-    border-color: #2f7d57;
-    background: #2f7d57;
-    color: #fff;
-  }
-  .amc-primary:hover {
-    background: #276848;
+    background: ${colors.surfaceMuted};
   }
   .amc-button:disabled {
     opacity: 0.55;
     cursor: not-allowed;
+  }
+  .amc-button:disabled:hover {
+    background: ${colors.surface};
+  }
+  .amc-primary {
+    border-color: ${colors.accent};
+    background: ${colors.accent};
+    color: ${colors.surface};
+  }
+  .amc-primary:hover {
+    background: ${colors.accentHover};
+  }
+  .amc-primary:disabled:hover {
+    background: ${colors.accent};
   }
   @media (max-width: 760px) {
     .amc-summary,

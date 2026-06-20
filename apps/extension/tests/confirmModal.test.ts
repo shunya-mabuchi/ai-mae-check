@@ -8,20 +8,25 @@ import {
   createConfirmedText,
   updateCategorySelection
 } from "../src/ui/confirmModalState";
+import { confirmModalTokens } from "../src/ui/styles";
 
 describe("confirmModal helpers", () => {
-  it("送信前UIは編集ではなく短いAIチェック導線を表示する", () => {
+  it("keeps the AI check action label and does not restore safe-prompt copy", () => {
     const source = readFileSync(new URL("../src/ui/confirmModal.ts", import.meta.url), "utf8");
 
     expect(source).toContain('"AIチェック"');
-    expect(source).not.toContain('"編集"');
-    expect(source).not.toContain("AI文脈チェックで追加候補を見る");
+    expect(source).not.toContain('"要約"');
+    expect(source).not.toContain("AI文脈チェックで安全な依頼文の候補を作る");
   });
 
-  it("送信前UIは貼り付け専用名のAIチェック部品に直接依存しない", () => {
+  it("splits modal rendering into focused modules", () => {
     const source = readFileSync(new URL("../src/ui/confirmModal.ts", import.meta.url), "utf8");
     const styles = readFileSync(new URL("../src/ui/styles.ts", import.meta.url), "utf8");
 
+    expect(source).toContain('from "./confirmModalCandidateList"');
+    expect(source).toContain('from "./confirmModalCategoryList"');
+    expect(source).toContain('from "./confirmModalElements"');
+    expect(source).toContain('from "./confirmModalFooter"');
     expect(source).not.toContain("pasteReviewListRenderers");
     expect(source).not.toContain("pasteReviewSelection");
     expect(source).not.toContain("pasteReviewLlmRunner");
@@ -29,15 +34,26 @@ describe("confirmModal helpers", () => {
     expect(styles).toContain(".review-candidate");
   });
 
-  it("検出結果をカテゴリ単位にまとめる", () => {
-    const detection = detectSensitiveText("メールは taro@example.com、費用は300万円です。");
+  it("exports style tokens and protects disabled hover states", () => {
+    const stylesSource = readFileSync(new URL("../src/ui/styles.ts", import.meta.url), "utf8");
+
+    expect(confirmModalTokens.colors.accent).toBe("#2f7d57");
+    expect(confirmModalTokens.colors.surface).toBe("#fff");
+    expect(stylesSource).toContain(".amc-button:disabled:hover");
+    expect(stylesSource).toContain(".amc-primary:disabled:hover");
+    expect(stylesSource).toContain("background: ${colors.surface};");
+    expect(stylesSource).toContain("background: ${colors.accent};");
+  });
+
+  it("groups findings by category", () => {
+    const detection = detectSensitiveText("メールは taro@example.com、予算は300万円です。");
     const groups = createCategoryGroups(detection.findings, evaluateDlpPolicy(detection.findings));
 
     expect(groups.map((group) => group.category)).toContain("email");
     expect(groups.map((group) => group.category)).toContain("financial");
   });
 
-  it("秘密情報保護の対象はカテゴリをロックする", () => {
+  it("locks all categories when sanitization is required", () => {
     const detection = detectSensitiveText("GITHUB_TOKEN=ghp_dummyDummyDummyDummyDummyDummy123456");
     const policy = evaluateDlpPolicy(detection.findings);
     const groups = createCategoryGroups(detection.findings, policy);
@@ -47,8 +63,8 @@ describe("confirmModal helpers", () => {
     expect(canSubmitSelection(groups, new Set())).toBe(false);
   });
 
-  it("mediumリスクは詳細確認後に素通しできる", () => {
-    const detection = detectSensitiveText("初期費用は300万円です。");
+  it("allows deselecting medium-risk categories when raw send is allowed", () => {
+    const detection = detectSensitiveText("予算は300万円です。");
     const policy = evaluateDlpPolicy(detection.findings);
     const groups = createCategoryGroups(detection.findings, policy);
 
@@ -57,7 +73,7 @@ describe("confirmModal helpers", () => {
     expect(canSubmitSelection(groups, new Set())).toBe(true);
   });
 
-  it("安全化ではカテゴリ表現に置換する", () => {
+  it("creates generalized text from selected findings", () => {
     const inputText = "メールは taro@example.com です。";
     const detection = detectSensitiveText(inputText);
     const selectedIds = new Set(detection.findings.map((finding) => finding.id));
@@ -65,15 +81,7 @@ describe("confirmModal helpers", () => {
     expect(createConfirmedText(inputText, detection.findings, selectedIds)).toBe("メールは [メールアドレス] です。");
   });
 
-  it("送信前UIの既定安全化は変換モードを選ばせず日本語ラベルへ置換する", () => {
-    const inputText = "メールは taro@example.com です。";
-    const detection = detectSensitiveText(inputText);
-    const selectedIds = new Set(detection.findings.map((finding) => finding.id));
-
-    expect(createConfirmedText(inputText, detection.findings, selectedIds)).toBe("メールは [メールアドレス] です。");
-  });
-
-  it("カテゴリ単位でfinding IDを選択・解除する", () => {
+  it("updates selected finding ids per category toggle", () => {
     const selectedIds = new Set(["email-1"]);
 
     updateCategorySelection(selectedIds, ["phone-1", "phone-2"], true);
@@ -83,8 +91,8 @@ describe("confirmModal helpers", () => {
     expect([...selectedIds]).toEqual(["phone-1"]);
   });
 
-  it("footer状態はraw送信可能かつ選択0件ならそのまま送信を返す", () => {
-    const detection = detectSensitiveText("初期費用は300万円です。");
+  it("shows raw-send copy when nothing remains selected", () => {
+    const detection = detectSensitiveText("予算は300万円です。");
     const policy = evaluateDlpPolicy(detection.findings);
     const groups = createCategoryGroups(detection.findings, policy);
 
@@ -101,8 +109,8 @@ describe("confirmModal helpers", () => {
     });
   });
 
-  it("footer状態は安全化対象がある場合は安全化して送信を返す", () => {
-    const detection = detectSensitiveText("初期費用は300万円です。");
+  it("shows safe-send copy when findings remain selected", () => {
+    const detection = detectSensitiveText("予算は300万円です。");
     const policy = evaluateDlpPolicy(detection.findings);
     const groups = createCategoryGroups(detection.findings, policy);
     const selectedFindingIds = new Set(detection.findings.map((finding) => finding.id));
@@ -120,7 +128,7 @@ describe("confirmModal helpers", () => {
     });
   });
 
-  it("footer状態は安全化必須カテゴリが未選択なら送信不可を返す", () => {
+  it("disables submit when locked findings are unselected", () => {
     const detection = detectSensitiveText("GITHUB_TOKEN=ghp_dummyDummyDummyDummyDummyDummy123456");
     const policy = evaluateDlpPolicy(detection.findings);
     const groups = createCategoryGroups(detection.findings, policy);

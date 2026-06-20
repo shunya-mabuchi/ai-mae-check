@@ -14,6 +14,7 @@ import {
   PASTE_REVIEW_LLM_LOADING_MESSAGE,
   shouldAutoRunPasteReviewLlm
 } from "../src/lib/pasteReviewLlmState";
+import { buildLlmErrorDetail } from "./testBuilders";
 
 describe("pasteReviewLlmState", () => {
   it("初期・無効・ロード中の文言を返す", () => {
@@ -46,11 +47,10 @@ describe("pasteReviewLlmState", () => {
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       elapsedMs: 10,
       error: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
-      errorDetail: {
-        kind: "json_parse",
+      errorDetail: buildLlmErrorDetail({
         message: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
         hint: "ルールベース検出結果は維持されています。必要なら再実行してください。"
-      }
+      })
     };
 
     expect(isContextAnalysisExecutionError(result)).toBe(false);
@@ -61,11 +61,7 @@ describe("pasteReviewLlmState", () => {
 
   it("json_parseでも補助検出候補がある場合は続行できる状態として表示する", () => {
     expect(
-      createPasteReviewLlmResultMessage(2, undefined, {
-        kind: "json_parse",
-        message: "AI文脈チェックの結果を読み取れませんでした。",
-        hint: "必要なら再実行してください。"
-      })
+      createPasteReviewLlmResultMessage(2, undefined, buildLlmErrorDetail())
     ).toBe("ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。");
   });
 
@@ -105,11 +101,7 @@ describe("pasteReviewLlmState", () => {
     const result = createPasteReviewLlmResultState({
       candidates: [],
       summary: "AI文脈チェックの結果を読み取れませんでした。",
-      errorDetail: {
-        kind: "json_parse",
-        message: "AI文脈チェックの結果を読み取れませんでした。",
-        hint: "必要なら再実行してください。"
-      }
+      errorDetail: buildLlmErrorDetail()
     });
 
     expect(result).toEqual({
@@ -122,11 +114,11 @@ describe("pasteReviewLlmState", () => {
   it("WorkerやWebGPUの失敗は実行不能エラーとして扱う", () => {
     const result: Pick<ContextAnalysisResult, "error" | "errorDetail"> = {
       error: "AI文脈チェックを実行できませんでした。",
-      errorDetail: {
+      errorDetail: buildLlmErrorDetail({
         kind: "worker",
         message: "AI文脈チェックを実行できませんでした。",
         hint: "ページを再読み込みしてから再試行してください。"
-      }
+      })
     };
 
     expect(isContextAnalysisExecutionError(result)).toBe(true);
@@ -146,12 +138,10 @@ describe("pasteReviewLlmState", () => {
   });
 
   it("json_parseのエラー詳細は診断メモではなく非致命メッセージとして表示する", () => {
-    const detail: LlmErrorDetail = {
-      kind: "json_parse",
-      message: "AI文脈チェックの結果を読み取れませんでした。",
+    const detail: LlmErrorDetail = buildLlmErrorDetail({
       hint: "ルールベース検出結果は維持されています。必要なら再実行してください。",
       technicalDetail: "AI文脈チェックの結果を読み取れませんでした"
-    };
+    });
 
     expect(formatPasteReviewLlmStatusMessage(detail.message, detail)).toBe(
       "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"

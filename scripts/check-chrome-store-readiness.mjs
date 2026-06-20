@@ -1,8 +1,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
+import { assertRuleDeliveryReleaseConfig, loadRuleDeliveryReleaseConfig } from "./lib/rule-delivery-release-config.mjs";
 
 const rootDir = resolve(".");
 const manifestPath = resolve(rootDir, "apps/extension/.output/chrome-mv3/manifest.json");
+const contentScriptPath = resolve(rootDir, "apps/extension/.output/chrome-mv3/content-scripts/content.js");
 const outputDir = resolve(rootDir, "apps/extension/.output");
 const listingPath = resolve(rootDir, "docs/chrome-web-store-listing.json");
 const assetManifestPath = resolve(rootDir, "docs/chrome-web-store-assets.json");
@@ -109,11 +111,16 @@ if (!existsSync(privacyPolicyPath)) {
   fail("docs/privacy-policy.md is missing");
 }
 
+if (!existsSync(contentScriptPath)) {
+  fail(`built content script not found at ${contentScriptPath}. Run pnpm package:extension first.`);
+}
+
 const manifest = readJson(manifestPath);
 const assetManifest = readJson(assetManifestPath);
 const listingText = readFileSync(listingPath, "utf8");
 const submissionCopyText = readFileSync(submissionCopyPath, "utf8");
 const listing = JSON.parse(listingText);
+const releaseConfig = assertRuleDeliveryReleaseConfig(loadRuleDeliveryReleaseConfig());
 
 for (const phrase of forbiddenPhrases) {
   if (listingText.includes(phrase)) {
@@ -190,6 +197,16 @@ if (!Array.isArray(listing.testInstructions) || listing.testInstructions.length 
   fail("testInstructions must contain 6 reviewer steps");
 }
 
+for (const requiredPhrase of [
+  "GET /api/rules/latest",
+  "リクエスト本文は使いません",
+  "外部LLM APIへ送るものではありません"
+]) {
+  if (!listingText.includes(requiredPhrase) && !submissionCopyText.includes(requiredPhrase)) {
+    fail(`public docs must include: ${requiredPhrase}`);
+  }
+}
+
 for (const requiredCopy of [
   "# Chrome Web Store 掲載文 最終版",
   listing.name,
@@ -264,6 +281,13 @@ if (!smallPromo || smallPromo.width !== 440 || smallPromo.height !== 280) {
 const marqueePromo = assetManifest.promotionalImages.find((promo) => promo.type === "marquee");
 if (!marqueePromo || marqueePromo.width !== 1400 || marqueePromo.height !== 560) {
   fail("marquee promotional image must be 1400x560");
+}
+
+const builtContentScript = readFileSync(contentScriptPath, "utf8");
+for (const requiredValue of [releaseConfig.endpoint, releaseConfig.keyId, releaseConfig.publicJwk.x, releaseConfig.publicJwk.y]) {
+  if (!builtContentScript.includes(requiredValue)) {
+    fail(`built extension must include release rule config value: ${requiredValue}`);
+  }
 }
 
 console.log("Chrome Web Store readiness QA passed");

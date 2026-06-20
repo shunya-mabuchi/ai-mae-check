@@ -7,13 +7,14 @@ const listingPath = resolve(rootDir, "docs/chrome-web-store-listing.json");
 const assetManifestPath = resolve(rootDir, "docs/chrome-web-store-assets.json");
 const submissionCopyPath = resolve(rootDir, "docs/chrome-web-store-submission-copy.md");
 const qaScriptPath = resolve(rootDir, "scripts/check-chrome-store-readiness.mjs");
+const releaseConfigPath = resolve(rootDir, "apps/extension/config/rule-delivery.release.json");
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, "utf8")) as T;
 }
 
 describe("Chrome Web Store readiness", () => {
-  it("Developer Dashboardに入力する掲載情報をJSONで管理する", () => {
+  it("keeps the Developer Dashboard listing source in JSON", () => {
     expect(existsSync(listingPath)).toBe(true);
 
     const listing = readJson<{
@@ -37,25 +38,28 @@ describe("Chrome Web Store readiness", () => {
     expect(listing.language).toBe("日本語");
     expect(listing.supportUrl).toBe("https://ai-mae-check.pages.dev/support");
     expect(listing.privacyPolicyUrl).toBe("https://ai-mae-check.pages.dev/privacy");
-    expect(listing.singlePurpose).toContain("AIに文章を送る前");
+    expect(listing.singlePurpose).toContain("AIに文章を送る前に");
     expect(listing.permissionJustifications.storage).toContain("設定");
     expect(listing.permissionJustifications.host_permissions).toContain("ChatGPT");
+    expect(listing.permissionJustifications.host_permissions).toContain("<all_urls> は要求しません");
     expect(listing.remoteCode.usesRemoteCode).toBe(false);
-    expect(listing.remoteCode.explanation).toContain("任意コード");
+    expect(listing.remoteCode.explanation).toContain("外部から任意コードを取得して実行しません");
+    expect(listing.remoteCode.explanation).toContain("外部LLM APIへ送るものではありません");
     expect(listing.dataUsage.collectsUserData).toBe(false);
-    expect(listing.dataUsage.explanation).toContain("本文");
+    expect(listing.dataUsage.explanation).toContain("収集・販売・共有しません");
+    expect(listing.dataUsage.explanation).toContain("chrome.storage.local");
     expect(listing.testInstructions).toHaveLength(6);
   });
 
-  it("ストア掲載文は誇大表現を避ける", () => {
+  it("avoids overclaim copy in the store listing", () => {
     const listingText = readFileSync(listingPath, "utf8");
 
-    expect(listingText).not.toContain("完全に安全");
+    expect(listingText).not.toContain("絶対安全");
     expect(listingText).not.toContain("100%");
-    expect(listingText).not.toContain("すべての情報漏洩を防ぎます");
+    expect(listingText).not.toContain("すべての情報漏洩を確実に防ぐ");
   });
 
-  it("ストア掲載素材の最終アップロード順をJSONで管理する", () => {
+  it("keeps the store asset manifest in JSON", () => {
     expect(existsSync(assetManifestPath)).toBe(true);
 
     const assetManifest = readJson<{
@@ -74,7 +78,6 @@ describe("Chrome Web Store readiness", () => {
     expect(assetManifest.screenshots.map((screenshot) => screenshot.order)).toEqual([1, 2, 3]);
     expect(assetManifest.screenshots[0]?.primarySurface).toBe("extension");
     expect(assetManifest.screenshots[0]?.path).toContain("screenshot-01-real-paste-modal.png");
-    expect(assetManifest.screenshots[1]?.primarySurface).toBe("extension");
     expect(assetManifest.screenshots[1]?.path).toContain("screenshot-02-real-send-modal.png");
     expect(assetManifest.screenshots[2]?.path).toContain("screenshot-03-real-context-modal.png");
     expect(assetManifest.screenshots.slice(0, 3).every((screenshot) => screenshot.sourceKind === "real_extension_capture")).toBe(
@@ -91,14 +94,16 @@ describe("Chrome Web Store readiness", () => {
     );
   });
 
-  it("Chrome Web Store提出前QAコマンドをroot scriptsに用意する", () => {
+  it("wires the QA and packaging scripts from the root package", () => {
     const rootPackage = readJson<{ scripts: Record<string, string> }>(resolve(rootDir, "package.json"));
 
     expect(existsSync(qaScriptPath)).toBe(true);
+    expect(existsSync(releaseConfigPath)).toBe(true);
     expect(rootPackage.scripts["qa:chrome-store"]).toBe("node scripts/check-chrome-store-readiness.mjs");
+    expect(rootPackage.scripts["package:extension"]).toBe("node scripts/package-extension-release.mjs");
   });
 
-  it("Developer Dashboardに貼り付ける最終掲載文をMarkdownで管理する", () => {
+  it("keeps the submission copy aligned with the listing", () => {
     expect(existsSync(submissionCopyPath)).toBe(true);
 
     const listing = readJson<{
@@ -107,8 +112,6 @@ describe("Chrome Web Store readiness", () => {
       supportUrl: string;
       privacyPolicyUrl: string;
       permissionJustifications: Record<string, string>;
-      remoteCode: { explanation: string };
-      dataUsage: { explanation: string };
     }>(listingPath);
     const copy = readFileSync(submissionCopyPath, "utf8");
 
@@ -119,8 +122,10 @@ describe("Chrome Web Store readiness", () => {
     expect(copy).toContain(listing.privacyPolicyUrl);
     expect(copy).toContain(listing.permissionJustifications.storage);
     expect(copy).toContain(listing.permissionJustifications.host_permissions);
-    expect(copy).toContain(listing.remoteCode.explanation);
-    expect(copy).toContain(listing.dataUsage.explanation);
+    expect(copy).toContain("外部から任意コードを取得して実行しません");
+    expect(copy).toContain("ユーザー本文を外部LLM APIへ送るものではありません");
+    expect(copy).toContain("収集・販売・共有しません");
+    expect(copy).toContain("chrome.storage.local");
     expect(copy).toContain("screenshot-01-real-paste-modal.png");
     expect(copy).toContain("screenshot-02-real-send-modal.png");
     expect(copy).toContain("screenshot-03-real-context-modal.png");

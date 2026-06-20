@@ -51,14 +51,16 @@ Chromeで次を行います。
 A社向けの提案資料について、NDA締結前なので関係者限りで確認してください。
 初期費用は300万円、月額80万円で進める予定です。
 
-AWS_ACCESS_KEY_ID=AKIA_DUMMY_SAMPLE
-GITHUB_TOKEN=dummy_github_token_for_demo
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+GITHUB_TOKEN=ghp_dummyDummyDummyDummyDummyDummy123456
 
 社内確認URL:
 https://user:password@example.com/internal/proposal
 
 この内容をAIで要約したいです。
 ```
+
+このサンプルに含まれるメールアドレス、電話番号、AWS Access Key風文字列、GitHub token風文字列、URL、社名、案件名はすべて実在しないダミーです。手動QAではこのまま使います。
 
 ### 文脈リスクサンプル
 

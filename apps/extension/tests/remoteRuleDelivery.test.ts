@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { signRemoteRuleBundle, type RemoteRuleBundlePayload, type SignedRemoteRuleBundle } from "@ai-mae-check/core";
-import { loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
+import releaseConfig from "../config/rule-delivery.release.json";
+import { RULE_DELIVERY_KEY_ID, RULE_DELIVERY_PUBLIC_JWK, loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
 
 const keyId = "extension-test-key";
 
@@ -20,7 +21,7 @@ function payload(): RemoteRuleBundlePayload {
     rules: [
       {
         id: "demo_secret_marker",
-        label: "デモ秘密マーカー",
+        label: "Demo secret marker",
         riskLevel: "high",
         category: "secret",
         placeholderPrefix: "DEMO_SECRET",
@@ -32,7 +33,12 @@ function payload(): RemoteRuleBundlePayload {
 }
 
 describe("loadVerifiedRemoteRules", () => {
-  it("署名検証できたルールだけをGETで取得し、リクエスト本文は送らない", async () => {
+  it("uses the checked-in release public key config", () => {
+    expect(RULE_DELIVERY_KEY_ID).toBe(releaseConfig.keyId);
+    expect(RULE_DELIVERY_PUBLIC_JWK).toEqual(releaseConfig.publicJwk);
+  });
+
+  it("fetches the signed bundle with GET and without a body", async () => {
     const { privateJwk, publicJwk } = await createKeyPair();
     const signed = await signRemoteRuleBundle(payload(), privateJwk, keyId);
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
@@ -55,7 +61,7 @@ describe("loadVerifiedRemoteRules", () => {
     expect(fetcher.mock.calls[0]?.[1]).not.toHaveProperty("body");
   });
 
-  it("署名検証できないルールは使わずフォールバックする", async () => {
+  it("falls back when signature verification fails", async () => {
     const { privateJwk, publicJwk } = await createKeyPair();
     const signed = await signRemoteRuleBundle(payload(), privateJwk, keyId);
     const tampered: SignedRemoteRuleBundle = {
@@ -78,7 +84,7 @@ describe("loadVerifiedRemoteRules", () => {
     expect(result.rules).toEqual([]);
   });
 
-  it("URL未設定ならネットワークに出ず無効扱いにする", async () => {
+  it("stays disabled when no endpoint is configured", async () => {
     const fetcher = vi.fn<typeof fetch>();
     const result = await loadVerifiedRemoteRules({ endpoint: "", fetcher });
 

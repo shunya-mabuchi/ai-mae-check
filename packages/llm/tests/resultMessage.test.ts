@@ -3,9 +3,9 @@ import {
   CONTEXT_ANALYSIS_EMPTY_MESSAGE,
   CONTEXT_ANALYSIS_FOUND_MESSAGE,
   createContextAnalysisCompleteMessage,
-  createContextAnalysisResultMessage,
-  type LlmErrorDetail
+  createContextAnalysisResultMessage
 } from "../src";
+import { buildLlmErrorDetail } from "./testBuilders";
 
 describe("resultMessage", () => {
   it("候補数に応じた標準の完了メッセージを返す", () => {
@@ -23,11 +23,9 @@ describe("resultMessage", () => {
   });
 
   it("json_parseの詳細がある結果は候補数に応じて非致命メッセージを返す", () => {
-    const detail: LlmErrorDetail = {
-      kind: "json_parse",
-      message: "AI文脈チェックの結果を読み取れませんでした。",
+    const detail = buildLlmErrorDetail({
       hint: "ルールベース検出結果は維持されています。必要なら再実行してください。"
-    };
+    });
 
     expect(createContextAnalysisResultMessage({ candidateCount: 0, errorDetail: detail })).toBe(
       "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
@@ -38,11 +36,11 @@ describe("resultMessage", () => {
   });
 
   it("json_parse以外の詳細は標準完了メッセージに影響しない", () => {
-    const detail: LlmErrorDetail = {
+    const detail = buildLlmErrorDetail({
       kind: "worker",
       message: "AI文脈チェックを実行できませんでした。",
       hint: "ページを再読み込みしてから再試行してください。"
-    };
+    });
 
     expect(createContextAnalysisResultMessage({ candidateCount: 1, errorDetail: detail })).toBe(
       CONTEXT_ANALYSIS_FOUND_MESSAGE

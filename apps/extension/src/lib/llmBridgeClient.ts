@@ -4,7 +4,7 @@ import type {
   LlmProgress
 } from "@ai-mae-check/llm";
 import {
-  LLM_BRIDGE_CONNECT,
+  createLlmBridgeConnectMessage,
   LLM_BRIDGE_READY,
   type LlmBridgeRequest,
   type LlmBridgeResponse
@@ -13,6 +13,8 @@ import { getExtensionResourceUrl } from "./extensionRuntime";
 import { createJsonParseBridgeFallbackResult } from "./llmBridgeFallback";
 import {
   BRIDGE_LOAD_TIMEOUT_MS,
+  createLlmBridgeNonce,
+  createLlmBridgePageUrl,
   createLlmBridgeIframe,
   waitForLlmBridgeIframeLoad
 } from "./llmBridgeFrame";
@@ -64,7 +66,7 @@ export function createBridgeErrorFallbackResult(options: BridgeErrorFallbackOpti
 }
 
 function handleBridgeMessage(message: LlmBridgeResponse): void {
-  if (message.type === "ready") {
+  if (message.type === LLM_BRIDGE_READY) {
     return;
   }
 
@@ -101,7 +103,8 @@ function handleBridgeMessage(message: LlmBridgeResponse): void {
 async function createBridgeConnection(): Promise<BridgeConnection> {
   const iframe = createLlmBridgeIframe();
   const loadPromise = waitForLlmBridgeIframeLoad(iframe);
-  iframe.src = getExtensionResourceUrl(BRIDGE_PAGE);
+  const bridgeNonce = createLlmBridgeNonce();
+  iframe.src = createLlmBridgePageUrl(getExtensionResourceUrl(BRIDGE_PAGE), bridgeNonce);
   document.documentElement.append(iframe);
   await loadPromise;
 
@@ -119,7 +122,7 @@ async function createBridgeConnection(): Promise<BridgeConnection> {
     }, BRIDGE_LOAD_TIMEOUT_MS);
 
     port.onmessage = (event: MessageEvent<LlmBridgeResponse>) => {
-      if (event.data.type === "ready") {
+      if (event.data.type === LLM_BRIDGE_READY) {
         window.clearTimeout(timeout);
         resolve();
         return;
@@ -129,7 +132,7 @@ async function createBridgeConnection(): Promise<BridgeConnection> {
     };
   });
 
-  contentWindow.postMessage({ type: LLM_BRIDGE_CONNECT }, bridgeOrigin, [channel.port2]);
+  contentWindow.postMessage(createLlmBridgeConnectMessage(bridgeNonce), bridgeOrigin, [channel.port2]);
   port.start();
   await ready;
 

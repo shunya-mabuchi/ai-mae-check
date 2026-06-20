@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ContextAnalysisResult } from "@ai-mae-check/llm";
-import type { Finding } from "@ai-mae-check/core";
 import { PASTE_REVIEW_LLM_DISABLED_MESSAGE } from "../src/lib/pasteReviewLlmState";
 import { runReviewLlm } from "../src/lib/reviewLlmRunner";
+import { buildFinding } from "./testBuilders";
 
 class FakeButton {
   readonly attributes = new Map<string, string>();
@@ -14,22 +14,6 @@ class FakeButton {
   removeAttribute(name: string): void {
     this.attributes.delete(name);
   }
-}
-
-function finding(): Finding {
-  return {
-    id: "finding-1",
-    ruleId: "email",
-    source: "rule",
-    label: "メールアドレス",
-    riskLevel: "high",
-    start: 0,
-    end: 16,
-    text: "taro@example.com",
-    placeholder: "[EMAIL_1]",
-    message: "外部へ貼り付ける前に確認したい情報です。",
-    confidence: 0.99
-  };
 }
 
 describe("runReviewLlm", () => {
@@ -99,7 +83,7 @@ describe("runReviewLlm", () => {
       enabled: true,
       inputText: "候補者の山田花子さんについて確認します。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
-      existingFindings: [finding()],
+      existingFindings: [buildFinding()],
       llmStatus: llmStatus as HTMLElement,
       llmButton: llmButton as unknown as HTMLButtonElement,
       selectedCandidateIds,
@@ -112,7 +96,7 @@ describe("runReviewLlm", () => {
       "候補者の山田花子さんについて確認します。",
       expect.objectContaining({
         modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
-        existingFindings: [finding()],
+        existingFindings: [buildFinding()],
         onProgress: expect.any(Function)
       })
     );

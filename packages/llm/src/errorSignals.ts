@@ -33,10 +33,174 @@ const WASM_ERROR_MESSAGE =
   "AI文脈チェック用の実行ファイルを読み込めませんでした。ブラウザのキャッシュ削除後に再試行してください。ルールベースの検出結果は引き続き利用できます。";
 
 export type LlmErrorSignal = Pick<LlmErrorDetail, "kind" | "message" | "hint">;
+type LlmErrorVariant = "adapter_unavailable" | "runtime";
 
-function signal(kind: LlmErrorDetail["kind"], message: string, hint: string): LlmErrorSignal {
-  return { kind, message, hint };
+interface LlmErrorCopy extends LlmErrorSignal {
+  variant?: LlmErrorVariant;
 }
+
+interface LlmErrorRule {
+  id: string;
+  match: (normalizedMessage: string, originalMessage: string) => boolean;
+  copy: (normalizedMessage: string) => LlmErrorCopy;
+}
+
+function signal(kind: LlmErrorDetail["kind"], message: string, hint: string, variant?: LlmErrorVariant): LlmErrorCopy {
+  return {
+    kind,
+    message,
+    hint,
+    ...(variant ? { variant } : {})
+  };
+}
+
+const errorCopies = {
+  model_fetch: signal(
+    "model_fetch",
+    MODEL_FETCH_ERROR_MESSAGE,
+    "Hugging FaceやGitHub rawへのアクセス、プロキシ、セキュリティソフト、広告ブロック、社内ネットワーク制限を確認してください。"
+  ),
+  storage: signal(
+    "storage",
+    STORAGE_ERROR_MESSAGE,
+    "Chrome DevToolsのApplication > Storageから127.0.0.1のサイトデータを削除し、ディスク空き容量も確認してください。"
+  ),
+  memory: signal(
+    "memory",
+    MEMORY_ERROR_MESSAGE,
+    "Intel UHD Graphics 620ではWebLLMが重い場合があります。ほかのタブを閉じ、通常ウィンドウで再試行してください。"
+  ),
+  webgpu: {
+    default: signal(
+      "webgpu",
+      WEBGPU_UNAVAILABLE_MESSAGE,
+      "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。Chromeの完全再起動も有効です。"
+    ),
+    adapter_unavailable: signal(
+      "webgpu",
+      WEBGPU_ADAPTER_UNAVAILABLE_MESSAGE,
+      "この状態はWebLLMモデルを変更しても解消しません。chrome://gpu のDawn InfoでD3D12 backendがAvailableか、DawnのWebGPU StatusがBlocklistedではないかを確認してください。",
+      "adapter_unavailable"
+    ),
+    runtime: signal(
+      "webgpu",
+      WEBGPU_RUNTIME_ERROR_MESSAGE,
+      "Chromeの完全再起動、ChatGPT側のタブ再読み込み、通常ウィンドウでの再試行を確認してください。",
+      "runtime"
+    )
+  },
+  worker: signal(
+    "worker",
+    WORKER_ERROR_MESSAGE,
+    "WebLLMの内部WorkerまたはGPUオブジェクトが破棄済みになっています。ページを再読み込みしてから再試行してください。"
+  ),
+  wasm: signal("wasm", WASM_ERROR_MESSAGE, "Chromeのサイトデータ削除後、WASMファイルを再取得してから再試行してください。"),
+  json_parse: signal("json_parse", JSON_PARSE_ERROR_MESSAGE, "ルールベース検出結果は維持されています。必要なら再実行してください。"),
+  unknown: signal(
+    "unknown",
+    GENERIC_LLM_ERROR_MESSAGE,
+    "DevTools Consoleの赤いエラー、Networkタブの失敗リクエスト、chrome://gpu のDawn Infoを確認してください。"
+  )
+} as const;
+
+function containsAny(message: string, patterns: string[]): boolean {
+  return patterns.some((pattern) => message.includes(pattern));
+}
+
+function isWebGpuRuntimeFailure(message: string): boolean {
+  return containsAny(message, ["gpubuffer", "mapasync", "unmapped before mapping"]);
+}
+
+function isWebGpuAdapterUnavailable(message: string): boolean {
+  return containsAny(message, [
+    "no available adapters",
+    "no available webgpu adapters",
+    "gpuadapter",
+    "requestadapter",
+    "navigator.gpu"
+  ]);
+}
+
+const rules: LlmErrorRule[] = [
+  {
+    id: "model_fetch",
+    match: (message) =>
+      containsAny(message, [
+        "err_network_access_denied",
+        "failed to fetch",
+        "networkerror",
+        "load failed",
+        "huggingface.co",
+        "raw.githubusercontent.com",
+        "cors",
+        "status code 401",
+        "status code 403",
+        "status code 404"
+      ]) || (message.includes("model") && message.includes("fetch")),
+    copy: () => errorCopies.model_fetch
+  },
+  {
+    id: "storage",
+    match: (message) => containsAny(message, ["quota", "indexeddb", "cache", "storage", "disk", "not enough space"]),
+    copy: () => errorCopies.storage
+  },
+  {
+    id: "memory",
+    match: (message) =>
+      containsAny(message, ["out of memory", "memory access out of bounds", "allocation", "vram", "gpu memory"]),
+    copy: () => errorCopies.memory
+  },
+  {
+    id: "webgpu",
+    match: (message) =>
+      containsAny(message, [
+        "webgpu",
+        "gpubuffer",
+        "mapasync",
+        "unmapped before mapping",
+        "gpuadapter",
+        "requestadapter",
+        "requestdevice",
+        "navigator.gpu",
+        "no available adapters",
+        "device lost"
+      ]),
+    copy: (message) => {
+      if (isWebGpuRuntimeFailure(message)) {
+        return errorCopies.webgpu.runtime;
+      }
+
+      if (isWebGpuAdapterUnavailable(message)) {
+        return errorCopies.webgpu.adapter_unavailable;
+      }
+
+      return errorCopies.webgpu.default;
+    }
+  },
+  {
+    id: "worker",
+    match: (message) =>
+      containsAny(message, [
+        "worker",
+        "module script",
+        "failed to construct",
+        "imported module",
+        "already been disposed",
+        "disposed object"
+      ]),
+    copy: () => errorCopies.worker
+  },
+  {
+    id: "wasm",
+    match: (message) => containsAny(message, ["wasm", "webassembly", "compile", "instantiate"]),
+    copy: () => errorCopies.wasm
+  },
+  {
+    id: "json_parse",
+    match: (_message, originalMessage) => isJsonParseLlmErrorMessage(originalMessage),
+    copy: () => errorCopies.json_parse
+  }
+];
 
 export function isJsonParseLlmErrorMessage(message: string | undefined): boolean {
   if (!message) {
@@ -57,121 +221,26 @@ export function isJsonParseLlmErrorMessage(message: string | undefined): boolean
   );
 }
 
+export function getLlmErrorSignalCopy(kind: LlmErrorDetail["kind"], variant?: LlmErrorVariant): LlmErrorSignal {
+  if (kind === "webgpu") {
+    if (variant === "adapter_unavailable") {
+      return errorCopies.webgpu.adapter_unavailable;
+    }
+
+    if (variant === "runtime") {
+      return errorCopies.webgpu.runtime;
+    }
+
+    return errorCopies.webgpu.default;
+  }
+
+  return errorCopies[kind] ?? errorCopies.unknown;
+}
+
 export function classifyLlmErrorSignal(message: string): LlmErrorSignal {
   const lowerMessage = message.toLowerCase();
-
-  if (
-    lowerMessage.includes("err_network_access_denied") ||
-    lowerMessage.includes("failed to fetch") ||
-    lowerMessage.includes("networkerror") ||
-    lowerMessage.includes("load failed") ||
-    lowerMessage.includes("huggingface.co") ||
-    lowerMessage.includes("raw.githubusercontent.com") ||
-    lowerMessage.includes("cors") ||
-    lowerMessage.includes("status code 401") ||
-    lowerMessage.includes("status code 403") ||
-    lowerMessage.includes("status code 404") ||
-    (lowerMessage.includes("model") && lowerMessage.includes("fetch"))
-  ) {
-    return signal(
-      "model_fetch",
-      MODEL_FETCH_ERROR_MESSAGE,
-      "Hugging FaceやGitHub rawへのアクセス、プロキシ、セキュリティソフト、広告ブロック、社内ネットワーク制限を確認してください。"
-    );
-  }
-
-  if (
-    lowerMessage.includes("quota") ||
-    lowerMessage.includes("indexeddb") ||
-    lowerMessage.includes("cache") ||
-    lowerMessage.includes("storage") ||
-    lowerMessage.includes("disk") ||
-    lowerMessage.includes("not enough space")
-  ) {
-    return signal(
-      "storage",
-      STORAGE_ERROR_MESSAGE,
-      "Chrome DevToolsのApplication > Storageから127.0.0.1のサイトデータを削除し、ディスク空き容量も確認してください。"
-    );
-  }
-
-  if (
-    lowerMessage.includes("out of memory") ||
-    lowerMessage.includes("memory access out of bounds") ||
-    lowerMessage.includes("allocation") ||
-    lowerMessage.includes("vram") ||
-    lowerMessage.includes("gpu memory")
-  ) {
-    return signal(
-      "memory",
-      MEMORY_ERROR_MESSAGE,
-      "Intel UHD Graphics 620ではWebLLMが重い場合があります。ほかのタブを閉じ、通常ウィンドウで再試行してください。"
-    );
-  }
-
-  if (
-    lowerMessage.includes("webgpu") ||
-    lowerMessage.includes("gpubuffer") ||
-    lowerMessage.includes("mapasync") ||
-    lowerMessage.includes("unmapped before mapping") ||
-    lowerMessage.includes("gpuadapter") ||
-    lowerMessage.includes("requestadapter") ||
-    lowerMessage.includes("requestdevice") ||
-    lowerMessage.includes("navigator.gpu") ||
-    lowerMessage.includes("no available adapters") ||
-    lowerMessage.includes("device lost")
-  ) {
-    const isRuntimeFailure =
-      lowerMessage.includes("gpubuffer") || lowerMessage.includes("mapasync") || lowerMessage.includes("unmapped before mapping");
-    const isAdapterUnavailable =
-      lowerMessage.includes("no available adapters") ||
-      lowerMessage.includes("no available webgpu adapters") ||
-      lowerMessage.includes("gpuadapter") ||
-      lowerMessage.includes("requestadapter") ||
-      lowerMessage.includes("navigator.gpu");
-    return signal(
-      "webgpu",
-      isRuntimeFailure
-        ? WEBGPU_RUNTIME_ERROR_MESSAGE
-        : isAdapterUnavailable
-          ? WEBGPU_ADAPTER_UNAVAILABLE_MESSAGE
-          : WEBGPU_UNAVAILABLE_MESSAGE,
-      isRuntimeFailure
-        ? "Chromeの完全再起動、ChatGPT側のタブ再読み込み、通常ウィンドウでの再試行を確認してください。"
-        : isAdapterUnavailable
-          ? "この状態はWebLLMモデルを変更しても解消しません。chrome://gpu のDawn InfoでD3D12 backendがAvailableか、DawnのWebGPU StatusがBlocklistedではないかを確認してください。"
-          : "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。Chromeの完全再起動も有効です。"
-    );
-  }
-
-  if (
-    lowerMessage.includes("worker") ||
-    lowerMessage.includes("module script") ||
-    lowerMessage.includes("failed to construct") ||
-    lowerMessage.includes("imported module") ||
-    lowerMessage.includes("already been disposed") ||
-    lowerMessage.includes("disposed object")
-  ) {
-    return signal(
-      "worker",
-      WORKER_ERROR_MESSAGE,
-      "WebLLMの内部WorkerまたはGPUオブジェクトが破棄済みになっています。ページを再読み込みしてから再試行してください。"
-    );
-  }
-
-  if (lowerMessage.includes("wasm") || lowerMessage.includes("webassembly") || lowerMessage.includes("compile") || lowerMessage.includes("instantiate")) {
-    return signal("wasm", WASM_ERROR_MESSAGE, "Chromeのサイトデータ削除後、WASMファイルを再取得してから再試行してください。");
-  }
-
-  if (isJsonParseLlmErrorMessage(message)) {
-    return signal("json_parse", JSON_PARSE_ERROR_MESSAGE, "ルールベース検出結果は維持されています。必要なら再実行してください。");
-  }
-
-  return signal(
-    "unknown",
-    GENERIC_LLM_ERROR_MESSAGE,
-    "DevTools Consoleの赤いエラー、Networkタブの失敗リクエスト、chrome://gpu のDawn Infoを確認してください。"
-  );
+  const matchedRule = rules.find((rule) => rule.match(lowerMessage, message));
+  return matchedRule?.copy(lowerMessage) ?? errorCopies.unknown;
 }
 
 export function createJsonParseFallbackMessage(candidateCount: number): string {

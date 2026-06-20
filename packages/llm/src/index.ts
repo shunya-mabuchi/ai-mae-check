@@ -19,6 +19,7 @@ export {
   isContextAnalysisExecutionError,
   isJsonParseLlmErrorMessage
 } from "./errors";
+export { getLlmErrorSignalCopy } from "./errorSignals";
 export { getAvailableModelIds, resolveModelId } from "./model";
 export { parseContextAnalysisJson } from "./parser";
 export {

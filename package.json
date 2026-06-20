@@ -12,7 +12,7 @@
     "build:extension": "pnpm --filter @ai-mae-check/core build && pnpm --filter @ai-mae-check/llm build && pnpm --filter @ai-mae-check/extension build",
     "build:demo": "pnpm --filter @ai-mae-check/core build && pnpm --filter @ai-mae-check/llm build && pnpm --filter @ai-mae-check/demo build",
     "build:worker": "pnpm --filter @ai-mae-check/worker build",
-    "package:extension": "pnpm --filter @ai-mae-check/core build && pnpm --filter @ai-mae-check/llm build && pnpm --filter @ai-mae-check/extension zip",
+    "package:extension": "node scripts/package-extension-release.mjs",
     "test": "pnpm --filter @ai-mae-check/core test && pnpm --filter @ai-mae-check/llm test && pnpm --filter @ai-mae-check/demo test && pnpm --filter @ai-mae-check/extension test && pnpm --filter @ai-mae-check/worker test",
     "test:core": "pnpm --filter @ai-mae-check/core test",
     "test:demo": "pnpm --filter @ai-mae-check/demo test",

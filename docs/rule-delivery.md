@@ -87,6 +87,8 @@ pnpm rules:keygen
 4. 検証OKなら `detectSensitiveText(input, { extraRules })` に追加ルールとして渡す
 5. 検証NG、通信失敗、形式不正の場合は空の追加ルールとして扱い、同梱ルールへフォールバックする
 
+Chrome Web Store提出用のZIPは `apps/extension/config/rule-delivery.release.json` を基準に組み立てます。`pnpm package:extension` は、本番URL・`keyId`・公開JWKがそろっていない場合は失敗します。
+
 このフローにユーザー本文は含まれません。リモートルールはメモリ上でのみ利用し、`chrome.storage.local` には保存しません。
 
 ## ローカル開発

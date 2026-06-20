@@ -93,4 +93,21 @@ describe("WebGPU事前チェック", () => {
     expect(result.candidates).toEqual([]);
     expect(result.summary).toBe("ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。");
   });
+
+  it("WebLLM実行自体が失敗してもローカル補助検出候補は返す", async () => {
+    createEngineMock.mockImplementationOnce(async () => {
+      throw new Error(
+        'Failed to construct "Worker": script could not be loaded. prompt: 候補者の山田花子さんへ Project Blue Bridge の評価メモを送ります。'
+      );
+    });
+    vi.stubGlobal("navigator", { gpu: { requestAdapter: vi.fn(async () => ({})) } });
+    vi.stubGlobal("Worker", TestWorker);
+
+    const analyzer = createLlmContextAnalyzer({ workerUrl: "/llm-worker.js" });
+    const result = await analyzer.analyze("候補者の山田花子さんへ Project Blue Bridge の評価メモを送ります。");
+
+    expect(result.errorDetail?.kind).toBe("worker");
+    expect(result.candidates.map((candidate) => candidate.surface)).toEqual(["Project Blue Bridge", "山田花子さん"]);
+    expect(result.errorDetail?.technicalDetail).not.toContain("山田花子");
+  });
 });
