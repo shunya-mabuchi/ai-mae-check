@@ -3,7 +3,7 @@ import type { DetectionSummary } from "@ai-mae-check/core";
 import { createProductLaunchFlow } from "../lib/productLaunchFlow";
 import { Button } from "./ui";
 
-const proofItems = ["Chrome拡張が本体", "ストア審査中", "本文は保存しない", "外部LLM APIなし"];
+const proofItems = ["Chrome拡張が本体", "Chrome Web Store公開中", "本文は保存しない", "外部LLM APIなし"];
 
 export function Hero({ summary }: { summary: DetectionSummary }) {
   const flow = createProductLaunchFlow();

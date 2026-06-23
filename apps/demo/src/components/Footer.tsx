@@ -1,3 +1,5 @@
+import { chromeWebStoreUrl } from "../lib/productLaunchFlow";
+
 export function Footer() {
   return (
     <footer id="footer" className="border-t border-line/70 bg-cloud/80 px-5 py-10">
@@ -11,10 +13,10 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-3 md:items-end">
           <a
-            href="/#install"
+            href={chromeWebStoreUrl}
             className="inline-flex min-h-11 items-center justify-center rounded-card border border-ink bg-ink px-4 text-sm font-black text-white transition hover:bg-[#343638]"
           >
-            導入手順を見る
+            Chrome Web Storeで追加
           </a>
           <div className="flex flex-wrap gap-x-5 gap-y-2 font-semibold text-muted md:justify-end">
             <a href="/#extension" className="transition hover:text-ink">

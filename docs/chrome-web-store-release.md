@@ -1,11 +1,11 @@
-# Chrome Web Store 公開準備
+# Chrome Web Store 公開・運用メモ
 
-このドキュメントは、AIまえチェックをChrome Web Storeへ提出・運用するための公開準備メモです。紹介LPとミニデモは補助体験であり、ストア掲載ではChrome拡張としての貼り付け前・送信前確認を主役にします。
+このドキュメントは、AIまえチェックをChrome Web Storeへ提出・運用するためのメモです。紹介LPとミニデモは補助体験であり、ストア掲載ではChrome拡張としての貼り付け前・送信前確認を主役にします。
 
 ## 現在のステータス
 
-- 0.1.0はChrome Web Storeへ送信済みで、現在は審査待ちです。
-- 審査中は、ZIP差し替えや新バージョン提出を行いません。審査が長引く可能性があるためです。
+- 0.1.0はChrome Web Storeで一般公開済みです。
+- 公開URL: <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc>
 - ルール配信APIはCloudflare Pages Functionsで実装済みですが、0.1.0の署名鍵に対応する `privateJwk` が手元に残っていないため、本番では署名付きルールを返せません。
 - 署名付きルール配信は、0.1.1で鍵ペアを再発行して有効化します。詳細は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) にまとめます。
 
@@ -119,16 +119,15 @@ pnpm qa:extension:manifest
 pnpm qa:chrome-store
 ```
 
-ただし、0.1.0の審査中は `pnpm package:extension` でZIPを作り直してもDeveloper Dashboardへアップロードしません。0.1.1の修正計画が固まり、審査結果を確認してから新しいZIPを作成・提出します。
+0.1.0公開後に新しいZIPを作成した場合でも、Developer Dashboardへアップロードするのは0.1.1の修正計画と確認項目が固まってからにします。
 
 ## 手動チェックリスト
 
-審査中:
+公開後:
 
-- [ ] 0.1.0のZIP差し替えをしない
-- [ ] 審査結果メールを確認する
-- [ ] サポートURLとプライバシーポリシーURLが開けることを確認する
-- [ ] 公開後にLPの主CTAをChrome Web Store追加リンクへ差し替える準備をしておく
+- [x] Chrome Web Store公開URLを確認する
+- [x] サポートURLとプライバシーポリシーURLが開けることを確認する
+- [x] LPの主CTAをChrome Web Store追加リンクへ差し替える
 - [ ] 0.1.1でルール配信署名を有効化する手順を固める
 
 次バージョン提出前:
@@ -159,17 +158,14 @@ pnpm qa:chrome-store
 - [ ] WebLLMが使えない環境でもルールベース検出が使えることを確認する
 - [ ] モデル取得失敗時の日本語メッセージを確認する
 
-## 審査結果ごとの対応
+## 公開後の対応
 
-承認された場合:
+1. Chrome Web Store公開URLをREADMEとLPに反映する。
+2. LPの主CTAが「Chrome Web Storeで追加」になっていることを確認する。
+3. GitHub Release v0.1.0を公開する。
+4. 0.1.1の署名付きルール配信対応に着手する。
 
-1. Chrome Web Store公開URLを控える。
-2. LPの主CTAを「Chrome Web Storeで追加」へ差し替える。
-3. READMEのステータスを「審査中」から「公開中」へ更新する。
-4. GitHub Release v0.1.0を公開する。
-5. 0.1.1の署名付きルール配信対応に着手する。
-
-差し戻された場合:
+## 差し戻し時の対応
 
 1. Googleの指摘内容をそのままIssueへ転記する。
 2. 仕様・権限・説明文・プライバシー申告のどれが原因か切り分ける。

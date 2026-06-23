@@ -17,27 +17,23 @@ export interface ProductLaunchFlow {
     description: string;
   };
   primaryCta: LaunchCta;
-  postApprovalCta: LaunchCta;
   demoCta: LaunchCta;
   githubCta: LaunchCta;
   installSteps: ProductLaunchStep[];
   demoRole: string;
 }
 
+export const chromeWebStoreUrl = "https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc";
+
 export function createProductLaunchFlow(): ProductLaunchFlow {
   return {
     status: {
-      label: "Chrome Web Store審査中",
-      description: "現在はGitHubからローカル読み込みで確認できます。ストア公開後は主ボタンをChrome Web Store追加リンクへ差し替えます。"
+      label: "Chrome Web Store公開中",
+      description: "現在はChrome Web Storeから追加できます。GitHubからのローカル読み込み手順も、開発者向けの確認導線として残しています。"
     },
     primaryCta: {
-      label: "拡張機能の導入手順を見る",
-      href: "#install",
-      kind: "primary"
-    },
-    postApprovalCta: {
       label: "Chrome Web Storeで追加",
-      href: "https://chromewebstore.google.com/detail/idedmkfplfieijdcflcogkngplhkkecc",
+      href: chromeWebStoreUrl,
       kind: "primary"
     },
     demoCta: {
@@ -52,12 +48,12 @@ export function createProductLaunchFlow(): ProductLaunchFlow {
     },
     installSteps: [
       {
-        title: "GitHubでコードを見る",
-        body: "公開前はリポジトリのREADME、プライバシー方針、Chrome Web Store公開準備ドキュメントから設計意図を確認できます。"
+        title: "Chrome Web Storeから追加する",
+        body: "通常の利用導線はChrome Web Storeです。拡張機能を追加すると、ChatGPT / Claude / Geminiの入力欄で確認できます。"
       },
       {
-        title: "ローカルで拡張を読み込む",
-        body: "`pnpm build:extension` 後、Chromeの拡張機能画面から `apps/extension/.output/chrome-mv3` を読み込みます。"
+        title: "必要ならGitHubで実装を見る",
+        body: "検出ルール、プライバシー設計、Chrome Web Store向けの説明文、ルール配信計画などはGitHubで確認できます。"
       },
       {
         title: "ChatGPT / Claude / Geminiで試す",

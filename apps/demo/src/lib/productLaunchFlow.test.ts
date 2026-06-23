@@ -2,20 +2,15 @@ import { describe, expect, it } from "vitest";
 import { createProductLaunchFlow } from "./productLaunchFlow";
 
 describe("createProductLaunchFlow", () => {
-  it("公開前はChrome拡張本体への導線を最優先にする", () => {
+  it("公開後はChrome Web Storeへの導線を最優先にする", () => {
     const flow = createProductLaunchFlow();
 
-    expect(flow.status.label).toBe("Chrome Web Store審査中");
-    expect(flow.status.description).toContain("現在はGitHubからローカル読み込みで確認できます");
-    expect(flow.status.description).toContain("Chrome Web Store追加リンクへ差し替えます");
+    expect(flow.status.label).toBe("Chrome Web Store公開中");
+    expect(flow.status.description).toContain("Chrome Web Storeから追加できます");
+    expect(flow.status.description).toContain("GitHubからのローカル読み込み手順");
     expect(flow.primaryCta).toEqual({
-      label: "拡張機能の導入手順を見る",
-      href: "#install",
-      kind: "primary"
-    });
-    expect(flow.postApprovalCta).toEqual({
       label: "Chrome Web Storeで追加",
-      href: "https://chromewebstore.google.com/detail/idedmkfplfieijdcflcogkngplhkkecc",
+      href: "https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc",
       kind: "primary"
     });
     expect(flow.demoCta).toEqual({
@@ -26,19 +21,19 @@ describe("createProductLaunchFlow", () => {
     expect(flow.githubCta.href).toBe("https://github.com/shunya-mabuchi/ai-mae-check");
   });
 
-  it("公開前の確認順序はストア未公開でも迷わない3ステップにする", () => {
+  it("公開後の確認順序はストア追加を起点にする", () => {
     const flow = createProductLaunchFlow();
 
     expect(flow.installSteps.map((step) => step.title)).toEqual([
-      "GitHubでコードを見る",
-      "ローカルで拡張を読み込む",
+      "Chrome Web Storeから追加する",
+      "必要ならGitHubで実装を見る",
       "ChatGPT / Claude / Geminiで試す"
     ]);
-    const localInstallStep = flow.installSteps[1];
-    if (!localInstallStep) {
-      throw new Error("local install step not found");
+    const storeInstallStep = flow.installSteps[0];
+    if (!storeInstallStep) {
+      throw new Error("store install step not found");
     }
-    expect(localInstallStep.body).toContain("apps/extension/.output/chrome-mv3");
+    expect(storeInstallStep.body).toContain("Chrome Web Store");
     expect(flow.demoRole).toContain("ミニデモは補助体験");
     expect(flow.demoRole).toContain("本体はChrome拡張");
   });

@@ -4,14 +4,16 @@ const supportItems = [
   "対象サイトは初期状態でChatGPT、Claude、Geminiです。",
   "AI文脈チェックはWebGPU対応環境で利用できます。",
   "WebLLMの初回利用時はモデルファイルの取得に時間がかかる場合があります。",
-  "本文は永続保存されず、設定のみブラウザ内に保存されます。"
+  "本文は永続保存されず、設定のみブラウザ内に保存されます。",
+  "ファイル添付前チェックはテキスト系ファイルのみが対象です。PDF、docx、xlsx、画像OCRは解析しません。",
+  "対象サイト独自のドラッグ&ドロップ添付やクリップボード経由のファイル添付は動作保証の対象外です。"
 ];
 
 export function SupportPage() {
   return (
     <PublicPageLayout
       title="サポート"
-      description="AIまえチェックの不具合報告、利用相談、Chrome Web Store審査時の確認先をまとめています。"
+      description="AIまえチェックの不具合報告、利用相談、Chrome Web Store公開後の確認先をまとめています。"
     >
       <div className="space-y-7">
         <section>
