@@ -27,11 +27,23 @@ describe("confirmModal helpers", () => {
     expect(source).toContain('from "./confirmModalCategoryList"');
     expect(source).toContain('from "./confirmModalElements"');
     expect(source).toContain('from "./confirmModalFooter"');
+    expect(source).toContain('from "../lib/dialogAccessibility"');
+    expect(source).toContain("setupDialogAccessibility");
     expect(source).not.toContain("pasteReviewListRenderers");
     expect(source).not.toContain("pasteReviewSelection");
     expect(source).not.toContain("pasteReviewLlmRunner");
     expect(styles).not.toContain(".hm-");
     expect(styles).toContain(".review-candidate");
+  });
+
+  it("adds dialog ARIA labels and live regions to send confirmation modal elements", () => {
+    const elements = readFileSync(new URL("../src/ui/confirmModalElements.ts", import.meta.url), "utf8");
+
+    expect(elements).toContain('dialog.setAttribute("aria-label"');
+    expect(elements).toContain('status.setAttribute("role", "status")');
+    expect(elements).toContain('llmStatus.setAttribute("aria-live", "polite")');
+    expect(elements).toContain('candidateList.setAttribute("aria-label"');
+    expect(elements).toContain('button.type = "button"');
   });
 
   it("exports style tokens and protects disabled hover states", () => {

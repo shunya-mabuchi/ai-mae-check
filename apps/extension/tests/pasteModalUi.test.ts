@@ -44,13 +44,25 @@ describe("paste review modal UI", () => {
     expect(existsSync(stylesPath)).toBe(true);
     expect(modalSource).toContain('import { pasteReviewModalCss } from "./modalStyles"');
     expect(modalSource).toContain('import { createShadowHost } from "./shadowHost"');
+    expect(modalSource).toContain('import { setupDialogAccessibility } from "./dialogAccessibility"');
     expect(modalSource).toContain("createShadowHost(pasteReviewModalCss)");
+    expect(modalSource).toContain("setupDialogAccessibility");
     expect(modalSource).not.toContain('document.createElement("style")');
     expect(modalSource).not.toContain("const css = `");
 
     const stylesSource = readFileSync(stylesPath, "utf8");
     expect(stylesSource).toContain(".hm-primary:disabled:hover");
     expect(stylesSource).toContain("background: #2f7d57");
+  });
+
+  it("モーダルに最低限のARIA属性とlive regionを持たせる", () => {
+    const elementsSource = readFileSync(resolve(process.cwd(), "src/lib/pasteReviewModalElements.ts"), "utf8");
+
+    expect(elementsSource).toContain('dialog.setAttribute("aria-label"');
+    expect(elementsSource).toContain('llmStatus.setAttribute("role", "status")');
+    expect(elementsSource).toContain('llmStatus.setAttribute("aria-live", "polite")');
+    expect(elementsSource).toContain('preview.setAttribute("aria-label"');
+    expect(elementsSource).toContain('button.type = "button"');
   });
 
   it("mediumリスクの貼り付けはpaste_guardではなく通常確認として扱う", () => {

@@ -79,7 +79,7 @@ export function DetectionResults({
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" aria-label="検出結果" aria-live="polite">
       <div className="rounded-card border border-line bg-white p-4 shadow-soft">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -94,6 +94,12 @@ export function DetectionResults({
         </div>
         <div className="h-3 overflow-hidden rounded-full bg-cloud">
           <div
+            role="meter"
+            aria-label="リスクメーター"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={view.riskSummary.meterWidth}
+            aria-valuetext={view.riskSummary.status.label}
             className={`h-full rounded-full ${riskMeterTone[view.riskSummary.meterRisk]}`}
             style={{ width: `${view.riskSummary.meterWidth}%` }}
           />
@@ -158,7 +164,7 @@ export function DetectionResults({
         )}
       </div>
 
-      <div className={view.llmStatusPanel.className}>
+      <div className={view.llmStatusPanel.className} role="status" aria-live="polite">
         <div className="flex items-start gap-2">
           {view.llmStatusPanel.icon === "check" ? (
             <CheckCircle2 size={16} className="mt-0.5 shrink-0" />

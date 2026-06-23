@@ -5,12 +5,22 @@ import { createPasteReviewModalElements } from "../src/lib/pasteReviewModalEleme
 class FakeElement {
   className = "";
   textContent = "";
+  type = "";
+  private readonly attributes = new Map<string, string>();
   readonly children: FakeElement[] = [];
 
   constructor(readonly tagName: string) {}
 
   append(...children: FakeElement[]): void {
     this.children.push(...children);
+  }
+
+  setAttribute(name: string, value: string): void {
+    this.attributes.set(name, value);
+  }
+
+  getAttribute(name: string): string | null {
+    return this.attributes.get(name) ?? null;
   }
 }
 
@@ -67,10 +77,18 @@ describe("createPasteReviewModalElements", () => {
     });
 
     expect(elements.overlay.className).toBe("hm-overlay");
+    expect(elements.dialog.className).toBe("hm-dialog");
+    expect(elements.dialog.getAttribute("aria-label")).toBeTruthy();
     expect(elements.list.className).toBe("hm-list");
+    expect(elements.list.getAttribute("aria-label")).toBe("検出項目一覧");
     expect(elements.preview.className).toBe("hm-preview");
+    expect(elements.preview.getAttribute("aria-label")).toBe("安全化後プレビュー");
     expect(elements.llmStatus.className).toBe("hm-llm-status");
+    expect(elements.llmStatus.getAttribute("role")).toBe("status");
+    expect(elements.llmStatus.getAttribute("aria-live")).toBe("polite");
     expect(elements.footerNote.className).toBe("hm-footer-note");
+    expect(elements.maskButton.type).toBe("button");
+    expect(elements.cancelButton.type).toBe("button");
     expect(elements.maskButton.textContent).toBe("安全化して入力");
     expect(elements.llmButton.textContent).toBe("AI文脈チェックも実行");
     expect(elements.rawButton.textContent).toBe("そのまま貼り付け");

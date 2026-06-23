@@ -4,6 +4,7 @@ import type { PasteReviewSummaryItem } from "./pasteReviewSummaryView";
 
 export interface PasteReviewModalElements {
   overlay: HTMLElement;
+  dialog: HTMLElement;
   list: HTMLElement;
   preview: HTMLPreElement;
   llmStatus: HTMLElement;
@@ -26,12 +27,14 @@ export function createPasteReviewModalElements(
 ): PasteReviewModalElements {
   const overlay = createElement("div", "hm-overlay");
   const dialog = createElement("section", "hm-dialog");
+  dialog.setAttribute("aria-label", options.modalCopy.title);
   const header = createElement("header", "hm-header");
   header.append(createElement("h2", "hm-title", options.modalCopy.title));
   header.append(createElement("p", "hm-description", options.modalCopy.description));
 
   const body = createElement("div", "hm-body");
   const summary = createElement("div", "hm-summary");
+  summary.setAttribute("aria-label", "リスク件数");
   for (const item of options.summaryItems) {
     summary.append(createElement("div", item.className, item.text));
   }
@@ -40,11 +43,13 @@ export function createPasteReviewModalElements(
   const listPanel = createElement("div", "hm-panel");
   listPanel.append(createElement("h3", undefined, "検出項目一覧"));
   const list = createElement("div", "hm-list");
+  list.setAttribute("aria-label", "検出項目一覧");
   listPanel.append(list);
 
   const previewPanel = createElement("div", "hm-panel");
   previewPanel.append(createElement("h3", undefined, "安全化後プレビュー"));
   const preview = createElement("pre", "hm-preview");
+  preview.setAttribute("aria-label", "安全化後プレビュー");
   previewPanel.append(preview);
 
   grid.append(listPanel, previewPanel);
@@ -52,7 +57,10 @@ export function createPasteReviewModalElements(
   const llmPanel = createElement("div", "hm-llm");
   llmPanel.append(createElement("h3", undefined, "WebLLMによる文脈チェック"));
   const llmStatus = createElement("p", "hm-llm-status", options.initialLlmMessage);
+  llmStatus.setAttribute("role", "status");
+  llmStatus.setAttribute("aria-live", "polite");
   const candidateList = createElement("div");
+  candidateList.setAttribute("aria-label", "AI文脈チェック候補");
   llmPanel.append(llmStatus, candidateList);
 
   body.append(summary, grid);
@@ -64,6 +72,9 @@ export function createPasteReviewModalElements(
   const llmButton = createElement("button", "hm-button hm-dark", "AI文脈チェックも実行");
   const rawButton = createElement("button", "hm-button", "そのまま貼り付け");
   const cancelButton = createElement("button", "hm-button", "キャンセル");
+  for (const button of [maskButton, llmButton, rawButton, cancelButton]) {
+    button.type = "button";
+  }
   footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton);
 
   dialog.append(header, body, footer);
@@ -71,6 +82,7 @@ export function createPasteReviewModalElements(
 
   return {
     overlay,
+    dialog,
     list,
     preview,
     llmStatus,
