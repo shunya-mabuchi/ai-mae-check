@@ -17,7 +17,7 @@ describe("createPasteReviewModalCopy", () => {
     expect(copy.description).toBe(
       "貼り付けようとしている文章に、秘密情報や高リスク情報の可能性があります。そのまま貼り付けず、安全化してから入力できます。"
     );
-    expect(copy.maskButtonText).toBe("安全化して貼り付け");
+    expect(copy.maskButtonText).toBe("安全化して入力");
   });
 
   it("AI文脈チェックモードの文言を返す", () => {

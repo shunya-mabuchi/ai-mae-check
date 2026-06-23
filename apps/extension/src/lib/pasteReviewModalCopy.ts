@@ -16,7 +16,7 @@ const pasteReviewModalCopyByMode: Record<PasteReviewModalMode, PasteReviewModalC
     title: "安全化してから貼り付けますか？",
     description:
       "貼り付けようとしている文章に、秘密情報や高リスク情報の可能性があります。そのまま貼り付けず、安全化してから入力できます。",
-    maskButtonText: "安全化して貼り付け"
+    maskButtonText: "安全化して入力"
   },
   context_check: {
     title: "AI文脈チェックを実行しますか？",

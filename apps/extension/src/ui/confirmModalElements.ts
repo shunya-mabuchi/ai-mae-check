@@ -39,12 +39,33 @@ function createSummaryMetric(item: ConfirmModalSummaryItem): HTMLDivElement {
   return metric;
 }
 
+function createTrustStrip(): HTMLDivElement {
+  const trustStrip = createElement("div", "amc-trust-strip");
+  trustStrip.append(
+    createElement("span", undefined, "ブラウザ内で実行"),
+    createElement("span", undefined, "外部LLM APIへ送信なし"),
+    createElement("span", undefined, "本文保存なし")
+  );
+  return trustStrip;
+}
+
 export function createConfirmModalElements(options: CreateConfirmModalElementsOptions): ConfirmModalElements {
   const overlay = createElement("div", "amc-overlay");
   const dialog = createElement("section", "amc-dialog");
   dialog.setAttribute("aria-label", options.title);
   const header = createElement("header", "amc-header");
-  header.append(createElement("h2", "amc-title", options.title));
+  const headerTop = createElement("div", "amc-header-top");
+  const brand = createElement("div", "amc-brand");
+  brand.append(createElement("span", "amc-brand-mark", "AI"));
+  brand.append(createElement("h2", "amc-brand-name", "AIまえチェック"));
+  const decision = options.summaryItems[0]?.value ?? "確認";
+  headerTop.append(
+    brand,
+    createElement("span", "amc-mode-badge", "送信前チェック"),
+    createElement("div", "amc-risk-pill", `判定 ${decision}`)
+  );
+  header.append(headerTop);
+  header.append(createElement("h3", "amc-title", options.title));
   header.append(createElement("p", "amc-description", options.description));
 
   const body = createElement("div", "amc-body");
@@ -55,12 +76,14 @@ export function createConfirmModalElements(options: CreateConfirmModalElementsOp
   const grid = createElement("div", "amc-grid");
   const categoryPanel = createElement("div", "amc-panel");
   categoryPanel.append(createElement("h3", undefined, options.categoryPanelTitle));
+  categoryPanel.append(createElement("p", "amc-panel-caption", "置換必須のカテゴリは安全化対象から外せません。"));
   const categoryList = createElement("div", "amc-categories");
   categoryList.setAttribute("aria-label", "確認するカテゴリ");
   categoryPanel.append(categoryList);
 
   const transformPanel = createElement("div", "amc-panel");
   transformPanel.append(createElement("h3", undefined, options.previewTitle));
+  transformPanel.append(createElement("p", "amc-panel-caption", "この内容が送信前に入力欄へ反映されます。"));
   const status = createElement("p", "amc-note", options.initialStatusMessage);
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
@@ -75,17 +98,19 @@ export function createConfirmModalElements(options: CreateConfirmModalElementsOp
   const candidateList = createElement("div", "amc-candidates");
   candidateList.setAttribute("aria-label", "AI文脈チェック候補");
   llmPanel.append(llmStatus, candidateList);
-  transformPanel.append(status, preview, llmPanel);
+  transformPanel.append(status, preview, createTrustStrip(), llmPanel);
 
   const footer = createElement("footer", "amc-footer");
   const submitButton = createElement("button", "amc-button amc-primary") as HTMLButtonElement;
-  const llmButton = createElement("button", "amc-button", options.llmButtonLabel) as HTMLButtonElement;
+  const llmButton = createElement("button", "amc-button amc-secondary", options.llmButtonLabel) as HTMLButtonElement;
   llmButton.title = options.llmButtonTitle;
-  const cancelButton = createElement("button", "amc-button", options.cancelButtonLabel) as HTMLButtonElement;
+  const cancelButton = createElement("button", "amc-button amc-ghost", options.cancelButtonLabel) as HTMLButtonElement;
   for (const button of [submitButton, llmButton, cancelButton]) {
     button.type = "button";
   }
-  footer.append(submitButton, llmButton, cancelButton);
+  const footerActions = createElement("div", "amc-footer-actions");
+  footerActions.append(cancelButton, llmButton, submitButton);
+  footer.append(footerActions);
 
   grid.append(categoryPanel, transformPanel);
   body.append(summary, grid);

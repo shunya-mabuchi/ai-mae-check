@@ -14,7 +14,9 @@ describe("paste review modal UI", () => {
     const elementsSource = readFileSync(resolve(process.cwd(), "src/lib/pasteReviewModalElements.ts"), "utf8");
     const modalUiSource = `${modalSource}\n${elementsSource}`;
 
-    expect(elementsSource).toContain("footer.append(footerNote, maskButton, llmButton, rawButton, cancelButton)");
+    expect(elementsSource).toContain("footerActions.append(cancelButton, rawButton, llmButton, maskButton)");
+    expect(elementsSource).toContain("貼り付け前チェック");
+    expect(elementsSource).toContain("ブラウザ内で実行");
     expect(modalUiSource).not.toContain("安全な依頼文に整える");
     expect(modalUiSource).not.toContain("安全な依頼文を入力");
     expect(modalUiSource).not.toContain("analyzeSanitizeWithBridge");
@@ -52,7 +54,8 @@ describe("paste review modal UI", () => {
 
     const stylesSource = readFileSync(stylesPath, "utf8");
     expect(stylesSource).toContain(".hm-primary:disabled:hover");
-    expect(stylesSource).toContain("background: #2f7d57");
+    expect(stylesSource).toContain("background: ${colors.accent};");
+    expect(stylesSource).toContain(".hm-secondary:disabled:hover");
   });
 
   it("モーダルに最低限のARIA属性とlive regionを持たせる", () => {

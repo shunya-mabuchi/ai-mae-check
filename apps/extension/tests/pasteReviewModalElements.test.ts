@@ -82,7 +82,7 @@ describe("createPasteReviewModalElements", () => {
     expect(elements.list.className).toBe("hm-list");
     expect(elements.list.getAttribute("aria-label")).toBe("検出項目一覧");
     expect(elements.preview.className).toBe("hm-preview");
-    expect(elements.preview.getAttribute("aria-label")).toBe("安全化後プレビュー");
+    expect(elements.preview.getAttribute("aria-label")).toBe("安全化プレビュー");
     expect(elements.llmStatus.className).toBe("hm-llm-status");
     expect(elements.llmStatus.getAttribute("role")).toBe("status");
     expect(elements.llmStatus.getAttribute("aria-live")).toBe("polite");
@@ -95,11 +95,15 @@ describe("createPasteReviewModalElements", () => {
     expect(elements.cancelButton.textContent).toBe("キャンセル");
 
     const text = joinedText(elements.overlay as unknown as FakeElement);
+    expect(text).toContain("AIまえチェック");
+    expect(text).toContain("貼り付け前チェック");
+    expect(text).toContain("重大リスク 1件");
     expect(text).toContain("このまま貼り付けますか？");
-    expect(text).toContain("検出項目一覧");
-    expect(text).toContain("安全化後プレビュー");
-    expect(text).toContain("WebLLMによる文脈チェック");
+    expect(text).toContain("検出された項目");
+    expect(text).toContain("安全化プレビュー");
+    expect(text).toContain("AI文脈チェック");
     expect(text).toContain("重大リスク件数\n1");
+    expect(text).toContain("ブラウザ内で実行");
     expect(text).toContain("AI文脈チェックは手動で実行できます。");
   });
 });

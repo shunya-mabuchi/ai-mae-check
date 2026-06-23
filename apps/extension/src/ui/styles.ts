@@ -1,45 +1,15 @@
-const confirmModalColors = {
-  text: "#202124",
-  mutedText: "#5f6368",
-  overlay: "rgba(32, 33, 36, 0.42)",
-  border: "#dfded8",
-  surface: "#fff",
-  surfaceAlt: "#fbfaf7",
-  surfaceMuted: "#f5f5f4",
-  accent: "#2f7d57",
-  accentHover: "#276848",
-  dangerBorder: "#fecaca",
-  dangerSurface: "#fef2f2",
-  dangerText: "#b91c1c",
-  warningBorder: "#fde68a",
-  warningSurface: "#fffbeb",
-  warningText: "#92400e",
-  neutralBorder: "#e7e5e4",
-  neutralSurface: "#f5f5f4",
-  neutralText: "#57534e",
-  divider: "#eee"
-} as const;
+import { extensionModalTokens } from "../lib/modalDesignTokens";
 
-export const confirmModalTokens = {
-  colors: confirmModalColors,
-  radius: {
-    card: "8px",
-    content: "6px",
-    pill: "999px"
-  },
-  shadow: {
-    dialog: "0 24px 80px rgba(0, 0, 0, 0.24)"
-  }
-} as const;
+export const confirmModalTokens = extensionModalTokens;
 
-const { colors, radius, shadow } = confirmModalTokens;
+const { colors, font, radius, shadow, spacing } = confirmModalTokens;
 
 export const confirmModalCss = `
   :host {
     all: initial;
     color: ${colors.text};
-    font-family: system-ui, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
-    font-size: 14px;
+    font-family: ${font.family};
+    font-size: ${font.body};
   }
   .amc-overlay {
     position: fixed;
@@ -48,29 +18,86 @@ export const confirmModalCss = `
     display: grid;
     place-items: center;
     background: ${colors.overlay};
-    padding: 20px;
+    padding: ${spacing.page};
   }
   .amc-dialog {
-    width: min(960px, 100%);
-    max-height: min(820px, calc(100vh - 40px));
-    overflow: auto;
-    border: 1px solid ${colors.border};
+    width: min(1040px, 100%);
+    max-height: min(840px, calc(100vh - 40px));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid ${colors.borderStrong};
     border-radius: ${radius.card};
     background: ${colors.surfaceAlt};
     box-shadow: ${shadow.dialog};
   }
-  .amc-header,
-  .amc-footer {
-    padding: 18px 20px;
-    background: ${colors.surface};
-  }
   .amc-header {
+    display: grid;
+    gap: 10px;
+    flex-shrink: 0;
     border-bottom: 1px solid ${colors.border};
+    background: ${colors.surface};
+    padding: 20px 22px 18px;
+  }
+  .amc-header-top {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .amc-brand {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    gap: 10px;
+  }
+  .amc-brand-mark {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid ${colors.accentBorder};
+    border-radius: ${radius.content};
+    background: ${colors.accentSoft};
+    color: ${colors.accent};
+    font-size: 12px;
+    font-weight: 900;
+  }
+  .amc-brand-name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 850;
+    letter-spacing: 0;
+  }
+  .amc-mode-badge,
+  .amc-risk-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    border-radius: ${radius.content};
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .amc-mode-badge {
+    justify-self: start;
+    border: 1px solid ${colors.accentBorder};
+    background: ${colors.accentSoft};
+    color: ${colors.accent};
+  }
+  .amc-risk-pill {
+    justify-self: end;
+    border: 1px solid ${colors.dangerBorder};
+    background: ${colors.dangerSurface};
+    color: ${colors.dangerText};
   }
   .amc-title {
-    margin: 0 0 8px;
-    font-size: 20px;
-    font-weight: 700;
+    margin: 2px 0 0;
+    font-size: ${font.title};
+    font-weight: 820;
     letter-spacing: 0;
   }
   .amc-description {
@@ -81,7 +108,9 @@ export const confirmModalCss = `
   .amc-body {
     display: grid;
     gap: 16px;
-    padding: 20px;
+    min-height: 0;
+    overflow: auto;
+    padding: 18px 22px;
   }
   .amc-summary {
     display: grid;
@@ -89,29 +118,60 @@ export const confirmModalCss = `
     gap: 10px;
   }
   .amc-metric {
+    min-width: 0;
     border: 1px solid ${colors.border};
     border-radius: ${radius.card};
     background: ${colors.surface};
-    padding: 12px;
+    padding: 10px 12px;
+  }
+  .amc-metric span {
+    display: block;
+    overflow: hidden;
+    color: ${colors.mutedText};
+    font-size: ${font.small};
+    font-weight: 700;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .amc-metric strong {
     display: block;
     margin-top: 4px;
-    font-size: 22px;
+    font-size: 21px;
+    line-height: 1;
   }
   .amc-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    gap: 16px;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 14px;
   }
-  .amc-panel h3 {
-    margin: 0 0 8px;
-    font-size: 14px;
-    font-weight: 700;
+  .amc-panel {
+    min-width: 0;
+    border: 1px solid ${colors.border};
+    border-radius: ${radius.card};
+    background: rgba(255, 255, 255, 0.86);
+    padding: 14px;
+    box-shadow: ${shadow.soft};
+  }
+  .amc-panel h3,
+  .amc-llm-panel h3 {
+    margin: 0;
+    font-size: ${font.section};
+    font-weight: 820;
+    letter-spacing: 0;
+  }
+  .amc-panel-caption {
+    margin: 5px 0 12px;
+    color: ${colors.mutedText};
+    font-size: ${font.small};
+    line-height: 1.6;
   }
   .amc-categories {
     display: grid;
     gap: 10px;
+    max-height: 410px;
+    overflow: auto;
+    padding-right: 2px;
   }
   .amc-category {
     border: 1px solid ${colors.border};
@@ -120,9 +180,10 @@ export const confirmModalCss = `
     padding: 12px;
   }
   .amc-category-main {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
   }
   .amc-category-main input {
     margin-top: 4px;
@@ -131,19 +192,20 @@ export const confirmModalCss = `
   .amc-category-heading {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 7px;
     align-items: center;
     margin-bottom: 6px;
   }
   .amc-category-title {
-    font-weight: 700;
+    font-weight: 800;
   }
   .amc-badge {
     border: 1px solid ${colors.border};
     border-radius: ${radius.pill};
     padding: 3px 8px;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: ${font.small};
+    font-weight: 800;
+    line-height: 1.2;
   }
   .amc-critical,
   .amc-high {
@@ -164,16 +226,16 @@ export const confirmModalCss = `
   .amc-note {
     margin: 0;
     color: ${colors.mutedText};
-    font-size: 12px;
-    line-height: 1.6;
+    font-size: ${font.small};
+    line-height: 1.7;
   }
   .amc-details {
     margin-top: 10px;
   }
   .amc-details summary {
     cursor: pointer;
-    color: #3f5f4d;
-    font-weight: 700;
+    color: #245947;
+    font-weight: 800;
   }
   .amc-finding {
     margin-top: 8px;
@@ -191,17 +253,37 @@ export const confirmModalCss = `
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   }
   .amc-preview {
-    min-height: 170px;
-    max-height: 280px;
+    min-height: 260px;
+    max-height: 320px;
     overflow: auto;
-    background: ${colors.surface};
-    border: 1px solid ${colors.border};
-    line-height: 1.7;
+    border: 1px solid ${colors.accentBorder};
+    border-radius: ${radius.card};
+    background: linear-gradient(180deg, #ffffff 0%, #f8fffb 100%);
+    color: ${colors.text};
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .amc-trust-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: 10px 0 14px;
+    border: 1px solid ${colors.accentBorder};
+    border-radius: ${radius.card};
+    background: ${colors.accentSoft};
+    padding: 9px 11px;
+    color: #245947;
+    font-size: ${font.small};
+    font-weight: 700;
+  }
+  .amc-trust-strip span + span::before {
+    content: "/";
+    margin-right: 14px;
+    color: ${colors.softText};
   }
   .amc-llm-panel {
     display: grid;
     gap: 8px;
-    margin-top: 14px;
   }
   .amc-candidates {
     display: grid;
@@ -210,9 +292,10 @@ export const confirmModalCss = `
     overflow: auto;
   }
   .review-candidate {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
     border: 1px solid ${colors.border};
     border-radius: ${radius.card};
     background: ${colors.surface};
@@ -230,8 +313,9 @@ export const confirmModalCss = `
     margin-bottom: 6px;
   }
   .review-message {
+    margin: 7px 0 0;
     color: ${colors.mutedText};
-    font-size: 12px;
+    font-size: ${font.small};
     line-height: 1.6;
   }
   .review-text {
@@ -242,13 +326,16 @@ export const confirmModalCss = `
     background: ${colors.surfaceMuted};
     padding: 6px 8px;
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
   }
   .review-badge {
     border: 1px solid ${colors.border};
     border-radius: ${radius.pill};
     padding: 3px 8px;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: ${font.small};
+    font-weight: 800;
+    line-height: 1.2;
   }
   .review-badge-critical,
   .review-badge-high {
@@ -267,25 +354,35 @@ export const confirmModalCss = `
     color: ${colors.neutralText};
   }
   .amc-footer {
+    flex-shrink: 0;
+    border-top: 1px solid ${colors.border};
+    background: ${colors.surface};
+    padding: 16px 22px;
+    box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.08);
+  }
+  .amc-footer-actions {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 10px;
-    border-top: 1px solid ${colors.border};
   }
   .amc-button {
-    min-height: 40px;
+    min-height: 42px;
     border: 1px solid ${colors.border};
-    border-radius: ${radius.card};
+    border-radius: ${radius.content};
     background: ${colors.surface};
     color: ${colors.text};
-    padding: 8px 13px;
+    padding: 9px 14px;
     font: inherit;
-    font-weight: 700;
+    font-weight: 800;
     cursor: pointer;
   }
   .amc-button:hover {
     background: ${colors.surfaceMuted};
+  }
+  .amc-button:focus-visible {
+    outline: 3px solid rgba(15, 159, 105, 0.22);
+    outline-offset: 2px;
   }
   .amc-button:disabled {
     opacity: 0.55;
@@ -305,10 +402,81 @@ export const confirmModalCss = `
   .amc-primary:disabled:hover {
     background: ${colors.accent};
   }
+  .amc-secondary {
+    border-color: ${colors.borderStrong};
+    background: ${colors.surface};
+    color: ${colors.text};
+  }
+  .amc-secondary:hover {
+    border-color: ${colors.accentBorder};
+    background: ${colors.accentSoft};
+    color: ${colors.accent};
+  }
+  .amc-secondary:disabled:hover {
+    border-color: ${colors.borderStrong};
+    background: ${colors.surface};
+    color: ${colors.text};
+  }
+  .amc-ghost {
+    border-color: transparent;
+    background: transparent;
+    color: ${colors.mutedText};
+  }
+  .amc-ghost:hover {
+    background: ${colors.surfaceMuted};
+    color: ${colors.text};
+  }
   @media (max-width: 760px) {
+    .amc-overlay {
+      align-items: start;
+      padding: 10px;
+    }
+    .amc-dialog {
+      max-height: calc(100vh - 20px);
+    }
+    .amc-header {
+      padding: 16px;
+    }
+    .amc-header-top {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .amc-risk-pill {
+      justify-self: start;
+    }
+    .amc-brand-name {
+      font-size: 21px;
+    }
+    .amc-title {
+      font-size: 20px;
+    }
+    .amc-body {
+      padding: 14px;
+    }
     .amc-summary,
     .amc-grid {
       grid-template-columns: 1fr;
+    }
+    .amc-categories,
+    .amc-preview {
+      max-height: none;
+    }
+    .amc-preview {
+      min-height: 220px;
+    }
+    .amc-trust-strip span + span::before {
+      content: "";
+      margin: 0;
+    }
+    .amc-footer {
+      padding: 14px;
+      max-height: 40vh;
+      overflow: auto;
+    }
+    .amc-footer-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      width: 100%;
     }
     .amc-button {
       width: 100%;
