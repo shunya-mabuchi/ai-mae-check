@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { CheckCircle2, Database, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, ClipboardCopy, Database, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
 import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
 import {
@@ -12,6 +12,7 @@ import {
   type LlmRunMode
 } from "../../src/lib/settings";
 import { targetSites, type SiteId } from "../../src/lib/sites";
+import { createPrivacySafeDiagnosticReport, formatPrivacySafeDiagnosticReport } from "../../src/lib/diagnostics";
 
 function Toggle({
   checked,
@@ -59,6 +60,8 @@ function SummaryCard({ title, body }: { title: string; body: string }) {
 export function OptionsApp() {
   const [settings, setSettings] = useState<AiMaeCheckSettings>(DEFAULT_SETTINGS);
   const [savedMessage, setSavedMessage] = useState("設定を読み込んでいます。");
+  const [diagnosticText, setDiagnosticText] = useState("");
+  const [diagnosticMessage, setDiagnosticMessage] = useState("診断情報はまだ作成していません。");
   const validation = validateSettings(settings);
 
   useEffect(() => {
@@ -128,6 +131,32 @@ export function OptionsApp() {
         setSavedMessage("保存済み設定を初期化しました。");
       })
       .catch(() => setSavedMessage("設定を初期化できませんでした。Chromeの拡張機能ストレージを確認してください。"));
+  };
+
+  const createDiagnosticText = async (): Promise<string> => {
+    setDiagnosticMessage("本文を含まない診断情報を作成しています。");
+    const report = await createPrivacySafeDiagnosticReport({ settings });
+    const text = formatPrivacySafeDiagnosticReport(report);
+    setDiagnosticText(text);
+    setDiagnosticMessage("本文を含まない診断情報を作成しました。内容を確認してからコピーできます。");
+    return text;
+  };
+
+  const handleCreateDiagnostic = () => {
+    void createDiagnosticText().catch(() => setDiagnosticMessage("診断情報を作成できませんでした。"));
+  };
+
+  const handleCopyDiagnostic = () => {
+    void (async () => {
+      const text = diagnosticText.length > 0 ? diagnosticText : await createDiagnosticText();
+      if (!navigator.clipboard?.writeText) {
+        setDiagnosticMessage("このブラウザではクリップボードへコピーできません。表示された診断情報を選択してコピーしてください。");
+        return;
+      }
+
+      await navigator.clipboard.writeText(text);
+      setDiagnosticMessage("本文を含まない診断情報をコピーしました。");
+    })().catch(() => setDiagnosticMessage("診断情報をコピーできませんでした。表示された内容を選択してコピーしてください。"));
   };
 
   return (
@@ -237,6 +266,42 @@ export function OptionsApp() {
                 WebLLMの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。
               </p>
               <p className="mt-2">あなた自身の推論サーバーや外部LLM APIは利用しません。</p>
+            </div>
+          </Section>
+
+          <Section icon={<ClipboardCopy size={20} aria-hidden="true" />} title="サポート用診断情報">
+            <div className="rounded-md border border-line bg-white p-4 text-sm leading-7 text-stone-700">
+              <p>
+                不具合報告時に使える、本文を含まない診断情報を作成できます。貼り付け本文、送信本文、検出文字列、placeholderMap、現在のページURLは含めません。
+              </p>
+              <p className="mt-2">
+                含まれるのは、拡張バージョン、Chrome/OS概要、WebGPU可否、設定スキーマ、対象サイト設定、WebLLMモデルID、ルール配信keyIdなどです。
+              </p>
+              <p className="mt-3 font-semibold text-leaf">{diagnosticMessage}</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={handleCreateDiagnostic}
+                  className="inline-flex min-h-11 items-center rounded-md border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-paper"
+                >
+                  診断情報を作成
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyDiagnostic}
+                  className="inline-flex min-h-11 items-center rounded-md border border-ink bg-ink px-4 text-sm font-bold text-white hover:bg-[#343638]"
+                >
+                  診断情報をコピー
+                </button>
+              </div>
+              {diagnosticText.length > 0 && (
+                <textarea
+                  readOnly
+                  value={diagnosticText}
+                  className="mt-4 min-h-64 w-full resize-y rounded-md border border-line bg-paper p-3 font-mono text-xs leading-5 text-ink"
+                  aria-label="本文を含まない診断情報"
+                />
+              )}
             </div>
           </Section>
 
