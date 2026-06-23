@@ -230,6 +230,7 @@ pnpm qa:public-repo
 pnpm qa:public-docs
 pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
+pnpm qa:release-policy
 pnpm qa:extension:size
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
@@ -255,6 +256,8 @@ pnpm typecheck
 
 `pnpm qa:dependency-policy` は、依存関係アップデートとライセンス確認の運用ドキュメントが、現在のCIと公開前QAの前提からずれていないか確認するQAです。運用は [docs/dependency-maintenance.md](docs/dependency-maintenance.md) にまとめています。
 
+`pnpm qa:release-policy` は、rootと拡張のversion、CHANGELOG、リリース手順、Chrome Web Store再提出前QAがずれていないか確認するQAです。運用は [docs/release-process.md](docs/release-process.md) と [CHANGELOG.md](CHANGELOG.md) にまとめています。
+
 `pnpm qa:extension:size` は、Chrome Web Store提出ZIP、展開後の拡張本体、content script、WebLLM workerを含むJavaScript bundleのサイズが内部予算を超えていないか確認するQAです。予算は [docs/extension-size-budget.md](docs/extension-size-budget.md) にまとめています。
 
 `pnpm qa:extension:manifest` は、ビルド済み拡張のmanifestが初期対象サイト、最小権限、WebLLM bridge公開リソースを満たしているか確認するQAコマンドです。
@@ -265,7 +268,7 @@ pnpm typecheck
 
 ## CI
 
-GitHub Actionsで、PRと `main` 更新時に `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm package:extension`、`pnpm qa:public-repo`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行します。Chrome Web Store公開前の提出物チェックとpublicリポジトリ安全監査もPR上で見えるようにしています。
+GitHub Actionsで、PRと `main` 更新時に `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm package:extension`、公開前QA一式を実行します。Chrome Web Store公開前の提出物チェック、publicリポジトリ安全監査、公開文書同期、モデル/依存/リリース方針のずれもPR上で見えるようにしています。
 
 `main` ブランチは保護し、PR経由の更新と必須チェック通過を前提にしています。運用方針は [docs/branch-protection.md](docs/branch-protection.md) にまとめています。
 

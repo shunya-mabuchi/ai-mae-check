@@ -16,8 +16,9 @@
 2. 生成した `publicJwk` と `keyId` を `apps/extension/config/rule-delivery.release.json` へ反映する。
 3. 生成した `privateJwk` をCloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` に設定する。
 4. `https://ai-mae-check.pages.dev/api/rules/latest` が署名付きルールJSONを返すことを確認する。
-5. `pnpm build:extension`、`pnpm package:extension`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
-6. Chrome Web Storeへ0.1.1として新しいZIPを提出する。
+5. 残Issueをすべて解消してから、最終提出候補のZIPを作り直す。
+6. `pnpm build:extension`、`pnpm package:extension`、`pnpm qa:public-repo`、`pnpm qa:public-docs`、`pnpm qa:webllm-model-policy`、`pnpm qa:dependency-policy`、`pnpm qa:release-policy`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
+7. Chrome Web Storeへ0.1.1として新しいZIPを提出する。
 
 鍵ローテーション、壊れたルール配信時のロールバック、旧 `keyId` の扱いは [rule-delivery-operations.md](./rule-delivery-operations.md) に従います。
 

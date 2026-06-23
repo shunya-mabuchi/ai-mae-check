@@ -28,6 +28,7 @@
     "qa:public-docs": "node scripts/check-public-docs-sync.mjs",
     "qa:webllm-model-policy": "node scripts/check-webllm-model-policy.mjs",
     "qa:dependency-policy": "node scripts/check-dependency-policy.mjs",
+    "qa:release-policy": "node scripts/check-release-policy.mjs",
     "qa:extension:size": "node scripts/check-extension-size-budget.mjs",
     "qa:extension:manifest": "node scripts/check-extension-manifest.mjs",
     "qa:chrome-store": "node scripts/check-chrome-store-readiness.mjs"

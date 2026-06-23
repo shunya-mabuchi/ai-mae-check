@@ -115,6 +115,12 @@ pnpm test
 pnpm typecheck
 pnpm build:extension
 pnpm package:extension
+pnpm qa:public-repo
+pnpm qa:public-docs
+pnpm qa:webllm-model-policy
+pnpm qa:dependency-policy
+pnpm qa:release-policy
+pnpm qa:extension:size
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
 ```
@@ -136,6 +142,12 @@ pnpm qa:chrome-store
 - [ ] `pnpm typecheck` が通る
 - [ ] `pnpm build:extension` が通る
 - [ ] `pnpm package:extension` でZIPを作成できる
+- [ ] `pnpm qa:public-repo` が通る
+- [ ] `pnpm qa:public-docs` が通る
+- [ ] `pnpm qa:webllm-model-policy` が通る
+- [ ] `pnpm qa:dependency-policy` が通る
+- [ ] `pnpm qa:release-policy` が通る
+- [ ] `pnpm qa:extension:size` が通る
 - [ ] `pnpm qa:extension:manifest` が通る
 - [ ] `pnpm qa:chrome-store` が通る
 - [ ] `apps/extension/.output/chrome-mv3/manifest.json` の名称・説明・権限を確認する

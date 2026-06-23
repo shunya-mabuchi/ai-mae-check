@@ -57,6 +57,9 @@ jobs:
       - name: Dependency policy QA
         run: pnpm qa:dependency-policy
 
+      - name: Release policy QA
+        run: pnpm qa:release-policy
+
       - name: Extension size budget QA
         run: pnpm qa:extension:size
 
