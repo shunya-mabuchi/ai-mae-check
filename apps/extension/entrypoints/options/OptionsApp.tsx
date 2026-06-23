@@ -255,8 +255,8 @@ export function OptionsApp() {
               </label>
               <label className="rounded-md border border-line bg-white p-4">
                 <input type="radio" className="mr-2 accent-leaf" checked={settings.llm.mode === "auto"} onChange={() => updateLlmMode("auto")} />
-                <span className="font-semibold">毎回自動実行</span>
-                <span className="mt-2 block text-sm leading-6 text-stone-600">危険情報が見つかったモーダル表示時に自動で文脈チェックを開始します。</span>
+                <span className="font-semibold">準備済みなら自動実行</span>
+                <span className="mt-2 block text-sm leading-6 text-stone-600">ローカルAIモデルがすでに準備できている場合だけ、自動で文脈チェックを開始します。</span>
               </label>
             </div>
 

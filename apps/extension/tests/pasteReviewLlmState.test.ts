@@ -172,32 +172,41 @@ describe("pasteReviewLlmState", () => {
     expect(formatPasteReviewLlmStatusMessage("文脈リスクを確認しています。")).toBe("文脈リスクを確認しています。");
   });
 
-  it("通常モードだけAI文脈チェックの自動実行を許可する", () => {
+  it("通常モードかつモデル準備済みのときだけAI文脈チェックの自動実行を許可する", () => {
     const autoLlm = {
       enabled: true,
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       mode: "auto" as const
     };
 
-    expect(shouldAutoRunPasteReviewLlm("default", autoLlm)).toBe(true);
-    expect(shouldAutoRunPasteReviewLlm("paste_guard", autoLlm)).toBe(false);
-    expect(shouldAutoRunPasteReviewLlm("context_check", autoLlm)).toBe(false);
+    expect(shouldAutoRunPasteReviewLlm("default", autoLlm, true)).toBe(true);
+    expect(shouldAutoRunPasteReviewLlm("default", autoLlm, false)).toBe(false);
+    expect(shouldAutoRunPasteReviewLlm("paste_guard", autoLlm, true)).toBe(false);
+    expect(shouldAutoRunPasteReviewLlm("context_check", autoLlm, true)).toBe(false);
   });
 
   it("AI文脈チェックが無効または手動モードなら自動実行しない", () => {
     expect(
-      shouldAutoRunPasteReviewLlm("default", {
-        enabled: false,
-        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
-        mode: "auto"
-      })
+      shouldAutoRunPasteReviewLlm(
+        "default",
+        {
+          enabled: false,
+          modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+          mode: "auto"
+        },
+        true
+      )
     ).toBe(false);
     expect(
-      shouldAutoRunPasteReviewLlm("default", {
-        enabled: true,
-        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
-        mode: "manual"
-      })
+      shouldAutoRunPasteReviewLlm(
+        "default",
+        {
+          enabled: true,
+          modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+          mode: "manual"
+        },
+        true
+      )
     ).toBe(false);
   });
 });

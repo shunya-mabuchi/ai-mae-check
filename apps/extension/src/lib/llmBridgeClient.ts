@@ -18,7 +18,7 @@ import {
   createLlmBridgeIframe,
   waitForLlmBridgeIframeLoad
 } from "./llmBridgeFrame";
-import { createLlmBridgeAnalyzeRequest } from "./llmBridgeRequest";
+import { createLlmBridgeAnalyzeRequest, createLlmBridgeModelStateRequest } from "./llmBridgeRequest";
 
 interface BridgeConnection {
   port: MessagePort;
@@ -33,7 +33,7 @@ interface PendingRequest<T> {
 }
 
 interface BridgeErrorFallbackOptions {
-  request: LlmBridgeRequest;
+  request: Extract<LlmBridgeRequest, { type: "analyze" }>;
   startedAt: number;
   message: string;
 }
@@ -46,7 +46,9 @@ const BRIDGE_PAGE = "llm-bridge.html";
 
 let bridgePromise: Promise<BridgeConnection> | null = null;
 let requestSeq = 0;
-const pendingRequests = new Map<string, PendingRequest<ContextAnalysisResult>>();
+type BridgeResult = ContextAnalysisResult | boolean;
+
+const pendingRequests = new Map<string, PendingRequest<BridgeResult>>();
 
 function nextRequestId(): string {
   requestSeq += 1;
@@ -82,7 +84,17 @@ function handleBridgeMessage(message: LlmBridgeResponse): void {
 
   pendingRequests.delete(message.requestId);
 
+  if (message.type === "model-state-result") {
+    pending.resolve(message.ready);
+    return;
+  }
+
   if (message.type === "error") {
+    if (pending.request.type !== "analyze") {
+      pending.reject(new Error(message.message));
+      return;
+    }
+
     const fallback = createBridgeErrorFallbackResult({
       request: pending.request,
       startedAt: pending.startedAt,
@@ -154,7 +166,7 @@ async function sendBridgeRequest<T extends ContextAnalysisResult>(
   const bridge = await getBridgeConnection();
 
   return new Promise<T>((resolve, reject) => {
-    const pending: PendingRequest<ContextAnalysisResult> = {
+    const pending: PendingRequest<BridgeResult> = {
       resolve: (value) => resolve(value as T),
       reject,
       request,
@@ -178,4 +190,19 @@ export function analyzeContextWithBridge(inputText: string, options: BridgeAnaly
   });
 
   return sendBridgeRequest(request, options.onProgress);
+}
+
+export async function isLlmBridgeModelReady(modelId: string): Promise<boolean> {
+  const request = createLlmBridgeModelStateRequest(nextRequestId(), modelId);
+  const bridge = await getBridgeConnection();
+
+  return new Promise<boolean>((resolve, reject) => {
+    pendingRequests.set(request.requestId, {
+      resolve: (value) => resolve(value === true),
+      reject,
+      request,
+      startedAt: performance.now()
+    });
+    bridge.port.postMessage(request);
+  });
 }

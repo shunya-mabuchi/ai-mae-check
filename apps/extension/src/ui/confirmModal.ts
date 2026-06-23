@@ -18,6 +18,7 @@ import { applyConfirmModalFooterState } from "./confirmModalFooter";
 import { confirmModalCss } from "./styles";
 import { PASTE_REVIEW_LLM_INITIAL_MESSAGE } from "../lib/pasteReviewLlmState";
 import { runReviewLlm } from "../lib/reviewLlmRunner";
+import { isLlmBridgeModelReady } from "../lib/llmBridgeClient";
 import { resolveReviewFindings } from "../lib/reviewSelection";
 import type { AiMaeCheckSettings } from "../lib/settings";
 import { createShadowHost } from "../lib/shadowHost";
@@ -46,6 +47,8 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     const selectedFindingIds = new Set(options.detection.findings.map((finding) => finding.id));
     const selectedCandidateIds = new Set<string>();
     let llmCandidates: ContextRiskCandidate[] = [];
+    let llmHasStarted = false;
+    let llmRunning = false;
     const mode: TransformMode = options.defaultMode ?? "generalize";
 
     const { shadow, cleanup } = createShadowHost(confirmModalCss);
@@ -156,20 +159,34 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
       });
     });
 
+    const runLlm = async (source: "manual" | "auto") => {
+      if (finished || llmRunning || (source === "auto" && llmHasStarted)) {
+        return;
+      }
+
+      llmHasStarted = true;
+      llmRunning = true;
+      try {
+        await runReviewLlm({
+          enabled: options.llm?.enabled ?? false,
+          inputText: options.inputText,
+          modelId: options.llm?.modelId ?? "",
+          existingFindings: options.detection.findings,
+          llmStatus: elements.llmStatus,
+          llmButton: elements.llmButton,
+          selectedCandidateIds,
+          setCandidates: (candidates) => {
+            llmCandidates = candidates;
+          },
+          render: renderAfterLlm
+        });
+      } finally {
+        llmRunning = false;
+      }
+    };
+
     elements.llmButton.addEventListener("click", () => {
-      void runReviewLlm({
-        enabled: options.llm?.enabled ?? false,
-        inputText: options.inputText,
-        modelId: options.llm?.modelId ?? "",
-        existingFindings: options.detection.findings,
-        llmStatus: elements.llmStatus,
-        llmButton: elements.llmButton,
-        selectedCandidateIds,
-        setCandidates: (candidates) => {
-          llmCandidates = candidates;
-        },
-        render: renderAfterLlm
-      });
+      void runLlm("manual");
     });
 
     elements.cancelButton.addEventListener("click", () => {
@@ -185,5 +202,17 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     renderCandidates();
     renderPreview();
     accessibility.activate();
+
+    if (options.llm?.enabled && options.llm.mode === "auto") {
+      void isLlmBridgeModelReady(options.llm.modelId)
+        .then((modelReady) => {
+          if (!finished && modelReady) {
+            void runLlm("auto");
+          }
+        })
+        .catch(() => {
+          // 準備状態の取得に失敗しても、手動ボタンとルールベース検出はそのまま使える。
+        });
+    }
   });
 }

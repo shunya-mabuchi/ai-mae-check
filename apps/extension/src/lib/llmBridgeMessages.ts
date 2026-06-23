@@ -14,13 +14,19 @@ export interface LlmBridgeConnectMessage {
 }
 
 export type LlmBridgeRequest =
-  {
-    type: "analyze";
-    requestId: string;
-    inputText: string;
-    modelId: string;
-    options: Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates">;
-  };
+  | {
+      type: "analyze";
+      requestId: string;
+      inputText: string;
+      modelId: string;
+      options: Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates">;
+    }
+  | {
+      type: "model-state";
+      requestId: string;
+      modelId: string;
+      options: Record<string, never>;
+    };
 
 export type LlmBridgeResponse =
   | {
@@ -35,6 +41,11 @@ export type LlmBridgeResponse =
       type: "analyze-result";
       requestId: string;
       result: ContextAnalysisResult;
+    }
+  | {
+      type: "model-state-result";
+      requestId: string;
+      ready: boolean;
     }
   | {
       type: "error";
@@ -102,13 +113,19 @@ export function isLlmBridgeRequest(value: unknown): value is LlmBridgeRequest {
     return false;
   }
 
-  if (
-    value.type !== "analyze" ||
-    typeof value.requestId !== "string" ||
-    typeof value.inputText !== "string" ||
-    typeof value.modelId !== "string" ||
-    !isObjectRecord(value.options)
-  ) {
+  if (value.type !== "analyze" && value.type !== "model-state") {
+    return false;
+  }
+
+  if (typeof value.requestId !== "string" || typeof value.modelId !== "string" || !isObjectRecord(value.options)) {
+    return false;
+  }
+
+  if (value.type === "model-state") {
+    return true;
+  }
+
+  if (typeof value.inputText !== "string") {
     return false;
   }
 

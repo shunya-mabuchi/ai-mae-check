@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createLlmBridgeAnalyzeRequest } from "../src/lib/llmBridgeRequest";
+import { createLlmBridgeAnalyzeRequest, createLlmBridgeModelStateRequest } from "../src/lib/llmBridgeRequest";
 import { buildFinding } from "./testBuilders";
 
 describe("createLlmBridgeAnalyzeRequest", () => {
@@ -34,5 +34,14 @@ describe("createLlmBridgeAnalyzeRequest", () => {
     expect(request.options).toEqual({});
     expect(Object.prototype.hasOwnProperty.call(request.options, "existingFindings")).toBe(false);
     expect(Object.prototype.hasOwnProperty.call(request.options, "maxCandidates")).toBe(false);
+  });
+
+  it("WebLLMモデル準備状態のrequestを作る", () => {
+    expect(createLlmBridgeModelStateRequest("state-1", "Llama-3.2-1B-Instruct-q4f32_1-MLC")).toEqual({
+      type: "model-state",
+      requestId: "state-1",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      options: {}
+    });
   });
 });

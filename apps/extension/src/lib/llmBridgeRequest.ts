@@ -8,7 +8,10 @@ export interface CreateLlmBridgeAnalyzeRequestOptions
   modelId: string;
 }
 
-export function createLlmBridgeAnalyzeRequest(options: CreateLlmBridgeAnalyzeRequestOptions): LlmBridgeRequest {
+export type LlmBridgeAnalyzeRequest = Extract<LlmBridgeRequest, { type: "analyze" }>;
+export type LlmBridgeModelStateRequest = Extract<LlmBridgeRequest, { type: "model-state" }>;
+
+export function createLlmBridgeAnalyzeRequest(options: CreateLlmBridgeAnalyzeRequestOptions): LlmBridgeAnalyzeRequest {
   return {
     type: "analyze",
     requestId: options.requestId,
@@ -18,5 +21,14 @@ export function createLlmBridgeAnalyzeRequest(options: CreateLlmBridgeAnalyzeReq
       ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
       ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
     }
+  };
+}
+
+export function createLlmBridgeModelStateRequest(requestId: string, modelId: string): LlmBridgeModelStateRequest {
+  return {
+    type: "model-state",
+    requestId,
+    modelId,
+    options: {}
   };
 }

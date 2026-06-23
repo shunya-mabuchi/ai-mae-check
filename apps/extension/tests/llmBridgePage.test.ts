@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { LLM_BRIDGE_CONNECT, LLM_BRIDGE_READY } from "../src/lib/llmBridgeMessages";
 
 const analyzeMock = vi.fn();
+const isReadyMock = vi.fn(() => false);
 const disposeMock = vi.fn();
 const createLlmContextAnalyzerMock = vi.fn(() => ({
   analyze: analyzeMock,
+  isReady: isReadyMock,
   dispose: disposeMock
 }));
 
@@ -70,6 +72,8 @@ describe("llmBridgePage", () => {
     vi.resetModules();
     vi.unstubAllGlobals();
     analyzeMock.mockReset();
+    isReadyMock.mockReset();
+    isReadyMock.mockReturnValue(false);
     disposeMock.mockReset();
     createLlmContextAnalyzerMock.mockClear();
   });
@@ -116,7 +120,67 @@ describe("llmBridgePage", () => {
         requestId: "request-1"
       })
     );
-    expect(disposeMock).toHaveBeenCalledTimes(1);
+    expect(disposeMock).not.toHaveBeenCalled();
+  });
+
+  it("モデル準備状態を返す", async () => {
+    analyzeMock.mockResolvedValue({
+      candidates: [],
+      summary: "ok",
+      rawText: "",
+      modelId: "test-model",
+      elapsedMs: 5
+    });
+    isReadyMock.mockReturnValue(true);
+    const { messageHandler } = await loadBridgePage();
+    const port = new FakeMessagePort();
+
+    messageHandler({
+      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
+      ports: [port]
+    } as MessageEvent<unknown>);
+
+    port.dispatch({
+      type: "model-state",
+      requestId: "state-1",
+      modelId: "test-model",
+      options: {}
+    });
+
+    await vi.waitFor(() => {
+      expect(port.postedMessages).toContainEqual({
+        type: "model-state-result",
+        requestId: "state-1",
+        ready: false
+      });
+    });
+
+    port.dispatch({
+      type: "analyze",
+      requestId: "request-1",
+      inputText: "本文です",
+      modelId: "test-model",
+      options: {}
+    });
+
+    await vi.waitFor(() => {
+      expect(analyzeMock).toHaveBeenCalled();
+    });
+
+    port.dispatch({
+      type: "model-state",
+      requestId: "state-2",
+      modelId: "test-model",
+      options: {}
+    });
+
+    await vi.waitFor(() => {
+      expect(port.postedMessages).toContainEqual({
+        type: "model-state-result",
+        requestId: "state-2",
+        ready: true
+      });
+    });
   });
 
   it.each([

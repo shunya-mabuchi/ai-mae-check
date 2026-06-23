@@ -58,6 +58,7 @@ export interface WebLlmEngineSession {
 
 export interface WebLlmEngineLifecycle {
   getOrCreate(onProgress?: (progress: LlmProgress) => void): Promise<WebLlmEngineSession>;
+  isReady(): boolean;
   dispose(): void;
 }
 
@@ -128,6 +129,10 @@ export function createWebLlmEngineLifecycle(options: CreateWebLlmEngineLifecycle
       } finally {
         enginePromise = null;
       }
+    },
+
+    isReady(): boolean {
+      return engine !== null && loadedModelId !== null;
     },
 
     dispose(): void {

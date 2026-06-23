@@ -20,6 +20,7 @@ import {
   shouldAutoRunPasteReviewLlm
 } from "./pasteReviewLlmState";
 import { runReviewLlm } from "./reviewLlmRunner";
+import { isLlmBridgeModelReady } from "./llmBridgeClient";
 import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteReviewModalCopy";
 import { createPasteReviewModalElements } from "./pasteReviewModalElements";
 import type { AiMaeCheckSettings } from "./settings";
@@ -88,6 +89,8 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     });
 
     let llmCandidates: ContextRiskCandidate[] = [];
+    let llmHasStarted = false;
+    let llmRunning = false;
     const selectedRuleFindingIds = createInitialSelectedFindingIds(options.detection.findings);
     const selectedCandidateIds = new Set<string>();
 
@@ -123,20 +126,30 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       footerNote.hidden = footerState.footerNoteHidden;
     };
 
-    const runLlm = async () => {
-      await runReviewLlm({
-        enabled: options.settings.llm.enabled,
-        inputText: options.inputText,
-        modelId: options.settings.llm.modelId,
-        existingFindings: options.detection.findings,
-        llmStatus,
-        llmButton,
-        selectedCandidateIds,
-        setCandidates: (candidates) => {
-          llmCandidates = candidates;
-        },
-        render
-      });
+    const runLlm = async (source: "manual" | "auto") => {
+      if (finished || llmRunning || (source === "auto" && llmHasStarted)) {
+        return;
+      }
+
+      llmHasStarted = true;
+      llmRunning = true;
+      try {
+        await runReviewLlm({
+          enabled: options.settings.llm.enabled,
+          inputText: options.inputText,
+          modelId: options.settings.llm.modelId,
+          existingFindings: options.detection.findings,
+          llmStatus,
+          llmButton,
+          selectedCandidateIds,
+          setCandidates: (candidates) => {
+            llmCandidates = candidates;
+          },
+          render
+        });
+      } finally {
+        llmRunning = false;
+      }
     };
 
     maskButton.addEventListener("click", () => {
@@ -146,7 +159,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     });
 
     llmButton.addEventListener("click", () => {
-      void runLlm();
+      void runLlm("manual");
     });
 
     rawButton.addEventListener("click", () => {
@@ -170,8 +183,16 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     render();
     accessibility.activate();
 
-    if (shouldAutoRunPasteReviewLlm(mode, options.settings.llm)) {
-      void runLlm();
+    if (mode === "default" && options.settings.llm.enabled && options.settings.llm.mode === "auto") {
+      void isLlmBridgeModelReady(options.settings.llm.modelId)
+        .then((modelReady) => {
+          if (!finished && shouldAutoRunPasteReviewLlm(mode, options.settings.llm, modelReady)) {
+            void runLlm("auto");
+          }
+        })
+        .catch(() => {
+          // 準備状態の取得に失敗しても、手動ボタンとルールベース検出はそのまま使える。
+        });
     }
   });
 }

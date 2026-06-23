@@ -172,6 +172,10 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
     }
   }
 
+  isReady(): boolean {
+    return this.lifecycle.isReady();
+  }
+
   dispose(): void {
     this.lifecycle.dispose();
   }

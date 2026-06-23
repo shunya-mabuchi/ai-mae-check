@@ -62,7 +62,8 @@ export function formatPasteReviewLlmStatusMessage(message: string, detail?: LlmE
 
 export function shouldAutoRunPasteReviewLlm(
   mode: PasteReviewModalMode,
-  llmSettings: AiMaeCheckSettings["llm"]
+  llmSettings: AiMaeCheckSettings["llm"],
+  modelReady: boolean
 ): boolean {
-  return mode === "default" && llmSettings.enabled && llmSettings.mode === "auto";
+  return modelReady && mode === "default" && llmSettings.enabled && llmSettings.mode === "auto";
 }

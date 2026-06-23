@@ -108,6 +108,7 @@ export interface ContextAnalysisResult {
 
 export interface LlmContextAnalyzer {
   analyze(input: string, options?: AnalyzeContextOptions): Promise<ContextAnalysisResult>;
+  isReady(): boolean;
   dispose(): void;
 }
 
