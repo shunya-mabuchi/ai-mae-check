@@ -1,7 +1,41 @@
 import { PublicPageLayout } from "./PublicPageLayout";
 
-const supportItems = [
+const faqItems = [
+  {
+    question: "本文は保存されますか？",
+    answer:
+      "保存しません。貼り付け本文、送信本文、添付前に読み取ったテキスト本文、検出結果、placeholderMap、送信履歴は永続保存しません。保存するのは拡張機能の設定だけです。"
+  },
+  {
+    question: "本文は開発者のサーバーへ送信されますか？",
+    answer:
+      "送信しません。ルールベース検出はブラウザ内で実行します。AI文脈チェックもWebLLMを使い、ユーザーのブラウザ内で実行します。"
+  },
+  {
+    question: "WebLLMが動かないのはなぜですか？",
+    answer:
+      "WebGPU非対応、GPUドライバやDawn backendの制限、シークレットモードの保存容量制限、モデル配信元への接続ブロック、初回モデル取得の失敗などが主な理由です。WebLLMが失敗してもルールベース検出は利用できます。"
+  },
+  {
+    question: "初回ロードが長いのはなぜですか？",
+    answer:
+      "外部LLM APIを使わずブラウザ内で推論するため、初回利用時にローカル推論用モデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュやブラウザ管理下の保存領域を利用します。"
+  },
+  {
+    question: "対応サイトはどこですか？",
+    answer:
+      "初期対象はChatGPT、Claude、Geminiです。Perplexityは後続adapterで対応予定です。初期実装では、すべてのサイトへ無条件に介入する権限は要求しません。"
+  },
+  {
+    question: "不具合報告に本文を貼ってもよいですか？",
+    answer:
+      "貼らないでください。公開IssueやPRには、実在の本文、実APIキー、実トークン、実個人情報、顧客名、案件名を書かず、ダミー情報で再現してください。"
+  }
+];
+
+const knownLimitations = [
   "対象サイトは初期状態でChatGPT、Claude、Geminiです。",
+  "Perplexityは後続adapterで対応予定です。",
   "AI文脈チェックはWebGPU対応環境で利用できます。",
   "WebLLMの初回利用時はモデルファイルの取得に時間がかかる場合があります。",
   "WebLLMの実機確認では、OS、Chromeバージョン、WebGPU状態、エラー分類だけを記録し、本文は記録しません。",
@@ -29,6 +63,12 @@ export function SupportPage() {
           >
             GitHub Issuesを開く
           </a>
+        </section>
+        <section className="rounded-card border border-line bg-white/75 p-5 shadow-soft">
+          <h2 className="text-lg font-black text-ink">問い合わせ前のお願い</h2>
+          <p className="mt-2 text-sm leading-7 text-muted">
+            公開Issueや問い合わせには、貼り付け本文、送信本文、実APIキー、実トークン、実個人情報、顧客名、案件名を書かないでください。再現には実在しないダミー情報を使ってください。
+          </p>
         </section>
         <section className="rounded-card border border-line bg-cloud/70 p-5">
           <h2 className="text-lg font-black text-ink">脆弱性や秘密情報を含む相談</h2>
@@ -58,9 +98,28 @@ export function SupportPage() {
           </a>
         </section>
         <section>
+          <h2 className="text-lg font-black text-ink">よくある質問</h2>
+          <div className="mt-4 divide-y divide-line rounded-card border border-line bg-white/80">
+            {faqItems.map((item) => (
+              <details key={item.question} className="group px-5 py-4">
+                <summary className="cursor-pointer list-none text-sm font-black text-ink">
+                  {item.question}
+                </summary>
+                <p className="mt-3 text-sm leading-7 text-muted">{item.answer}</p>
+              </details>
+            ))}
+          </div>
+          <a
+            href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/support-faq.md"
+            className="mt-4 inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud"
+          >
+            詳細FAQを見る
+          </a>
+        </section>
+        <section>
           <h2 className="text-lg font-black text-ink">確認している制限</h2>
           <ul className="mt-3 space-y-2 text-sm leading-7 text-muted">
-            {supportItems.map((item) => (
+            {knownLimitations.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
