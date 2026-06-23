@@ -57,6 +57,9 @@ jobs:
       - name: WebLLM model policy QA
         run: pnpm qa:webllm-model-policy
 
+      - name: WebLLM compatibility QA
+        run: pnpm qa:webllm-compatibility
+
       - name: Dependency policy QA
         run: pnpm qa:dependency-policy
 

@@ -2,6 +2,8 @@
 
 WebLLMは、正規表現だけでは拾いにくい文脈上の注意候補をブラウザ内で確認するために使います。外部LLM APIや開発者の推論サーバーは使いません。
 
+端末別、OS別、Chrome状態別の確認結果は [WebLLM対応環境とモデル互換性マトリクス](webllm-compatibility-matrix.md) の形式で記録します。IssueやPRへは、ユーザー本文、実APIキー、実トークン、実在の個人情報、placeholderMapを貼らないでください。
+
 ## 成功時
 
 確認観点:

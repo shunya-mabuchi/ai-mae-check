@@ -4,6 +4,7 @@ const supportItems = [
   "対象サイトは初期状態でChatGPT、Claude、Geminiです。",
   "AI文脈チェックはWebGPU対応環境で利用できます。",
   "WebLLMの初回利用時はモデルファイルの取得に時間がかかる場合があります。",
+  "WebLLMの実機確認では、OS、Chromeバージョン、WebGPU状態、エラー分類だけを記録し、本文は記録しません。",
   "本文は永続保存されず、設定のみブラウザ内に保存されます。",
   "保存済み設定はOptions Pageの「設定を初期化」から削除できます。貼り付け本文や検出結果は保存していないため、削除対象には含まれません。",
   "ファイル添付前チェックはテキスト系ファイルのみが対象です。PDF、docx、xlsx、画像OCRは解析しません。",
@@ -49,6 +50,12 @@ export function SupportPage() {
             <li>ChromeのバージョンとOS</li>
             <li>AI文脈チェックの場合はWebGPUの利用可否</li>
           </ul>
+          <a
+            href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/webllm-compatibility-matrix.md"
+            className="mt-4 inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud"
+          >
+            WebLLM確認項目を見る
+          </a>
         </section>
         <section>
           <h2 className="text-lg font-black text-ink">確認している制限</h2>
