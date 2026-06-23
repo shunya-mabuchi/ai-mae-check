@@ -41,6 +41,37 @@ export interface AnalyzeContextOptions {
   onProgress?: (progress: LlmProgress) => void;
 }
 
+export type ContextHintReason =
+  | "near_secret"
+  | "near_confidential_hint"
+  | "near_person_like"
+  | "near_money"
+  | "near_business_context";
+
+export interface ContextHintResult {
+  shouldOffer: boolean;
+  score: number;
+  reasons: ContextHintReason[];
+}
+
+export interface ContextWindow {
+  text: string;
+  reason: ContextHintReason;
+}
+
+export interface ContextCheckPlan {
+  windows: ContextWindow[];
+  existingFindings: Finding[];
+  maxCandidates: number;
+}
+
+export interface ContextCheckPlanOptions {
+  existingFindings?: Finding[];
+  maxCandidates?: number;
+  maxInputChars?: number;
+  windowChars?: number;
+}
+
 export type ContextRiskCategory =
   | "person_name"
   | "company_name"

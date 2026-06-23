@@ -11,6 +11,7 @@ import {
   createContextAnalysisFallbackResult,
   createContextAnalysisResultFromRawText
 } from "./analysisResult";
+import { buildContextCheckPlan, createContextCheckInput } from "./contextBuilder";
 import { classifyLlmError } from "./errors";
 import { buildContextRiskPrompt } from "./prompt";
 import { ensureWebGpuAdapter } from "./webgpuAdapter";
@@ -49,16 +50,21 @@ function createAnalysisRequest(
   analyzerOptions: NormalizedLlmAnalyzerOptions,
   options: AnalyzeContextOptions
 ): ContextAnalysisRequest {
-  const inputForModel = input.slice(0, analyzerOptions.maxInputChars);
   const maxCandidates = typeof options.maxCandidates === "number" ? options.maxCandidates : undefined;
+  const plan = buildContextCheckPlan(input, {
+    existingFindings: options.existingFindings ?? [],
+    maxInputChars: analyzerOptions.maxInputChars,
+    ...(typeof maxCandidates === "number" ? { maxCandidates } : {})
+  });
+  const inputForModel = createContextCheckInput(plan);
 
   return {
     inputForModel,
     messages: buildContextRiskPrompt(inputForModel, {
-      existingFindings: options.existingFindings ?? [],
-      ...(typeof maxCandidates === "number" ? { maxCandidates } : {})
+      existingFindings: plan.existingFindings,
+      maxCandidates: plan.maxCandidates
     }),
-    ...(typeof maxCandidates === "number" ? { maxCandidates } : {})
+    maxCandidates: plan.maxCandidates
   };
 }
 

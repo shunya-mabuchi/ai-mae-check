@@ -12,6 +12,7 @@ export {
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
 export { convertContextCandidatesToFindings } from "./convert";
+export { buildContextCheckPlan, createContextCheckInput, evaluateContextHint } from "./contextBuilder";
 export {
   classifyLlmError,
   createJsonParseFallbackMessage,
@@ -40,6 +41,11 @@ export type {
   AnalyzeContextOptions,
   ChatMessage,
   ContextAnalysisResult,
+  ContextCheckPlan,
+  ContextCheckPlanOptions,
+  ContextHintReason,
+  ContextHintResult,
+  ContextWindow,
   ContextPromptOptions,
   ContextRiskCandidate,
   ContextRiskCategory,

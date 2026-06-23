@@ -80,6 +80,25 @@ describe("WebGPU事前チェック", () => {
     expect(result.candidates.map((candidate) => candidate.surface)).toContain("山田花子さん");
   });
 
+  it("WebLLMへ渡す本文はContextBuilderで短縮する", async () => {
+    vi.stubGlobal("navigator", { gpu: { requestAdapter: vi.fn(async () => ({})) } });
+    vi.stubGlobal("Worker", TestWorker);
+
+    const input = [
+      "前置きの一般説明です。".repeat(80),
+      "A社向けの提案メモです。NDA締結前なので関係者限りで確認してください。",
+      "末尾の一般説明です。".repeat(80)
+    ].join("\n");
+    const analyzer = createLlmContextAnalyzer({ workerUrl: "/llm-worker.js", maxInputChars: 260 });
+    await analyzer.analyze(input);
+
+    const request = completionCreateMock.mock.calls[0]?.[0] as { messages: Array<{ content: string }> };
+    const joinedPrompt = request.messages.map((message) => message.content).join("\n");
+
+    expect(joinedPrompt).toContain("A社向けの提案メモ");
+    expect(joinedPrompt).not.toContain("末尾の一般説明です。".repeat(20));
+  });
+
   it("WebLLMのJSONを読み取れずローカル補助候補もない場合は非致命的な結果として返す", async () => {
     completionText = "この文章では、追加でマスクすべき候補は特に見当たりません。";
     vi.stubGlobal("navigator", { gpu: { requestAdapter: vi.fn(async () => ({})) } });

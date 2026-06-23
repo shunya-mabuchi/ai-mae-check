@@ -82,7 +82,7 @@ export function createPasteReviewPlan(inputText: string, context: ContentGuardCo
     };
   }
 
-  if (context.llmEnabled && shouldOfferContextCheck(inputText)) {
+  if (context.llmEnabled && shouldOfferContextCheck(inputText, guard.detection.findings)) {
     return {
       type: "review",
       request: {

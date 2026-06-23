@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { shouldOfferContextCheck } from "../src/content/dom/contextHints";
+import { buildFinding } from "./testBuilders";
 
 describe("contextHints", () => {
   it("契約・採用などの文脈リスクを含む長めの文章ではAI文脈チェック入口を出す", () => {
@@ -21,5 +22,22 @@ describe("contextHints", () => {
     const inputText = "この文章は公開済みの一般的な説明文です。ブラウザ上で入力の挙動を確認するためのダミーテキストです。";
 
     expect(shouldOfferContextCheck(inputText)).toBe(false);
+  });
+
+  it("既存のルール検出結果があればAI文脈チェック入口の判断材料にする", () => {
+    const inputText = "連絡先とAPIキーの控えを貼り付けます。社内確認用です。";
+
+    expect(
+      shouldOfferContextCheck(inputText, [
+        buildFinding({
+          ruleId: "env_secret",
+          label: "秘密情報",
+          category: "secret",
+          riskLevel: "high",
+          start: 4,
+          end: 20
+        })
+      ])
+    ).toBe(true);
   });
 });
