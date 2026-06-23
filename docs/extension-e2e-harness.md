@@ -4,6 +4,8 @@ AIまえチェックはChrome拡張が本体です。ユニットテスト、デ
 
 この文書は、実サイトのログイン状態に依存しない自動E2Eの範囲と、手動QAとの境界を定義します。
 
+SiteAdapterの責務、ChatGPT / Claude / GeminiごとのDOM差分、サイト別確認項目は [SiteAdapter契約とE2E確認項目](site-adapter-contract.md) にまとめています。
+
 ## 方針
 
 - 実サイトのログイン状態に依存しない

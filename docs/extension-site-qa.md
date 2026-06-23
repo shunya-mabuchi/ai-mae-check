@@ -9,6 +9,8 @@
 - 対象サイトのDOM変更でadapterが壊れていないか確認する
 - Perplexityは後続adapterとして扱い、初期対象には含めない
 
+SiteAdapterの責務、共通DLP処理との境界、新しいadapter追加手順は [SiteAdapter契約とE2E確認項目](site-adapter-contract.md) にまとめています。このQAでは、その契約に沿って入力欄検出、送信ボタン検出、送信キー、置換後のReact系UI反映を確認します。
+
 ## 事前準備
 
 ```bash
@@ -79,8 +81,11 @@ https://user:password@example.com/internal/proposal
 各対象サイトで次を確認します。
 
 - [ ] 拡張機能を再読み込み後、対象ページも再読み込みした
+- [ ] 対象hostだけでcontent scriptが動き、`<all_urls>` に頼っていない
+- [ ] Options Pageの対象サイトON/OFFが反映される
 - [ ] 通常の入力欄を検出できる
 - [ ] password / email / tel / number系inputには介入しない
+- [ ] credit card系inputと思われる入力欄、disabled / readonly / 非表示要素には介入しない
 - [ ] ルール検出サンプルをpasteすると確認モーダルが表示される
 - [ ] 高リスク、または秘密情報保護の対象では、そのまま送信できない
 - [ ] mediumは詳細確認から許可可能である
@@ -88,6 +93,7 @@ https://user:password@example.com/internal/proposal
 - [ ] `input` イベントが発火し、対象サイトのReact系UIが変更を認識する
 - [ ] 送信ボタンclickで送信前確認が出る
 - [ ] 通常Enterの送信操作で送信前確認が出る
+- [ ] Shift+Enter、Alt+Enter、IME変換中Enterは送信扱いにしない
 - [ ] キャンセル時に本文が勝手に送信されない
 - [ ] 安全化後に再スキャンされ、秘密情報保護の対象が残る場合は送信されない
 
