@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
-import { DEFAULT_SETTINGS, normalizeSettings, resetSettings, SETTINGS_KEY } from "../src/lib/settings";
+import { DEFAULT_SETTINGS, normalizeSettings, resetSettings, saveSettings, SETTINGS_KEY, validateSettings } from "../src/lib/settings";
 
 describe("settings", () => {
   afterEach(() => {
@@ -39,5 +39,46 @@ describe("settings", () => {
 
     expect(remove).toHaveBeenCalledWith(SETTINGS_KEY, expect.any(Function));
     expect(settings).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it("設定不足を検証メッセージとして返す", () => {
+    const result = validateSettings({
+      ...DEFAULT_SETTINGS,
+      sites: {},
+      rules: {},
+      llm: {
+        ...DEFAULT_SETTINGS.llm,
+        modelId: ""
+      }
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.messages).toEqual(
+      expect.arrayContaining([
+        "対象サイト設定に不足があります。不足分は初期値で補完されます。",
+        "検出ルール設定に不足があります。不足分は初期値で補完されます。",
+        "WebLLMモデルIDが空です。初期モデルを利用してください。"
+      ])
+    );
+  });
+
+  it("保存失敗時は日本語エラーを返す", async () => {
+    const set = vi.fn((_value: unknown, callback: () => void) => {
+      callback();
+    });
+    vi.stubGlobal("chrome", {
+      runtime: {
+        lastError: {
+          message: "quota exceeded"
+        }
+      },
+      storage: {
+        local: {
+          set
+        }
+      }
+    });
+
+    await expect(saveSettings(DEFAULT_SETTINGS)).rejects.toThrow("設定の保存に失敗しました。");
   });
 });

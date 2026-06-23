@@ -260,6 +260,8 @@ pnpm typecheck
 
 `pnpm qa:privacy-regression` は、本文・検出結果・placeholderMapを永続保存しないこと、外部送信しないこと、`chrome.storage.local` の利用が設定保存に限られていることを確認するQAです。運用は [docs/privacy-regression.md](docs/privacy-regression.md) にまとめています。
 
+Options Pageの設定グループ、保存対象、初期化、設定バリデーションの考え方は [docs/options-settings.md](docs/options-settings.md) にまとめています。
+
 `pnpm qa:webllm-model-policy` は、WebLLMの標準モデルID、fallbackモデルID、モデルライセンス確認文書が実装とずれていないかを確認するQAです。モデル選定方針は [docs/webllm-model-policy.md](docs/webllm-model-policy.md) にまとめています。
 
 `pnpm qa:dependency-policy` は、依存関係アップデートとライセンス確認の運用ドキュメントが、現在のCIと公開前QAの前提からずれていないか確認するQAです。運用は [docs/dependency-maintenance.md](docs/dependency-maintenance.md) にまとめています。

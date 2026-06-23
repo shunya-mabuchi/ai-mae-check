@@ -17,6 +17,11 @@ export interface AiMaeCheckSettings {
   };
 }
 
+export interface SettingsValidationResult {
+  valid: boolean;
+  messages: string[];
+}
+
 function defaultSites(): Record<SiteId, boolean> {
   return Object.fromEntries(targetSites.map((site) => [site.id, true])) as Record<SiteId, boolean>;
 }
@@ -75,23 +80,71 @@ export function normalizeSettings(value: unknown): AiMaeCheckSettings {
   };
 }
 
+function chromeStorageErrorMessage(action: "読み込み" | "保存" | "初期化"): string | null {
+  const message = chrome.runtime?.lastError?.message;
+  return message ? `設定の${action}に失敗しました。Chromeの拡張機能ストレージを確認してください。詳細: ${message}` : null;
+}
+
+export function validateSettings(settings: AiMaeCheckSettings): SettingsValidationResult {
+  const messages: string[] = [];
+  const missingSites = targetSites.filter((site) => typeof settings.sites[site.id] !== "boolean");
+  const missingRules = detectorRules.filter((rule) => typeof settings.rules[rule.id] !== "boolean");
+
+  if (missingSites.length > 0) {
+    messages.push("対象サイト設定に不足があります。不足分は初期値で補完されます。");
+  }
+  if (missingRules.length > 0) {
+    messages.push("検出ルール設定に不足があります。不足分は初期値で補完されます。");
+  }
+  if (settings.llm.modelId.trim().length === 0) {
+    messages.push("WebLLMモデルIDが空です。初期モデルを利用してください。");
+  }
+  if (settings.llm.mode !== "manual" && settings.llm.mode !== "auto") {
+    messages.push("AI文脈チェックの実行モードが不正です。手動実行または自動実行を選んでください。");
+  }
+
+  return {
+    valid: messages.length === 0,
+    messages
+  };
+}
+
 export async function loadSettings(): Promise<AiMaeCheckSettings> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     chrome.storage.local.get(SETTINGS_KEY, (items) => {
+      const errorMessage = chromeStorageErrorMessage("読み込み");
+      if (errorMessage) {
+        reject(new Error(errorMessage));
+        return;
+      }
       resolve(normalizeSettings(items[SETTINGS_KEY]));
     });
   });
 }
 
 export async function saveSettings(settings: AiMaeCheckSettings): Promise<void> {
-  return new Promise((resolve) => {
-    chrome.storage.local.set({ [SETTINGS_KEY]: settings }, () => resolve());
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.set({ [SETTINGS_KEY]: settings }, () => {
+      const errorMessage = chromeStorageErrorMessage("保存");
+      if (errorMessage) {
+        reject(new Error(errorMessage));
+        return;
+      }
+      resolve();
+    });
   });
 }
 
 export async function resetSettings(): Promise<AiMaeCheckSettings> {
-  return new Promise((resolve) => {
-    chrome.storage.local.remove(SETTINGS_KEY, () => resolve(DEFAULT_SETTINGS));
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.remove(SETTINGS_KEY, () => {
+      const errorMessage = chromeStorageErrorMessage("初期化");
+      if (errorMessage) {
+        reject(new Error(errorMessage));
+        return;
+      }
+      resolve(DEFAULT_SETTINGS);
+    });
   });
 }
 

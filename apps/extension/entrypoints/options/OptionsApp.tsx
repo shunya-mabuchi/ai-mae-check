@@ -2,7 +2,15 @@ import { useEffect, useState, type ReactNode } from "react";
 import { CheckCircle2, Database, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
 import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
-import { DEFAULT_SETTINGS, loadSettings, resetSettings, saveSettings, type AiMaeCheckSettings, type LlmRunMode } from "../../src/lib/settings";
+import {
+  DEFAULT_SETTINGS,
+  loadSettings,
+  resetSettings,
+  saveSettings,
+  validateSettings,
+  type AiMaeCheckSettings,
+  type LlmRunMode
+} from "../../src/lib/settings";
 import { targetSites, type SiteId } from "../../src/lib/sites";
 
 function Toggle({
@@ -39,21 +47,38 @@ function Section({ icon, title, children }: { icon: ReactNode; title: string; ch
   );
 }
 
+function SummaryCard({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-md border border-line bg-paper p-4">
+      <p className="text-sm font-bold text-ink">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-stone-600">{body}</p>
+    </div>
+  );
+}
+
 export function OptionsApp() {
   const [settings, setSettings] = useState<AiMaeCheckSettings>(DEFAULT_SETTINGS);
   const [savedMessage, setSavedMessage] = useState("設定を読み込んでいます。");
+  const validation = validateSettings(settings);
 
   useEffect(() => {
-    void loadSettings().then((loadedSettings) => {
-      setSettings(loadedSettings);
-      setSavedMessage("設定は変更時に自動保存されます。");
-    });
+    void loadSettings()
+      .then((loadedSettings) => {
+        setSettings(loadedSettings);
+        setSavedMessage("設定は変更時に自動保存されます。");
+      })
+      .catch(() => {
+        setSettings(DEFAULT_SETTINGS);
+        setSavedMessage("設定を読み込めませんでした。初期設定で表示しています。");
+      });
   }, []);
 
   const updateSettings = (updater: (current: AiMaeCheckSettings) => AiMaeCheckSettings) => {
     setSettings((current) => {
       const next = updater(current);
-      void saveSettings(next).then(() => setSavedMessage("保存しました。"));
+      void saveSettings(next)
+        .then(() => setSavedMessage("保存しました。"))
+        .catch(() => setSavedMessage("設定を保存できませんでした。Chromeの拡張機能ストレージを確認してください。"));
       return next;
     });
   };
@@ -97,10 +122,12 @@ export function OptionsApp() {
     }
 
     setSavedMessage("設定を初期化しています。");
-    void resetSettings().then((defaultSettings) => {
-      setSettings(defaultSettings);
-      setSavedMessage("保存済み設定を初期化しました。");
-    });
+    void resetSettings()
+      .then((defaultSettings) => {
+        setSettings(defaultSettings);
+        setSavedMessage("保存済み設定を初期化しました。");
+      })
+      .catch(() => setSavedMessage("設定を初期化できませんでした。Chromeの拡張機能ストレージを確認してください。"));
   };
 
   return (
@@ -117,6 +144,12 @@ export function OptionsApp() {
           </p>
           <p className="mt-2 text-sm font-semibold text-leaf">{savedMessage}</p>
         </header>
+
+        <div className="mb-5 grid gap-3 md:grid-cols-3">
+          <SummaryCard title="保存するもの" body="拡張機能の有効/無効、対象サイト、検出ルール、AI文脈チェックの設定だけを保存します。" />
+          <SummaryCard title="保存しないもの" body="貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は保存しません。" />
+          <SummaryCard title="設定状態" body={validation.valid ? "現在の設定形式は有効です。" : validation.messages.join(" ")} />
+        </div>
 
         <div className="grid gap-5">
           <Section icon={<CheckCircle2 size={20} aria-hidden="true" />} title="基本設定">

@@ -35,6 +35,9 @@ export default defineContentScript({
     void loadSettings().then((loadedSettings) => {
       settings = loadedSettings;
       void refreshRemoteRules();
+    }).catch(() => {
+      settings = DEFAULT_SETTINGS;
+      void refreshRemoteRules();
     });
 
     chrome.storage.onChanged.addListener((changes, areaName) => {
