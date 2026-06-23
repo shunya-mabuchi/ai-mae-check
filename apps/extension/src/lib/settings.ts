@@ -89,6 +89,12 @@ export async function saveSettings(settings: AiMaeCheckSettings): Promise<void> 
   });
 }
 
+export async function resetSettings(): Promise<AiMaeCheckSettings> {
+  return new Promise((resolve) => {
+    chrome.storage.local.remove(SETTINGS_KEY, () => resolve(DEFAULT_SETTINGS));
+  });
+}
+
 export function disabledRuleIds(settings: AiMaeCheckSettings): string[] {
   return Object.entries(settings.rules)
     .filter(([, enabled]) => !enabled)

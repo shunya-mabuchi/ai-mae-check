@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { CheckCircle2, Database, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, Database, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
 import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
-import { DEFAULT_SETTINGS, loadSettings, saveSettings, type AiMaeCheckSettings, type LlmRunMode } from "../../src/lib/settings";
+import { DEFAULT_SETTINGS, loadSettings, resetSettings, saveSettings, type AiMaeCheckSettings, type LlmRunMode } from "../../src/lib/settings";
 import { targetSites, type SiteId } from "../../src/lib/sites";
 
 function Toggle({
@@ -86,6 +86,21 @@ export function OptionsApp() {
         mode
       }
     }));
+  };
+
+  const handleResetSettings = () => {
+    const confirmed = window.confirm(
+      "保存済み設定を初期化しますか？対象サイト、検出ルール、AI文脈チェックの設定が初期値に戻ります。貼り付け本文や検出結果は保存していないため、削除対象には含まれません。"
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setSavedMessage("設定を初期化しています。");
+    void resetSettings().then((defaultSettings) => {
+      setSettings(defaultSettings);
+      setSavedMessage("保存済み設定を初期化しました。");
+    });
   };
 
   return (
@@ -189,6 +204,24 @@ export function OptionsApp() {
                 WebLLMの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。
               </p>
               <p className="mt-2">あなた自身の推論サーバーや外部LLM APIは利用しません。</p>
+            </div>
+          </Section>
+
+          <Section icon={<RotateCcw size={20} aria-hidden="true" />} title="設定の初期化">
+            <div className="rounded-md border border-line bg-white p-4 text-sm leading-7 text-stone-700">
+              <p>
+                AIまえチェックが保存するのは、拡張機能の有効/無効、対象サイト、検出ルール、AI文脈チェックに関する設定だけです。貼り付け本文、送信本文、検出結果、placeholderMapは保存していません。
+              </p>
+              <p className="mt-2">
+                設定を初期化すると、保存済み設定を削除し、画面表示を初期値に戻します。WebLLMのモデルキャッシュなどブラウザ管理下の保存領域はChrome側で管理されます。
+              </p>
+              <button
+                type="button"
+                onClick={handleResetSettings}
+                className="mt-4 inline-flex min-h-11 items-center rounded-md border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-paper"
+              >
+                設定を初期化
+              </button>
             </div>
           </Section>
         </div>
