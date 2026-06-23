@@ -83,12 +83,12 @@ export function DemoCard({
   });
 
   return (
-    <section id="demo" className="px-5 py-16 md:py-24">
+    <section id="demo" className="px-5 py-16 md:py-24" aria-labelledby="demo-heading">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,0.7fr)] lg:items-end">
           <div>
             <p className="mb-3 text-sm font-black text-leaf">拡張を入れる前のミニデモ</p>
-            <h2 className="text-3xl font-black leading-tight text-ink md:text-5xl">貼り付け前チェックの動きを試す</h2>
+            <h2 id="demo-heading" className="text-3xl font-black leading-tight text-ink md:text-5xl">貼り付け前チェックの動きを試す</h2>
             <p className="mt-4 max-w-3xl text-base leading-7 text-muted md:text-lg">
               本番の体験はChrome拡張として、対象サイトの入力欄に貼り付ける直前に表示されます。
               ここでは同じ検出エンジンを使って、候補選択とマスキングの流れだけをブラウザ上で確認できます。
@@ -115,7 +115,7 @@ export function DemoCard({
                 <p className="text-xs font-black text-white/60">AIまえチェック ミニデモ</p>
                 <h3 className="mt-1 text-xl font-black tracking-normal">拡張機能の基本フローを、このページ上で体験</h3>
               </div>
-              <div className="grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap xl:justify-end">
+              <div className="grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap xl:justify-end" aria-label="デモ操作">
                 {actions.map((action) => {
                   const Icon = actionIcons[action.icon];
                   return (
@@ -148,6 +148,7 @@ export function DemoCard({
                 <textarea
                   value={text}
                   onChange={(event) => onTextChange(event.target.value)}
+                  aria-label="AIに貼る前の入力テキスト"
                   className="min-h-[320px] w-full resize-y bg-transparent p-2 text-sm leading-7 text-ink outline-none placeholder:text-slate-400 md:min-h-[480px]"
                   placeholder="ここにAIへ貼る前の文章を入力してください。"
                 />

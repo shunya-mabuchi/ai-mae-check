@@ -4,6 +4,7 @@ import { createElement } from "../lib/domElement";
 import { formatFileSize } from "../lib/fileSize";
 import { decisionRiskLabels } from "../lib/riskLabels";
 import { createShadowHost } from "../lib/shadowHost";
+import { setupDialogAccessibility } from "../lib/dialogAccessibility";
 
 export interface FilePreflightModalItem {
   fileName: string;
@@ -27,6 +28,7 @@ export async function showFilePreflightModal(options: FilePreflightModalOptions)
 
     const overlay = createElement("div", "amc-overlay");
     const dialog = createElement("section", "amc-dialog");
+    dialog.setAttribute("aria-label", "ファイル添付前確認");
     const header = createElement("header", "amc-header");
     header.append(createElement("h2", "amc-title", "ファイル添付前に確認しますか？"));
     header.append(
@@ -69,6 +71,9 @@ export async function showFilePreflightModal(options: FilePreflightModalOptions)
     const safeButton = createElement("button", "amc-button amc-primary", "安全版を作成して添付");
     const rawButton = createElement("button", "amc-button", "このまま添付");
     const cancelButton = createElement("button", "amc-button", "添付をキャンセル");
+    for (const button of [safeButton, rawButton, cancelButton]) {
+      button.type = "button";
+    }
 
     footer.append(safeButton);
     if (options.canAttachRaw) {
@@ -79,24 +84,39 @@ export async function showFilePreflightModal(options: FilePreflightModalOptions)
     dialog.append(header, body, footer);
     overlay.append(dialog);
     shadow.append(overlay);
+    let finished = false;
+
+    const finish = (decision: FilePreflightModalDecision) => {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      accessibility.dispose();
+      cleanup();
+      resolve(decision);
+    };
+
+    const accessibility = setupDialogAccessibility({
+      overlay,
+      dialog,
+      initialFocus: safeButton,
+      onCancel: () => finish("cancel")
+    });
 
     safeButton.addEventListener("click", () => {
-      cleanup();
-      resolve("safe");
+      finish("safe");
     });
     rawButton.addEventListener("click", () => {
-      cleanup();
-      resolve("allow_raw");
+      finish("allow_raw");
     });
     cancelButton.addEventListener("click", () => {
-      cleanup();
-      resolve("cancel");
+      finish("cancel");
     });
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) {
-        cleanup();
-        resolve("cancel");
+        finish("cancel");
       }
     });
+    accessibility.activate();
   });
 }

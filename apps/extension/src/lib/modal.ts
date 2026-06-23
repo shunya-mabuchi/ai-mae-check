@@ -24,6 +24,7 @@ import { createPasteReviewModalCopy, type PasteReviewModalMode } from "./pasteRe
 import { createPasteReviewModalElements } from "./pasteReviewModalElements";
 import type { AiMaeCheckSettings } from "./settings";
 import { createShadowHost } from "./shadowHost";
+import { setupDialogAccessibility } from "./dialogAccessibility";
 
 type ModalDecision =
   | {
@@ -51,6 +52,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     const rawPasteAllowed = !policy.requiresSanitization;
     const {
       overlay,
+      dialog,
       list,
       preview,
       llmStatus,
@@ -66,6 +68,24 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       initialLlmMessage: PASTE_REVIEW_LLM_INITIAL_MESSAGE
     });
     shadow.append(overlay);
+    let finished = false;
+
+    const finish = (decision: ModalDecision) => {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      accessibility.dispose();
+      cleanup();
+      resolve(decision);
+    };
+
+    const accessibility = setupDialogAccessibility({
+      overlay,
+      dialog,
+      initialFocus: maskButton,
+      onCancel: () => finish({ type: "cancel" })
+    });
 
     let llmCandidates: ContextRiskCandidate[] = [];
     const selectedRuleFindingIds = createInitialSelectedFindingIds(options.detection.findings);
@@ -122,8 +142,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     maskButton.addEventListener("click", () => {
       const findings = currentFindings();
       const maskedText = createPasteReviewInsertText(options.inputText, findings, mode);
-      cleanup();
-      resolve({ type: "insert", text: maskedText });
+      finish({ type: "insert", text: maskedText });
     });
 
     llmButton.addEventListener("click", () => {
@@ -135,23 +154,21 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
         llmStatus.textContent = RAW_PASTE_BLOCKED_MESSAGE;
         return;
       }
-      cleanup();
-      resolve({ type: "insert", text: options.inputText });
+      finish({ type: "insert", text: options.inputText });
     });
 
     cancelButton.addEventListener("click", () => {
-      cleanup();
-      resolve({ type: "cancel" });
+      finish({ type: "cancel" });
     });
 
     overlay.addEventListener("click", (event) => {
       if (event.target === overlay) {
-        cleanup();
-        resolve({ type: "cancel" });
+        finish({ type: "cancel" });
       }
     });
 
     render();
+    accessibility.activate();
 
     if (shouldAutoRunPasteReviewLlm(mode, options.settings.llm)) {
       void runLlm();

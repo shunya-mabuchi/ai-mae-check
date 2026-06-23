@@ -21,6 +21,7 @@ import { runReviewLlm } from "../lib/reviewLlmRunner";
 import { resolveReviewFindings } from "../lib/reviewSelection";
 import type { AiMaeCheckSettings } from "../lib/settings";
 import { createShadowHost } from "../lib/shadowHost";
+import { setupDialogAccessibility } from "../lib/dialogAccessibility";
 
 export type ConfirmModalDecision =
   | {
@@ -81,6 +82,24 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
       ]
     });
     shadow.append(elements.overlay);
+    let finished = false;
+
+    const finish = (decision: ConfirmModalDecision) => {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      accessibility.dispose();
+      cleanup();
+      resolve(decision);
+    };
+
+    const accessibility = setupDialogAccessibility({
+      overlay: elements.overlay,
+      dialog: elements.dialog,
+      initialFocus: elements.submitButton,
+      onCancel: () => finish({ type: "cancel" })
+    });
 
     const currentFindings = () =>
       resolveReviewFindings({
@@ -131,8 +150,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
         return;
       }
 
-      cleanup();
-      resolve({
+      finish({
         type: "submit",
         text: createConfirmedTextFromFindings(options.inputText, currentFindings(), mode)
       });
@@ -155,18 +173,17 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     });
 
     elements.cancelButton.addEventListener("click", () => {
-      cleanup();
-      resolve({ type: "cancel" });
+      finish({ type: "cancel" });
     });
 
     elements.overlay.addEventListener("click", (event) => {
       if (event.target === elements.overlay) {
-        cleanup();
-        resolve({ type: "cancel" });
+        finish({ type: "cancel" });
       }
     });
 
     renderCandidates();
     renderPreview();
+    accessibility.activate();
   });
 }
