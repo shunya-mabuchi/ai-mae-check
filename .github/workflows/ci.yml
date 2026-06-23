@@ -48,6 +48,9 @@ jobs:
       - name: Public repo safety QA
         run: pnpm qa:public-repo
 
+      - name: Public docs sync QA
+        run: pnpm qa:public-docs
+
       - name: Manifest QA
         run: pnpm qa:extension:manifest
 
