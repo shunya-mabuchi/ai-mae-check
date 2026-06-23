@@ -109,8 +109,9 @@ for (const file of trackedFiles().filter(isProtectedRuntimeFile)) {
 
 const settingsSource = read(paths.settings);
 assertIncludes(settingsSource, 'export const SETTINGS_KEY = "ai-mae-check.settings.v1"', paths.settings);
+assertIncludes(settingsSource, "export const SETTINGS_SCHEMA_VERSION", paths.settings);
 assertIncludes(settingsSource, "chrome.storage.local.get(SETTINGS_KEY", paths.settings);
-assertIncludes(settingsSource, "chrome.storage.local.set({ [SETTINGS_KEY]: settings }", paths.settings);
+assertIncludes(settingsSource, "chrome.storage.local.set({ [SETTINGS_KEY]: normalizedSettings }", paths.settings);
 assertIncludes(settingsSource, "chrome.storage.local.remove(SETTINGS_KEY", paths.settings);
 
 const extensionFetchPattern = /\bfetch\s*\(/u;

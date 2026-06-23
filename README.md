@@ -266,7 +266,7 @@ pnpm typecheck
 
 `pnpm qa:performance-budget` は、ルールベース検出を主判定として即時に動かし、モーダル表示がWebLLMを待たないこと、WebLLM入力・候補数・タイムアウトの基準が明文化されていることを確認するQAです。性能基準は [docs/performance-budget.md](docs/performance-budget.md) にまとめています。ローカルの目安測定には `pnpm bench:rules` を使えます。
 
-Options Pageの設定グループ、保存対象、初期化、設定バリデーションの考え方は [docs/options-settings.md](docs/options-settings.md) にまとめています。
+Options Pageの設定グループ、保存対象、`settingsVersion`、設定マイグレーション、初期化、設定バリデーションの考え方は [docs/options-settings.md](docs/options-settings.md) にまとめています。
 
 `pnpm qa:webllm-model-policy` は、WebLLMの標準モデルID、fallbackモデルID、モデルライセンス確認文書が実装とずれていないかを確認するQAです。モデル選定方針は [docs/webllm-model-policy.md](docs/webllm-model-policy.md) にまとめています。
 
