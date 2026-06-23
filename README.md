@@ -226,6 +226,7 @@ pnpm build:extension
 pnpm build:demo
 pnpm build:worker
 pnpm package:extension
+pnpm qa:public-repo
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
 pnpm test
@@ -242,6 +243,8 @@ pnpm typecheck
 
 `pnpm package:extension` はChrome Web Store提出用のZIPを作成するためのコマンドです。`apps/extension/config/rule-delivery.release.json` の本番ルール配信URL・`keyId`・公開JWKがそろっていない場合は失敗します。
 
+`pnpm qa:public-repo` は、publicリポジトリへ実secret、private JWK、生成物、ログ、ZIPが混入していないかを確認するQAコマンドです。監査手順は [docs/public-repo-safety.md](docs/public-repo-safety.md) にまとめています。
+
 `pnpm qa:extension:manifest` は、ビルド済み拡張のmanifestが初期対象サイト、最小権限、WebLLM bridge公開リソースを満たしているか確認するQAコマンドです。
 
 `pnpm qa:chrome-store` は、提出用ZIP、Chrome Web Store掲載情報、ストア用画像寸法、プライバシーポリシー、誇大表現の混入に加えて、本番ルール配信URL・`keyId`・公開JWKが提出物へ一致して埋め込まれているかをまとめて確認する公開前QAコマンドです。
@@ -250,7 +253,7 @@ pnpm typecheck
 
 ## CI
 
-GitHub Actionsで、PRと `main` 更新時に `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm package:extension`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行します。Chrome Web Store公開前の提出物チェックもPR上で見えるようにしています。
+GitHub Actionsで、PRと `main` 更新時に `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm package:extension`、`pnpm qa:public-repo`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行します。Chrome Web Store公開前の提出物チェックとpublicリポジトリ安全監査もPR上で見えるようにしています。
 
 ## Chrome拡張の読み込み方法
 

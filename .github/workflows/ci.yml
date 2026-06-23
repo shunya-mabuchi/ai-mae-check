@@ -45,6 +45,9 @@ jobs:
       - name: Package extension
         run: pnpm package:extension
 
+      - name: Public repo safety QA
+        run: pnpm qa:public-repo
+
       - name: Manifest QA
         run: pnpm qa:extension:manifest
 
