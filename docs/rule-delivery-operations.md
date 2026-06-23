@@ -85,6 +85,8 @@ pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out ../ai-
 7. mainへマージしてProductionへデプロイする。
 8. 本番 `GET /api/rules/latest` の `version`、`keyId`、`signature` を確認する。
 
+Cloudflare PagesのSecretを追加・更新した場合は、既存のProduction deploymentではなく、Secret保存後に作成されたProduction deploymentで確認します。保存直後に本番APIが503を返す場合は、Production再デプロイが反映されているかを先に確認します。
+
 確認例:
 
 ```powershell

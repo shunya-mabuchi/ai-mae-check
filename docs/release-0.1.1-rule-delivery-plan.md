@@ -41,6 +41,8 @@ Cloudflare Dashboardで設定する場合:
 
 Wranglerで設定する場合は、Cloudflareログイン状態と対象プロジェクトを確認してから行います。秘密鍵の値はGit、Issue、PR、CIログ、PowerShell履歴、スクリーンショット、チャット、レビューコメントへ残さない運用にします。`privateJwk` はマスク済みであってもログ出力しません。
 
+Secretを保存しただけでは、既存のProduction deploymentに反映されない場合があります。Secret設定後はProduction再デプロイを実行し、その後に本番APIの署名付きレスポンスを確認します。
+
 ## 検証
 
 本番API確認:
