@@ -77,4 +77,4 @@ Release本文には次を含めます。
 
 ## 差し戻し時
 
-Chrome Web Storeで差し戻された場合は、ZIPを再提出する前にIssue化します。差し戻し理由、対象画面、修正範囲、再確認コマンドを記録し、PRで修正してから再提出します。
+Chrome Web Storeで差し戻された場合は、ZIPを再提出する前にIssue化します。差し戻し理由、対象画面、修正範囲、再確認コマンドを記録し、PRで修正してから再提出します。原因別の確認項目とIssueテンプレートは [chrome-web-store-rejection-playbook.md](chrome-web-store-rejection-playbook.md) を使います。

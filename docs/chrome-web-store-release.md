@@ -190,10 +190,13 @@ pnpm qa:chrome-store
 
 ## 差し戻し時の対応
 
-1. Googleの指摘内容をそのままIssueへ転記する。
-2. 仕様・権限・説明文・プライバシー申告のどれが原因か切り分ける。
+原因別の確認表、Issueテンプレート、リモートコードやWebLLMモデル取得の説明文は [chrome-web-store-rejection-playbook.md](./chrome-web-store-rejection-playbook.md) にまとめています。
+
+1. Googleの指摘内容をIssueへ転記する。実本文や実キーが含まれる場合はマスクする。
+2. 仕様・権限・説明文・プライバシー申告・リモートコード扱いのどれが原因か切り分ける。
 3. 修正PRを作成する。
-4. 新しいZIPを作成し、再提出する。
+4. CIと公開前QAを通す。
+5. `main` から新しいZIPを作成し、再提出する。
 
 ## Test instructionsドラフト
 
