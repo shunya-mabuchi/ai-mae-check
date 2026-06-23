@@ -107,9 +107,31 @@ export interface ContextAnalysisResult {
 }
 
 export interface LlmContextAnalyzer {
+  prepare(onProgress?: (progress: LlmProgress) => void): Promise<void>;
   analyze(input: string, options?: AnalyzeContextOptions): Promise<ContextAnalysisResult>;
   isReady(): boolean;
-  dispose(): void;
+  dispose(): Promise<void>;
+}
+
+export type LlmRuntimePhase = "idle" | "preparing" | "ready" | "analyzing" | "error" | "disposed";
+
+export interface LlmRuntimeStatus {
+  phase: LlmRuntimePhase;
+  ready: boolean;
+  modelId: string;
+  message: string;
+  errorDetail?: LlmErrorDetail;
+}
+
+export type ContextAnalyzeRequest = AnalyzeContextOptions & {
+  input: string;
+};
+
+export interface LocalLlmRuntimeService {
+  status(): LlmRuntimeStatus;
+  prepare(plan?: ContextCheckPlan): Promise<void>;
+  analyze(request: ContextAnalyzeRequest): Promise<ContextAnalysisResult>;
+  dispose(): Promise<void>;
 }
 
 export interface ConvertCandidatesOptions {

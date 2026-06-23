@@ -2,11 +2,10 @@ import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateA
 import { detectSensitiveText, type DetectionResult } from "@ai-mae-check/core";
 import {
   classifyLlmError,
-  createLlmContextAnalyzer,
+  createLocalLlmRuntimeService,
   isContextAnalysisExecutionError,
-  isWebGpuAvailable,
   type ContextRiskCandidate,
-  type LlmContextAnalyzer
+  type LocalLlmRuntimeService
 } from "@ai-mae-check/llm";
 import {
   createEmptyInputLlmUiState,
@@ -14,7 +13,6 @@ import {
   createLlmResultUiState,
   createLoadingLlmUiState,
   createProgressLlmUiState,
-  createWebGpuUnavailableLlmUiState,
   type DemoLlmUiState
 } from "../lib/demoLlmUiState";
 import { createInitialSelectedFindingIds } from "../lib/demoSelection";
@@ -35,7 +33,7 @@ export interface DemoLlmAnalysisViewModel {
 }
 
 export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
-  const analyzerRef = useRef<LlmContextAnalyzer | null>(null);
+  const runtimeServiceRef = useRef<LocalLlmRuntimeService | null>(null);
   const [llmUiState, setLlmUiState] = useState<DemoLlmUiState>(() => ({
     status: "idle",
     message: "AI文脈チェックは手動で実行できます。",
@@ -44,19 +42,19 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
 
   useEffect(() => {
     return () => {
-      analyzerRef.current?.dispose();
-      analyzerRef.current = null;
+      void runtimeServiceRef.current?.dispose();
+      runtimeServiceRef.current = null;
     };
   }, []);
 
-  const disposeAnalyzer = useCallback(() => {
-    analyzerRef.current?.dispose();
-    analyzerRef.current = null;
+  const disposeRuntimeService = useCallback(async () => {
+    await runtimeServiceRef.current?.dispose();
+    runtimeServiceRef.current = null;
   }, []);
 
-  const getAnalyzer = useCallback(() => {
-    analyzerRef.current ??= createLlmContextAnalyzer();
-    return analyzerRef.current;
+  const getRuntimeService = useCallback(() => {
+    runtimeServiceRef.current ??= createLocalLlmRuntimeService();
+    return runtimeServiceRef.current;
   }, []);
 
   const runLlmDetection = useCallback(
@@ -73,16 +71,12 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
         options.setSelectedRuleFindingIds(createInitialSelectedFindingIds(currentDetection.findings));
       }
 
-      if (!isWebGpuAvailable()) {
-        setLlmUiState(createWebGpuUnavailableLlmUiState());
-        return;
-      }
-
       setLlmUiState(createLoadingLlmUiState());
-      const analyzer = getAnalyzer();
+      const runtimeService = getRuntimeService();
 
       try {
-        const result = await analyzer.analyze(options.text, {
+        const result = await runtimeService.analyze({
+          input: options.text,
           existingFindings: currentDetection.findings,
           onProgress: (progress) => setLlmUiState(createProgressLlmUiState(progress))
         });
@@ -97,7 +91,7 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
                   errorDetail: null
                 }
           );
-          disposeAnalyzer();
+          await disposeRuntimeService();
           return;
         }
 
@@ -107,10 +101,10 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
       } catch (error) {
         const errorDetail = classifyLlmError(error);
         setLlmUiState(createErrorLlmUiState(errorDetail));
-        disposeAnalyzer();
+        await disposeRuntimeService();
       }
     },
-    [disposeAnalyzer, getAnalyzer]
+    [disposeRuntimeService, getRuntimeService]
   );
 
   return {

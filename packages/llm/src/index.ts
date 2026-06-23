@@ -18,7 +18,8 @@ export {
   createJsonParseFallbackMessage,
   formatLlmErrorMessage,
   isContextAnalysisExecutionError,
-  isJsonParseLlmErrorMessage
+  isJsonParseLlmErrorMessage,
+  sanitizeLlmErrorDetail
 } from "./errors";
 export { getLlmErrorSignalCopy } from "./errorSignals";
 export { getAvailableModelIds, resolveModelId } from "./model";
@@ -35,12 +36,14 @@ export {
   selectContextCandidateIdsByConfidence
 } from "./selection";
 export { extractResidualContextTerms, mergeResidualContextCandidates } from "./residualMasking";
+export { createLocalLlmRuntimeService } from "./runtimeService";
 export { buildContextRiskPrompt } from "./prompt";
 export { isWebGpuAvailable } from "./webgpu";
 export type {
   AnalyzeContextOptions,
   ChatMessage,
   ContextAnalysisResult,
+  ContextAnalyzeRequest,
   ContextCheckPlan,
   ContextCheckPlanOptions,
   ContextHintReason,
@@ -54,5 +57,8 @@ export type {
   LlmContextAnalyzer,
   LlmErrorDetail,
   LlmErrorKind,
-  LlmProgress
+  LlmProgress,
+  LlmRuntimePhase,
+  LlmRuntimeStatus,
+  LocalLlmRuntimeService
 } from "./types";

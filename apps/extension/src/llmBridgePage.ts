@@ -1,7 +1,7 @@
 import {
-  createLlmContextAnalyzer,
   type AnalyzeContextOptions,
-  type LlmContextAnalyzer,
+  createLocalLlmRuntimeService,
+  type LocalLlmRuntimeService,
   type LlmProgress
 } from "@ai-mae-check/llm";
 import {
@@ -22,8 +22,8 @@ const expectedBridgeNonce = getLlmBridgeExpectedNonce(window.location.href);
 
 let bridgePort: MessagePort | null = null;
 let bridgeConnected = false;
-let analyzer: LlmContextAnalyzer | null = null;
-let analyzerModelId: string | null = null;
+let runtimeService: LocalLlmRuntimeService | null = null;
+let runtimeModelId: string | null = null;
 
 function post(message: LlmBridgeResponse): void {
   bridgePort?.postMessage(message);
@@ -39,27 +39,27 @@ function postProgress(requestId: string): (progress: LlmProgress) => void {
   };
 }
 
-function getAnalyzer(modelId: string): LlmContextAnalyzer {
-  if (analyzer && analyzerModelId === modelId) {
-    return analyzer;
+async function getRuntimeService(modelId: string): Promise<LocalLlmRuntimeService> {
+  if (runtimeService && runtimeModelId === modelId) {
+    return runtimeService;
   }
 
-  analyzer?.dispose();
-  analyzer = createLlmContextAnalyzer({
+  await runtimeService?.dispose();
+  runtimeService = createLocalLlmRuntimeService({
     modelId,
     workerUrl: getExtensionResourceUrl("llm-worker.js")
   });
-  analyzerModelId = modelId;
-  return analyzer;
+  runtimeModelId = modelId;
+  return runtimeService;
 }
 
 function isModelReady(modelId: string): boolean {
-  return analyzerModelId === modelId && analyzer?.isReady() === true;
+  return runtimeModelId === modelId && runtimeService?.status().ready === true;
 }
 
 async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze" }>): Promise<void> {
   const startedAt = performance.now();
-  const currentAnalyzer = getAnalyzer(request.modelId);
+  const currentRuntimeService = await getRuntimeService(request.modelId);
   try {
     const options: AnalyzeContextOptions = {
       onProgress: postProgress(request.requestId)
@@ -71,7 +71,10 @@ async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze
       options.maxCandidates = request.options.maxCandidates;
     }
 
-    const result = await currentAnalyzer.analyze(request.inputText, options);
+    const result = await currentRuntimeService.analyze({
+      input: request.inputText,
+      ...options
+    });
 
     post({
       type: "analyze-result",

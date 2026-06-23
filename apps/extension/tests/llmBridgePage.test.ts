@@ -2,16 +2,23 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { LLM_BRIDGE_CONNECT, LLM_BRIDGE_READY } from "../src/lib/llmBridgeMessages";
 
 const analyzeMock = vi.fn();
-const isReadyMock = vi.fn(() => false);
+const statusMock = vi.fn(() => ({
+  phase: "idle",
+  ready: false,
+  modelId: "test-model",
+  message: "AI文脈チェックは未準備です。"
+}));
 const disposeMock = vi.fn();
-const createLlmContextAnalyzerMock = vi.fn(() => ({
+const runtimeServiceFactoryMock = vi.fn(() => ({
   analyze: analyzeMock,
-  isReady: isReadyMock,
+  status: statusMock,
+  prepare: vi.fn(),
   dispose: disposeMock
 }));
+const createLocalLlmRuntimeServiceMock = vi.fn((...args: unknown[]) => runtimeServiceFactoryMock(...args));
 
 vi.mock("@ai-mae-check/llm", () => ({
-  createLlmContextAnalyzer: createLlmContextAnalyzerMock
+  createLocalLlmRuntimeService: createLocalLlmRuntimeServiceMock
 }));
 
 vi.mock("../src/lib/extensionRuntime", () => ({
@@ -72,10 +79,22 @@ describe("llmBridgePage", () => {
     vi.resetModules();
     vi.unstubAllGlobals();
     analyzeMock.mockReset();
-    isReadyMock.mockReset();
-    isReadyMock.mockReturnValue(false);
+    statusMock.mockReset();
+    statusMock.mockReturnValue({
+      phase: "idle",
+      ready: false,
+      modelId: "test-model",
+      message: "AI文脈チェックは未準備です。"
+    });
     disposeMock.mockReset();
-    createLlmContextAnalyzerMock.mockClear();
+    runtimeServiceFactoryMock.mockReset();
+    runtimeServiceFactoryMock.mockImplementation(() => ({
+      analyze: analyzeMock,
+      status: statusMock,
+      prepare: vi.fn(),
+      dispose: disposeMock
+    }));
+    createLocalLlmRuntimeServiceMock.mockClear();
   });
 
   it("nonceが一致した接続だけreadyにして既存のanalyzeフローを維持する", async () => {
@@ -108,8 +127,8 @@ describe("llmBridgePage", () => {
 
     await vi.waitFor(() => {
       expect(analyzeMock).toHaveBeenCalledWith(
-        "本文です",
         expect.objectContaining({
+          input: "本文です",
           onProgress: expect.any(Function)
         })
       );
@@ -131,7 +150,6 @@ describe("llmBridgePage", () => {
       modelId: "test-model",
       elapsedMs: 5
     });
-    isReadyMock.mockReturnValue(true);
     const { messageHandler } = await loadBridgePage();
     const port = new FakeMessagePort();
 
@@ -166,6 +184,12 @@ describe("llmBridgePage", () => {
     await vi.waitFor(() => {
       expect(analyzeMock).toHaveBeenCalled();
     });
+    statusMock.mockReturnValue({
+      phase: "ready",
+      ready: true,
+      modelId: "test-model",
+      message: "AI文脈チェックを実行できます。"
+    });
 
     port.dispatch({
       type: "model-state",
@@ -180,6 +204,85 @@ describe("llmBridgePage", () => {
         requestId: "state-2",
         ready: true
       });
+    });
+  });
+
+  it("モデル切り替え時は古いruntimeのdispose完了を待ってから次のruntimeを作る", async () => {
+    let releaseDispose: (() => void) | null = null;
+    const firstAnalyze = vi.fn().mockResolvedValue({
+      candidates: [],
+      summary: "ok",
+      rawText: "",
+      modelId: "first-model",
+      elapsedMs: 1
+    });
+    const secondAnalyze = vi.fn().mockResolvedValue({
+      candidates: [],
+      summary: "ok",
+      rawText: "",
+      modelId: "second-model",
+      elapsedMs: 1
+    });
+    const firstDispose = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseDispose = resolve;
+        })
+    );
+    const secondDispose = vi.fn();
+
+    runtimeServiceFactoryMock
+      .mockImplementationOnce(() => ({
+        analyze: firstAnalyze,
+        status: statusMock,
+        prepare: vi.fn(),
+        dispose: firstDispose
+      }))
+      .mockImplementationOnce(() => ({
+        analyze: secondAnalyze,
+        status: statusMock,
+        prepare: vi.fn(),
+        dispose: secondDispose
+      }));
+
+    const { messageHandler } = await loadBridgePage();
+    const port = new FakeMessagePort();
+
+    messageHandler({
+      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
+      ports: [port]
+    } as MessageEvent<unknown>);
+
+    port.dispatch({
+      type: "analyze",
+      requestId: "request-1",
+      inputText: "本文です",
+      modelId: "first-model",
+      options: {}
+    });
+
+    await vi.waitFor(() => {
+      expect(firstAnalyze).toHaveBeenCalled();
+    });
+
+    port.dispatch({
+      type: "analyze",
+      requestId: "request-2",
+      inputText: "本文です",
+      modelId: "second-model",
+      options: {}
+    });
+    await Promise.resolve();
+
+    expect(firstDispose).toHaveBeenCalled();
+    expect(runtimeServiceFactoryMock).toHaveBeenCalledTimes(1);
+    expect(secondAnalyze).not.toHaveBeenCalled();
+
+    releaseDispose?.();
+
+    await vi.waitFor(() => {
+      expect(runtimeServiceFactoryMock).toHaveBeenCalledTimes(2);
+      expect(secondAnalyze).toHaveBeenCalled();
     });
   });
 

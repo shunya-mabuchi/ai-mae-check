@@ -59,7 +59,7 @@ export interface WebLlmEngineSession {
 export interface WebLlmEngineLifecycle {
   getOrCreate(onProgress?: (progress: LlmProgress) => void): Promise<WebLlmEngineSession>;
   isReady(): boolean;
-  dispose(): void;
+  dispose(): Promise<void>;
 }
 
 async function loadWebLlmModule(): Promise<WebLlmModule> {
@@ -135,13 +135,20 @@ export function createWebLlmEngineLifecycle(options: CreateWebLlmEngineLifecycle
       return engine !== null && loadedModelId !== null;
     },
 
-    dispose(): void {
-      void engine?.unload?.();
-      worker?.terminate();
+    async dispose(): Promise<void> {
+      const engineToUnload = engine;
+      const workerToTerminate = worker;
+
       worker = null;
       engine = null;
       loadedModelId = null;
       enginePromise = null;
+
+      try {
+        await engineToUnload?.unload?.();
+      } finally {
+        workerToTerminate?.terminate();
+      }
     }
   };
 }

@@ -235,9 +235,7 @@ export function isJsonParseLlmErrorMessage(message: string | undefined): boolean
     normalizedMessage.includes("AI文脈チェックの結果を読み取れませんでした") ||
     normalizedMessage.includes("AI文脈チェックの出力形式を読み取れませんでした") ||
     normalizedMessage.includes("AI文脈チェックの出力形式は読み取れませんでした") ||
-    lowerMessage.includes("json") ||
-    (normalizedMessage.includes("隱ｭ縺ｿ蜿悶ｌ") &&
-      (normalizedMessage.includes("AI譁・ц繝√ぉ繝・け") || normalizedMessage.includes("蜃ｺ蜉帛ｽ｢蠑・")))
+    lowerMessage.includes("json")
   );
 }
 
