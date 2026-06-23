@@ -4,15 +4,14 @@ import {
   ANALYZING_MESSAGE,
   DEFAULT_CONFIDENCE_THRESHOLD,
   DEFAULT_MAX_INPUT_CHARS,
-  DEFAULT_MODEL_ID,
-  WEBGPU_UNAVAILABLE_MESSAGE
+  DEFAULT_MODEL_ID
 } from "./constants";
 import {
   createContextAnalysisFallbackResult,
   createContextAnalysisResultFromRawText
 } from "./analysisResult";
 import { buildContextCheckPlan, createContextCheckInput } from "./contextBuilder";
-import { classifyLlmError } from "./errors";
+import { classifyLlmError, createLlmErrorDetailError, sanitizeLlmErrorDetail } from "./errors";
 import { buildContextRiskPrompt } from "./prompt";
 import { ensureWebGpuAdapter } from "./webgpuAdapter";
 import type {
@@ -26,7 +25,8 @@ import {
   createWebLlmEngineLifecycle,
   type WebLlmChatMessage,
   type WebLlmEngine,
-  type WebLlmEngineLifecycle
+  type WebLlmEngineLifecycle,
+  type WebLlmEngineSession
 } from "./webllmLifecycle";
 
 type NormalizedLlmAnalyzerOptions = Required<Omit<LlmAnalyzerOptions, "workerUrl">> & {
@@ -138,6 +138,28 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
     });
   }
 
+  private async prepareEngine(onProgress?: (progress: LlmProgress) => void): Promise<WebLlmEngineSession> {
+    if (typeof Worker === "undefined") {
+      throw createLlmErrorDetailError(classifyLlmError(new Error("Worker is not available")));
+    }
+
+    const webGpuError = await ensureWebGpuAdapter();
+    if (webGpuError) {
+      throw createLlmErrorDetailError(webGpuError);
+    }
+
+    try {
+      return await this.lifecycle.getOrCreate(onProgress);
+    } catch (error) {
+      await this.dispose();
+      throw error;
+    }
+  }
+
+  async prepare(onProgress?: (progress: LlmProgress) => void): Promise<void> {
+    await this.prepareEngine(onProgress);
+  }
+
   async analyze(input: string, options: AnalyzeContextOptions = {}): Promise<ContextAnalysisResult> {
     const startedAt = performance.now();
     const request = createAnalysisRequest(input, this.options, options);
@@ -146,18 +168,8 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
       return createAbortedResult(this.options.modelId, startedAt);
     }
 
-    if (typeof Worker === "undefined") {
-      const detail = classifyLlmError(new Error("Worker is not available"));
-      return createExecutionFallbackResult(request, this.options.modelId, startedAt, WEBGPU_UNAVAILABLE_MESSAGE, detail);
-    }
-
-    const webGpuError = await ensureWebGpuAdapter();
-    if (webGpuError) {
-      return createExecutionFallbackResult(request, this.options.modelId, startedAt, webGpuError.message, webGpuError);
-    }
-
     try {
-      const { engine, modelId } = await this.lifecycle.getOrCreate(options.onProgress);
+      const { engine, modelId } = await this.prepareEngine(options.onProgress);
 
       if (options.signal?.aborted) {
         return createAbortedResult(modelId, startedAt);
@@ -166,8 +178,8 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
       const rawText = await runContextAnalysis(engine, request, this.options, options.onProgress);
       return formatContextAnalysisResult(request, rawText, modelId, startedAt, this.options);
     } catch (error) {
-      const detail = classifyLlmError(error);
-      this.dispose();
+      const detail = sanitizeLlmErrorDetail(classifyLlmError(error), request.inputForModel);
+      await this.dispose();
       return createExecutionFallbackResult(request, this.options.modelId, startedAt, detail.message, detail);
     }
   }
@@ -176,8 +188,8 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
     return this.lifecycle.isReady();
   }
 
-  dispose(): void {
-    this.lifecycle.dispose();
+  async dispose(): Promise<void> {
+    await this.lifecycle.dispose();
   }
 }
 
@@ -206,6 +218,6 @@ export async function analyzeContextRisk(input: string, options: AnalyzeContextO
   try {
     return await analyzer.analyze(input, options);
   } finally {
-    analyzer.dispose();
+    await analyzer.dispose();
   }
 }

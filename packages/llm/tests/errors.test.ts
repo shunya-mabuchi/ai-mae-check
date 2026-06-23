@@ -5,6 +5,7 @@ import {
   DEFAULT_MODEL_ID,
   formatLlmErrorMessage,
   isContextAnalysisExecutionError,
+  sanitizeLlmErrorDetail,
   type ContextAnalysisResult
 } from "../src";
 import { buildLlmErrorDetail } from "./testBuilders";
@@ -205,5 +206,44 @@ describe("formatLlmErrorMessage", () => {
     expect(detail.technicalDetail).not.toContain("山田花子");
     expect(detail.technicalDetail).not.toContain("Project Blue Bridge");
     expect(detail.technicalDetail).not.toContain("顧客Aの社外秘方針");
+  });
+
+  it("未ラベルの短い機微情報もtechnicalDetailから伏せる", () => {
+    const detail = classifyLlmError(new Error("Worker failed near taro@example.com"));
+
+    expect(detail.kind).toBe("worker");
+    expect(detail.technicalDetail).toContain("[redacted]");
+    expect(detail.technicalDetail).not.toContain("taro@example.com");
+  });
+
+  it("sourceTextと一致する本文断片をtechnicalDetailから伏せる", () => {
+    const detail = sanitizeLlmErrorDetail(
+      classifyLlmError(new Error("Worker failed near Project Blue Bridge and 山田花子")),
+      "Project Blue Bridge の提案メモです。候補者の山田花子さんについて扱います。"
+    );
+
+    expect(detail.technicalDetail).toContain("[redacted]");
+    expect(detail.technicalDetail).not.toContain("Project");
+    expect(detail.technicalDetail).not.toContain("Blue");
+    expect(detail.technicalDetail).not.toContain("Bridge");
+    expect(detail.technicalDetail).not.toContain("山田花子");
+  });
+
+  it("埋め込み済みerrorDetailのmessageとhintも信用せず伏せる", () => {
+    const detail = classifyLlmError(
+      Object.assign(new Error("wrapped"), {
+        llmErrorDetail: {
+          kind: "worker",
+          message: "Worker failed for taro@example.com",
+          hint: "090-1234-5678 に関する入力を確認してください。",
+          technicalDetail: "Project Blue Bridge failed"
+        }
+      })
+    );
+
+    expect(detail.message).toContain("[redacted]");
+    expect(detail.message).not.toContain("taro@example.com");
+    expect(detail.hint).toContain("[redacted]");
+    expect(detail.hint).not.toContain("090-1234-5678");
   });
 });
