@@ -8,5 +8,17 @@ describe("content script UX", () => {
 
     expect(contentScript).not.toContain("riskBadge");
     expect(contentScript).not.toContain("mountRiskBadge");
+    expect(contentScript).not.toContain("position: fixed");
+    expect(contentScript).not.toContain("bottom:");
+  });
+
+  it("拡張アイコンは常時ステータス表示ではなく設定画面への導線にする", () => {
+    const backgroundScript = readFileSync(resolve(process.cwd(), "entrypoints/background.ts"), "utf8");
+    const configSource = readFileSync(resolve(process.cwd(), "wxt.config.ts"), "utf8");
+
+    expect(backgroundScript).toContain("chrome.action.onClicked.addListener");
+    expect(backgroundScript).toContain("chrome.runtime.openOptionsPage");
+    expect(configSource).toContain('default_title: "AIまえチェック"');
+    expect(configSource).not.toContain("default_popup");
   });
 });

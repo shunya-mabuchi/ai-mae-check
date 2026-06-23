@@ -42,6 +42,18 @@ Chromeで次を行います。
 - Content Scriptのmatchesが対象サイトに限定されている
 - WebLLM bridge用の `llm-worker.js` と `llm-bridge.html` がweb accessible resourcesに含まれている
 - 拡張アイコンがmanifestに設定されている
+- 拡張アイコンをクリックするとOptions Pageを開ける
+
+## 表示方針
+
+ページ上には、右下固定の「safe」「risk」などの常時ステータス表示を出しません。常時表示は、実際の貼り付け前確認・送信前確認モーダルと役割が重なり、ユーザーが「安全判定済み」と誤解する可能性があるためです。
+
+表示の役割は次のように分けます。
+
+- 拡張アイコン: 設定画面への入口。対象サイトや検出ルール、AI文脈チェック設定を確認するために使う
+- 確認モーダル: 検出が発生したときだけ表示し、検出項目、安全化プレビュー、AI文脈チェック候補、送信可否を表示する
+- Options Page: 有効/無効、対象サイト、検出ルール、AI文脈チェック、診断情報を管理する
+- ページ常時表示: 原則として表示しない。必要になった場合も、モーダルと同じ意味の安全/危険ラベルは出さない
 
 ## ダミーテストデータ
 
@@ -83,6 +95,8 @@ https://user:password@example.com/internal/proposal
 - [ ] 拡張機能を再読み込み後、対象ページも再読み込みした
 - [ ] 対象hostだけでcontent scriptが動き、`<all_urls>` に頼っていない
 - [ ] Options Pageの対象サイトON/OFFが反映される
+- [ ] 拡張アイコンをクリックするとOptions Pageが開く
+- [ ] ページ右下などに常時ステータス表示が出ない
 - [ ] 通常の入力欄を検出できる
 - [ ] password / email / tel / number系inputには介入しない
 - [ ] credit card系inputと思われる入力欄、disabled / readonly / 非表示要素には介入しない
