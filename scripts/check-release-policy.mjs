@@ -53,6 +53,7 @@ for (const command of [
   "pnpm package:extension",
   "pnpm qa:public-repo",
   "pnpm qa:public-docs",
+  "pnpm qa:privacy-regression",
   "pnpm qa:webllm-model-policy",
   "pnpm qa:dependency-policy",
   "pnpm qa:extension:size",

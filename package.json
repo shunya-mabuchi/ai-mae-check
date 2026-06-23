@@ -26,6 +26,7 @@
     "rules:keygen": "node scripts/generate-rule-keypair.mjs",
     "qa:public-repo": "node scripts/check-public-repo-safety.mjs",
     "qa:public-docs": "node scripts/check-public-docs-sync.mjs",
+    "qa:privacy-regression": "node scripts/check-privacy-regression.mjs",
     "qa:webllm-model-policy": "node scripts/check-webllm-model-policy.mjs",
     "qa:dependency-policy": "node scripts/check-dependency-policy.mjs",
     "qa:release-policy": "node scripts/check-release-policy.mjs",

@@ -228,6 +228,7 @@ pnpm build:worker
 pnpm package:extension
 pnpm qa:public-repo
 pnpm qa:public-docs
+pnpm qa:privacy-regression
 pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
 pnpm qa:release-policy
@@ -253,6 +254,8 @@ pnpm typecheck
 
 `pnpm qa:public-docs` は、README、LP、Chrome Web Store掲載文、プライバシー方針、サポート導線の重要URLとプライバシー表現がずれていないかを確認する公開文書同期QAです。
 
+`pnpm qa:privacy-regression` は、本文・検出結果・placeholderMapを永続保存しないこと、外部送信しないこと、`chrome.storage.local` の利用が設定保存に限られていることを確認するQAです。運用は [docs/privacy-regression.md](docs/privacy-regression.md) にまとめています。
+
 `pnpm qa:webllm-model-policy` は、WebLLMの標準モデルID、fallbackモデルID、モデルライセンス確認文書が実装とずれていないかを確認するQAです。モデル選定方針は [docs/webllm-model-policy.md](docs/webllm-model-policy.md) にまとめています。
 
 `pnpm qa:dependency-policy` は、依存関係アップデートとライセンス確認の運用ドキュメントが、現在のCIと公開前QAの前提からずれていないか確認するQAです。運用は [docs/dependency-maintenance.md](docs/dependency-maintenance.md) にまとめています。
@@ -271,7 +274,7 @@ pnpm typecheck
 
 ## CI
 
-GitHub Actionsで、PRと `main` 更新時に `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm package:extension`、公開前QA一式を実行します。Chrome Web Store公開前の提出物チェック、publicリポジトリ安全監査、公開文書同期、モデル/依存/リリース方針のずれもPR上で見えるようにしています。
+GitHub Actionsで、PRと `main` 更新時に `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm package:extension`、公開前QA一式を実行します。Chrome Web Store公開前の提出物チェック、publicリポジトリ安全監査、公開文書同期、プライバシー回帰チェック、モデル/依存/リリース方針のずれもPR上で見えるようにしています。
 
 `main` ブランチは保護し、PR経由の更新と必須チェック通過を前提にしています。運用方針は [docs/branch-protection.md](docs/branch-protection.md) にまとめています。
 

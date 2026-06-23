@@ -29,6 +29,7 @@ AIまえチェックはChrome拡張がプロダクト本体です。GitHub Relea
 ```bash
 pnpm qa:public-repo
 pnpm qa:public-docs
+pnpm qa:privacy-regression
 pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
 pnpm qa:extension:size

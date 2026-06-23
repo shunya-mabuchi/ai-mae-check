@@ -51,6 +51,9 @@ jobs:
       - name: Public docs sync QA
         run: pnpm qa:public-docs
 
+      - name: Privacy regression QA
+        run: pnpm qa:privacy-regression
+
       - name: WebLLM model policy QA
         run: pnpm qa:webllm-model-policy
 

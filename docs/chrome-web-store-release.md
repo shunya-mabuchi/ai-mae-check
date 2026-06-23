@@ -117,6 +117,7 @@ pnpm build:extension
 pnpm package:extension
 pnpm qa:public-repo
 pnpm qa:public-docs
+pnpm qa:privacy-regression
 pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
 pnpm qa:release-policy
@@ -144,6 +145,7 @@ pnpm qa:chrome-store
 - [ ] `pnpm package:extension` でZIPを作成できる
 - [ ] `pnpm qa:public-repo` が通る
 - [ ] `pnpm qa:public-docs` が通る
+- [ ] `pnpm qa:privacy-regression` が通る
 - [ ] `pnpm qa:webllm-model-policy` が通る
 - [ ] `pnpm qa:dependency-policy` が通る
 - [ ] `pnpm qa:release-policy` が通る
