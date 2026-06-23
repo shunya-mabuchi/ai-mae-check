@@ -255,6 +255,8 @@ pnpm typecheck
 
 GitHub Actionsで、PRと `main` 更新時に `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm package:extension`、`pnpm qa:public-repo`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行します。Chrome Web Store公開前の提出物チェックとpublicリポジトリ安全監査もPR上で見えるようにしています。
 
+`main` ブランチは保護し、PR経由の更新と必須チェック通過を前提にしています。運用方針は [docs/branch-protection.md](docs/branch-protection.md) にまとめています。
+
 ## Chrome拡張の読み込み方法
 
 1. `pnpm build:extension` を実行する
