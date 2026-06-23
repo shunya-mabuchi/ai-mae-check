@@ -1,23 +1,23 @@
 # Options Pageと設定設計
 
-AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが調整するための画面です。貼り付け本文や検出結果を保存する場所ではありません。
+AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが調整するための画面です。貼り付け本文、送信本文、検出結果、placeholderMapを保存する場所ではありません。
 
 ## 設定グループ
-
-現在の設定は次のグループに分けます。
 
 - 基本設定: 拡張機能全体の有効/無効
 - 対象サイト: ChatGPT / Claude / GeminiごとのON/OFF
 - 検出ルール: ルールベース検出ごとのON/OFF
 - WebLLM: AI文脈チェックの有効/無効、モデルID、手動/自動実行
 - 設定の初期化: `chrome.storage.local` に保存された設定キーの削除
+- 診断情報: 本文を含まない設定状態と環境情報のコピー
 
 ## 保存するもの
 
-設定は `chrome.storage.local` の `ai-mae-check.settings.v1` に保存します。
+設定は `chrome.storage.local` の `ai-mae-check.settings.v1` に保存します。保存する設定オブジェクトには `settingsVersion` を持たせます。
 
-保存するのは次だけです。
+保存対象は次だけです。
 
+- `settingsVersion`
 - 拡張機能の有効/無効
 - 対象サイトごとのON/OFF
 - 検出ルールごとのON/OFF
@@ -32,13 +32,22 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 - 検出結果
 - placeholderMap
 - 送信履歴
-- AI文脈チェックの入力本文と出力本文
+- AI文脈チェックの入力本文や出力本文
+- ファイル本文
 
-## バリデーション
+## スキーマとマイグレーション
 
-設定読み込み時は `normalizeSettings` で不足項目を初期値で補完します。Options Page上では `validateSettings` の結果を使い、現在の設定形式が有効かを表示します。
+現在の設定スキーマは `SETTINGS_SCHEMA_VERSION = 1` です。
 
-設定保存、読み込み、初期化でChrome storageのエラーが発生した場合は、Options Pageに日本語メッセージを表示します。エラーメッセージには貼り付け本文や検出結果を含めません。
+`normalizeSettings` / `migrateSettings` は、未設定、古い設定、壊れた設定を現在のスキーマへ補完します。
+
+- `settingsVersion` がない古い設定は、現在の `settingsVersion` を付与します
+- 不足した対象サイトや検出ルールは初期値で補完します
+- 不正な型の値は初期値へ戻します
+- 未知のキーは保存対象に含めません
+- 本文らしきキーが混ざっていても、正規化後の設定には残しません
+
+`loadSettings` は保存値を必ず `normalizeSettings` に通して返します。`saveSettings` は保存前に正規化し、保存対象を設定だけに限定します。
 
 ## 初期化
 
@@ -46,14 +55,9 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 
 本文や検出結果はそもそも保存していないため、初期化で削除する対象には含まれません。WebLLMのモデルキャッシュはChromeやWebLLMランタイムが管理する保存領域であり、この設定初期化の対象外です。
 
-## 今後のスキーマ変更
+## 関連ファイル
 
-設定項目を増やす場合は、#300 の設定スキーマ/マイグレーション方針と合わせて対応します。新しい設定を追加したら、次を更新します。
-
-- `AiMaeCheckSettings`
-- `DEFAULT_SETTINGS`
-- `normalizeSettings`
-- `validateSettings`
-- Options Pageの表示
+- `apps/extension/src/lib/settings.ts`
 - `apps/extension/tests/settings.test.ts`
-- プライバシー方針とREADMEの保存対象説明
+- `docs/privacy-regression.md`
+- `scripts/check-privacy-regression.mjs`

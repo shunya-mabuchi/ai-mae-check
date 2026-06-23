@@ -3,10 +3,12 @@ import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
 import { siteIdFromHostname, targetSites, type SiteId } from "./sites";
 
 export const SETTINGS_KEY = "ai-mae-check.settings.v1";
+export const SETTINGS_SCHEMA_VERSION = 1;
 
 export type LlmRunMode = "manual" | "auto";
 
 export interface AiMaeCheckSettings {
+  settingsVersion: number;
   enabled: boolean;
   sites: Record<SiteId, boolean>;
   rules: Record<string, boolean>;
@@ -27,69 +29,105 @@ function defaultSites(): Record<SiteId, boolean> {
 }
 
 function defaultRules(): Record<string, boolean> {
-  return Object.fromEntries(detectorRules.map((rule) => [rule.id, true]));
+  return Object.fromEntries(detectorRules.map((rule) => [rule.id, true] as const));
 }
 
-export const DEFAULT_SETTINGS: AiMaeCheckSettings = {
-  enabled: true,
-  sites: defaultSites(),
-  rules: defaultRules(),
-  llm: {
+function createDefaultSettings(): AiMaeCheckSettings {
+  return {
+    settingsVersion: SETTINGS_SCHEMA_VERSION,
     enabled: true,
-    modelId: DEFAULT_MODEL_ID,
-    mode: "manual"
-  }
-};
+    sites: defaultSites(),
+    rules: defaultRules(),
+    llm: {
+      enabled: true,
+      modelId: DEFAULT_MODEL_ID,
+      mode: "manual"
+    }
+  };
+}
+
+export const DEFAULT_SETTINGS: AiMaeCheckSettings = createDefaultSettings();
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function booleanEntries(value: unknown): Record<string, boolean> {
-  if (!isRecord(value)) {
-    return {};
-  }
-
-  return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, boolean] => typeof entry[1] === "boolean"));
+function readBoolean(value: unknown, fallback: boolean): boolean {
+  return typeof value === "boolean" ? value : fallback;
 }
 
-export function normalizeSettings(value: unknown): AiMaeCheckSettings {
+function normalizeKnownBooleanMap<T extends string>(
+  ids: readonly T[],
+  value: unknown,
+  defaults: Record<T, boolean>
+): Record<T, boolean> {
+  const source = isRecord(value) ? value : {};
+
+  return Object.fromEntries(
+    ids.map((id) => [id, typeof source[id] === "boolean" ? source[id] : defaults[id]])
+  ) as Record<T, boolean>;
+}
+
+function normalizeRuleSettings(value: unknown, defaults: Record<string, boolean>): Record<string, boolean> {
+  const source = isRecord(value) ? value : {};
+
+  return Object.fromEntries(
+    detectorRules.map((rule) => [rule.id, typeof source[rule.id] === "boolean" ? source[rule.id] : defaults[rule.id]])
+  ) as Record<string, boolean>;
+}
+
+function normalizeModelId(value: unknown): string {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : DEFAULT_SETTINGS.llm.modelId;
+}
+
+function normalizeLlmMode(value: unknown): LlmRunMode {
+  return value === "auto" ? "auto" : "manual";
+}
+
+export function migrateSettings(value: unknown): AiMaeCheckSettings {
   if (!isRecord(value)) {
-    return DEFAULT_SETTINGS;
+    return createDefaultSettings();
   }
 
-  const sites = {
-    ...DEFAULT_SETTINGS.sites,
-    ...booleanEntries(value.sites)
-  } as Record<SiteId, boolean>;
-  const rules = {
-    ...DEFAULT_SETTINGS.rules,
-    ...booleanEntries(value.rules)
-  };
+  const defaults = createDefaultSettings();
   const llmValue = isRecord(value.llm) ? value.llm : {};
 
   return {
-    enabled: typeof value.enabled === "boolean" ? value.enabled : DEFAULT_SETTINGS.enabled,
-    sites,
-    rules,
+    settingsVersion: SETTINGS_SCHEMA_VERSION,
+    enabled: readBoolean(value.enabled, defaults.enabled),
+    sites: normalizeKnownBooleanMap(
+      targetSites.map((site) => site.id),
+      value.sites,
+      defaults.sites
+    ),
+    rules: normalizeRuleSettings(value.rules, defaults.rules),
     llm: {
-      enabled: typeof llmValue.enabled === "boolean" ? llmValue.enabled : DEFAULT_SETTINGS.llm.enabled,
-      modelId: typeof llmValue.modelId === "string" && llmValue.modelId.length > 0 ? llmValue.modelId : DEFAULT_SETTINGS.llm.modelId,
-      mode: llmValue.mode === "auto" ? "auto" : "manual"
+      enabled: readBoolean(llmValue.enabled, defaults.llm.enabled),
+      modelId: normalizeModelId(llmValue.modelId),
+      mode: normalizeLlmMode(llmValue.mode)
     }
   };
 }
 
+export function normalizeSettings(value: unknown): AiMaeCheckSettings {
+  return migrateSettings(value);
+}
+
 function chromeStorageErrorMessage(action: "読み込み" | "保存" | "初期化"): string | null {
   const message = chrome.runtime?.lastError?.message;
-  return message ? `設定の${action}に失敗しました。Chromeの拡張機能ストレージを確認してください。詳細: ${message}` : null;
+  return message
+    ? `設定の${action}に失敗しました。Chromeの拡張機能ストレージを確認してください。詳細: ${message}`
+    : null;
 }
 
 export function validateSettings(settings: AiMaeCheckSettings): SettingsValidationResult {
   const messages: string[] = [];
-  const missingSites = targetSites.filter((site) => typeof settings.sites[site.id] !== "boolean");
-  const missingRules = detectorRules.filter((rule) => typeof settings.rules[rule.id] !== "boolean");
+  const missingSites = targetSites.filter((site) => typeof settings.sites?.[site.id] !== "boolean");
+  const missingRules = detectorRules.filter((rule) => typeof settings.rules?.[rule.id] !== "boolean");
 
+  if (settings.settingsVersion !== SETTINGS_SCHEMA_VERSION) {
+    messages.push("設定バージョンが古いか不正です。現在の形式に補完されます。");
+  }
   if (missingSites.length > 0) {
     messages.push("対象サイト設定に不足があります。不足分は初期値で補完されます。");
   }
@@ -123,8 +161,10 @@ export async function loadSettings(): Promise<AiMaeCheckSettings> {
 }
 
 export async function saveSettings(settings: AiMaeCheckSettings): Promise<void> {
+  const normalizedSettings = normalizeSettings(settings);
+
   return new Promise((resolve, reject) => {
-    chrome.storage.local.set({ [SETTINGS_KEY]: settings }, () => {
+    chrome.storage.local.set({ [SETTINGS_KEY]: normalizedSettings }, () => {
       const errorMessage = chromeStorageErrorMessage("保存");
       if (errorMessage) {
         reject(new Error(errorMessage));
@@ -143,7 +183,7 @@ export async function resetSettings(): Promise<AiMaeCheckSettings> {
         reject(new Error(errorMessage));
         return;
       }
-      resolve(DEFAULT_SETTINGS);
+      resolve(createDefaultSettings());
     });
   });
 }
