@@ -69,6 +69,9 @@ jobs:
       - name: Demo SEO QA
         run: pnpm qa:demo:seo
 
+      - name: Portfolio case study QA
+        run: pnpm qa:portfolio-case-study
+
       - name: Extension size budget QA
         run: pnpm qa:extension:size
 

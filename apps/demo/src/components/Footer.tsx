@@ -31,6 +31,9 @@ export function Footer() {
             <a href="https://github.com/shunya-mabuchi/ai-mae-check#readme" className="transition hover:text-ink">
               README
             </a>
+            <a href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/portfolio-case-study.md" className="transition hover:text-ink">
+              ケーススタディ
+            </a>
             <a href="/privacy" className="transition hover:text-ink">
               プライバシー方針
             </a>

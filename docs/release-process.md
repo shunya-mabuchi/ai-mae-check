@@ -33,6 +33,7 @@ pnpm qa:privacy-regression
 pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
 pnpm qa:demo:seo
+pnpm qa:portfolio-case-study
 pnpm qa:extension:size
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
