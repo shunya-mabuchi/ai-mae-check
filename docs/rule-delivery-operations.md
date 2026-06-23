@@ -64,6 +64,7 @@ pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out ../ai-
 
 - `publicJwk`: `apps/extension/config/rule-delivery.release.json`
 - `privateJwk`: Cloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK`
+- `keyId`: Cloudflare Pages Production環境の `RULE_KEY_ID` と拡張側設定を一致させる
 
 注意:
 
@@ -86,6 +87,8 @@ pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out ../ai-
 8. 本番 `GET /api/rules/latest` の `version`、`keyId`、`signature` を確認する。
 
 Cloudflare PagesのSecretを追加・更新した場合は、既存のProduction deploymentではなく、Secret保存後に作成されたProduction deploymentで確認します。保存直後に本番APIが503を返す場合は、Production再デプロイが反映されているかを先に確認します。
+
+本番APIの `keyId` が古い値のままだと、署名検証はできても拡張側の期待する `keyId` と一致せず、リモートルールは採用されません。`RULE_KEY_ID` もProduction環境で明示的に更新します。
 
 確認例:
 

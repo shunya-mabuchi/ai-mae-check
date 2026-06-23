@@ -37,11 +37,12 @@ Cloudflare Dashboardで設定する場合:
 1. Workers & Pages > `ai-mae-check` > 設定 > 変数とシークレットを開く。
 2. Production環境にSecretとして `RULE_SIGNING_PRIVATE_JWK` を追加する。
 3. 値には `--private-out` で保存した `privateJwk` JSONを1行のJSON文字列として入れる。
-4. 保存後にProduction deployを実行する。
+4. Production環境の `RULE_KEY_ID` を `ai-mae-check-rules-2026-06-v2` に設定する。
+5. 保存後にProduction deployを実行する。
 
 Wranglerで設定する場合は、Cloudflareログイン状態と対象プロジェクトを確認してから行います。秘密鍵の値はGit、Issue、PR、CIログ、PowerShell履歴、スクリーンショット、チャット、レビューコメントへ残さない運用にします。`privateJwk` はマスク済みであってもログ出力しません。
 
-Secretを保存しただけでは、既存のProduction deploymentに反映されない場合があります。Secret設定後はProduction再デプロイを実行し、その後に本番APIの署名付きレスポンスを確認します。
+Secretを保存しただけでは、既存のProduction deploymentに反映されない場合があります。Secret設定後はProduction再デプロイを実行し、その後に本番APIの署名付きレスポンスを確認します。`RULE_KEY_ID` が拡張側の `keyId` と一致しない場合、署名自体が正しくても拡張側では採用されません。
 
 ## 検証
 
