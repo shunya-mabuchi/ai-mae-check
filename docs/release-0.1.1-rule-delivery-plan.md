@@ -19,6 +19,8 @@
 5. `pnpm build:extension`、`pnpm package:extension`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
 6. Chrome Web Storeへ0.1.1として新しいZIPを提出する。
 
+鍵ローテーション、壊れたルール配信時のロールバック、旧 `keyId` の扱いは [rule-delivery-operations.md](./rule-delivery-operations.md) に従います。
+
 ## やらないこと
 
 - 0.1.0公開済みZIPの差し替え
@@ -35,7 +37,7 @@ Cloudflare Dashboardで設定する場合:
 3. 値には `pnpm rules:keygen` が出力した `privateJwk` JSONを1行のJSON文字列として入れる。
 4. 保存後にProduction deployを実行する。
 
-Wranglerで設定する場合は、Cloudflareログイン状態と対象プロジェクトを確認してから行います。秘密鍵の値はターミナル履歴やGitに残さない運用にします。
+Wranglerで設定する場合は、Cloudflareログイン状態と対象プロジェクトを確認してから行います。秘密鍵の値はGit、Issue、PR、CIログ、PowerShell履歴、スクリーンショット、チャット、レビューコメントへ残さない運用にします。`privateJwk` はマスク済みであってもログ出力しません。
 
 ## 検証
 
@@ -56,7 +58,7 @@ Invoke-RestMethod -Uri https://ai-mae-check.pages.dev/api/rules/latest
 
 - ビルド済みContent Script内に本番URL、`keyId`、公開JWKの `x` / `y` が含まれる
 - 署名検証に成功した場合だけ追加ルールが使われる
-- 署名検証に失敗した場合は同梱ルールで動く
+- 署名検証、通信、JSON形式、署名欠落、`keyId` 不一致のいずれかに失敗した場合は同梱ルールで動く
 
 ## Issue
 

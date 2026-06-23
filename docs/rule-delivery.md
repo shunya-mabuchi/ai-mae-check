@@ -72,6 +72,8 @@ AIまえチェックでは、ユーザー本文をサーバーへ送らずに、
 - 秘密鍵: Cloudflare Workersの環境変数またはsecretとして管理する
 - 本番用秘密鍵はリポジトリに置かない
 - `apps/worker/.dev.vars.example` はプレースホルダーであり、そのまま本番利用しない
+- `keyId` は鍵世代を表し、拡張側の公開JWKとWorker側の署名鍵を対応づける
+- `payload.version` はルール配信内容の世代を表し、ロールバック判断に使う
 
 鍵生成:
 
@@ -81,13 +83,15 @@ pnpm rules:keygen
 
 出力された `publicJwk` を拡張側の公開鍵へ反映し、`privateJwk` をWorkerの `RULE_SIGNING_PRIVATE_JWK` に設定します。
 
+鍵ローテーション、壊れたルール配信時のロールバック、`privateJwk` の扱いは [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
+
 ## 拡張側フロー
 
 1. `VITE_RULE_DELIVERY_URL` が未設定なら、リモート取得を行わず同梱ルールだけで検出する
 2. URLが設定されている場合、Content Script起動時に `GET /api/rules/latest` を実行する
 3. レスポンスを `verifySignedRemoteRuleBundle` で検証する
 4. 検証OKなら `detectSensitiveText(input, { extraRules })` に追加ルールとして渡す
-5. 検証NG、通信失敗、形式不正の場合は空の追加ルールとして扱い、同梱ルールへフォールバックする
+5. 検証NG、通信失敗、HTTPエラー、JSON形式不正、署名欠落、`keyId` 不一致の場合は空の追加ルールとして扱い、同梱ルールへフォールバックする
 
 Chrome Web Store提出用のZIPは `apps/extension/config/rule-delivery.release.json` を基準に組み立てます。`pnpm package:extension` は、本番URL・`keyId`・公開JWKがそろっていない場合は失敗します。
 
