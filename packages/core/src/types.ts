@@ -100,12 +100,29 @@ export interface RiskScoreOptions {
 
 export type DlpPolicyAction = "allow" | "confirm" | "sanitize_required";
 
+export type DlpPolicySeverity = "none" | "low" | "medium" | "high" | "critical";
+
+export type PolicyAction = DlpPolicyAction;
+
+export type PolicySeverity = DlpPolicySeverity;
+
 export interface DlpPolicyDecision {
   action: DlpPolicyAction;
+  severity?: DlpPolicySeverity;
+  reason?: string;
+  requiredFindingIds?: string[];
+  optionalFindingIds?: string[];
   canSendRaw: boolean;
   requiresSanitization: boolean;
   risk: RiskScoreResult;
   message: string;
+}
+
+export interface PolicyDecision extends DlpPolicyDecision {
+  severity: DlpPolicySeverity;
+  reason: string;
+  requiredFindingIds: string[];
+  optionalFindingIds: string[];
 }
 
 export interface TextTransformResult {

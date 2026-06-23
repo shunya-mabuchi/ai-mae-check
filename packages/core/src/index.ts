@@ -23,6 +23,7 @@ export { transformText } from "./transform";
 export type {
   DlpPolicyAction,
   DlpPolicyDecision,
+  DlpPolicySeverity,
   DlpCategory,
   DetectionResult,
   DetectionSummary,
@@ -33,6 +34,9 @@ export type {
   MaskResult,
   PlaceholderMap,
   PlaceholderMapEntry,
+  PolicyAction,
+  PolicyDecision,
+  PolicySeverity,
   RiskDecisionLevel,
   RiskLevel,
   RiskScoreOptions,

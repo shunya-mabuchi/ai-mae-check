@@ -1,4 +1,11 @@
-import { findingRiskLabels, type DetectionSummary, type Finding, type RiskLevel } from "@ai-mae-check/core";
+import {
+  evaluateDlpPolicy,
+  findingRiskLabels,
+  type DetectionSummary,
+  type Finding,
+  type PolicyDecision,
+  type RiskLevel
+} from "@ai-mae-check/core";
 
 export interface RiskSummaryCategory {
   label: string;
@@ -15,6 +22,7 @@ export interface RiskSummaryViewModel {
   meterWidth: number;
   status: RiskSummaryStatus;
   categories: RiskSummaryCategory[];
+  policy: PolicyDecision;
 }
 
 export interface RiskCountTile {
@@ -44,22 +52,28 @@ function strongestRisk(summary: DetectionSummary): RiskLevel {
   return "low";
 }
 
-function statusCopy(summary: DetectionSummary): RiskSummaryStatus {
-  if (summary.critical > 0 || summary.high > 0) {
+function statusCopy(summary: DetectionSummary, policy: PolicyDecision): RiskSummaryStatus {
+  if (summary.total === 0) {
+    return {
+      label: "未検出",
+      text: "検出を実行すると、リスクとカテゴリがここに表示されます。"
+    };
+  }
+  if (policy.requiresSanitization) {
     return {
       label: "要安全化",
       text: "秘密情報や個人情報の可能性があります。送る前に対象を確認してください。"
     };
   }
-  if (summary.medium > 0) {
+  if (policy.action === "confirm") {
     return {
       label: "確認推奨",
       text: "文脈によって注意が必要な情報があります。必要なものだけ残せます。"
     };
   }
   return {
-    label: "未検出",
-    text: "検出を実行すると、リスクとカテゴリがここに表示されます。"
+    label: "低リスク",
+    text: "大きな注意候補は見つかっていませんが、安全を保証するものではありません。"
   };
 }
 
@@ -101,10 +115,13 @@ export function createRiskCountTiles(summary: DetectionSummary): RiskCountTile[]
 }
 
 export function createRiskSummaryViewModel(summary: DetectionSummary, findings: Finding[]): RiskSummaryViewModel {
+  const policy = evaluateDlpPolicy(findings);
+
   return {
     meterRisk: strongestRisk(summary),
     meterWidth: riskPercent(summary),
-    status: statusCopy(summary),
-    categories: categoryCounts(findings)
+    status: statusCopy(summary, policy),
+    categories: categoryCounts(findings),
+    policy
   };
 }

@@ -47,7 +47,7 @@ flowchart LR
   User["ユーザー"] --> Site["ChatGPT / Claude / Gemini"]
   Site --> Extension["Chrome拡張\nContent Script / SiteAdapter"]
   Extension --> Core["packages/core\nFast DLP Engine"]
-  Core --> Policy["Policy Decision\nallow / confirm / sanitize_required / block"]
+  Core --> Policy["Policy Decision\nallow / confirm / sanitize_required"]
   Policy --> Modal["確認モーダル\n安全化プレビュー"]
   Modal --> Insert["安全化して入力"]
   Modal --> LLM["packages/llm\nWebLLM Context Risk Engine"]

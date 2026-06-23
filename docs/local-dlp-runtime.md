@@ -98,7 +98,7 @@ flowchart TD
 
 責務:
 
-- `allow`、`confirm`、`sanitize_required`、将来の `block` 相当を決める。
+- `allow`、`confirm`、`sanitize_required` を決める。完全な遮断が必要なケースは、将来のポリシー拡張として別途設計する。
 - 高リスク、critical、秘密情報保護の対象が残っている場合に安全化必須とする。
 - 中リスクは詳細確認後にユーザー判断可能として扱う。
 - WebLLM候補を補助情報として扱い、主判定をルールベースから外さない。
@@ -115,9 +115,11 @@ flowchart TD
 - `apps/extension/src/content/dom/pasteGuard.ts`
 - `apps/extension/src/content/contentReview.ts`
 
+現在の `evaluateDlpPolicy` は、互換性のため `DlpPolicyDecision` に `canSendRaw` と `requiresSanitization` を残しつつ、完全な戻り値型 `PolicyDecision` として `action`、`severity`、`reason`、`requiredFindingIds`、`optionalFindingIds` を返します。UIはこの結果を表示とボタン状態に使い、独自の送信可否ロジックを持たない方向へ寄せます。
+
 後続:
 
-- #295 でPolicy Decisionの型と判定をさらに独立させる。
+- Policy Decisionの判定を追加する場合は、まず `packages/core/src/policy.ts` と `packages/core/tests/policy.test.ts` に寄せる。
 
 ### 4. Context Risk Engine
 

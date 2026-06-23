@@ -11,7 +11,7 @@ const baseSummary: DetectionSummary = {
   byRule: {}
 };
 
-function finding(id: string, label: string): Finding {
+function finding(id: string, label: string, overrides: Partial<Finding> = {}): Finding {
   return {
     id,
     ruleId: id,
@@ -23,7 +23,8 @@ function finding(id: string, label: string): Finding {
     text: "x",
     placeholder: "[X_1]",
     message: "テスト用の検出です。",
-    confidence: 1
+    confidence: 1,
+    ...overrides
   };
 }
 
@@ -31,20 +32,35 @@ describe("demoRiskSummary", () => {
   it("重大・高リスクがあると要安全化表示と高いメーター値を返す", () => {
     const viewModel = createRiskSummaryViewModel(
       { ...baseSummary, total: 3, critical: 1, high: 1, medium: 1 },
-      [finding("email", "メールアドレス")]
+      [finding("email", "メールアドレス", { riskLevel: "high", category: "email" })]
     );
 
     expect(viewModel.meterRisk).toBe("critical");
     expect(viewModel.meterWidth).toBe(94);
     expect(viewModel.status.label).toBe("要安全化");
+    expect(viewModel.policy.action).toBe("sanitize_required");
   });
 
   it("中リスクのみなら確認推奨として扱う", () => {
-    const viewModel = createRiskSummaryViewModel({ ...baseSummary, total: 2, medium: 2 }, []);
+    const viewModel = createRiskSummaryViewModel(
+      { ...baseSummary, total: 1, medium: 1 },
+      [finding("financial", "金融情報候補", { ruleId: "llm:financial_info", riskLevel: "medium", category: "financial" })]
+    );
 
     expect(viewModel.meterRisk).toBe("medium");
-    expect(viewModel.meterWidth).toBe(36);
+    expect(viewModel.meterWidth).toBe(18);
     expect(viewModel.status.label).toBe("確認推奨");
+    expect(viewModel.policy.action).toBe("confirm");
+  });
+
+  it("低リスクのみならPolicyDecisionに従って低リスク表示にする", () => {
+    const viewModel = createRiskSummaryViewModel(
+      { ...baseSummary, total: 1, low: 1 },
+      [finding("date", "日付", { ruleId: "date", riskLevel: "low", category: "date" })]
+    );
+
+    expect(viewModel.status.label).toBe("低リスク");
+    expect(viewModel.policy.action).toBe("allow");
   });
 
   it("検出カテゴリをラベルごとに集計する", () => {
