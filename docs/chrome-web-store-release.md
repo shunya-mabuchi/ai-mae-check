@@ -160,6 +160,7 @@ pnpm qa:chrome-store
 - [ ] `pnpm qa:extension:manifest` が通る
 - [ ] `pnpm qa:chrome-store` が通る
 - [ ] `apps/extension/.output/chrome-mv3/manifest.json` の名称・説明・権限を確認する
+- [ ] 権限・CSP・依存関係監査 [extension-security-audit.md](extension-security-audit.md) を確認する
 - [ ] `<all_urls>` を要求していない
 - [ ] 対象サイトがChatGPT / Claude / Geminiに限定されている
 - [ ] READMEとプライバシー方針に、本文を保存・送信しないことが書かれている

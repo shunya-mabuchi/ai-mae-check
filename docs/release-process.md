@@ -44,6 +44,8 @@ pnpm qa:chrome-store
 
 拡張E2Eハーネスの方針は [extension-e2e-harness.md](extension-e2e-harness.md) にまとめています。0.1.1時点では実サイトログインに依存するE2EをCI必須にせず、リリース用manifestへテスト専用host permissionを混入させない方針を優先します。
 
+権限、CSP、web accessible resources、依存関係、WebLLMモデル説明の監査は [extension-security-audit.md](extension-security-audit.md) のチェックリストに沿って確認します。
+
 ## GitHub Release
 
 GitHub Releaseは、Chrome Web Storeで該当バージョンが公開された後に作成します。審査前にReleaseだけ先に出しません。
