@@ -63,6 +63,9 @@ jobs:
       - name: Rule catalog QA
         run: pnpm qa:rule-catalog
 
+      - name: Extension E2E harness policy QA
+        run: pnpm qa:extension:e2e-harness
+
       - name: Dependency policy QA
         run: pnpm qa:dependency-policy
 

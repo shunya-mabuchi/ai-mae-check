@@ -30,6 +30,7 @@
     "qa:webllm-model-policy": "node scripts/check-webllm-model-policy.mjs",
     "qa:webllm-compatibility": "node scripts/check-webllm-compatibility-doc.mjs",
     "qa:rule-catalog": "node scripts/check-rule-catalog.mjs",
+    "qa:extension:e2e-harness": "node scripts/check-extension-e2e-harness-doc.mjs",
     "qa:dependency-policy": "node scripts/check-dependency-policy.mjs",
     "qa:release-policy": "node scripts/check-release-policy.mjs",
     "qa:issue-pr-workflow": "node scripts/check-issue-pr-workflow.mjs",

@@ -26,6 +26,10 @@ function assertNoUnexpectedHosts(hosts) {
   if (hosts.some((host) => host.includes("perplexity.ai"))) {
     fail("Perplexity must remain a later adapter, not an initial host permission");
   }
+
+  if (hosts.some((host) => host.includes("localhost") || host.includes("127.0.0.1"))) {
+    fail("localhost or 127.0.0.1 must remain test-only and must not be included in the release manifest");
+  }
 }
 
 if (!existsSync(manifestPath)) {

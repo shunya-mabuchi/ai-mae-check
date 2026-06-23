@@ -151,6 +151,7 @@ pnpm qa:chrome-store
 - [ ] `pnpm qa:webllm-model-policy` が通る
 - [ ] `pnpm qa:webllm-compatibility` が通る
 - [ ] `pnpm qa:rule-catalog` が通る
+- [ ] `pnpm qa:extension:e2e-harness` が通る
 - [ ] `pnpm qa:dependency-policy` が通る
 - [ ] `pnpm qa:release-policy` が通る
 - [ ] `pnpm qa:demo:seo` が通る
@@ -178,6 +179,7 @@ pnpm qa:chrome-store
 - [ ] WebLLMが使えない環境でもルールベース検出が使えることを確認する
 - [ ] モデル取得失敗時の日本語メッセージを確認する
 - [ ] [WebLLM対応環境とモデル互換性マトリクス](webllm-compatibility-matrix.md) に、OS、Chrome、WebGPU状態、エラー分類を本文なしで記録する
+- [ ] 拡張E2Eハーネス方針 [extension-e2e-harness.md](extension-e2e-harness.md) に従い、リリース用manifestへE2E専用host permissionが混入していないことを確認する
 
 ## 公開後の対応
 

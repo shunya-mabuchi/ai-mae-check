@@ -57,6 +57,7 @@ for (const command of [
   "pnpm qa:webllm-model-policy",
   "pnpm qa:webllm-compatibility",
   "pnpm qa:rule-catalog",
+  "pnpm qa:extension:e2e-harness",
   "pnpm qa:dependency-policy",
   "pnpm qa:demo:seo",
   "pnpm qa:portfolio-case-study",
