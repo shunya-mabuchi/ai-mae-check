@@ -40,6 +40,8 @@ READMEと `docs/` 配下の文章は、特に別記がない限りMIT Licenseで
 
 モデルや依存関係を追加・変更する場合は、ライセンス、商用利用可否、配布元、WebLLM prebuilt対応、ブラウザ内実行の安定性を確認します。WebLLMモデルの選定理由と確認手順は [webllm-model-policy.md](webllm-model-policy.md) にまとめています。
 
+依存関係アップデート時の確認コマンド、`pnpm licenses list --json` の使い方、PRチェックリストは [dependency-maintenance.md](dependency-maintenance.md) にまとめています。
+
 ## 免責
 
 AIまえチェックは情報漏洩を完全に防ぐものではありません。検出漏れや誤検出が発生する可能性があります。最終的に送信するかどうかはユーザー自身で判断してください。

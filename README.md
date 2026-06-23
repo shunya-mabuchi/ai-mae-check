@@ -229,6 +229,7 @@ pnpm package:extension
 pnpm qa:public-repo
 pnpm qa:public-docs
 pnpm qa:webllm-model-policy
+pnpm qa:dependency-policy
 pnpm qa:extension:size
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
@@ -251,6 +252,8 @@ pnpm typecheck
 `pnpm qa:public-docs` は、README、LP、Chrome Web Store掲載文、プライバシー方針、サポート導線の重要URLとプライバシー表現がずれていないかを確認する公開文書同期QAです。
 
 `pnpm qa:webllm-model-policy` は、WebLLMの標準モデルID、fallbackモデルID、モデルライセンス確認文書が実装とずれていないかを確認するQAです。モデル選定方針は [docs/webllm-model-policy.md](docs/webllm-model-policy.md) にまとめています。
+
+`pnpm qa:dependency-policy` は、依存関係アップデートとライセンス確認の運用ドキュメントが、現在のCIと公開前QAの前提からずれていないか確認するQAです。運用は [docs/dependency-maintenance.md](docs/dependency-maintenance.md) にまとめています。
 
 `pnpm qa:extension:size` は、Chrome Web Store提出ZIP、展開後の拡張本体、content script、WebLLM workerを含むJavaScript bundleのサイズが内部予算を超えていないか確認するQAです。予算は [docs/extension-size-budget.md](docs/extension-size-budget.md) にまとめています。
 
