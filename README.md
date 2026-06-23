@@ -233,6 +233,7 @@ pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
 pnpm qa:release-policy
 pnpm qa:issue-pr-workflow
+pnpm qa:demo:seo
 pnpm qa:extension:size
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
@@ -263,6 +264,8 @@ pnpm typecheck
 `pnpm qa:release-policy` は、rootと拡張のversion、CHANGELOG、リリース手順、Chrome Web Store再提出前QAがずれていないか確認するQAです。運用は [docs/release-process.md](docs/release-process.md) と [CHANGELOG.md](CHANGELOG.md) にまとめています。
 
 `pnpm qa:issue-pr-workflow` は、Issue/PRテンプレート、ラベル・マイルストーン運用、実データを書かない注意が維持されているかを確認するQAです。運用は [docs/issue-pr-workflow.md](docs/issue-pr-workflow.md) にまとめています。
+
+`pnpm qa:demo:seo` は、公開LPのtitle、description、OGP、Twitter card、favicon、web manifest、robots、sitemap、カスタムドメイン方針が維持されているか確認するQAです。運用は [docs/lp-seo-publication.md](docs/lp-seo-publication.md) にまとめています。
 
 `pnpm qa:extension:size` は、Chrome Web Store提出ZIP、展開後の拡張本体、content script、WebLLM workerを含むJavaScript bundleのサイズが内部予算を超えていないか確認するQAです。予算は [docs/extension-size-budget.md](docs/extension-size-budget.md) にまとめています。
 

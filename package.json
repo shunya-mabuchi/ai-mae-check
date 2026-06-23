@@ -31,6 +31,7 @@
     "qa:dependency-policy": "node scripts/check-dependency-policy.mjs",
     "qa:release-policy": "node scripts/check-release-policy.mjs",
     "qa:issue-pr-workflow": "node scripts/check-issue-pr-workflow.mjs",
+    "qa:demo:seo": "node scripts/check-demo-seo.mjs",
     "qa:extension:size": "node scripts/check-extension-size-budget.mjs",
     "qa:extension:manifest": "node scripts/check-extension-manifest.mjs",
     "qa:chrome-store": "node scripts/check-chrome-store-readiness.mjs"

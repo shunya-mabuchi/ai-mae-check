@@ -121,6 +121,7 @@ pnpm qa:privacy-regression
 pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
 pnpm qa:release-policy
+pnpm qa:demo:seo
 pnpm qa:extension:size
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
@@ -149,6 +150,7 @@ pnpm qa:chrome-store
 - [ ] `pnpm qa:webllm-model-policy` が通る
 - [ ] `pnpm qa:dependency-policy` が通る
 - [ ] `pnpm qa:release-policy` が通る
+- [ ] `pnpm qa:demo:seo` が通る
 - [ ] `pnpm qa:extension:size` が通る
 - [ ] `pnpm qa:extension:manifest` が通る
 - [ ] `pnpm qa:chrome-store` が通る

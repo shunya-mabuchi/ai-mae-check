@@ -66,6 +66,9 @@ jobs:
       - name: Issue and PR workflow QA
         run: pnpm qa:issue-pr-workflow
 
+      - name: Demo SEO QA
+        run: pnpm qa:demo:seo
+
       - name: Extension size budget QA
         run: pnpm qa:extension:size
 
