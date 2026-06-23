@@ -1,0 +1,26 @@
+{
+  "id": "legal",
+  "category": "legal",
+  "description": "契約・NDA・URL・金額・日付を含む法務系ダミー文。",
+  "input": "契約更新案です。NDAの条項と口外禁止の範囲を確認してください。\n契約金額は120万円です。\n2026/07/01から有効。参照先: https://example.com/legal/mock",
+  "expect": {
+    "summary": {
+      "total": 4,
+      "critical": 0,
+      "high": 0,
+      "medium": 3,
+      "low": 1
+    },
+    "includesRuleIds": ["confidential_text", "amount", "url", "date"],
+    "policy": {
+      "action": "confirm",
+      "severity": "medium",
+      "canSendRaw": true,
+      "requiresSanitization": false
+    },
+    "generalizedIncludes": ["[注意情報]", "[金額情報]", "[日付]", "[URL]"],
+    "generalizedExcludes": ["120万円", "2026/07/01", "https://example.com/legal/mock"],
+    "maskedIncludes": ["[CONFIDENTIAL_TEXT_1]", "[AMOUNT_1]", "[DATE_1]", "[URL_1]"],
+    "maskedExcludes": ["120万円", "2026/07/01", "https://example.com/legal/mock"]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "business_confidential",
+  "category": "business_confidential",
+  "description": "社外秘に近い文脈、金額、社内URLを含むダミー提案メモ。",
+  "input": "A社向けの提案資料です。NDA締結前なので関係者限りで確認してください。\n初期費用は300万円、月額80万円です。\n社内URL: https://staging.example.local/proposal",
+  "expect": {
+    "summary": {
+      "total": 4,
+      "critical": 0,
+      "high": 0,
+      "medium": 4,
+      "low": 0
+    },
+    "includesRuleIds": ["confidential_text", "amount", "internal_url"],
+    "policy": {
+      "action": "confirm",
+      "severity": "medium",
+      "canSendRaw": true,
+      "requiresSanitization": false
+    },
+    "generalizedIncludes": ["[注意情報]", "[金額情報]", "[URL]"],
+    "generalizedExcludes": ["300万円", "月額80万円", "staging.example.local"],
+    "maskedIncludes": ["[CONFIDENTIAL_TEXT_1]", "[AMOUNT_1]", "[AMOUNT_2]", "[INTERNAL_URL_1]"],
+    "maskedExcludes": ["300万円", "月額80万円", "staging.example.local"]
+  }
+}

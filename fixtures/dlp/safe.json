@@ -1,0 +1,23 @@
+{
+  "id": "safe",
+  "category": "safe",
+  "description": "公開済みの一般説明文。検出なしを期待する。",
+  "input": "公開済みの製品紹介文です。AIまえチェックは、ブラウザ内で貼り付け前の文章を確認するChrome拡張です。",
+  "expect": {
+    "summary": {
+      "total": 0,
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "policy": {
+      "action": "allow",
+      "severity": "none",
+      "canSendRaw": true,
+      "requiresSanitization": false
+    },
+    "generalizedIncludes": ["公開済みの製品紹介文"],
+    "maskedIncludes": ["公開済みの製品紹介文"]
+  }
+}

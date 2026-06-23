@@ -1,0 +1,24 @@
+{
+  "id": "false_positive",
+  "category": "false_positive",
+  "description": "それっぽい単語を含むが、値としては成立しないダミー文。",
+  "input": "社内勉強会の公開メモです。連絡先は taro at example dot com と書いてあります。アクセスキーという言葉は説明用で、値は AKIA-SAMPLE のようにハイフン付きです。",
+  "expect": {
+    "summary": {
+      "total": 0,
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "excludesRuleIds": ["email", "aws_access_key", "env_secret", "confidential_text"],
+    "policy": {
+      "action": "allow",
+      "severity": "none",
+      "canSendRaw": true,
+      "requiresSanitization": false
+    },
+    "generalizedIncludes": ["社内勉強会の公開メモ"],
+    "maskedIncludes": ["社内勉強会の公開メモ"]
+  }
+}

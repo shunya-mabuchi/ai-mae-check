@@ -1,0 +1,26 @@
+{
+  "id": "pii",
+  "category": "pii",
+  "description": "メールアドレス、電話番号、郵便番号を含む個人情報系ダミー文。",
+  "input": "田中太郎です。連絡先は taro@example.com、電話番号は 090-1234-5678 です。郵便番号は 123-4567 です。",
+  "expect": {
+    "summary": {
+      "total": 3,
+      "critical": 0,
+      "high": 2,
+      "medium": 0,
+      "low": 1
+    },
+    "includesRuleIds": ["email", "phone", "postal_code"],
+    "policy": {
+      "action": "sanitize_required",
+      "severity": "high",
+      "canSendRaw": false,
+      "requiresSanitization": true
+    },
+    "generalizedIncludes": ["[メールアドレス]", "[電話番号]", "[住所]"],
+    "generalizedExcludes": ["taro@example.com", "090-1234-5678", "123-4567"],
+    "maskedIncludes": ["[EMAIL_1]", "[PHONE_1]", "[POSTAL_CODE_1]"],
+    "maskedExcludes": ["taro@example.com", "090-1234-5678", "123-4567"]
+  }
+}
