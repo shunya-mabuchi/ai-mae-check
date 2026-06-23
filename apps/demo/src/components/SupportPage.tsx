@@ -28,6 +28,18 @@ export function SupportPage() {
             GitHub Issuesを開く
           </a>
         </section>
+        <section className="rounded-card border border-line bg-cloud/70 p-5">
+          <h2 className="text-lg font-black text-ink">脆弱性や秘密情報を含む相談</h2>
+          <p className="mt-2 text-sm leading-7 text-muted">
+            セキュリティ相談では、貼り付け本文、実APIキー、実トークン、実個人情報、顧客名、案件名を公開Issueへ書かないでください。本文を含まない概要だけを書き、必要に応じてChrome Web Store掲載ページのデベロッパー連絡先を利用してください。
+          </p>
+          <a
+            href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/SECURITY.md"
+            className="mt-4 inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-white/70"
+          >
+            セキュリティポリシーを見る
+          </a>
+        </section>
         <section>
           <h2 className="text-lg font-black text-ink">報告時にあると助かる情報</h2>
           <ul className="mt-3 space-y-2 text-sm leading-7 text-muted">
