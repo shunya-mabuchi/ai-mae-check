@@ -23,6 +23,7 @@ export type LlmErrorKind =
   | "worker"
   | "wasm"
   | "json_parse"
+  | "timeout"
   | "unknown";
 
 export interface LlmErrorDetail {

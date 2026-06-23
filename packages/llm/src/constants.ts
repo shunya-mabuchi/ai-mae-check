@@ -8,5 +8,6 @@ export const DEFAULT_CONFIDENCE_THRESHOLD = 0.6;
 export const MAX_CONTEXT_SURFACE_CHARS = 80;
 export const WEBGPU_UNAVAILABLE_MESSAGE =
   "このブラウザまたは端末ではAI文脈チェックを利用できません。ルールベースの検出は引き続き利用できます。";
-export const MODEL_LOADING_MESSAGE = "ローカルAIモデルを準備しています。初回のみ時間がかかる場合があります。";
+export const MODEL_LOADING_MESSAGE =
+  "ローカルAIモデルを準備しています。初回のみ時間がかかる場合があります。";
 export const ANALYZING_MESSAGE = "文脈リスクを確認しています。";
