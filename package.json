@@ -27,6 +27,7 @@
     "qa:public-repo": "node scripts/check-public-repo-safety.mjs",
     "qa:public-docs": "node scripts/check-public-docs-sync.mjs",
     "qa:privacy-regression": "node scripts/check-privacy-regression.mjs",
+    "qa:performance-budget": "node scripts/check-performance-budget-doc.mjs",
     "qa:webllm-model-policy": "node scripts/check-webllm-model-policy.mjs",
     "qa:webllm-compatibility": "node scripts/check-webllm-compatibility-doc.mjs",
     "qa:rule-catalog": "node scripts/check-rule-catalog.mjs",
@@ -38,7 +39,8 @@
     "qa:portfolio-case-study": "node scripts/check-portfolio-case-study.mjs",
     "qa:extension:size": "node scripts/check-extension-size-budget.mjs",
     "qa:extension:manifest": "node scripts/check-extension-manifest.mjs",
-    "qa:chrome-store": "node scripts/check-chrome-store-readiness.mjs"
+    "qa:chrome-store": "node scripts/check-chrome-store-readiness.mjs",
+    "bench:rules": "vitest run scripts/bench-rule-detection.test.ts --reporter=verbose"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

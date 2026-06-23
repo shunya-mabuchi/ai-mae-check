@@ -231,6 +231,7 @@ pnpm package:extension
 pnpm qa:public-repo
 pnpm qa:public-docs
 pnpm qa:privacy-regression
+pnpm qa:performance-budget
 pnpm qa:webllm-model-policy
 pnpm qa:webllm-compatibility
 pnpm qa:rule-catalog
@@ -262,6 +263,8 @@ pnpm typecheck
 `pnpm qa:public-docs` は、README、LP、Chrome Web Store掲載文、プライバシー方針、サポート導線の重要URLとプライバシー表現がずれていないかを確認する公開文書同期QAです。
 
 `pnpm qa:privacy-regression` は、本文・検出結果・placeholderMapを永続保存しないこと、外部送信しないこと、`chrome.storage.local` の利用が設定保存に限られていることを確認するQAです。運用は [docs/privacy-regression.md](docs/privacy-regression.md) にまとめています。
+
+`pnpm qa:performance-budget` は、ルールベース検出を主判定として即時に動かし、モーダル表示がWebLLMを待たないこと、WebLLM入力・候補数・タイムアウトの基準が明文化されていることを確認するQAです。性能基準は [docs/performance-budget.md](docs/performance-budget.md) にまとめています。ローカルの目安測定には `pnpm bench:rules` を使えます。
 
 Options Pageの設定グループ、保存対象、初期化、設定バリデーションの考え方は [docs/options-settings.md](docs/options-settings.md) にまとめています。
 
