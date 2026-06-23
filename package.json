@@ -27,6 +27,7 @@
     "qa:public-repo": "node scripts/check-public-repo-safety.mjs",
     "qa:public-docs": "node scripts/check-public-docs-sync.mjs",
     "qa:webllm-model-policy": "node scripts/check-webllm-model-policy.mjs",
+    "qa:extension:size": "node scripts/check-extension-size-budget.mjs",
     "qa:extension:manifest": "node scripts/check-extension-manifest.mjs",
     "qa:chrome-store": "node scripts/check-chrome-store-readiness.mjs"
   },

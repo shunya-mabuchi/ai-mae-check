@@ -54,6 +54,9 @@ jobs:
       - name: WebLLM model policy QA
         run: pnpm qa:webllm-model-policy
 
+      - name: Extension size budget QA
+        run: pnpm qa:extension:size
+
       - name: Manifest QA
         run: pnpm qa:extension:manifest
 
