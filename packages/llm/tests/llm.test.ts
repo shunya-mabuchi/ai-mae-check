@@ -72,7 +72,7 @@ describe("parseContextAnalysisJson", () => {
   });
 
   it("不正JSONではエラーにする", () => {
-    expect(() => parseContextAnalysisJson("JSONではありません")).toThrow("AI文脈チェックの出力形式を読み取れませんでした");
+    expect(() => parseContextAnalysisJson("JSONではありません")).toThrow("AI文脈チェックの結果を読み取れませんでした");
   });
 
   it("Markdownコードブロックと前後の説明文が混ざってもJSON部分を読み取る", () => {
@@ -406,7 +406,7 @@ describe("LLMエラー文言", () => {
     const detail = classifyLlmError(new Error("AI文脈チェックの出力形式を読み取れませんでした"));
 
     expect(detail.kind).toBe("json_parse");
-    expect(detail.message).toContain("AI文脈チェックの出力形式を読み取れませんでした");
+    expect(detail.message).toContain("AI文脈チェックの結果を読み取れませんでした");
     expect(createJsonParseFallbackMessage(0)).toContain("ルールベース検出結果で安全化できます");
     expect(createJsonParseFallbackMessage(1)).toContain("ブラウザ内の補助検出で注意候補を確認しました");
   });

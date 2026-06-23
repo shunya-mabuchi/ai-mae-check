@@ -10,7 +10,7 @@ import {
 import { buildLlmErrorDetail } from "./testBuilders";
 
 describe("formatLlmErrorMessage", () => {
-  it("デフォルトモデルは動作実績を優先したLlama 3.2 1B q4f32にする", () => {
+  it("デフォルトモデルは動作実績を優先してLlama 3.2 1B q4f32にする", () => {
     expect(DEFAULT_MODEL_ID).toContain("q4f32_1");
     expect(DEFAULT_MODEL_ID).toBe("Llama-3.2-1B-Instruct-q4f32_1-MLC");
   });
@@ -36,6 +36,7 @@ describe("formatLlmErrorMessage", () => {
 
     expect(detail.kind).toBe("storage");
     expect(detail.message).toContain("保存領域");
+    expect(detail.hint).toContain("サイトデータ");
   });
 
   it("メモリ不足を分類する", () => {
@@ -45,19 +46,31 @@ describe("formatLlmErrorMessage", () => {
     expect(detail.message).toContain("メモリ");
   });
 
-  it("WebGPUデバイス取得失敗を分類する", () => {
-    const detail = classifyLlmError(new Error("requestDevice failed: device lost"));
+  it("WebGPU非対応を分類する", () => {
+    const detail = classifyLlmError(new Error("navigator.gpu is undefined because WebGPU is not supported"));
 
     expect(detail.kind).toBe("webgpu");
     expect(detail.message).toContain("AI文脈チェックを利用できません");
+    expect(detail.hint).toContain("chrome://gpu");
   });
 
-  it("WebGPUアダプタ未取得はモデル選択以前の問題として分類する", () => {
+  it("WebGPU Adapter取得失敗を分類する", () => {
     const detail = classifyLlmError(new Error("No available WebGPU adapters"));
 
     expect(detail.kind).toBe("webgpu");
-    expect(detail.message).toContain("WebGPUアダプタを取得できません");
+    expect(detail.message).toContain("WebGPUアダプタを取得できませんでした");
     expect(detail.hint).toContain("モデルを変更しても解消しません");
+  });
+
+  it("compatible GPUが見つからないWebLLM内部エラーをAdapter取得失敗として分類する", () => {
+    const detail = classifyLlmError(
+      new Error(
+        "Unable to find a compatible GPU. Please check if your device has a GPU properly set up and if your browser supports WebGPU."
+      )
+    );
+
+    expect(detail.kind).toBe("webgpu");
+    expect(detail.message).toContain("WebGPUアダプタを取得できませんでした");
   });
 
   it("WebGPU推論中のGPUBuffer mapAsync失敗を分類する", () => {
@@ -74,30 +87,38 @@ describe("formatLlmErrorMessage", () => {
     const detail = classifyLlmError(new Error("Failed to construct 'Worker': script could not be loaded"));
 
     expect(detail.kind).toBe("worker");
-    expect(detail.message).toContain("Worker");
+    expect(detail.message).toContain("Workerを起動できませんでした");
   });
 
   it("破棄済みオブジェクトのエラーをWorker寿命系として分類する", () => {
     const detail = classifyLlmError(new Error("Object has already been disposed"));
 
     expect(detail.kind).toBe("worker");
-    expect(detail.hint).toContain("破棄済み");
+    expect(detail.hint).toContain("タブも再読み込み");
     expect(detail.technicalDetail).toContain("Object has already been disposed");
   });
 
-  it("WASM読込失敗を分類する", () => {
+  it("WASM読み込み失敗を分類する", () => {
     const detail = classifyLlmError(new Error("WebAssembly.compile failed"));
 
     expect(detail.kind).toBe("wasm");
     expect(detail.message).toContain("実行ファイル");
   });
 
-  it("出力形式を読み取れない日本語メッセージもjson_parseとして分類する", () => {
-    const detail = classifyLlmError(new Error("AI文脈チェックの出力形式は読み取れませんでした"));
+  it("AbortErrorやtimeoutをタイムアウトとして分類する", () => {
+    const detail = classifyLlmError(new Error("AbortError: the WebLLM request timed out"));
+
+    expect(detail.kind).toBe("timeout");
+    expect(detail.message).toContain("時間内に完了しませんでした");
+    expect(detail.hint).toContain("入力を短く");
+  });
+
+  it("出力形式を読み取れない日本語メッセージをjson_parseとして分類する", () => {
+    const detail = classifyLlmError(new Error("AI文脈チェックの結果を読み取れませんでした"));
 
     expect(detail.kind).toBe("json_parse");
     expect(detail.message).toBe(
-      "AI文脈チェックの出力形式を読み取れませんでした。ルールベース検出とブラウザ内の補助検出は引き続き利用できます。"
+      "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。"
     );
   });
 
@@ -163,7 +184,7 @@ describe("formatLlmErrorMessage", () => {
     expect(isContextAnalysisExecutionError({})).toBe(false);
   });
 
-  it("json_parseの非致命フォールバック文言を候補数から返す", () => {
+  it("json_parseの非致命フォールバック文言を候補件数から返す", () => {
     expect(createJsonParseFallbackMessage(0)).toBe(
       "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
     );

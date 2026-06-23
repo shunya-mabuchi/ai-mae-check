@@ -18,6 +18,8 @@ export interface ParseContextAnalysisOptions {
   confidenceThreshold?: number;
 }
 
+const JSON_PARSE_FAILURE_MESSAGE = "AI文脈チェックの結果を読み取れませんでした";
+
 export function parseContextAnalysisJson(rawText: string, options: ParseContextAnalysisOptions = {}) {
   const maxCandidates = options.maxCandidates ?? DEFAULT_MAX_CANDIDATES;
   const confidenceThreshold = options.confidenceThreshold ?? DEFAULT_CONFIDENCE_THRESHOLD;
@@ -26,11 +28,11 @@ export function parseContextAnalysisJson(rawText: string, options: ParseContextA
   try {
     parsed = JSON.parse(extractJsonObject(rawText, contextAnalysisPreferredKeys));
   } catch {
-    throw new Error("AI文脈チェックの出力形式を読み取れませんでした");
+    throw new Error(JSON_PARSE_FAILURE_MESSAGE);
   }
 
   if (!isContextAnalysisRecord(parsed) && !Array.isArray(parsed)) {
-    throw new Error("AI文脈チェックの出力形式を読み取れませんでした");
+    throw new Error(JSON_PARSE_FAILURE_MESSAGE);
   }
 
   const rawCandidates = getContextAnalysisCandidateValues(parsed);
