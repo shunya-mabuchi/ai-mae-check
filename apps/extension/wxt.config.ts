@@ -26,7 +26,7 @@ export default defineConfig({
   manifest: {
     name: "AIまえチェック",
     description: "AIに送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認します。",
-    version: "0.1.0",
+    version: "0.1.1",
     permissions: ["storage"],
     host_permissions: targetMatches,
     icons: {

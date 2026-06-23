@@ -12,7 +12,7 @@
 
 ## 0.1.1でやること
 
-1. `pnpm rules:keygen` で新しいECDSA P-256鍵ペアを生成する。
+1. `pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out <git管理外の一時ファイル>` で新しいECDSA P-256鍵ペアを生成する。
 2. 生成した `publicJwk` と `keyId` を `apps/extension/config/rule-delivery.release.json` へ反映する。
 3. 生成した `privateJwk` をCloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` に設定する。
 4. `https://ai-mae-check.pages.dev/api/rules/latest` が署名付きルールJSONを返すことを確認する。
@@ -20,6 +20,8 @@
 6. Chrome Web Storeへ0.1.1として新しいZIPを提出する。
 
 鍵ローテーション、壊れたルール配信時のロールバック、旧 `keyId` の扱いは [rule-delivery-operations.md](./rule-delivery-operations.md) に従います。
+
+0.1.1で使う `keyId` は `ai-mae-check-rules-2026-06-v2` です。
 
 ## やらないこと
 
@@ -34,7 +36,7 @@ Cloudflare Dashboardで設定する場合:
 
 1. Workers & Pages > `ai-mae-check` > 設定 > 変数とシークレットを開く。
 2. Production環境にSecretとして `RULE_SIGNING_PRIVATE_JWK` を追加する。
-3. 値には `pnpm rules:keygen` が出力した `privateJwk` JSONを1行のJSON文字列として入れる。
+3. 値には `--private-out` で保存した `privateJwk` JSONを1行のJSON文字列として入れる。
 4. 保存後にProduction deployを実行する。
 
 Wranglerで設定する場合は、Cloudflareログイン状態と対象プロジェクトを確認してから行います。秘密鍵の値はGit、Issue、PR、CIログ、PowerShell履歴、スクリーンショット、チャット、レビューコメントへ残さない運用にします。`privateJwk` はマスク済みであってもログ出力しません。

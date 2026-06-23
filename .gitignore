@@ -11,6 +11,8 @@ playwright-report/
 coverage/
 artifacts/
 *.log
+*.private.jwk.json
+*.private-jwk.json
 *.tsbuildinfo
 .DS_Store
 Thumbs.db

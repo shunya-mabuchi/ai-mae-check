@@ -2,7 +2,7 @@
 
 AIまえチェックでは、ユーザー本文をサーバーへ送らずに、検出ルールだけを安全に更新できる仕組みを追加しています。
 
-0.1.0では、拡張ZIPに埋め込まれた公開鍵に対応する `privateJwk` が手元に残っていないため、署名付きルール配信の本番有効化は見送っています。0.1.1で鍵ペアを再発行し、Cloudflare Production Secretへ反映する予定です。詳細は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) を参照してください。
+0.1.0では、拡張ZIPに埋め込まれた公開鍵に対応する `privateJwk` が手元に残っていないため、署名付きルール配信の本番有効化は見送っています。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい公開JWKを拡張へ反映します。詳細は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) を参照してください。
 
 ## 方針
 
@@ -25,10 +25,10 @@ AIまえチェックでは、ユーザー本文をサーバーへ送らずに、
 ```json
 {
   "alg": "ECDSA-P256-SHA256",
-  "keyId": "ai-mae-check-demo-rules-2026-06",
+  "keyId": "ai-mae-check-rules-2026-06-v2",
   "payload": {
     "schemaVersion": 1,
-    "version": "2026.06.16.1",
+    "version": "2026.06.23.1",
     "generatedAt": "2026-06-16T00:00:00.000Z",
     "minExtensionVersion": "0.1.0",
     "rules": [
@@ -78,10 +78,10 @@ AIまえチェックでは、ユーザー本文をサーバーへ送らずに、
 鍵生成:
 
 ```bash
-pnpm rules:keygen
+pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out ../ai-mae-check-rules-2026-06-v2.private.jwk.json
 ```
 
-出力された `publicJwk` を拡張側の公開鍵へ反映し、`privateJwk` をWorkerの `RULE_SIGNING_PRIVATE_JWK` に設定します。
+出力された `publicJwk` を拡張側の公開鍵へ反映し、`--private-out` で保存した `privateJwk` をWorkerの `RULE_SIGNING_PRIVATE_JWK` に設定します。本番鍵では `--include-private` を使って標準出力へ秘密鍵を出さないでください。
 
 鍵ローテーション、壊れたルール配信時のロールバック、`privateJwk` の扱いは [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
 

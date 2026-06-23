@@ -1,12 +1,12 @@
 {
   "endpoint": "https://ai-mae-check.pages.dev/api/rules/latest",
-  "keyId": "ai-mae-check-demo-rules-2026-06",
+  "keyId": "ai-mae-check-rules-2026-06-v2",
   "publicJwk": {
     "key_ops": ["verify"],
     "ext": true,
     "kty": "EC",
-    "x": "2rm7jWFWA7lWaLKf3hgpouksKaAsDUdkvvWwmyttBjc",
-    "y": "LPHSECPxHyFozs_gDoK-8Mi77lumT3zQBnHWqY3A6tI",
+    "x": "QsmqlOn0nJQPGLSHKS4wvdNt_5DUJxR7OGMvw0pSgvU",
+    "y": "fyB_tA1GS0P_6CBhVyboXxUM6Ln4EtkZwGh7hoeZFGY",
     "crv": "P-256"
   }
 }

@@ -1,6 +1,6 @@
 # ルール配信Worker 運用メモ
 
-ルール配信Workerは、ユーザー本文を受け取らず、署名付きルールJSONだけを返すための補助サーバーです。0.1.0では本番署名鍵が未設定のため、同梱ルールへフォールバックする状態です。0.1.1で鍵ペアを再発行して有効化します。
+ルール配信Workerは、ユーザー本文を受け取らず、署名付きルールJSONだけを返すための補助サーバーです。0.1.0では本番署名鍵が未設定のため、同梱ルールへフォールバックする状態です。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい鍵ペアで有効化します。
 
 ## 絶対に守る方針
 
@@ -55,8 +55,10 @@ YYYY.MM.DD.N
 鍵ペア生成:
 
 ```bash
-pnpm rules:keygen
+pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out ../ai-mae-check-rules-2026-06-v2.private.jwk.json
 ```
+
+このコマンドは `publicJwk` を標準出力し、`privateJwk` は指定したファイルに保存します。`--include-private` を付けると `privateJwk` も標準出力できますが、本番鍵では使わないでください。
 
 保存先:
 
@@ -134,7 +136,7 @@ Invoke-RestMethod -Uri https://ai-mae-check.pages.dev/api/rules/latest
 計画的な鍵ローテーション:
 
 1. 新しい `keyId` を決める。
-2. `pnpm rules:keygen` で新しい鍵ペアを生成する。
+2. `pnpm rules:keygen -- --key-id <new-key-id> --private-out <git管理外の一時ファイル>` で新しい鍵ペアを生成する。
 3. `publicJwk` と `keyId` を `apps/extension/config/rule-delivery.release.json` へ反映する。
 4. Worker側の `RULE_KEY_ID` を同じ `keyId` へ更新する。
 5. Cloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` に新しい `privateJwk` を設定する。

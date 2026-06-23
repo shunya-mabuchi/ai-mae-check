@@ -6,8 +6,8 @@
 
 - 0.1.0はChrome Web Storeで一般公開済みです。
 - 公開URL: <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc>
-- ルール配信APIはCloudflare Pages Functionsで実装済みですが、0.1.0の署名鍵に対応する `privateJwk` が手元に残っていないため、本番では署名付きルールを返せません。
-- 署名付きルール配信は、0.1.1で鍵ペアを再発行して有効化します。詳細は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) にまとめます。
+- ルール配信APIはCloudflare Pages Functionsで実装済みです。0.1.0の署名鍵に対応する `privateJwk` が手元に残っていないため、0.1.1で `keyId` を `ai-mae-check-rules-2026-06-v2` へ更新します。
+- 署名付きルール配信の鍵ローテーションとロールバック手順は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめます。
 
 ## 参照する公式ドキュメント
 
@@ -128,7 +128,7 @@ pnpm qa:chrome-store
 - [x] Chrome Web Store公開URLを確認する
 - [x] サポートURLとプライバシーポリシーURLが開けることを確認する
 - [x] LPの主CTAをChrome Web Store追加リンクへ差し替える
-- [ ] 0.1.1でルール配信署名を有効化する手順を固める
+- [ ] 0.1.1でルール配信署名を有効化し、本番APIの署名付きJSONを確認する
 
 次バージョン提出前:
 

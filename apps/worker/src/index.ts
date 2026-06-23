@@ -11,7 +11,7 @@ interface Env {
 
 const HEALTH_PATH = "/health";
 const LATEST_RULES_PATH = "/api/rules/latest";
-const DEFAULT_RULE_KEY_ID = "ai-mae-check-demo-rules-2026-06";
+const DEFAULT_RULE_KEY_ID = "ai-mae-check-rules-2026-06-v2";
 
 const publicJsonHeaders = {
   "content-type": "application/json; charset=utf-8",
@@ -23,8 +23,8 @@ const publicJsonHeaders = {
 
 const latestRules: RemoteRuleBundlePayload = {
   schemaVersion: REMOTE_RULE_BUNDLE_SCHEMA_VERSION,
-  version: "2026.06.16.1",
-  generatedAt: "2026-06-16T00:00:00.000Z",
+  version: "2026.06.23.1",
+  generatedAt: "2026-06-23T00:00:00.000Z",
   minExtensionVersion: "0.1.0",
   rules: [
     {
