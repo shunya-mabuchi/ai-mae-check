@@ -1,45 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PasteReviewSummaryItem } from "../src/lib/pasteReviewSummaryView";
 import { createPasteReviewModalElements } from "../src/lib/pasteReviewModalElements";
-
-class FakeElement {
-  className = "";
-  textContent = "";
-  type = "";
-  private readonly attributes = new Map<string, string>();
-  readonly children: FakeElement[] = [];
-
-  constructor(readonly tagName: string) {}
-
-  append(...children: FakeElement[]): void {
-    this.children.push(...children);
-  }
-
-  setAttribute(name: string, value: string): void {
-    this.attributes.set(name, value);
-  }
-
-  getAttribute(name: string): string | null {
-    return this.attributes.get(name) ?? null;
-  }
-}
-
-function stubDocument(): void {
-  vi.stubGlobal("document", {
-    createElement: vi.fn((tagName: string) => new FakeElement(tagName))
-  });
-}
-
-function allElements(root: FakeElement): FakeElement[] {
-  return [root, ...root.children.flatMap(allElements)];
-}
-
-function joinedText(root: FakeElement): string {
-  return allElements(root)
-    .map((element) => element.textContent)
-    .filter((text) => text.length > 0)
-    .join("\n");
-}
+import { asDomElement, FakeElement, joinedText, stubFakeDocument } from "./helpers/fakeDom";
 
 const summaryItems: PasteReviewSummaryItem[] = [
   {
@@ -64,7 +26,7 @@ describe("createPasteReviewModalElements", () => {
   });
 
   it("貼り付け確認モーダルの骨格と参照を作る", () => {
-    stubDocument();
+    stubFakeDocument();
 
     const elements = createPasteReviewModalElements({
       modalCopy: {
@@ -94,7 +56,7 @@ describe("createPasteReviewModalElements", () => {
     expect(elements.rawButton.textContent).toBe("そのまま貼り付け");
     expect(elements.cancelButton.textContent).toBe("キャンセル");
 
-    const text = joinedText(elements.overlay as unknown as FakeElement);
+    const text = joinedText(asDomElement<FakeElement>(elements.overlay));
     expect(text).toContain("AIまえチェック");
     expect(text).toContain("貼り付け前チェック");
     expect(text).toContain("重大リスク 1件");

@@ -347,15 +347,15 @@ pnpm dev:demo
 
 ## デモサイトの公開方針
 
-ポートフォリオ用の紹介ページ兼デモは、初期公開先としてCloudflare Pagesを想定しています。理由は、Viteの静的ビルドをそのまま配信でき、無料枠で運用しやすく、将来ルール配信・署名検証サーバーをCloudflare Workersで追加する場合に同じ基盤で説明しやすいためです。
+ポートフォリオ用の紹介ページ兼デモは、Cloudflare Pagesで公開しています。Viteの静的ビルドをそのまま配信でき、無料枠で運用しやすく、署名付きルール配信APIも同じCloudflare Pages Functions上で説明できるためです。
 
-GitHub Pagesでも `apps/demo/dist` を公開できますが、初期方針ではCloudflare Pagesを第一候補、GitHub Pagesを代替候補にします。どちらの場合もデモ本文はブラウザ内で処理し、外部LLM APIや独自バックエンドへ送信しません。
+GitHub Pagesでも `apps/demo/dist` を公開できますが、現在の主運用はCloudflare Pagesです。どちらの場合もデモ本文はブラウザ内で処理し、外部LLM APIや独自バックエンドへ送信しません。
 
 Cloudflare Pagesの設定値、公開URL、公開後の確認手順は [docs/cloudflare-pages.md](docs/cloudflare-pages.md) にまとめています。
 
 LP上では、Chrome Web Store公開中の状態を表示し、主CTAをストア追加ボタンにしています。GitHubとミニデモは、実装確認と導入前の補助体験として残しています。
 
-初期デプロイ手順の想定:
+現在のCloudflare Pages設定:
 
 1. `pnpm build:demo` で `apps/demo/dist` を生成する
 2. Cloudflare PagesのBuild commandを `pnpm build:demo` にする

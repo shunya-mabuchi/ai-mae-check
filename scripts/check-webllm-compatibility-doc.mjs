@@ -75,7 +75,11 @@ for (const phrase of [
   "実トークン",
   "placeholderMap",
   "ルールベースの検出は引き続き利用できます",
-  "本文を記録していないこと"
+  "本文を記録していないこと",
+  "macOS / Linux未確認行の扱い",
+  "公開IssueやPRへ記録できるmacOS / Linux実機結果はありません",
+  "GitHub ActionsのUbuntu runnerで拡張E2Eを実行しても",
+  "CI runnerの結果をmacOS / Linux実機互換性として扱いません"
 ]) {
   assertIncludes(matrix, phrase, paths.matrix);
 }

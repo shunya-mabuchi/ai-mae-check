@@ -82,6 +82,18 @@ for (const phrase of [
   assertIncludes(harness, phrase, paths.harness);
 }
 
+for (const phrase of [
+  "2回成功・1回失敗",
+  "chrome://extensions/?options=",
+  "テスト用ページを作成してから余分な `chrome://extensions` ページだけを閉じる",
+  "Chromeプロファイルの `lockfile` 解放",
+  "貼り付け確認のキャンセル時に入力欄へ反映しない",
+  "mediumリスクだけの場合、詳細確認後にそのまま送信できる",
+  "highリスクの場合、そのまま送信へ切り替えられない"
+]) {
+  assertIncludes(harness, phrase, paths.harness);
+}
+
 for (const phrase of ["extension-e2e-harness.md", "拡張E2Eハーネス"]) {
   assertIncludes(readme, phrase, paths.readme);
   assertIncludes(releaseProcess, phrase, paths.releaseProcess);
@@ -115,6 +127,9 @@ assertIncludes(read(paths.playwrightConfig), "mock-composer.html", paths.playwri
 assertIncludes(read(paths.extensionSpec), "安全化して入力", paths.extensionSpec);
 assertIncludes(read(paths.extensionSpec), "安全化して送信", paths.extensionSpec);
 assertIncludes(read(paths.extensionSpec), "contenteditable", paths.extensionSpec);
+assertIncludes(read(paths.extensionSpec), "貼り付け確認をキャンセルすると入力欄へ反映しない", paths.extensionSpec);
+assertIncludes(read(paths.extensionSpec), "mediumリスクだけなら詳細確認後にそのまま送信できる", paths.extensionSpec);
+assertIncludes(read(paths.extensionSpec), "highリスクはそのまま送信へ切り替えられない", paths.extensionSpec);
 assertIncludes(read(paths.extensionE2eWorkflow), "workflow_dispatch", paths.extensionE2eWorkflow);
 assertIncludes(read(paths.extensionE2eWorkflow), "xvfb-run --auto-servernum pnpm test:extension:e2e", paths.extensionE2eWorkflow);
 

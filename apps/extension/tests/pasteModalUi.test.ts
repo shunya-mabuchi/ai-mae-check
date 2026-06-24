@@ -54,7 +54,8 @@ describe("paste review modal UI", () => {
 
     const stylesSource = readFileSync(stylesPath, "utf8");
     const sharedStylesSource = readFileSync(resolve(process.cwd(), "src/lib/sharedModalCss.ts"), "utf8");
-    const combinedStylesSource = `${stylesSource}\n${sharedStylesSource}`;
+    const sharedPartsSource = readFileSync(resolve(process.cwd(), "src/lib/sharedModalCssParts.ts"), "utf8");
+    const combinedStylesSource = `${stylesSource}\n${sharedStylesSource}\n${sharedPartsSource}`;
     expect(combinedStylesSource).toContain(".${prefix}-primary:disabled:hover");
     expect(combinedStylesSource).toContain("background: ${colors.accent};");
     expect(combinedStylesSource).toContain(".${prefix}-secondary:disabled:hover");

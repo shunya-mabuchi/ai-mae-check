@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 const here = fileURLToPath(new URL(".", import.meta.url));
 const extensionDir = resolve(here, "../.output-e2e/chrome-mv3");
 const sensitiveText = "田中太郎です。メールは taro@example.com、電話番号は 090-1234-5678 です。";
+const mediumRiskText = "来月の契約更新に向けて、月額80万円で進める予定です。";
 const expectedPasteActionLabel = "安全化して入力";
 const expectedSendActionLabel = "安全化して送信";
 
@@ -30,12 +31,39 @@ async function launchExtensionContext(): Promise<ExtensionTestContext> {
   return { context, userDataDir };
 }
 
+async function dismissExtensionStartupPages(context: BrowserContext, preservePage?: Page): Promise<void> {
+  await context.waitForEvent("page", { timeout: 800 }).catch(() => null);
+  await Promise.all(
+    context
+      .pages()
+      .filter((page) => page !== preservePage && page.url().startsWith("chrome://extensions/"))
+      .map((page) => page.close())
+  );
+}
+
 async function closeExtensionContext(target: ExtensionTestContext): Promise<void> {
-  await target.context.close();
-  await rm(target.userDataDir, { recursive: true, force: true });
+  await target.context.close().catch(() => undefined);
+  await removeUserDataDirWithRetry(target.userDataDir);
+}
+
+async function removeUserDataDirWithRetry(userDataDir: string): Promise<void> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    try {
+      await rm(userDataDir, { recursive: true, force: true, maxRetries: 2, retryDelay: 120 });
+      return;
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 200));
+    }
+  }
+
+  throw lastError;
 }
 
 async function openMockComposer(page: Page): Promise<void> {
+  await dismissExtensionStartupPages(page.context(), page);
   await page.goto("/mock-composer.html");
   await expect(page.getByRole("heading", { name: "textarea composer" })).toBeVisible();
 }
@@ -82,6 +110,10 @@ async function clickSendSafeSubmit(page: Page): Promise<void> {
   await expect(page.locator(".amc-dialog")).toBeVisible();
   expect(expectedSendActionLabel).toBe("安全化して送信");
   await page.locator(".amc-dialog .amc-primary").click();
+}
+
+async function expectNoSend(page: Page): Promise<void> {
+  await expect(page.getByTestId("submitted-output")).toHaveAttribute("data-submitted", "false");
 }
 
 async function expectTextareaIsSanitized(editor: Locator): Promise<void> {
@@ -178,6 +210,24 @@ test.describe("AIまえチェック拡張E2E", () => {
     }
   });
 
+  test("貼り付け確認をキャンセルすると入力欄へ反映しない", async () => {
+    const target = await launchExtensionContext();
+    try {
+      const page = await target.context.newPage();
+      await openMockComposer(page);
+
+      const editor = page.getByTestId("textarea-editor");
+      await dispatchPaste(editor, sensitiveText);
+      await expect(page.locator(".hm-dialog")).toBeVisible();
+      await page.locator(".hm-dialog .hm-ghost").click();
+
+      await expect(page.locator(".hm-dialog")).toHaveCount(0);
+      await expect(editor).toHaveValue("");
+    } finally {
+      await closeExtensionContext(target);
+    }
+  });
+
   test("送信ボタンクリックを送信前確認で止め、安全化してから送信できる", async () => {
     const target = await launchExtensionContext();
     try {
@@ -198,6 +248,62 @@ test.describe("AIまえチェック拡張E2E", () => {
       await expect(output).toContainText("[電話番号]");
       await expect(output).not.toContainText("taro@example.com");
       await expect(output).not.toContainText("090-1234-5678");
+    } finally {
+      await closeExtensionContext(target);
+    }
+  });
+
+  test("mediumリスクだけなら詳細確認後にそのまま送信できる", async () => {
+    const target = await launchExtensionContext();
+    try {
+      const page = await target.context.newPage();
+      await openMockComposer(page);
+
+      const editor = page.getByTestId("textarea-editor");
+      const output = page.getByTestId("submitted-output");
+      await editor.fill(mediumRiskText);
+
+      await page.getByTestId("send-button").click();
+      await expectNoSend(page);
+      await expect(page.locator(".amc-dialog")).toBeVisible();
+      await expect(page.locator(".amc-dialog .amc-primary")).toHaveText("安全化して送信");
+
+      const category = page.locator(".amc-category").filter({ hasText: "金額・金融情報" });
+      await category.locator("summary").click();
+      await expect(category).toContainText("80万円");
+      await category.locator("input[type='checkbox']").uncheck();
+      await expect(page.locator(".amc-dialog .amc-primary")).toHaveText("そのまま送信");
+      await page.locator(".amc-dialog .amc-primary").click();
+
+      await expect(output).toHaveAttribute("data-submitted", "true");
+      await expect(output).toContainText("月額80万円");
+      await expect(output).not.toContainText("[金額・金融情報]");
+    } finally {
+      await closeExtensionContext(target);
+    }
+  });
+
+  test("highリスクはそのまま送信へ切り替えられない", async () => {
+    const target = await launchExtensionContext();
+    try {
+      const page = await target.context.newPage();
+      await openMockComposer(page);
+
+      const editor = page.getByTestId("textarea-editor");
+      await editor.fill(sensitiveText);
+
+      await page.getByTestId("send-button").click();
+      await expectNoSend(page);
+      await expect(page.locator(".amc-dialog")).toBeVisible();
+      await expect(page.locator(".amc-dialog .amc-primary")).toHaveText("安全化して送信");
+      await expect(page.locator(".amc-dialog")).not.toContainText("そのまま送信");
+
+      const lockedCheckboxes = page.locator(".amc-category input[type='checkbox']");
+      await expect(lockedCheckboxes.first()).toBeDisabled();
+      await clickSendSafeSubmit(page);
+
+      await expectTextareaIsSanitized(editor);
+      await expect(page.getByTestId("submitted-output")).toHaveAttribute("data-submitted", "true");
     } finally {
       await closeExtensionContext(target);
     }

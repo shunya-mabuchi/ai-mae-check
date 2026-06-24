@@ -49,7 +49,8 @@ describe("confirmModal helpers", () => {
   it("exports style tokens and protects disabled hover states", () => {
     const stylesSource = readFileSync(new URL("../src/ui/styles.ts", import.meta.url), "utf8");
     const sharedStylesSource = readFileSync(new URL("../src/lib/sharedModalCss.ts", import.meta.url), "utf8");
-    const combinedStylesSource = `${stylesSource}\n${sharedStylesSource}`;
+    const sharedPartsSource = readFileSync(new URL("../src/lib/sharedModalCssParts.ts", import.meta.url), "utf8");
+    const combinedStylesSource = `${stylesSource}\n${sharedStylesSource}\n${sharedPartsSource}`;
 
     expect(confirmModalTokens.colors.accent).toBe("#0f9f69");
     expect(confirmModalTokens.colors.surface).toBe("#ffffff");

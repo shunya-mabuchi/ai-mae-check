@@ -1,21 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "../src/lib/domElement";
-
-interface FakeElement {
-  tagName: string;
-  className: string;
-  textContent: string;
-}
-
-function stubDocument() {
-  const createElementMock = vi.fn((tagName: string): FakeElement => ({
-    tagName,
-    className: "",
-    textContent: ""
-  }));
-  vi.stubGlobal("document", { createElement: createElementMock });
-  return createElementMock;
-}
+import { asDomElement, FakeElement, stubFakeDocument } from "./helpers/fakeDom";
 
 describe("domElement", () => {
   afterEach(() => {
@@ -23,8 +8,8 @@ describe("domElement", () => {
   });
 
   it("classNameとtextContentを持つ要素を作る", () => {
-    const createElementMock = stubDocument();
-    const element = createElement("button", "amc-button", "安全化して送信") as unknown as FakeElement;
+    const createElementMock = stubFakeDocument();
+    const element = asDomElement<HTMLElement>(createElement("button", "amc-button", "安全化して送信"));
 
     expect(createElementMock).toHaveBeenCalledWith("button");
     expect(element.tagName).toBe("button");
@@ -33,8 +18,8 @@ describe("domElement", () => {
   });
 
   it("textが未指定なら空のtextContentのままにする", () => {
-    stubDocument();
-    const element = createElement("div", "amc-panel") as unknown as FakeElement;
+    stubFakeDocument();
+    const element = asDomElement<FakeElement>(createElement("div", "amc-panel"));
 
     expect(element.className).toBe("amc-panel");
     expect(element.textContent).toBe("");

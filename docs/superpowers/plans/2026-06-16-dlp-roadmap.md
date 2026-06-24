@@ -1,5 +1,7 @@
 ﻿# AIまえチェック DLP Roadmap Implementation Plan
 
+> この文書は2026-06-16時点の履歴資料です。現行仕様は [README](../../../README.md)、[SiteAdapter契約](../site-adapter-contract.md)、[署名付きルール配信](../rule-delivery.md)、[リリース運用](../release-process.md) を参照してください。本文中の「後続adapter」などの表現は当時の計画であり、現在の対応状況を示すものではありません。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** AIまえチェックを、paste前チェック中心の拡張から、ChatGPT / Claude / Gemini の通常入力体験を維持した送信前DLPレイヤーへ移行する。

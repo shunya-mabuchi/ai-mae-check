@@ -2,60 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Finding } from "@ai-mae-check/core";
 import type { ContextRiskCandidate } from "@ai-mae-check/llm";
 import { renderReviewCandidateList, renderReviewFindingList } from "../src/lib/reviewListRenderers";
-
-type Listener = () => void;
-
-class FakeElement {
-  className = "";
-  textContent = "";
-  type = "";
-  checked = false;
-  readonly children: FakeElement[] = [];
-  private readonly listeners = new Map<string, Listener[]>();
-
-  constructor(readonly tagName: string) {}
-
-  append(...children: FakeElement[]): void {
-    this.children.push(...children);
-  }
-
-  replaceChildren(...children: FakeElement[]): void {
-    this.children.splice(0, this.children.length, ...children);
-  }
-
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject): void {
-    const listeners = this.listeners.get(type) ?? [];
-    if (typeof listener === "function") {
-      listeners.push(() => listener(new Event(type)));
-    } else {
-      listeners.push(() => listener.handleEvent(new Event(type)));
-    }
-    this.listeners.set(type, listeners);
-  }
-
-  dispatch(type: string): void {
-    for (const listener of this.listeners.get(type) ?? []) {
-      listener();
-    }
-  }
-}
-
-function stubDocument(): void {
-  vi.stubGlobal("document", {
-    createElement: vi.fn((tagName: string) => new FakeElement(tagName))
-  });
-}
-
-function allElements(root: FakeElement): FakeElement[] {
-  return [root, ...root.children.flatMap(allElements)];
-}
-
-function joinedText(root: FakeElement): string {
-  return allElements(root)
-    .map((element) => element.textContent)
-    .filter((text) => text.length > 0)
-    .join("\n");
-}
+import { allElements, asDomElement, FakeElement, joinedText, stubFakeDocument } from "./helpers/fakeDom";
 
 function finding(overrides: Partial<Finding> = {}): Finding {
   return {
@@ -94,12 +41,12 @@ describe("pasteReviewListRenderers", () => {
   });
 
   it("検出項目一覧を描画し、チェック変更を選択状態へ反映する", () => {
-    stubDocument();
+    stubFakeDocument();
     const container = new FakeElement("div");
     const selectedIds = new Set(["finding-1"]);
     const onChange = vi.fn();
 
-    renderReviewFindingList(container as unknown as HTMLElement, [finding()], selectedIds, onChange);
+    renderReviewFindingList(asDomElement<HTMLElement>(container), [finding()], selectedIds, onChange);
 
     const text = joinedText(container);
     expect(text).toContain("メールアドレス");
@@ -120,12 +67,12 @@ describe("pasteReviewListRenderers", () => {
   });
 
   it("AI文脈候補一覧を描画し、チェック変更を選択状態へ反映する", () => {
-    stubDocument();
+    stubFakeDocument();
     const container = new FakeElement("div");
     const selectedIds = new Set<string>();
     const onChange = vi.fn();
 
-    renderReviewCandidateList(container as unknown as HTMLElement, [candidate()], selectedIds, onChange);
+    renderReviewCandidateList(asDomElement<HTMLElement>(container), [candidate()], selectedIds, onChange);
 
     const text = joinedText(container);
     expect(text).toContain("人名候補");
@@ -147,10 +94,10 @@ describe("pasteReviewListRenderers", () => {
   });
 
   it("候補が空の場合は空状態を描画する", () => {
-    stubDocument();
+    stubFakeDocument();
     const container = new FakeElement("div");
 
-    renderReviewCandidateList(container as unknown as HTMLElement, [], new Set(), vi.fn());
+    renderReviewCandidateList(asDomElement<HTMLElement>(container), [], new Set(), vi.fn());
 
     expect(joinedText(container)).toContain("AI文脈チェックの追加候補はありません。");
   });
