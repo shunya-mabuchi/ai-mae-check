@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AIまえチェック 拡張E2E 模擬composer</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #111827;
+        background: #f7f8f5;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+
+      main {
+        width: min(860px, calc(100vw - 40px));
+        display: grid;
+        gap: 18px;
+      }
+
+      .composer {
+        border: 1px solid #d8ded3;
+        border-radius: 14px;
+        background: #ffffff;
+        padding: 18px;
+        box-shadow: 0 20px 60px rgb(15 23 42 / 12%);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      textarea,
+      [contenteditable="true"] {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 160px;
+        resize: vertical;
+        border: 1px solid #c9d2c3;
+        border-radius: 10px;
+        padding: 14px;
+        font: inherit;
+        line-height: 1.7;
+        background: #fbfcfa;
+      }
+
+      [contenteditable="true"]:focus,
+      textarea:focus {
+        outline: 3px solid rgb(22 163 74 / 18%);
+        border-color: #16a34a;
+      }
+
+      button {
+        min-height: 42px;
+        border: 0;
+        border-radius: 10px;
+        padding: 0 18px;
+        font-weight: 700;
+        color: #ffffff;
+        background: #087a4a;
+        cursor: pointer;
+      }
+
+      .actions {
+        margin-top: 12px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      output {
+        display: block;
+        min-height: 52px;
+        border: 1px dashed #c9d2c3;
+        border-radius: 10px;
+        padding: 12px;
+        white-space: pre-wrap;
+        background: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="composer" aria-label="textarea composer">
+        <h1>textarea composer</h1>
+        <textarea id="prompt-textarea" data-testid="textarea-editor" aria-label="メッセージを入力"></textarea>
+        <div class="actions">
+          <button data-testid="send-button" aria-label="Send message" type="button">送信</button>
+        </div>
+      </section>
+
+      <section class="composer" aria-label="contenteditable composer">
+        <h1>contenteditable composer</h1>
+        <div
+          id="contenteditable-prompt"
+          data-testid="contenteditable-editor"
+          role="textbox"
+          aria-label="メッセージを入力"
+          contenteditable="true"
+        ></div>
+      </section>
+
+      <section class="composer" aria-label="送信結果">
+        <h1>送信結果</h1>
+        <output data-testid="submitted-output" data-submitted="false"></output>
+      </section>
+    </main>
+
+    <script type="module">
+      const textarea = document.querySelector('[data-testid="textarea-editor"]');
+      const sendButton = document.querySelector('[data-testid="send-button"]');
+      const output = document.querySelector('[data-testid="submitted-output"]');
+
+      function recordSubmit() {
+        output.dataset.submitted = "true";
+        output.textContent = textarea.value;
+      }
+
+      sendButton.addEventListener("click", recordSubmit);
+      textarea.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey && !event.altKey && !event.isComposing) {
+          recordSubmit();
+        }
+      });
+    </script>
+  </body>
+</html>

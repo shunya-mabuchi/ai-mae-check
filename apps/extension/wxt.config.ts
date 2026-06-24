@@ -11,10 +11,19 @@ const targetMatches = [
   "https://perplexity.ai/*"
 ];
 
+const extensionE2eMatches = ["http://127.0.0.1/*", "http://localhost/*"];
+const isExtensionE2eBuild = process.env.EXTENSION_E2E === "1";
+const manifestMatches = isExtensionE2eBuild ? [...targetMatches, ...extensionE2eMatches] : targetMatches;
+
 export default defineConfig({
+  outDir: isExtensionE2eBuild ? ".output-e2e" : ".output",
+  outDirTemplate: "chrome-mv{{manifestVersion}}",
   manifestVersion: 3,
   modules: ["@wxt-dev/module-react"],
   vite: () => ({
+    define: {
+      __AI_MAE_EXTENSION_E2E__: JSON.stringify(isExtensionE2eBuild)
+    },
     resolve: {
       alias: {
         "@ai-mae-check/core": resolve(fileURLToPath(new URL(".", import.meta.url)), "../../packages/core/src/index.ts"),
@@ -30,7 +39,7 @@ export default defineConfig({
     description: "AIに送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認します。",
     version: "0.1.1",
     permissions: ["storage"],
-    host_permissions: targetMatches,
+    host_permissions: manifestMatches,
     icons: {
       16: "icon/16.png",
       32: "icon/32.png",
@@ -49,7 +58,7 @@ export default defineConfig({
     web_accessible_resources: [
       {
         resources: ["llm-worker.js", "llm-bridge.html"],
-        matches: targetMatches
+        matches: manifestMatches
       }
     ],
     content_security_policy: {

@@ -10,6 +10,12 @@ const paths = {
   releaseProcess: "docs/release-process.md",
   chromeStoreRelease: "docs/chrome-web-store-release.md",
   manifestQa: "scripts/check-extension-manifest.mjs",
+  playwrightConfig: "apps/extension/playwright.extension.config.ts",
+  mockComposer: "apps/extension/e2e/mock-composer.html",
+  extensionSpec: "apps/extension/e2e/extension.spec.ts",
+  buildScript: "scripts/build-extension-e2e.mjs",
+  runScript: "scripts/run-extension-e2e.mjs",
+  wxtConfig: "apps/extension/wxt.config.ts",
   packageJson: "package.json"
 };
 
@@ -42,6 +48,7 @@ const manifestQa = read(paths.manifestQa);
 const packageJson = JSON.parse(read(paths.packageJson));
 
 for (const phrase of [
+  "最小ハーネスは実装済み",
   "実サイトのログイン状態に依存しない",
   "ユーザー本文",
   "実APIキー",
@@ -87,8 +94,19 @@ for (const phrase of [
 assertIncludes(manifestQa, "<all_urls>", paths.manifestQa);
 assertIncludes(manifestQa, "localhost", paths.manifestQa);
 
-if (packageJson.scripts["test:extension:e2e"]) {
-  fail("test:extension:e2e should not be wired until the dedicated extension E2E harness is implemented");
+if (packageJson.scripts["build:extension:e2e"] !== "node scripts/build-extension-e2e.mjs") {
+  fail("build:extension:e2e script must run scripts/build-extension-e2e.mjs");
 }
+
+if (packageJson.scripts["test:extension:e2e"] !== "node scripts/run-extension-e2e.mjs") {
+  fail("test:extension:e2e script must run scripts/run-extension-e2e.mjs");
+}
+
+assertIncludes(read(paths.wxtConfig), "EXTENSION_E2E", paths.wxtConfig);
+assertIncludes(read(paths.wxtConfig), ".output-e2e", paths.wxtConfig);
+assertIncludes(read(paths.playwrightConfig), "mock-composer.html", paths.playwrightConfig);
+assertIncludes(read(paths.extensionSpec), "安全化して入力", paths.extensionSpec);
+assertIncludes(read(paths.extensionSpec), "安全化して送信", paths.extensionSpec);
+assertIncludes(read(paths.extensionSpec), "contenteditable", paths.extensionSpec);
 
 console.log("Extension E2E harness QA passed");

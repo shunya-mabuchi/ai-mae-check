@@ -1,6 +1,8 @@
 # Chrome拡張E2E自動化ハーネス方針
 
-AIまえチェックはChrome拡張が本体です。ユニットテスト、デモE2E、manifest QAに加えて、実際の拡張を読み込んだ状態でpaste/submit/安全化モーダルを確認するE2Eハーネスを段階的に整備します。
+AIまえチェックはChrome拡張が本体です。ユニットテスト、デモE2E、manifest QAに加えて、実際の拡張を読み込んだ状態でpaste/submit/安全化モーダルを確認するE2Eハーネスを整備しています。
+
+0.1.1時点で、ローカルの模擬composerページを使う最小ハーネスは実装済みです。実サイトログインやWebLLM実モデルロードには依存させず、Chrome Web Store提出用ZIPとも分離します。
 
 この文書は、実サイトのログイン状態に依存しない自動E2Eの範囲と、手動QAとの境界を定義します。
 
@@ -108,6 +110,19 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 
 実サイト手動QAは [extension-site-qa.md](extension-site-qa.md) に残します。WebLLM実機確認は [webllm-real-device-check.md](webllm-real-device-check.md) と [webllm-compatibility-matrix.md](webllm-compatibility-matrix.md) に記録します。
 
+## 実装済みコマンド
+
+```bash
+pnpm build:extension:e2e
+pnpm test:extension:e2e
+```
+
+- `pnpm build:extension:e2e` は `EXTENSION_E2E=1` を付けて、E2E専用buildを `apps/extension/.output-e2e/chrome-mv3` に作成します。
+- `pnpm test:extension:e2e` はE2E専用buildを作成したうえで、Playwrightでローカルの模擬composerページを開きます。
+- `apps/extension/e2e/mock-composer.html` は `textarea`、`contenteditable`、送信ボタンを持つ最小ページです。
+- `apps/extension/e2e/extension.spec.ts` で、paste検知、安全化して貼り付け、安全化して送信を確認します。
+- Chrome Web Store提出用ZIPはE2E専用buildから作らないでください。通常の `pnpm package:extension` は `apps/extension/.output/chrome-mv3` を使います。
+
 ## CI判断
 
 0.1.1時点では、拡張E2Eハーネス本体はCI必須にしません。
@@ -118,9 +133,9 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 - GitHub Actions上のheaded ChromiumとMV3拡張読み込みの安定性を検証する必要がある
 - WebLLM実モデルロードをCI必須にすると、GPU/保存領域/ネットワークに依存して不安定になる
 
-ただし、方針ドキュメントとリリースmanifest QAはCIで維持します。将来、テスト専用buildとローカル模擬ページが実装できた段階で `pnpm test:extension:e2e` を追加し、最小シナリオだけCIへ載せます。
+ただし、方針ドキュメント、E2E実装ファイルの存在確認、リリースmanifest QAはCIで維持します。将来、headed ChromiumでのMV3拡張読み込みがCI上で安定することを確認できた段階で、`pnpm test:extension:e2e` をCIへ追加します。
 
-## 最小シナリオ案
+## 最小シナリオ
 
 1. `pnpm build:extension:e2e` でテスト専用match patternを含む拡張を作る
 2. Playwrightでローカル模擬composerを起動する
@@ -133,10 +148,9 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 
 ダミー文以外は使いません。
 
-## 後続実装タスク候補
+## 後続拡張候補
 
-- `apps/extension/e2e/mock-composer.html` を追加する
-- `apps/extension/playwright.extension.config.ts` を追加する
-- WXT設定にE2E専用match patternを追加する
-- `pnpm build:extension:e2e` と `pnpm test:extension:e2e` を追加する
-- CIでは最初に1シナリオだけ実行し、安定性を見て増やす
+- textarea / contenteditable以外に、LexicalやProseMirror風の最小DOMを追加する
+- キーボード送信のE2Eケースを増やす
+- CIでheaded Chromium相当の実行が安定するか検証する
+- 実サイト手動QAの結果とE2Eケースの対応表を増やす
