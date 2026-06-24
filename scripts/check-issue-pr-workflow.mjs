@@ -9,6 +9,7 @@ const paths = [
   ".github/ISSUE_TEMPLATE/config.yml",
   ".github/pull_request_template.md",
   "docs/issue-pr-workflow.md",
+  "scripts/check-github-metadata.mjs",
   "SECURITY.md"
 ];
 
@@ -64,5 +65,7 @@ for (const milestone of ["0.1.1", "0.2.0", "post-0.2"]) {
 assertIncludes(config, "SECURITY.md", "Issue template config");
 assertIncludes(pr, "Closes #", "PR template");
 assertIncludes(pr, "pnpm test", "PR template");
+assertIncludes(workflow, "pnpm qa:github-metadata", "workflow metadata QA");
+assertIncludes(workflow, "gh auth status", "workflow metadata QA");
 
 console.log("Issue/PR workflow QA passed");

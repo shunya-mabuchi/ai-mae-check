@@ -40,6 +40,7 @@
     "qa:dependency-policy": "node scripts/check-dependency-policy.mjs",
     "qa:release-policy": "node scripts/check-release-policy.mjs",
     "qa:issue-pr-workflow": "node scripts/check-issue-pr-workflow.mjs",
+    "qa:github-metadata": "node scripts/check-github-metadata.mjs",
     "qa:demo:seo": "node scripts/check-demo-seo.mjs",
     "qa:portfolio-case-study": "node scripts/check-portfolio-case-study.mjs",
     "qa:extension:size": "node scripts/check-extension-size-budget.mjs",

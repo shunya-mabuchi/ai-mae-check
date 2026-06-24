@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ContextAnalysisResult } from "@ai-mae-check/llm";
 import { PASTE_REVIEW_LLM_DISABLED_MESSAGE } from "../src/lib/pasteReviewLlmState";
 import { runReviewLlm } from "../src/lib/reviewLlmRunner";
+import { asDomElement } from "./helpers/fakeDom";
 import { buildFinding } from "./testBuilders";
 
 class FakeButton {
@@ -27,8 +28,8 @@ describe("runReviewLlm", () => {
       inputText: "テスト",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       existingFindings: [],
-      llmStatus: llmStatus as HTMLElement,
-      llmButton: llmButton as unknown as HTMLButtonElement,
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(llmButton),
       selectedCandidateIds: new Set(),
       setCandidates: vi.fn(),
       render: vi.fn(),
@@ -84,8 +85,8 @@ describe("runReviewLlm", () => {
       inputText: "候補者の山田花子さんについて確認します。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       existingFindings: [buildFinding()],
-      llmStatus: llmStatus as HTMLElement,
-      llmButton: llmButton as unknown as HTMLButtonElement,
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(llmButton),
       selectedCandidateIds,
       setCandidates,
       render,
@@ -131,8 +132,8 @@ describe("runReviewLlm", () => {
       inputText: "テスト",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       existingFindings: [],
-      llmStatus: llmStatus as HTMLElement,
-      llmButton: llmButton as unknown as HTMLButtonElement,
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(llmButton),
       selectedCandidateIds: new Set(),
       setCandidates: vi.fn(),
       render,
@@ -181,8 +182,8 @@ describe("runReviewLlm", () => {
       inputText: "候補者の山田花子さんについて確認します。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       existingFindings: [],
-      llmStatus: llmStatus as HTMLElement,
-      llmButton: llmButton as unknown as HTMLButtonElement,
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(llmButton),
       selectedCandidateIds,
       setCandidates,
       render,
@@ -213,8 +214,8 @@ describe("runReviewLlm", () => {
       inputText: "佐藤様向けに Project Blue Bridge の提案メモを作ります。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       existingFindings: [],
-      llmStatus: llmStatus as HTMLElement,
-      llmButton: llmButton as unknown as HTMLButtonElement,
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(llmButton),
       selectedCandidateIds,
       setCandidates,
       render,

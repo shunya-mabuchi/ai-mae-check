@@ -28,6 +28,16 @@ PRでは、少なくとも次を記録します。
 - プライバシー・セキュリティ確認
 - 残る制限や手動確認が必要な点
 
+## GitHubメタデータQA
+
+IssueやPRのタイトル、本文もpublicリポジトリのポートフォリオとして読まれます。作業後や公開前の棚卸しでは、次のコマンドで文字化け、英語prefix、英語テンプレート見出し、内部表記の残りを確認します。
+
+```bash
+pnpm qa:github-metadata
+```
+
+このQAはGitHub CLIを使うため、実行前に `gh auth status` で認証状態を確認します。技術用語としての `WebLLM`、`Chrome Web Store`、`SiteAdapter` などは許容し、`docs:`、`feat:`、`Summary`、`Validation` のようなテンプレート由来の英語を修正対象にします。本文、実APIキー、実トークン、顧客名、案件名、個人情報はIssueやPRへ書きません。
+
 ## ラベル運用
 
 推奨ラベル:

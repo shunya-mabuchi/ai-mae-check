@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setupDialogAccessibility } from "../src/lib/dialogAccessibility";
+import { asDomElement } from "./helpers/fakeDom";
 
 type KeydownHandler = (event: KeyboardEvent) => void;
 
@@ -78,9 +79,9 @@ describe("dialogAccessibility", () => {
     fakeDocument.activeElement = previous;
 
     const controller = setupDialogAccessibility({
-      overlay: overlay as unknown as HTMLElement,
-      dialog: dialog as unknown as HTMLElement,
-      initialFocus: initialFocus as unknown as HTMLElement,
+      overlay: asDomElement<HTMLElement>(overlay),
+      dialog: asDomElement<HTMLElement>(dialog),
+      initialFocus: asDomElement<HTMLElement>(initialFocus),
       onCancel: vi.fn()
     });
 
@@ -104,8 +105,8 @@ describe("dialogAccessibility", () => {
     dialog.focusables = [first, last];
 
     setupDialogAccessibility({
-      overlay: overlay as unknown as HTMLElement,
-      dialog: dialog as unknown as HTMLElement,
+      overlay: asDomElement<HTMLElement>(overlay),
+      dialog: asDomElement<HTMLElement>(dialog),
       onCancel
     });
 
