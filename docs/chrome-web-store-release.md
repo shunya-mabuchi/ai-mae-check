@@ -153,6 +153,7 @@ pnpm qa:chrome-store
 - [ ] `pnpm qa:webllm-compatibility` が通る
 - [ ] `pnpm qa:rule-catalog` が通る
 - [ ] `pnpm qa:extension:e2e-harness` が通る
+- [ ] ローカル環境で `pnpm test:extension:e2e` が通る、または実行できない理由をPR/Release本文に記録する
 - [ ] `pnpm qa:dependency-policy` が通る
 - [ ] `pnpm qa:release-policy` が通る
 - [ ] `pnpm qa:demo:seo` が通る

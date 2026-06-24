@@ -1,4 +1,6 @@
-export type SiteId = "chatgpt" | "openai_chat" | "claude" | "gemini" | "perplexity";
+declare const __AI_MAE_EXTENSION_E2E__: boolean;
+
+export type SiteId = "chatgpt" | "openai_chat" | "claude" | "gemini" | "perplexity" | "extension_e2e";
 
 export interface TargetSite {
   id: SiteId;
@@ -7,7 +9,7 @@ export interface TargetSite {
   matches: string[];
 }
 
-export const targetSites: TargetSite[] = [
+const releaseTargetSites: TargetSite[] = [
   {
     id: "chatgpt",
     label: "ChatGPT",
@@ -39,6 +41,20 @@ export const targetSites: TargetSite[] = [
     matches: ["https://www.perplexity.ai/*", "https://perplexity.ai/*"]
   }
 ];
+
+const extensionE2eTargetSite: TargetSite = {
+  id: "extension_e2e",
+  label: "拡張E2E",
+  hostnames: ["127.0.0.1", "localhost"],
+  matches: ["http://127.0.0.1/*", "http://localhost/*"]
+};
+
+const isExtensionE2eBuild =
+  typeof __AI_MAE_EXTENSION_E2E__ !== "undefined" && __AI_MAE_EXTENSION_E2E__;
+
+export const targetSites: TargetSite[] = isExtensionE2eBuild
+  ? [...releaseTargetSites, extensionE2eTargetSite]
+  : releaseTargetSites;
 
 export const targetMatches = targetSites.flatMap((site) => site.matches);
 

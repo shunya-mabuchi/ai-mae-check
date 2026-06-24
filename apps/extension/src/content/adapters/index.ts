@@ -3,6 +3,7 @@ import { chatgptAdapter } from "./chatgptAdapter";
 import { claudeAdapter } from "./claudeAdapter";
 import { geminiAdapter } from "./geminiAdapter";
 import { perplexityAdapter } from "./perplexityAdapter";
+import { siteIdFromHostname } from "../../lib/sites";
 
 export function adapterForHostname(hostname: string): SiteAdapter | null {
   const normalized = hostname.toLowerCase();
@@ -21,6 +22,10 @@ export function adapterForHostname(hostname: string): SiteAdapter | null {
 
   if (normalized === "www.perplexity.ai" || normalized === "perplexity.ai") {
     return perplexityAdapter;
+  }
+
+  if (siteIdFromHostname(normalized) === "extension_e2e") {
+    return chatgptAdapter;
   }
 
   return null;

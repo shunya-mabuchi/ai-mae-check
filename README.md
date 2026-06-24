@@ -224,6 +224,7 @@ pnpm dev:extension
 pnpm dev:demo
 pnpm build
 pnpm build:extension
+pnpm build:extension:e2e
 pnpm build:demo
 pnpm build:worker
 pnpm package:extension
@@ -248,6 +249,7 @@ pnpm test:core
 pnpm test:llm
 pnpm test:worker
 pnpm test:e2e
+pnpm test:extension:e2e
 pnpm rules:keygen
 pnpm lint
 pnpm typecheck
@@ -256,6 +258,8 @@ pnpm typecheck
 `pnpm lint` は現時点では `pnpm typecheck` の別名です。
 
 `pnpm package:extension` はChrome Web Store提出用のZIPを作成するためのコマンドです。`apps/extension/config/rule-delivery.release.json` の本番ルール配信URL・`keyId`・公開JWKがそろっていない場合は失敗します。
+
+`pnpm build:extension:e2e` と `pnpm test:extension:e2e` は、ローカル模擬composerにだけlocalhost権限を追加したE2E専用buildを使います。Chrome Web Store提出用ZIPは通常の `pnpm package:extension` で作り、E2E専用buildからは作りません。
 
 `pnpm qa:public-repo` は、publicリポジトリへ実secret、private JWK、生成物、ログ、ZIPが混入していないかを確認するQAコマンドです。監査手順は [docs/public-repo-safety.md](docs/public-repo-safety.md) にまとめています。
 
@@ -273,7 +277,7 @@ Options Pageの設定グループ、保存対象、`settingsVersion`、設定マ
 
 `pnpm qa:rule-catalog` は、同梱検出ルール、placeholder、配信ルールschema、署名付き配信前レビュー手順が検出ルール作成ガイド [docs/detection-rule-authoring.md](docs/detection-rule-authoring.md) とずれていないか確認するQAです。
 
-`pnpm qa:extension:e2e-harness` は、Chrome拡張をPlaywrightで読み込む拡張E2Eハーネス方針、ローカル模擬composerでの検証範囲、実サイト手動QAとの境界、E2E専用host permissionをリリースZIPへ混入させない方針が [docs/extension-e2e-harness.md](docs/extension-e2e-harness.md) とずれていないか確認するQAです。
+`pnpm qa:extension:e2e-harness` は、Chrome拡張をPlaywrightで読み込む拡張E2Eハーネス方針、ローカル模擬composerでの検証範囲、実装済みファイル、実サイト手動QAとの境界、E2E専用host permissionをリリースZIPへ混入させない方針が [docs/extension-e2e-harness.md](docs/extension-e2e-harness.md) とずれていないか確認するQAです。
 
 `pnpm qa:dependency-policy` は、依存関係アップデートとライセンス確認の運用ドキュメントが、現在のCIと公開前QAの前提からずれていないか確認するQAです。運用は [docs/dependency-maintenance.md](docs/dependency-maintenance.md) にまとめています。
 
