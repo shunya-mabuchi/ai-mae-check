@@ -18,7 +18,9 @@ export type DlpCategory =
   | "file"
   | "other";
 
-export type TransformMode = "mask" | "generalize";
+export type ResolvedTransformMode = "placeholder" | "generalize" | "redact";
+
+export type TransformMode = ResolvedTransformMode | "mask";
 
 export type FindingSource = "rule" | "llm";
 
@@ -127,6 +129,7 @@ export interface PolicyDecision extends DlpPolicyDecision {
 
 export interface TextTransformResult {
   mode: TransformMode;
+  resolvedMode: ResolvedTransformMode;
   transformedText: string;
   placeholderMap: PlaceholderMap;
   findings: Finding[];

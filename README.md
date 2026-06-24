@@ -295,7 +295,7 @@ AIまえチェックが守る範囲、守れない範囲、信頼境界、重大
 
 ローカルDLPランタイムとしての責務分離、各レイヤーの役割、既存実装との対応表は [docs/local-dlp-runtime.md](docs/local-dlp-runtime.md) にまとめています。
 
-「安全化」「マスク」「秘密情報保護」の関係は [docs/sanitization-concepts.md](docs/sanitization-concepts.md) にまとめています。ユーザー向けの基本表現は「安全化」に寄せ、`mask` などの内部名は互換性のために残しています。
+「安全化」「マスク」「秘密情報保護」の関係は [docs/sanitization-concepts.md](docs/sanitization-concepts.md) にまとめています。ユーザー向けの基本表現は「安全化」に寄せ、内部方式は `placeholder` / `generalize` / `redact` として整理しています。`mask` などの旧内部名は互換性のために残しています。
 
 `pnpm qa:chrome-store` は、提出用ZIP、Chrome Web Store掲載情報、ストア用画像寸法、プライバシーポリシー、誇大表現の混入に加えて、本番ルール配信URL・`keyId`・公開JWKが提出物へ一致して埋め込まれているかをまとめて確認する公開前QAコマンドです。
 

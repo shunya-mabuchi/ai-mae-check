@@ -1,6 +1,8 @@
 import { createPlaceholderMap, maskSensitiveText, normalizeFindings } from "./mask";
 import { categoryForFinding } from "./riskScore";
-import type { DlpCategory, Finding, TextTransformResult, TransformMode } from "./types";
+import type { DlpCategory, Finding, ResolvedTransformMode, TextTransformResult, TransformMode } from "./types";
+
+export const TEXT_TRANSFORM_MODES = ["placeholder", "generalize", "redact"] as const;
 
 const generalizedPlaceholderByCategory: Record<DlpCategory, string> = {
   person: "[人名]",
@@ -26,6 +28,13 @@ function generalizeFindings(findings: Finding[]): Finding[] {
   }));
 }
 
+function redactFindings(findings: Finding[]): Finding[] {
+  return normalizeFindings(findings).map((finding) => ({
+    ...finding,
+    placeholder: "[削除済み]"
+  }));
+}
+
 function replaceFromEnd(input: string, findings: Finding[]): string {
   let result = input;
 
@@ -36,11 +45,18 @@ function replaceFromEnd(input: string, findings: Finding[]): string {
   return result;
 }
 
+export function resolveTransformMode(mode: TransformMode): ResolvedTransformMode {
+  return mode === "mask" ? "placeholder" : mode;
+}
+
 export function transformText(input: string, findings: Finding[], mode: TransformMode): TextTransformResult {
-  if (mode === "mask") {
+  const resolvedMode = resolveTransformMode(mode);
+
+  if (resolvedMode === "placeholder") {
     const maskResult = maskSensitiveText(input, findings);
     return {
       mode,
+      resolvedMode,
       transformedText: maskResult.maskedText,
       placeholderMap: maskResult.placeholderMap,
       findings: maskResult.findings,
@@ -48,12 +64,13 @@ export function transformText(input: string, findings: Finding[], mode: Transfor
     };
   }
 
-  const generalizedFindings = generalizeFindings(findings);
+  const transformedFindings = resolvedMode === "redact" ? redactFindings(findings) : generalizeFindings(findings);
   return {
     mode,
-    transformedText: replaceFromEnd(input, generalizedFindings),
-    placeholderMap: createPlaceholderMap(generalizedFindings),
-    findings: generalizedFindings,
+    resolvedMode,
+    transformedText: replaceFromEnd(input, transformedFindings),
+    placeholderMap: createPlaceholderMap(transformedFindings),
+    findings: transformedFindings,
     requiresLlm: false
   };
 }

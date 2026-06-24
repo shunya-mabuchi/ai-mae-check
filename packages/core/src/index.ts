@@ -19,7 +19,7 @@ export {
   validateRemoteRuleBundlePayload,
   verifySignedRemoteRuleBundle
 } from "./remoteRules";
-export { transformText } from "./transform";
+export { resolveTransformMode, TEXT_TRANSFORM_MODES, transformText } from "./transform";
 export type {
   DlpPolicyAction,
   DlpPolicyDecision,
@@ -41,6 +41,7 @@ export type {
   RiskLevel,
   RiskScoreOptions,
   RiskScoreResult,
+  ResolvedTransformMode,
   TextTransformResult,
   TransformMode
 } from "./types";
