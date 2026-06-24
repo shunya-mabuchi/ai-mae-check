@@ -18,6 +18,7 @@ const paths = {
   ci: ".github/workflows/ci.yml",
   docs: "docs/privacy-regression.md",
   settings: "apps/extension/src/lib/settings.ts",
+  remoteRuleCache: "apps/extension/src/lib/remoteRuleCache.ts",
   remoteRuleDelivery: "apps/extension/src/lib/remoteRuleDelivery.ts",
   worker: "apps/worker/src/index.ts",
   pagesFunction: "functions/api/rules/latest.ts"
@@ -94,13 +95,14 @@ for (const file of trackedFiles().filter(isProtectedRuntimeFile)) {
 }
 
 const storageAccessPattern = /chrome\.storage\.local\.(?:get|set|remove|clear)\s*\(/u;
+const allowedStorageFiles = new Set([paths.settings, paths.remoteRuleCache]);
 for (const file of trackedFiles().filter(isProtectedRuntimeFile)) {
   for (const match of findLines(file, storageAccessPattern)) {
-    if (file !== paths.settings) {
+    if (!allowedStorageFiles.has(file)) {
       findings.push({
         file,
         line: match.line,
-        detail: "chrome.storage.local access must stay centralized in settings.ts",
+        detail: "chrome.storage.local access must stay limited to settings and verified remote rule cache",
         text: match.text
       });
     }
@@ -112,7 +114,18 @@ assertIncludes(settingsSource, 'export const SETTINGS_KEY = "ai-mae-check.settin
 assertIncludes(settingsSource, "export const SETTINGS_SCHEMA_VERSION", paths.settings);
 assertIncludes(settingsSource, "chrome.storage.local.get(SETTINGS_KEY", paths.settings);
 assertIncludes(settingsSource, "chrome.storage.local.set({ [SETTINGS_KEY]: normalizedSettings }", paths.settings);
-assertIncludes(settingsSource, "chrome.storage.local.remove(SETTINGS_KEY", paths.settings);
+assertIncludes(settingsSource, "chrome.storage.local.remove([SETTINGS_KEY, REMOTE_RULE_CACHE_KEY]", paths.settings);
+
+const remoteRuleCacheSource = read(paths.remoteRuleCache);
+assertIncludes(remoteRuleCacheSource, 'export const REMOTE_RULE_CACHE_KEY = "ai-mae-check.remoteRules.v1"', paths.remoteRuleCache);
+assertIncludes(remoteRuleCacheSource, "chrome.storage.local.get(REMOTE_RULE_CACHE_KEY", paths.remoteRuleCache);
+assertIncludes(remoteRuleCacheSource, "chrome.storage.local.set({ [REMOTE_RULE_CACHE_KEY]: entry }", paths.remoteRuleCache);
+assertIncludes(remoteRuleCacheSource, "chrome.storage.local.remove(REMOTE_RULE_CACHE_KEY", paths.remoteRuleCache);
+for (const forbidden of ["pastedText", "inputText", "placeholderMap", "DetectionResult", "Finding[]"]) {
+  if (remoteRuleCacheSource.includes(forbidden)) {
+    fail(`${paths.remoteRuleCache} must not cache user body, findings, or placeholderMap: ${forbidden}`);
+  }
+}
 
 const extensionFetchPattern = /\bfetch\s*\(/u;
 for (const file of trackedFiles().filter((file) => file.startsWith("apps/extension/") && /\.(?:ts|tsx|js|mjs)$/u.test(file))) {
@@ -156,6 +169,7 @@ const docs = read(paths.docs);
 for (const phrase of [
   "pnpm qa:privacy-regression",
   "chrome.storage.local",
+  "検証済みの署名付きリモートルールキャッシュ",
   "console.log",
   "GET /api/rules/latest",
   "postMessage",

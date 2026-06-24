@@ -11,6 +11,7 @@ import {
   SETTINGS_SCHEMA_VERSION,
   validateSettings
 } from "../src/lib/settings";
+import { REMOTE_RULE_CACHE_KEY } from "../src/lib/remoteRuleCache";
 
 describe("settings", () => {
   afterEach(() => {
@@ -134,7 +135,7 @@ describe("settings", () => {
   });
 
   it("保存済み設定を削除して初期設定を返す", async () => {
-    const remove = vi.fn((key: string, callback: () => void) => {
+    const remove = vi.fn((key: string | string[], callback: () => void) => {
       callback();
     });
     vi.stubGlobal("chrome", {
@@ -147,7 +148,7 @@ describe("settings", () => {
 
     const settings = await resetSettings();
 
-    expect(remove).toHaveBeenCalledWith(SETTINGS_KEY, expect.any(Function));
+    expect(remove).toHaveBeenCalledWith([SETTINGS_KEY, REMOTE_RULE_CACHE_KEY], expect.any(Function));
     expect(settings).toEqual(DEFAULT_SETTINGS);
     expect(settings).not.toBe(DEFAULT_SETTINGS);
   });

@@ -47,10 +47,11 @@ YYYY.MM.DD.N
 - `keyId` は拡張に埋め込まれる公開JWKとセットで扱う
 - 公開済み拡張に埋め込まれた公開鍵は後から変更できない
 - `keyId` または公開JWKを変える場合は、Chrome Web Storeへ新バージョンを提出する
-- Worker側の `RULE_KEY_ID` と拡張側の `apps/extension/config/rule-delivery.release.json` の `keyId` を一致させる
+- Worker側の `RULE_KEY_ID` は、現在署名に使う鍵の `keyId` と一致させる
+- 拡張側の `apps/extension/config/rule-delivery.release.json` には、現行鍵を `keyId` / `publicJwk` として持ち、ローテーション期間は `publicKeys` に旧鍵と新鍵を並べる
 - `keyId` の例は `ai-mae-check-rules-2026-06-v1` のように、用途、年月、世代が分かる名前にする
 
-現在の実装は単一鍵の署名を前提にしています。複数鍵で同時に署名して旧拡張と新拡張へ滑らかに移行する仕組みは未実装です。そのため、鍵を切り替えた直後は、旧バージョンの拡張では署名検証に失敗し、同梱ルールへフォールバックする可能性があります。
+0.1.1以降の拡張は `publicKeys` に含まれる複数の公開鍵から、署名バンドルの `keyId` に一致する鍵を選んで検証できます。Workerは同時に複数署名を返すのではなく、常に現在の `RULE_KEY_ID` と `RULE_SIGNING_PRIVATE_JWK` の1組で署名します。旧鍵と新鍵を一定期間 `publicKeys` に残すことで、段階的な鍵ローテーションを行いやすくします。
 
 ## 鍵管理
 
@@ -64,7 +65,8 @@ pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out ../ai-
 
 保存先:
 
-- `publicJwk`: `apps/extension/config/rule-delivery.release.json`
+- `publicJwk`: `apps/extension/config/rule-delivery.release.json` の現行鍵
+- `publicKeys`: `apps/extension/config/rule-delivery.release.json` の検証可能な鍵一覧
 - `privateJwk`: Cloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK`
 - `keyId`: Cloudflare Pages Production環境の `RULE_KEY_ID` と拡張側設定を一致させる
 
@@ -150,18 +152,18 @@ pnpm qa:rules:production
 
 1. 新しい `keyId` を決める。
 2. `pnpm rules:keygen -- --key-id <new-key-id> --private-out <git管理外の一時ファイル>` で新しい鍵ペアを生成する。
-3. `publicJwk` と `keyId` を `apps/extension/config/rule-delivery.release.json` へ反映する。
-4. Worker側の `RULE_KEY_ID` を同じ `keyId` へ更新する。
-5. Cloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` に新しい `privateJwk` を設定する。
-6. `pnpm test:worker`、`pnpm build:extension`、`pnpm package:extension`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
-7. Chrome Web Storeへ新バージョンとして提出する。
-8. 公開後、本番APIの `keyId` と拡張側埋め込み公開鍵が一致することを確認する。
+3. `apps/extension/config/rule-delivery.release.json` の `publicKeys` に新しい公開鍵を追加し、ローテーション期間は旧公開鍵も残す。
+4. Worker側を切り替える前に、旧鍵と新鍵の両方を検証できる拡張バージョンをChrome Web Storeへ提出する。
+5. 公開が進んだら、Worker側の `RULE_KEY_ID` とCloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` を新しい鍵へ更新する。
+6. 現行鍵として扱うタイミングで、`keyId` / `publicJwk` を新鍵へ更新する。
+7. `pnpm test:worker`、`pnpm build:extension`、`pnpm package:extension`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store`、`pnpm qa:rules:production` を実行する。
+8. 十分な移行期間後、次の拡張バージョンで古い公開鍵を `publicKeys` から外す。
 
 注意:
 
-- 現在の実装では、旧公開鍵と新公開鍵の同時受け入れはありません
-- Worker側だけ先に新鍵へ切り替えると、旧拡張はリモートルールを採用できず同梱ルールへフォールバックする
-- その状態は安全側の失敗ですが、追加リモートルールは効かなくなるため、公開タイミングをREADMEやRelease noteに記録する
+- 0.1.0のように新鍵を知らない拡張は、新鍵へ切り替えたルール配信を採用できず同梱ルールへフォールバックする
+- その状態は安全側の失敗ですが、追加リモートルールは効かなくなるため、切り替えタイミングをREADMEやRelease noteに記録する
+- `publicKeys` は公開鍵だけを置き、`privateJwk` を含めない
 
 秘密鍵流出が疑われる場合:
 
@@ -178,20 +180,22 @@ pnpm qa:rules:production
 
 - 通信失敗、HTTPエラー、JSON形式不正、署名欠落、署名不一致、`keyId` 不一致ではリモートルールを採用しない
 - 同梱ルールベース検出は継続する
-- リモートルールは初期実装では永続保存しない
-- 最後に検証済みのリモートルールをキャッシュして使い続ける機能は未実装
+- 通信失敗またはHTTPエラーの場合は、最後に検証済みの署名付きリモートルールキャッシュを短時間だけ再利用できる
+- キャッシュ採用時も、署名、`keyId`、schema、`version`、`generatedAt`、有効期限を再確認する
+- JSON形式不正、署名欠落、署名不一致、未知の `keyId` など、取得したバンドル自体が信用できない場合はキャッシュを消して同梱ルールへ戻る
+- キャッシュは `chrome.storage.local` の `ai-mae-check.remoteRules.v1` に保存し、貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は含めない
 
 将来検討:
 
-- 最後に検証済みのルールだけを短期間キャッシュする
-- キャッシュにも署名検証結果、`version`、`generatedAt`、有効期限を持たせる
-- 古すぎるルールは採用せず、同梱ルールへ戻す
+- キャッシュTTLや失効条件を運用実績に合わせて調整する
+- ルールバンドルに明示的な失効時刻を追加する
+- 複数バージョンのキャッシュ保持が必要か検討する
 
 ## 障害時の見え方
 
-- Workerが落ちている場合: 拡張側は同梱ルールへフォールバックする
+- Workerが落ちている場合: 期限内の検証済みキャッシュがあれば採用し、なければ同梱ルールへフォールバックする
 - Secret未設定の場合: APIは署名設定なしのエラーを返す
-- 署名不一致の場合: 拡張側はリモートルールを採用しない
+- 署名不一致の場合: 拡張側はリモートルールを採用せず、キャッシュも使わず同梱ルールへ戻る
 - 壊れたルールを正しく署名してしまった場合: ルール内容のロールバックが必要
 
 いずれの場合も、ルールベースの同梱検出は継続します。ユーザー本文は障害調査ログへ含めません。

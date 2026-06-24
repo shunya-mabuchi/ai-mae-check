@@ -29,7 +29,7 @@ export default defineContentScript({
 
     const refreshRemoteRules = async () => {
       const result = await loadVerifiedRemoteRules();
-      remoteRules = result.status === "verified" ? result.rules : [];
+      remoteRules = result.status === "verified" || result.status === "cached" ? result.rules : [];
     };
 
     void loadSettings().then((loadedSettings) => {

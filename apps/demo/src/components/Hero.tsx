@@ -129,7 +129,7 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <ShieldCheck size={14} aria-hidden="true" />
-                  設定だけ保存
+                  設定と検証済みルールだけ保存
                 </span>
                 <span>本文ログなし</span>
               </div>

@@ -3,6 +3,7 @@ import {
   detectSensitiveText,
   signRemoteRuleBundle,
   verifySignedRemoteRuleBundle,
+  type RemoteRulePublicKey,
   type RemoteRuleBundlePayload,
   type SignedRemoteRuleBundle
 } from "../src";
@@ -80,6 +81,34 @@ describe("signed remote rules", () => {
     const result = await verifySignedRemoteRuleBundle(signed, publicJwk, { expectedKeyId: "another-key" });
 
     expect(result.ok).toBe(false);
+  });
+
+  it("複数の公開鍵からkeyIdに一致する鍵で検証できる", async () => {
+    const oldKey = await createKeyPair();
+    const newKey = await createKeyPair();
+    const unknownKey = await createKeyPair();
+    const oldKeyId = "test-rules-key-old";
+    const newKeyId = "test-rules-key-new";
+    const publicKeys: RemoteRulePublicKey[] = [
+      { keyId: oldKeyId, publicJwk: oldKey.publicJwk },
+      { keyId: newKeyId, publicJwk: newKey.publicJwk }
+    ];
+
+    const oldSigned = await signRemoteRuleBundle(samplePayload(), oldKey.privateJwk, oldKeyId);
+    const newSigned = await signRemoteRuleBundle(samplePayload(), newKey.privateJwk, newKeyId);
+    const unknownSigned = await signRemoteRuleBundle(samplePayload(), unknownKey.privateJwk, "test-rules-key-unknown");
+    const tampered: SignedRemoteRuleBundle = {
+      ...newSigned,
+      payload: {
+        ...newSigned.payload,
+        version: "2026.06.16.tampered"
+      }
+    };
+
+    await expect(verifySignedRemoteRuleBundle(oldSigned, publicKeys)).resolves.toMatchObject({ ok: true });
+    await expect(verifySignedRemoteRuleBundle(newSigned, publicKeys)).resolves.toMatchObject({ ok: true });
+    await expect(verifySignedRemoteRuleBundle(unknownSigned, publicKeys)).resolves.toMatchObject({ ok: false });
+    await expect(verifySignedRemoteRuleBundle(tampered, publicKeys)).resolves.toMatchObject({ ok: false });
   });
 
   it("検証済みルールを渡さなければ同梱ルールだけで検出する", () => {

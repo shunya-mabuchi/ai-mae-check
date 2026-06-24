@@ -8,7 +8,7 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 - 対象サイト: ChatGPT / Claude / Gemini / PerplexityごとのON/OFF
 - 検出ルール: ルールベース検出ごとのON/OFF
 - WebLLM: AI文脈チェックの有効/無効、モデルID、手動/自動実行
-- 設定の初期化: `chrome.storage.local` に保存された設定キーの削除
+- 設定の初期化: `chrome.storage.local` に保存された設定キーと検証済みリモートルールキャッシュの削除
 - 診断情報: 本文を含まない設定状態と環境情報のコピー
 
 ## 保存するもの
@@ -24,6 +24,8 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 - WebLLMの有効/無効
 - WebLLMモデルID
 - AI文脈チェックの実行モード
+
+ルール配信を有効にしている場合、最後に検証済みの署名付きリモートルールだけを `chrome.storage.local` の `ai-mae-check.remoteRules.v1` に短時間キャッシュします。このキャッシュには、署名付きルールJSON、`keyId`、`version`、`generatedAt`、`cachedAt`、`expiresAt` だけを含めます。
 
 ## 保存しないもの
 
@@ -51,13 +53,14 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 
 ## 初期化
 
-「設定を初期化」を押すと、`chrome.storage.local.remove(SETTINGS_KEY)` で保存済み設定を削除し、画面を初期設定へ戻します。
+「設定を初期化」を押すと、`chrome.storage.local.remove([SETTINGS_KEY, REMOTE_RULE_CACHE_KEY])` で保存済み設定と検証済みリモートルールキャッシュを削除し、画面を初期設定へ戻します。
 
 本文や検出結果はそもそも保存していないため、初期化で削除する対象には含まれません。WebLLMのモデルキャッシュはChromeやWebLLMランタイムが管理する保存領域であり、この設定初期化の対象外です。
 
 ## 関連ファイル
 
 - `apps/extension/src/lib/settings.ts`
+- `apps/extension/src/lib/remoteRuleCache.ts`
 - `apps/extension/tests/settings.test.ts`
 - `docs/privacy-regression.md`
 - `scripts/check-privacy-regression.mjs`

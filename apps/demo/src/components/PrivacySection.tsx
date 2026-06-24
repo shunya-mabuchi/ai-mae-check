@@ -15,7 +15,7 @@ export function PrivacySection() {
         <SectionHeading
           eyebrow="プライバシー設計"
           title="Chrome拡張として使っても、本文を保存しない設計です。"
-          description="設定だけをブラウザ内に保存します。貼り付け本文やマスキング用の対応表は永続保存しません。"
+          description="設定と検証済みルールキャッシュだけをブラウザ内に保存します。貼り付け本文やマスキング用の対応表は永続保存しません。"
         />
         <Surface className="grid gap-0 overflow-hidden md:grid-cols-[0.86fr_1.14fr]">
           <div className="border-b border-line bg-ink p-6 text-white md:border-b-0 md:border-r md:p-8">

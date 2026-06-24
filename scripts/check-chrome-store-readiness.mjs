@@ -293,7 +293,14 @@ if (!marqueePromo || marqueePromo.width !== 1400 || marqueePromo.height !== 560)
 }
 
 const builtContentScript = readFileSync(contentScriptPath, "utf8");
-for (const requiredValue of [releaseConfig.endpoint, releaseConfig.keyId, releaseConfig.publicJwk.x, releaseConfig.publicJwk.y]) {
+const requiredRuleConfigValues = [
+  releaseConfig.endpoint,
+  releaseConfig.keyId,
+  releaseConfig.publicJwk.x,
+  releaseConfig.publicJwk.y,
+  ...releaseConfig.publicKeys.flatMap((entry) => [entry.keyId, entry.publicJwk.x, entry.publicJwk.y])
+];
+for (const requiredValue of new Set(requiredRuleConfigValues)) {
   if (!builtContentScript.includes(requiredValue)) {
     fail(`built extension must include release rule config value: ${requiredValue}`);
   }

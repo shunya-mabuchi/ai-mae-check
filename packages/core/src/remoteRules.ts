@@ -40,6 +40,13 @@ export interface RemoteRuleVerificationOptions {
   expectedKeyId?: string;
 }
 
+export interface RemoteRulePublicKey {
+  keyId: string;
+  publicJwk: JsonWebKey;
+}
+
+export type RemoteRulePublicKeyInput = JsonWebKey | readonly RemoteRulePublicKey[];
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -72,6 +79,31 @@ function createRemoteFinding(input: string, rule: RemoteDetectorRuleDefinition, 
 
 function flagsWithGlobal(flags = ""): string {
   return Array.from(new Set(`${flags}g`.split(""))).join("");
+}
+
+function isRemoteRulePublicKeyList(value: RemoteRulePublicKeyInput): value is readonly RemoteRulePublicKey[] {
+  return Array.isArray(value);
+}
+
+function selectPublicJwk(
+  keyId: string,
+  publicKeyInput: RemoteRulePublicKeyInput,
+  options: RemoteRuleVerificationOptions
+): { ok: true; publicJwk: JsonWebKey } | { ok: false; reason: string } {
+  if (options.expectedKeyId && keyId !== options.expectedKeyId) {
+    return { ok: false, reason: "署名鍵IDが一致しません" };
+  }
+
+  if (!isRemoteRulePublicKeyList(publicKeyInput)) {
+    return { ok: true, publicJwk: publicKeyInput };
+  }
+
+  const matched = publicKeyInput.find((entry) => entry.keyId === keyId);
+  if (!matched) {
+    return { ok: false, reason: "対応する公開鍵が見つかりません" };
+  }
+
+  return { ok: true, publicJwk: matched.publicJwk };
 }
 
 function createRemoteRule(rule: RemoteDetectorRuleDefinition): DetectorRule | null {
@@ -141,7 +173,7 @@ export async function signRemoteRuleBundle(
 
 export async function verifySignedRemoteRuleBundle(
   bundle: unknown,
-  publicJwk: JsonWebKey,
+  publicKeyInput: RemoteRulePublicKeyInput,
   options: RemoteRuleVerificationOptions = {}
 ): Promise<RemoteRuleVerificationResult> {
   if (!isRecord(bundle)) {
@@ -153,8 +185,13 @@ export async function verifySignedRemoteRuleBundle(
   }
 
   const keyId = typeof bundle.keyId === "string" ? bundle.keyId : "";
-  if (keyId.length === 0 || (options.expectedKeyId && keyId !== options.expectedKeyId)) {
+  if (keyId.length === 0) {
     return { ok: false, reason: "署名鍵IDが一致しません" };
+  }
+
+  const selectedKey = selectPublicJwk(keyId, publicKeyInput, options);
+  if (!selectedKey.ok) {
+    return { ok: false, reason: selectedKey.reason };
   }
 
   const payload = validateRemoteRuleBundlePayload(bundle.payload);
@@ -169,7 +206,9 @@ export async function verifySignedRemoteRuleBundle(
 
   try {
     const subtle = subtleCrypto();
-    const publicKey = await subtle.importKey("jwk", publicJwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+    const publicKey = await subtle.importKey("jwk", selectedKey.publicJwk, { name: "ECDSA", namedCurve: "P-256" }, false, [
+      "verify"
+    ]);
     const ok = await subtle.verify(
       { name: "ECDSA", hash: "SHA-256" },
       publicKey,

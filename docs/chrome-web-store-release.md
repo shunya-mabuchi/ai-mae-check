@@ -49,7 +49,7 @@ Developer Dashboardへ入力する掲載情報の原本は [chrome-web-store-lis
 
 ### `storage`
 
-拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデル設定など、ユーザーが選択した設定をブラウザ内に保存するために使用します。貼り付け本文、送信本文、検出結果、マスキング用のplaceholderMapは保存しません。
+拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデル設定など、ユーザーが選択した設定をブラウザ内に保存するために使用します。また、ルール配信が一時的に取得できない場合に備え、最後に検証済みの署名付きリモートルールJSON、keyId、version、有効期限だけを短時間キャッシュします。貼り付け本文、送信本文、検出結果、マスキング用のplaceholderMapは保存しません。
 
 ### Host permissions
 
@@ -164,7 +164,7 @@ pnpm qa:chrome-store
 - [ ] 権限・CSP・依存関係監査 [extension-security-audit.md](extension-security-audit.md) を確認する
 - [ ] `<all_urls>` を要求していない
 - [ ] 対象サイトがChatGPT / Claude / Gemini / Perplexityに限定されている
-- [ ] READMEとプライバシー方針に、本文を保存・送信しないことが書かれている
+- [ ] READMEとプライバシー方針に、本文を保存・送信しないこと、保存対象がユーザー設定と検証済みリモートルールキャッシュだけであることが書かれている
 - [ ] WebLLMモデル取得が発生する場合があることを書いている
 - [ ] 外部LLM APIを使わないことを書いている
 - [ ] 画像に実在の個人情報・実APIキー・実トークンが含まれていない

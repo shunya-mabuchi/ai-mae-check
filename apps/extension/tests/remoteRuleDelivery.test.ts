@@ -1,7 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
-import { signRemoteRuleBundle, type RemoteRuleBundlePayload, type SignedRemoteRuleBundle } from "@ai-mae-check/core";
+import {
+  signRemoteRuleBundle,
+  type RemoteRuleBundlePayload,
+  type RemoteRulePublicKey,
+  type SignedRemoteRuleBundle
+} from "@ai-mae-check/core";
 import releaseConfig from "../config/rule-delivery.release.json";
-import { RULE_DELIVERY_KEY_ID, RULE_DELIVERY_PUBLIC_JWK, loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
+import {
+  REMOTE_RULE_CACHE_TTL_MS,
+  RULE_DELIVERY_KEY_ID,
+  RULE_DELIVERY_PUBLIC_JWK,
+  RULE_DELIVERY_PUBLIC_KEYS,
+  loadVerifiedRemoteRules
+} from "../src/lib/remoteRuleDelivery";
+import type { RemoteRuleCacheStore, VerifiedRemoteRuleCacheEntry } from "../src/lib/remoteRuleCache";
 
 const keyId = "extension-test-key";
 
@@ -32,10 +44,35 @@ function payload(): RemoteRuleBundlePayload {
   };
 }
 
+function createMemoryCache(initialEntry: VerifiedRemoteRuleCacheEntry | null = null): RemoteRuleCacheStore & {
+  entry: VerifiedRemoteRuleCacheEntry | null;
+} {
+  let entry = initialEntry;
+
+  return {
+    get entry() {
+      return entry;
+    },
+    async read() {
+      return entry;
+    },
+    async write(nextEntry) {
+      entry = nextEntry;
+    },
+    async clear() {
+      entry = null;
+    }
+  };
+}
+
 describe("loadVerifiedRemoteRules", () => {
   it("uses the checked-in release public key config", () => {
     expect(RULE_DELIVERY_KEY_ID).toBe(releaseConfig.keyId);
     expect(RULE_DELIVERY_PUBLIC_JWK).toEqual(releaseConfig.publicJwk);
+    expect(RULE_DELIVERY_PUBLIC_KEYS[0]).toEqual({
+      keyId: releaseConfig.keyId,
+      publicJwk: releaseConfig.publicJwk
+    });
   });
 
   it("fetches the signed bundle with GET and without a body", async () => {
@@ -59,6 +96,118 @@ describe("loadVerifiedRemoteRules", () => {
       })
     );
     expect(fetcher.mock.calls[0]?.[1]).not.toHaveProperty("body");
+  });
+
+  it("verifies a bundle signed with any configured public key", async () => {
+    const oldKey = await createKeyPair();
+    const newKey = await createKeyPair();
+    const publicKeys: RemoteRulePublicKey[] = [
+      { keyId: "extension-test-old-key", publicJwk: oldKey.publicJwk },
+      { keyId: "extension-test-new-key", publicJwk: newKey.publicJwk }
+    ];
+    const signed = await signRemoteRuleBundle(payload(), newKey.privateJwk, "extension-test-new-key");
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
+
+    const result = await loadVerifiedRemoteRules({
+      endpoint: "https://rules.example.test/api/rules/latest",
+      publicKeys,
+      fetcher
+    });
+
+    expect(result.status).toBe("verified");
+    expect(result.rules).toHaveLength(1);
+  });
+
+  it("caches only verified signed bundles and reuses them for a short HTTP failure", async () => {
+    const { privateJwk, publicJwk } = await createKeyPair();
+    const signed = await signRemoteRuleBundle(payload(), privateJwk, keyId);
+    const cacheStore = createMemoryCache();
+    const now = 1_000_000;
+    const okFetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
+
+    const verified = await loadVerifiedRemoteRules({
+      endpoint: "https://rules.example.test/api/rules/latest",
+      publicJwk,
+      expectedKeyId: keyId,
+      fetcher: okFetcher,
+      cacheStore,
+      now: () => now
+    });
+
+    expect(verified.status).toBe("verified");
+    expect(cacheStore.entry).toMatchObject({
+      keyId,
+      version: payload().version,
+      generatedAt: payload().generatedAt,
+      cachedAt: now,
+      expiresAt: now + REMOTE_RULE_CACHE_TTL_MS
+    });
+
+    const failingFetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response("{}", { status: 503 }));
+    const cached = await loadVerifiedRemoteRules({
+      endpoint: "https://rules.example.test/api/rules/latest",
+      publicJwk,
+      expectedKeyId: keyId,
+      fetcher: failingFetcher,
+      cacheStore,
+      now: () => now + 1
+    });
+
+    expect(cached.status).toBe("cached");
+    expect(cached.rules).toHaveLength(1);
+  });
+
+  it("does not use expired or tampered cached bundles", async () => {
+    const { privateJwk, publicJwk } = await createKeyPair();
+    const signed = await signRemoteRuleBundle(payload(), privateJwk, keyId);
+    const expiredCache = createMemoryCache({
+      bundle: signed,
+      keyId,
+      version: signed.payload.version,
+      generatedAt: signed.payload.generatedAt,
+      cachedAt: 1_000,
+      expiresAt: 1_500
+    });
+    const failingFetcher = vi.fn<typeof fetch>().mockRejectedValue(new TypeError("network error"));
+
+    const expired = await loadVerifiedRemoteRules({
+      endpoint: "https://rules.example.test/api/rules/latest",
+      publicJwk,
+      expectedKeyId: keyId,
+      fetcher: failingFetcher,
+      cacheStore: expiredCache,
+      now: () => 2_000
+    });
+
+    expect(expired.status).toBe("fallback");
+    expect(expiredCache.entry).toBeNull();
+
+    const tamperedCache = createMemoryCache({
+      bundle: {
+        ...signed,
+        payload: {
+          ...signed.payload,
+          version: "tampered"
+        }
+      },
+      keyId,
+      version: "tampered",
+      generatedAt: signed.payload.generatedAt,
+      cachedAt: 1_000,
+      expiresAt: 10_000
+    });
+
+    const tampered = await loadVerifiedRemoteRules({
+      endpoint: "https://rules.example.test/api/rules/latest",
+      publicJwk,
+      expectedKeyId: keyId,
+      fetcher: failingFetcher,
+      cacheStore: tamperedCache,
+      now: () => 2_000
+    });
+
+    expect(tampered.status).toBe("fallback");
+    expect(tamperedCache.entry).toBeNull();
   });
 
   it("falls back when signature verification fails", async () => {

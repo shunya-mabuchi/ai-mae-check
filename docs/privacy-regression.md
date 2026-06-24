@@ -10,8 +10,8 @@ pnpm qa:privacy-regression
 
 - 拡張機能・core・llm・workerの実行時コードで `localStorage`、`sessionStorage`、`indexedDB` を直接使わない
 - 実行時コードで `console.log` などのconsole出力を追加しない
-- `chrome.storage.local` の読み書きを `apps/extension/src/lib/settings.ts` に集約する
-- 保存するキーは `ai-mae-check.settings.v1` の設定だけにする
+- `chrome.storage.local` の読み書きを `apps/extension/src/lib/settings.ts` と `apps/extension/src/lib/remoteRuleCache.ts` に限定する
+- 保存するキーは `ai-mae-check.settings.v1` の設定と、検証済みの署名付きリモートルールキャッシュ `ai-mae-check.remoteRules.v1` だけにする
 - 拡張機能からの `fetch` は署名付きルール取得 `GET /api/rules/latest` に限定する
 - ルール取得リクエストに本文を付けない
 - Cloudflare Pages Functions / Worker側で `request.text()` や `request.json()` などにより本文を読まない
@@ -26,7 +26,7 @@ WebLLMはChrome拡張のContent Scriptから直接Workerを起動しにくいた
 ## 手動確認すること
 
 - DevTools Consoleに貼り付け本文や検出文字列が出ていない
-- Application > Storageで、拡張機能の設定以外に本文・placeholderMap・検出結果が保存されていない
+- Application > Storageで、拡張機能の設定と検証済みの署名付きリモートルールキャッシュ以外に、本文・placeholderMap・検出結果が保存されていない
 - Networkタブで、本文を含むリクエストが発生していない
 - ルール配信は `GET /api/rules/latest` のみで、本文や検出結果を送っていない
 - WebLLMモデル取得が発生する場合でも、貼り付け本文はモデル配信元や外部LLM APIへ送信されていない
@@ -34,3 +34,5 @@ WebLLMはChrome拡張のContent Scriptから直接Workerを起動しにくいた
 ## 例外
 
 WebLLMのモデルファイルやブラウザ内部キャッシュは、ブラウザ実装やWebLLMランタイムによりIndexedDB等を使う場合があります。このQAはAIまえチェック自身の実装が本文や検出結果を永続保存しないことを確認するためのものです。
+
+署名付きリモートルールキャッシュは、ネットワーク障害時にも直前に検証済みだった検出ルールを短時間だけ使うためのものです。保存対象は署名付きルールJSON、`keyId`、`version`、`generatedAt`、`cachedAt`、`expiresAt` に限り、ユーザー本文、検出結果、placeholderMap、送信履歴は含めません。

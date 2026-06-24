@@ -15,6 +15,22 @@ export function loadRuleDeliveryReleaseConfig() {
   return JSON.parse(readFileSync(releaseConfigPath, "utf8"));
 }
 
+function assertPublicJwk(publicJwk, label) {
+  if (typeof publicJwk !== "object" || publicJwk === null) {
+    failReleaseConfig(`${label} must be an object`);
+  }
+
+  for (const field of ["kty", "crv", "x", "y"]) {
+    if (typeof publicJwk[field] !== "string" || publicJwk[field].trim().length === 0) {
+      failReleaseConfig(`${label}.${field} must be a non-empty string`);
+    }
+  }
+
+  if ("d" in publicJwk) {
+    failReleaseConfig(`${label} must not contain a private 'd' field`);
+  }
+}
+
 export function assertRuleDeliveryReleaseConfig(config) {
   if (typeof config?.endpoint !== "string" || config.endpoint.trim().length === 0) {
     failReleaseConfig("endpoint must be a non-empty string");
@@ -44,23 +60,43 @@ export function assertRuleDeliveryReleaseConfig(config) {
   }
 
   const publicJwk = config?.publicJwk;
-  if (typeof publicJwk !== "object" || publicJwk === null) {
-    failReleaseConfig("publicJwk must be an object");
+  assertPublicJwk(publicJwk, "publicJwk");
+
+  const publicKeys = Array.isArray(config?.publicKeys)
+    ? config.publicKeys.map((entry, index) => {
+        if (typeof entry?.keyId !== "string" || entry.keyId.trim().length === 0) {
+          failReleaseConfig(`publicKeys[${index}].keyId must be a non-empty string`);
+        }
+
+        assertPublicJwk(entry.publicJwk, `publicKeys[${index}].publicJwk`);
+
+        return {
+          keyId: entry.keyId.trim(),
+          publicJwk: entry.publicJwk
+        };
+      })
+    : [{ keyId: config.keyId.trim(), publicJwk }];
+
+  if (publicKeys.length === 0) {
+    failReleaseConfig("publicKeys must not be empty");
   }
 
-  for (const field of ["kty", "crv", "x", "y"]) {
-    if (typeof publicJwk[field] !== "string" || publicJwk[field].trim().length === 0) {
-      failReleaseConfig(`publicJwk.${field} must be a non-empty string`);
+  const keyIds = new Set();
+  for (const entry of publicKeys) {
+    if (keyIds.has(entry.keyId)) {
+      failReleaseConfig(`publicKeys contains duplicate keyId: ${entry.keyId}`);
     }
+    keyIds.add(entry.keyId);
   }
 
-  if ("d" in publicJwk) {
-    failReleaseConfig("publicJwk must not contain a private 'd' field");
+  if (!publicKeys.some((entry) => entry.keyId === config.keyId.trim())) {
+    failReleaseConfig("publicKeys must contain the top-level keyId");
   }
 
   return {
     endpoint: config.endpoint.trim(),
     keyId: config.keyId.trim(),
-    publicJwk
+    publicJwk,
+    publicKeys
   };
 }

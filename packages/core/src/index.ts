@@ -48,6 +48,8 @@ export type {
 export type { TextFilePreflightKind } from "./fileText";
 export type {
   RemoteDetectorRuleDefinition,
+  RemoteRulePublicKey,
+  RemoteRulePublicKeyInput,
   RemoteRuleBundlePayload,
   RemoteRuleVerificationOptions,
   RemoteRuleVerificationResult,

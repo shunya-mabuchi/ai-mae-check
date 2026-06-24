@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
-const releaseConfigPath = resolve("apps/extension/config/rule-delivery.release.json");
+import {
+  assertRuleDeliveryReleaseConfig,
+  loadRuleDeliveryReleaseConfig
+} from "./lib/rule-delivery-release-config.mjs";
 
 function fail(message) {
   throw new Error(`production rule delivery verification failed: ${message}`);
@@ -29,31 +29,14 @@ function base64UrlToBytes(value) {
   return new Uint8Array(Buffer.from(padded, "base64"));
 }
 
-function readReleaseConfig() {
-  const config = JSON.parse(readFileSync(releaseConfigPath, "utf8"));
-  if (typeof config.endpoint !== "string" || typeof config.keyId !== "string") {
-    fail("release config endpoint/keyId is invalid");
-  }
-
-  const endpoint = new URL(config.endpoint);
-  if (endpoint.protocol !== "https:" || endpoint.pathname !== "/api/rules/latest") {
-    fail("release config endpoint must be HTTPS /api/rules/latest");
-  }
-
-  if (typeof config.publicJwk !== "object" || config.publicJwk === null || "d" in config.publicJwk) {
-    fail("release config publicJwk is invalid");
-  }
-
-  return config;
-}
-
 async function verifyBundle(bundle, config) {
   if (bundle?.alg !== "ECDSA-P256-SHA256") {
     fail("unexpected signature algorithm");
   }
 
-  if (bundle.keyId !== config.keyId) {
-    fail(`keyId mismatch: expected ${config.keyId}, got ${String(bundle.keyId)}`);
+  const publicKeyEntry = config.publicKeys.find((entry) => entry.keyId === bundle.keyId);
+  if (!publicKeyEntry) {
+    fail(`keyId mismatch: expected one of ${config.publicKeys.map((entry) => entry.keyId).join(", ")}, got ${String(bundle.keyId)}`);
   }
 
   if (typeof bundle.signature !== "string" || bundle.signature.length === 0) {
@@ -66,7 +49,7 @@ async function verifyBundle(bundle, config) {
 
   const publicKey = await crypto.subtle.importKey(
     "jwk",
-    config.publicJwk,
+    publicKeyEntry.publicJwk,
     { name: "ECDSA", namedCurve: "P-256" },
     false,
     ["verify"]
@@ -88,7 +71,7 @@ async function verifyBundle(bundle, config) {
   }
 }
 
-const config = readReleaseConfig();
+const config = assertRuleDeliveryReleaseConfig(loadRuleDeliveryReleaseConfig());
 const response = await fetch(config.endpoint, {
   method: "GET",
   headers: {

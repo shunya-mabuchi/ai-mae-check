@@ -7,7 +7,7 @@ const policySections = [
   },
   {
     title: "保存する情報",
-    body: "拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデルIDなどの設定だけを chrome.storage.local に保存します。"
+    body: "拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデルIDなどの設定と、検証済みの署名付きリモートルールキャッシュだけを chrome.storage.local に保存します。リモートルールキャッシュには本文や検出結果を含めません。"
   },
   {
     title: "AI文脈チェック",

@@ -1,5 +1,6 @@
 import { detectorRules } from "@ai-mae-check/core";
 import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
+import { REMOTE_RULE_CACHE_KEY } from "./remoteRuleCache";
 import { siteIdFromHostname, targetSites, type SiteId } from "./sites";
 
 export const SETTINGS_KEY = "ai-mae-check.settings.v1";
@@ -177,7 +178,7 @@ export async function saveSettings(settings: AiMaeCheckSettings): Promise<void> 
 
 export async function resetSettings(): Promise<AiMaeCheckSettings> {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.remove(SETTINGS_KEY, () => {
+    chrome.storage.local.remove([SETTINGS_KEY, REMOTE_RULE_CACHE_KEY], () => {
       const errorMessage = chromeStorageErrorMessage("初期化");
       if (errorMessage) {
         reject(new Error(errorMessage));

@@ -178,13 +178,13 @@ export function OptionsApp() {
           </p>
           <h1 className="text-3xl font-bold tracking-normal">設定</h1>
           <p className="mt-3 max-w-3xl leading-7 text-stone-600">
-            入力本文や送信本文は保存しません。ここで保存されるのは、対象サイト、検出ルール、AI文脈チェックに関する設定だけです。
+            入力本文や送信本文は保存しません。ここで保存されるのは、対象サイト、検出ルール、AI文脈チェックに関する設定と、検証済みの署名付きリモートルールキャッシュだけです。
           </p>
           <p className="mt-2 text-sm font-semibold text-leaf">{savedMessage}</p>
         </header>
 
         <div className="mb-5 grid gap-3 md:grid-cols-3">
-          <SummaryCard title="保存するもの" body="拡張機能の有効/無効、対象サイト、検出ルール、AI文脈チェックの設定だけを保存します。" />
+          <SummaryCard title="保存するもの" body="拡張機能の設定と、検証済みの署名付きリモートルールキャッシュだけを保存します。" />
           <SummaryCard title="保存しないもの" body="貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は保存しません。" />
           <SummaryCard title="設定状態" body={validation.valid ? "現在の設定形式は有効です。" : validation.messages.join(" ")} />
         </div>
@@ -343,10 +343,10 @@ export function OptionsApp() {
           <Section icon={<RotateCcw size={20} aria-hidden="true" />} title="設定の初期化">
             <div className="rounded-md border border-line bg-white p-4 text-sm leading-7 text-stone-700">
               <p>
-                AIまえチェックが保存するのは、拡張機能の有効/無効、対象サイト、検出ルール、AI文脈チェックに関する設定だけです。貼り付け本文、送信本文、検出結果、placeholderMapは保存していません。
+                AIまえチェックが保存するのは、拡張機能の有効/無効、対象サイト、検出ルール、AI文脈チェックに関する設定と、検証済みの署名付きリモートルールキャッシュだけです。貼り付け本文、送信本文、検出結果、placeholderMapは保存していません。
               </p>
               <p className="mt-2">
-                設定を初期化すると、保存済み設定を削除し、画面表示を初期値に戻します。WebLLMのモデルキャッシュなどブラウザ管理下の保存領域はChrome側で管理されます。
+                設定を初期化すると、保存済み設定とリモートルールキャッシュを削除し、画面表示を初期値に戻します。WebLLMのモデルキャッシュなどブラウザ管理下の保存領域はChrome側で管理されます。
               </p>
               <button
                 type="button"
