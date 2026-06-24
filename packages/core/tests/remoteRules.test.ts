@@ -142,6 +142,20 @@ describe("signed remote rules", () => {
     });
   });
 
+  it("署名済みpayloadの配信停止フラグがある場合はリモートルールを採用しない", async () => {
+    const { privateJwk, publicJwk } = await createKeyPair();
+    const signed = await signRemoteRuleBundle({ ...samplePayload(), deliveryStatus: "paused" }, privateJwk, keyId);
+    const result = await verifySignedRemoteRuleBundle(signed, publicJwk, {
+      expectedKeyId: keyId,
+      now: () => Date.parse("2026-06-20T00:00:00.000Z")
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      reason: "ルール配信が停止されています"
+    });
+  });
+
   it("検証済みルールを渡さなければ同梱ルールだけで検出する", () => {
     const detection = detectSensitiveText("通知先は https://hooks.slack.com/services/T000/B000/XXX です。");
 

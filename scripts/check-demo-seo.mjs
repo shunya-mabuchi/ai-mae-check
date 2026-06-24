@@ -82,7 +82,14 @@ for (const url of ["https://ai-mae-check.pages.dev/", "https://ai-mae-check.page
   assertIncludes(docs, url, paths.docs);
 }
 
-for (const phrase of ["カスタムドメイン方針", "0.1.xでは `ai-mae-check.pages.dev`", "Google Search Console", "pnpm qa:demo:seo"]) {
+for (const phrase of [
+  "カスタムドメイン方針",
+  "0.1.xでは `ai-mae-check.pages.dev`",
+  "2026-06-24時点の判断",
+  "独自ドメインとGoogle Search Console導入は、現時点では見送ります",
+  "Google Search Console",
+  "pnpm qa:demo:seo"
+]) {
   assertIncludes(docs, phrase, paths.docs);
 }
 

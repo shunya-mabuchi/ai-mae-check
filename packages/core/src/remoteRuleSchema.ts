@@ -2,6 +2,7 @@ import type { DlpCategory, RiskLevel } from "./types";
 
 export const REMOTE_RULE_BUNDLE_SCHEMA_VERSION = 1;
 export const REMOTE_RULE_SIGNATURE_ALG = "ECDSA-P256-SHA256";
+export type RemoteRuleDeliveryStatus = "active" | "paused";
 
 export interface RemoteDetectorRuleDefinition {
   id: string;
@@ -21,6 +22,7 @@ export interface RemoteRuleBundlePayload {
   version: string;
   generatedAt: string;
   expiresAt?: string;
+  deliveryStatus?: RemoteRuleDeliveryStatus;
   minExtensionVersion?: string;
   rules: RemoteDetectorRuleDefinition[];
 }
@@ -105,6 +107,10 @@ export function validateRemoteRuleBundlePayload(value: unknown): RemoteRuleBundl
   const version = typeof value.version === "string" ? value.version.trim() : "";
   const generatedAt = typeof value.generatedAt === "string" ? value.generatedAt.trim() : "";
   const expiresAt = typeof value.expiresAt === "string" ? value.expiresAt.trim() : undefined;
+  const deliveryStatus =
+    value.deliveryStatus === "active" || value.deliveryStatus === "paused"
+      ? (value.deliveryStatus as RemoteRuleDeliveryStatus)
+      : undefined;
   const minExtensionVersion =
     typeof value.minExtensionVersion === "string" ? value.minExtensionVersion.trim() : undefined;
   const rules = Array.isArray(value.rules)
@@ -112,6 +118,10 @@ export function validateRemoteRuleBundlePayload(value: unknown): RemoteRuleBundl
     : [];
 
   if (schemaVersion !== REMOTE_RULE_BUNDLE_SCHEMA_VERSION || version.length === 0 || Number.isNaN(Date.parse(generatedAt))) {
+    return null;
+  }
+
+  if (typeof value.deliveryStatus !== "undefined" && !deliveryStatus) {
     return null;
   }
 
@@ -131,6 +141,7 @@ export function validateRemoteRuleBundlePayload(value: unknown): RemoteRuleBundl
     version,
     generatedAt,
     ...(expiresAt ? { expiresAt } : {}),
+    ...(deliveryStatus ? { deliveryStatus } : {}),
     ...(minExtensionVersion ? { minExtensionVersion } : {}),
     rules
   };

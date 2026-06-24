@@ -55,6 +55,10 @@ async function verifyBundle(bundle, config) {
     fail("payload expiresAt is already expired");
   }
 
+  if (bundle.payload.deliveryStatus === "paused") {
+    fail("payload deliveryStatus is paused");
+  }
+
   const publicKey = await crypto.subtle.importKey(
     "jwk",
     publicKeyEntry.publicJwk,
@@ -101,6 +105,7 @@ console.log(
     keyId: bundle.keyId,
     version: bundle.payload.version,
     expiresAt: bundle.payload.expiresAt,
+    deliveryStatus: bundle.payload.deliveryStatus ?? "active",
     ruleCount: bundle.payload.rules.length
   })
 );

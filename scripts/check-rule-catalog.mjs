@@ -17,6 +17,7 @@ const paths = {
   remoteSchema: "packages/core/src/remoteRuleSchema.ts",
   ruleDelivery: "docs/rule-delivery.md",
   operations: "docs/rule-delivery-operations.md",
+  qualityProcess: "docs/dlp-rule-quality-process.md",
   readme: "README.md"
 };
 
@@ -48,6 +49,7 @@ const helperSource = read(paths.ruleHelpers);
 const remoteSchema = read(paths.remoteSchema);
 const ruleDelivery = read(paths.ruleDelivery);
 const operations = read(paths.operations);
+const qualityProcess = read(paths.qualityProcess);
 const readme = read(paths.readme);
 
 const ruleIds = Array.from(detectorSources.matchAll(/id:\s*"([^"]+)"/gu)).map((match) => match[1]);
@@ -133,6 +135,28 @@ for (const phrase of [
 for (const field of ["id", "label", "riskLevel", "category", "placeholderPrefix", "pattern", "flags", "message", "confidence", "enabled"]) {
   assertIncludes(remoteSchema, field, paths.remoteSchema);
   assertIncludes(guide, field, paths.guide);
+}
+
+for (const phrase of [
+  "deliveryStatus",
+  "paused",
+  "同梱ルールへフォールバック"
+]) {
+  assertIncludes(remoteSchema + guide + ruleDelivery + operations, phrase, "remote rule delivery status docs");
+}
+
+for (const phrase of [
+  "DLP評価fixture",
+  "false_positive",
+  "false negative",
+  "リモートルール",
+  "同梱ルール",
+  "実APIキー",
+  "pnpm eval:dlp",
+  "pnpm qa:public-repo"
+]) {
+  assertIncludes(qualityProcess, phrase, paths.qualityProcess);
+  assertIncludes(readme + guide + operations, "dlp-rule-quality-process.md", "rule quality process links");
 }
 
 for (const phrase of ["detection-rule-authoring.md", "検出ルール作成ガイド"]) {

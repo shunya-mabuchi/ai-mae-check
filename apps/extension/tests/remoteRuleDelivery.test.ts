@@ -234,6 +234,26 @@ describe("loadVerifiedRemoteRules", () => {
     expect(cacheStore.entry).toBeNull();
   });
 
+  it("falls back without caching when signed rule delivery is paused", async () => {
+    const { privateJwk, publicJwk } = await createKeyPair();
+    const signed = await signRemoteRuleBundle({ ...payload(), deliveryStatus: "paused" }, privateJwk, keyId);
+    const cacheStore = createMemoryCache();
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
+
+    const result = await loadVerifiedRemoteRules({
+      endpoint: "https://rules.example.test/api/rules/latest",
+      publicJwk,
+      expectedKeyId: keyId,
+      fetcher,
+      cacheStore,
+      now: () => validBundleNow
+    });
+
+    expect(result.status).toBe("fallback");
+    expect(result.reason).toBe("ルール配信が停止されています");
+    expect(cacheStore.entry).toBeNull();
+  });
+
   it("falls back when signature verification fails", async () => {
     const { privateJwk, publicJwk } = await createKeyPair();
     const signed = await signRemoteRuleBundle(payload(), privateJwk, keyId);
