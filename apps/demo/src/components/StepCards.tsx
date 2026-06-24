@@ -5,7 +5,7 @@ const steps = [
   {
     label: "1. 拡張を入れる",
     title: "Chrome拡張として利用",
-    text: "AIまえチェックの本体は、ChatGPT・Claude・Gemini上で動くChrome拡張です。",
+    text: "AIまえチェックの本体は、ChatGPT・Claude・Gemini・Perplexity上で動くChrome拡張です。",
     icon: Chrome
   },
   {

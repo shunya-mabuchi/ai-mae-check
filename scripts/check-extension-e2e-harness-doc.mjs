@@ -74,7 +74,16 @@ for (const phrase of ["extension-e2e-harness.md", "拡張E2Eハーネス"]) {
   assertIncludes(chromeStoreRelease, phrase, paths.chromeStoreRelease);
 }
 
-assertIncludes(siteQa, "実サイトQA", paths.siteQa);
+for (const phrase of [
+  "実サイトQA",
+  "実サイトQA記録テンプレート",
+  "本文・検出文字列・placeholderMap・現在のページURLを含めず",
+  "adapter-editor",
+  "adapter-submit",
+  "現在のページURL全文や会話ID"
+]) {
+  assertIncludes(siteQa, phrase, paths.siteQa);
+}
 assertIncludes(manifestQa, "<all_urls>", paths.manifestQa);
 assertIncludes(manifestQa, "localhost", paths.manifestQa);
 

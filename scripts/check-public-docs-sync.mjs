@@ -17,7 +17,13 @@ const paths = {
 };
 
 const forbiddenOverclaims = ["絶対安全", "100%検出", "すべての情報漏洩を防ぎます", "完全に通信しません"];
-const supportedSites = ["ChatGPT", "Claude", "Gemini"];
+const supportedSites = ["ChatGPT", "Claude", "Gemini", "Perplexity"];
+const forbiddenStalePhrases = [
+  "Perplexityは後続adapter",
+  "初期対象はChatGPT、Claude、Geminiです",
+  "0.1.1の最終ZIP再生成",
+  "GitHub Release v0.1.0公開"
+];
 const privacyClaims = [
   "永続保存",
   "外部LLM API",
@@ -57,6 +63,12 @@ for (const field of ["name", "homepageUrl", "supportUrl", "privacyPolicyUrl", "s
 
 for (const [key, text] of Object.entries(docs)) {
   for (const phrase of forbiddenOverclaims) {
+    assertNotIncludes(text, phrase, key);
+  }
+}
+
+for (const [key, text] of Object.entries(docs)) {
+  for (const phrase of forbiddenStalePhrases) {
     assertNotIncludes(text, phrase, key);
   }
 }

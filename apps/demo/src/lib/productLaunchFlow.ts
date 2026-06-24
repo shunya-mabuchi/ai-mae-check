@@ -49,14 +49,14 @@ export function createProductLaunchFlow(): ProductLaunchFlow {
     installSteps: [
       {
         title: "Chrome Web Storeから追加する",
-        body: "通常の利用導線はChrome Web Storeです。拡張機能を追加すると、ChatGPT / Claude / Geminiの入力欄で確認できます。"
+        body: "通常の利用導線はChrome Web Storeです。拡張機能を追加すると、ChatGPT / Claude / Gemini / Perplexityの入力欄で確認できます。"
       },
       {
         title: "必要ならGitHubで実装を見る",
         body: "検出ルール、プライバシー設計、Chrome Web Store向けの説明文、ルール配信計画などはGitHubで確認できます。"
       },
       {
-        title: "ChatGPT / Claude / Geminiで試す",
+        title: "ChatGPT / Claude / Gemini / Perplexityで試す",
         body: "対象サイトでダミー文を貼り付ける、または送信しようとすると、確認モーダルと安全化の流れを確認できます。"
       }
     ],

@@ -27,7 +27,7 @@ describe("createProductLaunchFlow", () => {
     expect(flow.installSteps.map((step) => step.title)).toEqual([
       "Chrome Web Storeから追加する",
       "必要ならGitHubで実装を見る",
-      "ChatGPT / Claude / Geminiで試す"
+      "ChatGPT / Claude / Gemini / Perplexityで試す"
     ]);
     const storeInstallStep = flow.installSteps[0];
     if (!storeInstallStep) {

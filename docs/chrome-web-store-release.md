@@ -188,8 +188,8 @@ pnpm qa:chrome-store
 
 1. Chrome Web Store公開URLをREADMEとLPに反映する。
 2. LPの主CTAが「Chrome Web Storeで追加」になっていることを確認する。
-3. GitHub Release v0.1.0を公開する。
-4. 残Issueを解消した後、0.1.1の最終ZIPを作り直してChrome Web Storeへ提出する。
+3. 公開されたバージョンに対応するGit tagとGitHub Releaseを作成する。
+4. 0.1.1以降の再提出では、該当Issue、検証コマンド、ZIPハッシュ、既知の制限をRelease本文へ記録する。
 
 ## 差し戻し時の対応
 

@@ -40,7 +40,7 @@ export function Hero({ summary }: { summary: DetectionSummary }) {
             そのまま貼らない。
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-muted">
-            ChatGPT・Claude・Geminiに文章を貼る前に、個人情報・秘密情報・社内情報の消し忘れに気づくための確認レイヤーです。
+            ChatGPT・Claude・Gemini・Perplexityに文章を貼る前に、個人情報・秘密情報・社内情報の消し忘れに気づくための確認レイヤーです。
             このページのデモは、拡張機能を入れる前に動きを試すための小さな体験版です。
           </p>
           <div className="mt-7 flex flex-wrap gap-2">

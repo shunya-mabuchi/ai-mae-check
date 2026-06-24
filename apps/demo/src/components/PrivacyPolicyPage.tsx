@@ -31,7 +31,7 @@ export function PrivacyPolicyPage() {
   return (
     <PublicPageLayout
       title="プライバシーポリシー"
-      description="AIまえチェックは、ChatGPT・Claude・Geminiへ文章を貼る前に、ブラウザ内で消し忘れを確認するChrome拡張です。本文を保存しない設計を前提にしています。"
+      description="AIまえチェックは、ChatGPT・Claude・Gemini・Perplexityへ文章を貼る前に、ブラウザ内で消し忘れを確認するChrome拡張です。本文を保存しない設計を前提にしています。"
     >
       <div className="space-y-6">
         {policySections.map((section) => (

@@ -8,7 +8,7 @@ export function Footer() {
           <p className="text-xs font-black text-leaf">Chrome拡張が本体です</p>
           <p className="mt-2 text-lg font-black text-ink">AIまえチェック</p>
           <p className="mt-2 max-w-2xl leading-6 text-muted">
-            ChatGPT・Claude・Geminiへ貼る前に、ブラウザ内で消し忘れを確認するためのツールです。
+            ChatGPT・Claude・Gemini・Perplexityへ貼る前に、ブラウザ内で消し忘れを確認するためのツールです。
           </p>
         </div>
         <div className="flex flex-col gap-3 md:items-end">

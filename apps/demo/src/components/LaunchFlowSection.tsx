@@ -13,7 +13,7 @@ export function LaunchFlowSection() {
         <SectionHeading
           eyebrow="拡張機能として使う"
           title="まずはChrome Web Storeから追加してお試しください。"
-          description="このページは紹介とミニデモです。実際のプロダクト価値は、ChatGPT・Claude・Geminiの入力欄で送信前に止まる拡張機能として確認できます。"
+          description="このページは紹介とミニデモです。実際のプロダクト価値は、ChatGPT・Claude・Gemini・Perplexityの入力欄で送信前に止まる拡張機能として確認できます。"
         />
 
         <div className="grid gap-4 md:grid-cols-[0.9fr_1.1fr]">

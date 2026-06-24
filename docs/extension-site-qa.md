@@ -229,6 +229,53 @@ WebGPU: adapterあり
 補足: 本文は記録しない
 ```
 
+## 実サイトQA記録テンプレート
+
+実サイトQAを行ったら、本文・検出文字列・placeholderMap・現在のページURLを含めずに、次の粒度で記録します。URLは対象サービス名とhost種別だけに留めます。
+
+```text
+実施日: YYYY-MM-DD
+確認者: GitHub usernameまたはinitial
+拡張バージョン: 0.1.x
+Chrome: 148.x
+OS: Windows / macOS / Linux
+対象サイト: ChatGPT / Claude / Gemini / Perplexity
+対象host: chatgpt.com / chat.openai.com / claude.ai / gemini.google.com / www.perplexity.ai / perplexity.ai
+入力欄種別: textarea / contenteditable / role=textbox
+paste確認: pass / fail / skipped
+送信ボタン確認: pass / fail / skipped
+Enter送信確認: pass / fail / skipped
+安全化後のReact反映: pass / fail / skipped
+WebLLM確認: pass / fail / unsupported / skipped
+エラー分類: none / adapter-editor / adapter-submit / insertion / policy / webllm-webgpu / webllm-fetch / other
+本文なしの補足: 例「送信ボタンのaria-labelが変わっていた」
+Issue化: なし / #xxx
+```
+
+記録タイミング:
+
+- Chrome Web Store提出前
+- Chrome Web Store公開後
+- 対象サイトのUIが大きく変わったとき
+- SiteAdapter、Content Script、挿入処理、送信前確認を変更したPRのマージ前
+
+失敗時にIssueへ書いてよい情報:
+
+- 対象サイト名と対象host
+- 操作種別
+- 期待結果と実際の表示
+- エラー分類
+- Chrome / OS / WebGPU可否
+- 本文を含まないDOM手がかり。例: `textarea` が `contenteditable` に変わった、送信ボタンのaria-labelが消えた
+
+Issueへ書かない情報:
+
+- 貼り付け本文、送信本文、添付ファイル本文
+- 検出された文字列
+- placeholderMap
+- 実在する顧客名、案件名、人名、社内URL
+- 現在のページURL全文や会話ID
+
 ## 完了条件
 
 - [ ] `pnpm build:extension` が通る

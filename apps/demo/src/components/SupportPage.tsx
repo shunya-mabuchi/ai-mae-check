@@ -24,7 +24,7 @@ const faqItems = [
   {
     question: "対応サイトはどこですか？",
     answer:
-      "初期対象はChatGPT、Claude、Geminiです。Perplexityは後続adapterで対応予定です。初期実装では、すべてのサイトへ無条件に介入する権限は要求しません。"
+      "現在の対象サイトはChatGPT、Claude、Gemini、Perplexityです。すべてのサイトへ無条件に介入する権限は要求せず、対象サイトに限定して動作します。"
   },
   {
     question: "不具合報告に本文を貼ってもよいですか？",
@@ -34,8 +34,7 @@ const faqItems = [
 ];
 
 const knownLimitations = [
-  "対象サイトは初期状態でChatGPT、Claude、Geminiです。",
-  "Perplexityは後続adapterで対応予定です。",
+  "対象サイトはChatGPT、Claude、Gemini、Perplexityです。",
   "AI文脈チェックはWebGPU対応環境で利用できます。",
   "WebLLMの初回利用時はモデルファイルの取得に時間がかかる場合があります。",
   "WebLLMの実機確認では、OS、Chromeバージョン、WebGPU状態、エラー分類だけを記録し、本文は記録しません。",
