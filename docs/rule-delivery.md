@@ -2,7 +2,7 @@
 
 AIまえチェックでは、ユーザー本文をサーバーへ送らずに、検出ルールだけを安全に更新できる仕組みを追加しています。
 
-0.1.0では、拡張ZIPに埋め込まれた公開鍵に対応する `privateJwk` が手元に残っていなかったため、署名付きルール配信の本番有効化は見送りました。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい公開JWKを拡張へ反映済みです。ルールバンドルには `expiresAt` を含め、署名検証後に期限切れの配信ルールを採用しないようにしています。運用手順は [rule-delivery-operations.md](./rule-delivery-operations.md) を参照してください。
+0.1.0では、拡張ZIPに埋め込まれた公開鍵に対応する `privateJwk` が手元に残っていなかったため、署名付きルール配信の本番有効化は見送りました。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい公開JWKを拡張へ反映済みです。ルールバンドルには `expiresAt` と任意の `deliveryStatus` を含め、署名検証後に期限切れまたは停止中の配信ルールを採用しないようにしています。運用手順は [rule-delivery-operations.md](./rule-delivery-operations.md) を参照してください。
 
 ## 方針
 
@@ -31,6 +31,8 @@ AIまえチェックでは、ユーザー本文をサーバーへ送らずに、
     "schemaVersion": 1,
     "version": "2026.06.23.1",
     "generatedAt": "2026-06-16T00:00:00.000Z",
+    "expiresAt": "2099-12-31T00:00:00.000Z",
+    "deliveryStatus": "active",
     "minExtensionVersion": "0.1.0",
     "rules": [
       {
@@ -96,7 +98,7 @@ pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out ../ai-
 4. 検証OKなら `detectSensitiveText(input, { extraRules })` に追加ルールとして渡す
 5. 検証OKなら、署名付きルールJSON、`keyId`、`version`、`generatedAt`、`cachedAt`、`expiresAt` を短期間キャッシュする
 6. 通信失敗またはHTTPエラーの場合は、期限内かつ再検証できたキャッシュだけを利用する
-7. 検証NG、JSON形式不正、署名欠落、`keyId` 不一致、期限切れキャッシュの場合は空の追加ルールとして扱い、同梱ルールへフォールバックする
+7. 検証NG、JSON形式不正、署名欠落、`keyId` 不一致、期限切れキャッシュ、`deliveryStatus: "paused"` の場合は空の追加ルールとして扱い、同梱ルールへフォールバックする
 
 Chrome Web Store提出用のZIPは `apps/extension/config/rule-delivery.release.json` を基準に組み立てます。`pnpm package:extension` は、本番URL・`keyId`・公開JWKがそろっていない場合は失敗します。
 

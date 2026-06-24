@@ -50,11 +50,13 @@ fallback候補:
 
 | 日付 | OS | Chrome | ウィンドウ | 拡張版 | モデルID | WebLLM版 | WebGPU / Dawn Info | 結果 | エラー分類 | ルールベース検出 | 備考 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-06-xx | Windows 11 | Chrome xx | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | D3D12 backend available | 成功 | なし | 継続可 | 初回モデル取得あり |
-| 2026-06-xx | Windows 10/11 | Chrome xx | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | D3D11 backend only / Blocklisted | 失敗 | webgpu_unavailable | 継続可 | `No available WebGPU adapters` |
-| 2026-06-xx | macOS | Chrome xx | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Metal backend available | 未確認 | 未確認 | 未確認 | 実機確認待ち |
-| 2026-06-xx | Linux | Chrome xx | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Vulkan / Dawn Info確認 | 未確認 | 未確認 | 未確認 | 実機確認待ち |
-| 2026-06-xx | Windows 10/11 | Chrome xx | シークレット | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | adapterあり | 失敗する場合あり | storage_quota | 継続可 | `QuotaExceededError` の可能性 |
+| 2026-06-16 | Windows NT 10.0.26200.8457 | Chrome/148.0.7778.180 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Intel UHD Graphics 620、D3D11 backend blocklisted、D3D12はCPU adapterのみblocklisted | 失敗 | webgpu_unavailable | 継続可 | `No available WebGPU adapters` / `Unable to find a compatible GPU` |
+| 2026-06-16 | Windows 10/11 | Chrome詳細未記録 | シークレット | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | adapter有無は未記録 | 失敗 | storage_quota | 継続可 | `QuotaExceededError`。通常ウィンドウでの再確認を優先 |
+| 2026-06-16 | Windows 10/11 | Chrome詳細未記録 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC以前のprebuilt候補 | ^0.2.79 | 詳細未記録 | 成功報告あり | なし | 継続可 | ユーザー報告ベース。Dawn Infoを保存していないため参考扱い |
+| 未確認 | macOS | 未確認 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Metal backend確認待ち | 未確認 | 未確認 | 未確認 | macOS実機を利用できるタイミングで初回ロードと再実行を確認する |
+| 未確認 | Linux | 未確認 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Vulkan / Dawn Info確認待ち | 未確認 | 未確認 | 未確認 | Linux実機とGPUドライバ構成を記録できるタイミングで確認する |
+
+2026-06-24時点では、macOSとLinuxの実機確認は未実施です。未確認行は「動作しない」という意味ではなく、確認できる端末とChrome環境が用意できた段階で追記するための枠です。成功報告があったWindows環境も、Dawn InfoやChromeバージョンを保存していないものは参考扱いとし、今後は記録テンプレートに沿って残します。
 
 ## エラー分類
 

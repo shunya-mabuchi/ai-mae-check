@@ -275,7 +275,7 @@ Options Pageの設定グループ、保存対象、`settingsVersion`、設定マ
 
 `pnpm qa:webllm-compatibility` は、WebLLM対応環境、WebGPU非対応、保存領域不足、モデル取得失敗、本文を記録しない運用の記録フォーマットが維持されているか確認するQAです。実機確認の記録形式は [docs/webllm-compatibility-matrix.md](docs/webllm-compatibility-matrix.md) にまとめています。WebLLMの失敗理由、ユーザー向け復旧メッセージ、本文を含めない診断メモの扱いは [docs/webllm-error-recovery.md](docs/webllm-error-recovery.md) にまとめています。
 
-`pnpm qa:rule-catalog` は、同梱検出ルール、placeholder、配信ルールschema、署名付き配信前レビュー手順が検出ルール作成ガイド [docs/detection-rule-authoring.md](docs/detection-rule-authoring.md) とずれていないか確認するQAです。
+`pnpm qa:rule-catalog` は、同梱検出ルール、placeholder、配信ルールschema、署名付き配信前レビュー手順が検出ルール作成ガイド [docs/detection-rule-authoring.md](docs/detection-rule-authoring.md) と、DLP評価fixtureの追加基準 [docs/dlp-rule-quality-process.md](docs/dlp-rule-quality-process.md) からずれていないか確認するQAです。
 
 `pnpm qa:extension:e2e-harness` は、Chrome拡張をPlaywrightで読み込む拡張E2Eハーネス方針、ローカル模擬composerでの検証範囲、実装済みファイル、実サイト手動QAとの境界、E2E専用host permissionをリリースZIPへ混入させない方針が [docs/extension-e2e-harness.md](docs/extension-e2e-harness.md) とずれていないか確認するQAです。
 
@@ -303,7 +303,7 @@ AIまえチェックが守る範囲、守れない範囲、信頼境界、重大
 
 `pnpm qa:chrome-store` は、提出用ZIP、Chrome Web Store掲載情報、ストア用画像寸法、プライバシーポリシー、誇大表現の混入に加えて、本番ルール配信URL・`keyId`・公開JWKが提出物へ一致して埋め込まれているかをまとめて確認する公開前QAコマンドです。
 
-`pnpm rules:keygen` は、ルール配信API用のECDSA P-256鍵ペアを生成します。`pnpm qa:rules:production` は、本番の署名付きルールJSONが拡張側の公開鍵で検証できるかを確認します。署名方式とAPI仕様は [docs/rule-delivery.md](docs/rule-delivery.md) にまとめています。新しい検出ルールを追加するときの命名、riskLevel、placeholder、テスト観点は [docs/detection-rule-authoring.md](docs/detection-rule-authoring.md) にまとめています。
+`pnpm rules:keygen` は、ルール配信API用のECDSA P-256鍵ペアを生成します。`pnpm qa:rules:production` は、本番の署名付きルールJSONが拡張側の公開鍵で検証できるかを確認します。署名方式とAPI仕様は [docs/rule-delivery.md](docs/rule-delivery.md) にまとめています。新しい検出ルールを追加するときの命名、riskLevel、placeholder、テスト観点は [docs/detection-rule-authoring.md](docs/detection-rule-authoring.md) に、fixtureとルール追加運用は [docs/dlp-rule-quality-process.md](docs/dlp-rule-quality-process.md) にまとめています。
 
 ## CI
 

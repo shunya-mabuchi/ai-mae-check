@@ -21,6 +21,7 @@ export {
 } from "./remoteRuleSchema";
 export type {
   RemoteDetectorRuleDefinition,
+  RemoteRuleDeliveryStatus,
   RemoteRuleBundlePayload,
   SignedRemoteRuleBundle
 } from "./remoteRuleSchema";
@@ -243,6 +244,10 @@ export async function verifySignedRemoteRuleBundle(
     const temporalReason = temporalVerificationReason(payload, options);
     if (temporalReason) {
       return { ok: false, reason: temporalReason };
+    }
+
+    if (payload.deliveryStatus === "paused") {
+      return { ok: false, reason: "ルール配信が停止されています" };
     }
 
     return {

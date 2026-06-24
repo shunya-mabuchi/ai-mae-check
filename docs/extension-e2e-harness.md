@@ -137,6 +137,22 @@ pnpm test:extension:e2e
 
 ただし、方針ドキュメント、E2E実装ファイルの存在確認、リリースmanifest QAは必須CIで維持します。手動CIでheaded Chromium相当のMV3拡張読み込みが安定することを確認できた段階で、`pnpm test:extension:e2e` をPR必須CIへ昇格するか判断します。
 
+### 2026-06-24時点の判断
+
+PR必須CIへの昇格は、現時点では見送ります。
+
+理由:
+
+- GitHub Actions上のheaded Chromium相当実行は、ローカルよりもタイミング差やブラウザ起動差分が出やすい
+- MV3拡張読み込み、ローカルHTTPサーバー、Playwrightの3要素が絡むため、失敗時の調査コストが通常のユニットテストより高い
+- Chrome Web Store提出前の必須チェックは、manifest QA、Chrome Store readiness QA、拡張ユニットテスト、手元のE2Eで十分に担保する
+
+再判断条件:
+
+- `workflow_dispatch` の手動CIを少なくとも3回実行し、失敗がないか、失敗原因がリトライ不要な設定問題として解消済みである
+- `pnpm test:extension:e2e` のCI実行時間が、通常PRの待ち時間として許容できる
+- リリースZIPへE2E専用host permissionが混入しないことを、`pnpm qa:extension:manifest` と `pnpm qa:chrome-store` で継続確認できる
+
 手動CIの役割:
 
 - `workflow_dispatch` で必要なタイミングだけ実行する

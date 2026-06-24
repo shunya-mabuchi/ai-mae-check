@@ -26,6 +26,7 @@ const latestRules: RemoteRuleBundlePayload = {
   version: "2026.06.23.1",
   generatedAt: "2026-06-23T00:00:00.000Z",
   expiresAt: "2099-12-31T00:00:00.000Z",
+  deliveryStatus: "active",
   minExtensionVersion: "0.1.0",
   rules: [
     {

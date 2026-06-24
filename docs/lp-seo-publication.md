@@ -49,6 +49,22 @@ OGP画像は `apps/demo/public/ogp.png` を使います。元画像はChrome Web
 - README、`docs/chrome-web-store-listing.json`、`apps/demo/src/lib/siteRoutes.ts` の同期
 - 旧 `pages.dev` URLからの扱い
 
+### 2026-06-24時点の判断
+
+独自ドメインとGoogle Search Console導入は、現時点では見送ります。
+
+理由:
+
+- Chrome Web Store公開直後は、プライバシーポリシーURL、サポートURL、README、ストア掲載文を `pages.dev` にそろえておく方が運用ミスが少ない
+- Cloudflare Pagesの `ai-mae-check.pages.dev` で、LP、`/privacy`、`/support`、ルール配信APIを同じ基盤で説明できる
+- 独自ドメイン導入は、DNS、Search Console、Chrome Web Store掲載URL、README、OGP、sitemapの差し替え範囲が広い
+
+再判断条件:
+
+- Chrome Web Store公開後、検索流入やポートフォリオ導線を継続的に育てる段階になった
+- 独自ドメイン名をプロダクト名として長期運用する意思決定ができた
+- URL差し替え時に、プライバシーポリシーURLとサポートURLの不整合を起こさないチェック手順を用意できた
+
 ## Google Search Console
 
 現時点では必須ではありません。独自ドメインを使う場合、または検索流入を継続的に見たい段階で登録します。Chrome Web Store提出に必要なURLは、現在の `pages.dev` で満たします。

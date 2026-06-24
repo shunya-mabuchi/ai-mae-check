@@ -46,4 +46,14 @@ describe("remoteRuleSchema", () => {
 
     expect(validateRemoteRuleBundlePayload(payload)).toBeNull();
   });
+
+  it("deliveryStatusはactiveまたはpausedだけを受け入れる", () => {
+    expect(validateRemoteRuleBundlePayload({ ...validPayload(), deliveryStatus: "active" })).toMatchObject({
+      deliveryStatus: "active"
+    });
+    expect(validateRemoteRuleBundlePayload({ ...validPayload(), deliveryStatus: "paused" })).toMatchObject({
+      deliveryStatus: "paused"
+    });
+    expect(validateRemoteRuleBundlePayload({ ...validPayload(), deliveryStatus: "disabled" })).toBeNull();
+  });
 });

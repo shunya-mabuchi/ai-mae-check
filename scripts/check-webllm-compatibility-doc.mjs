@@ -26,6 +26,12 @@ function assertIncludes(text, needle, context) {
   }
 }
 
+function assertNotIncludes(text, needle, context) {
+  if (text.includes(needle)) {
+    fail(`${context} must not include stale placeholder: ${needle}`);
+  }
+}
+
 for (const path of Object.values(paths)) {
   if (!existsSync(resolve(rootDir, path))) {
     fail(`${path} is missing`);
@@ -49,6 +55,9 @@ assertIncludes(matrix, `@mlc-ai/web-llm@${webLlmVersion}`, paths.matrix);
 for (const phrase of [
   "Llama-3.2-1B-Instruct-q4f32_1-MLC",
   "SmolLM2-360M-Instruct-q4f32_1-MLC",
+  "Windows NT 10.0.26200.8457",
+  "Chrome/148.0.7778.180",
+  "Intel UHD Graphics 620",
   "Windows",
   "macOS",
   "Linux",
@@ -69,6 +78,10 @@ for (const phrase of [
   "本文を記録していないこと"
 ]) {
   assertIncludes(matrix, phrase, paths.matrix);
+}
+
+for (const stalePlaceholder of ["2026-06-xx", "Chrome xx"]) {
+  assertNotIncludes(matrix, stalePlaceholder, paths.matrix);
 }
 
 for (const phrase of [

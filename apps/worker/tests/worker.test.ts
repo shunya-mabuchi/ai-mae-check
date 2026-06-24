@@ -27,6 +27,9 @@ describe("rules worker", () => {
 
     expect(response.status).toBe(200);
     expect(verification.ok).toBe(true);
+    if (verification.ok) {
+      expect(verification.payload.deliveryStatus).toBe("active");
+    }
   });
 
   it("GET /health keeps the existing behavior", async () => {
