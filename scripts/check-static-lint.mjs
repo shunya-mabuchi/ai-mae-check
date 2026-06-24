@@ -26,6 +26,7 @@ const codeRoots = [
 ];
 
 const sourceFilePattern = /\.(?:ts|tsx|js|mjs)$/u;
+const textFilePattern = /\.(?:md|ts|tsx|js|mjs|json|yml|yaml|txt)$/u;
 const skippedFiles = new Set(["scripts/check-static-lint.mjs"]);
 
 const typeSafetyPatterns = [
@@ -64,6 +65,8 @@ const typeSafetyPatterns = [
 ];
 
 const runtimeConsolePattern = /\bconsole\.(?:log|debug|info|warn|error)\s*\(/u;
+const mojibakePattern =
+  /[\u7e3a\u7e5d\u7e67\u8b41\u8b5b\u83f4\u9015\u873f\u8709\u87c6\u90a8\u87b3\u8737\u9058\u86df\u9aef\u9711\u8822\u8373\u9005\u96ce\u8b20\ufffd\uf8f0]/u;
 
 function trackedFiles() {
   return execFileSync("git", ["ls-files"], { encoding: "utf8" })
@@ -92,15 +95,26 @@ function scanLines(file, checks) {
 const findings = [];
 
 for (const file of trackedFiles()) {
-  if (skippedFiles.has(file) || !sourceFilePattern.test(file) || !existsSync(resolve(rootDir, file))) {
+  if (skippedFiles.has(file) || !existsSync(resolve(rootDir, file))) {
     continue;
   }
 
-  if (isUnderAnyRoot(file, codeRoots)) {
+  if (textFilePattern.test(file)) {
+    findings.push(
+      ...scanLines(file, [
+        {
+          pattern: mojibakePattern,
+          detail: "文字化けの可能性がある文字列を修正してください"
+        }
+      ])
+    );
+  }
+
+  if (sourceFilePattern.test(file) && isUnderAnyRoot(file, codeRoots)) {
     findings.push(...scanLines(file, typeSafetyPatterns));
   }
 
-  if (isUnderAnyRoot(file, runtimeRoots)) {
+  if (sourceFilePattern.test(file) && isUnderAnyRoot(file, runtimeRoots)) {
     findings.push(
       ...scanLines(file, [
         {

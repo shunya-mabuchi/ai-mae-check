@@ -13,7 +13,8 @@ const paths = {
   launchFlow: "apps/demo/src/lib/productLaunchFlow.ts",
   siteRoutes: "apps/demo/src/lib/siteRoutes.ts",
   privacyPage: "apps/demo/src/components/PrivacyPolicyPage.tsx",
-  supportPage: "apps/demo/src/components/SupportPage.tsx"
+  supportPage: "apps/demo/src/components/SupportPage.tsx",
+  fileInspectionRoadmap: "docs/file-inspection-roadmap.md"
 };
 
 const internalPolicyPaths = {
@@ -35,6 +36,7 @@ const privacyClaims = [
   "モデルファイル",
   "情報漏洩を完全に防ぐものではありません"
 ];
+const ocrDecisionClaims = ["画像OCR", "現時点では実装しない判断", "安全判定済みとは扱いません"];
 
 function read(relativePath) {
   return readFileSync(resolve(rootDir, relativePath), "utf8");
@@ -114,6 +116,12 @@ for (const claim of privacyClaims) {
 for (const requiredDoc of ["privacyPolicy", "supportPage", "readme"]) {
   assertIncludes(docs[requiredDoc], "実APIキー", requiredDoc);
   assertIncludes(docs[requiredDoc], "実トークン", requiredDoc);
+}
+
+for (const claim of ocrDecisionClaims) {
+  for (const requiredDoc of ["privacyPolicy", "privacyPage", "supportPage", "fileInspectionRoadmap", "readme"]) {
+    assertIncludes(docs[requiredDoc], claim, requiredDoc);
+  }
 }
 
 if (listing.dataUsage?.collectsUserData !== true) {

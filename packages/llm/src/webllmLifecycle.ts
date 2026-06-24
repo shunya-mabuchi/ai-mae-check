@@ -62,8 +62,41 @@ export interface WebLlmEngineLifecycle {
   dispose(): Promise<void>;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function hasUsableModelList(value: unknown): boolean {
+  if (value === undefined) {
+    return true;
+  }
+
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const modelList = value.model_list;
+  return (
+    modelList === undefined ||
+    (Array.isArray(modelList) && modelList.every((item) => isRecord(item)))
+  );
+}
+
+export function isWebLlmModuleShape(value: unknown): value is WebLlmModule {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return typeof value.CreateWebWorkerMLCEngine === "function" && hasUsableModelList(value.prebuiltAppConfig);
+}
+
 async function loadWebLlmModule(): Promise<WebLlmModule> {
-  return (await import("@mlc-ai/web-llm")) as unknown as WebLlmModule;
+  const module = await import("@mlc-ai/web-llm");
+  if (!isWebLlmModuleShape(module)) {
+    throw new Error("WebLLMモジュールの形式を確認できませんでした。");
+  }
+
+  return module;
 }
 
 function createWorkerInstance(workerUrl?: string): Worker {

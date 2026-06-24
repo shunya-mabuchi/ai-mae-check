@@ -44,7 +44,7 @@ export async function showFilePreflightModal(options: FilePreflightModalOptions)
       createElement(
         "p",
         "amc-note",
-        "PDF / docx / xlsx / 画像OCRはMVPでは対象外です。対象外ファイルの本文解析は行いません。"
+        "PDF / docx / xlsx / 画像や画像OCRが必要なファイルは対象外です。本文解析は行わず、安全判定済みとは扱いません。"
       )
     );
 

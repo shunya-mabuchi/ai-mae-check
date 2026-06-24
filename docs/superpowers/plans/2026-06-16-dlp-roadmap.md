@@ -165,7 +165,7 @@ export interface SiteAdapter {
 - Test: `apps/extension/tests/fileInterceptor.test.ts`
 
 - [x] 対応拡張子は `.txt`, `.md`, `.csv`, `.json`, `.yaml`, `.yml`, `.env`, `.log`, `.js`, `.ts`, `.py`, `.go`, `.rb`, `.java`, `.html`, `.xml` とする。
-- [x] PDF、docx、xlsx、画像OCRは対象外として明示する。
+- [x] PDF、docx、xlsx、画像や画像OCRが必要なファイルは対象外として明示する。画像OCRは後日の判断で、現時点では実装しない方針に更新済み。
 - [x] `input[type=file]`のchangeとadapterの添付ボタン周辺操作を検出する。
 - [x] 対応ファイルはローカルで`File.text()`により読み取り、本文を保存しない。
 - [x] risk scoreを算出し、安全なら添付を許可、危険ならモーダルで「安全版を作成」「添付をキャンセル」を表示する。
@@ -223,5 +223,5 @@ export interface SiteAdapter {
 - 外部LLM API fallback
 - telemetry / analytics / Sentry
 - ユーザー入力、検出結果、マスク対応表、送信履歴の保存
-- PDF / docx / xlsx / 画像OCRのMVP対応
+- PDF / docx / xlsxのMVP対応検討。画像OCRは現時点では実装しない判断に更新済み。
 - Perplexityの初期adapter対応

@@ -1,4 +1,4 @@
-import type { SignedRemoteRuleBundle } from "./remoteRuleSchema";
+import type { RemoteDetectorRuleDefinition, RemoteRuleBundlePayload, SignedRemoteRuleBundle } from "./remoteRuleSchema";
 
 export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue | undefined };
 
@@ -14,7 +14,11 @@ export function canonicalizeJson(value: JsonValue): string {
   return `{${Object.keys(value)
     .filter((key) => value[key] !== undefined)
     .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonicalizeJson(value[key] as JsonValue)}`)
+    .map((key) => {
+      const item = value[key];
+      return item === undefined ? "" : `${JSON.stringify(key)}:${canonicalizeJson(item)}`;
+    })
+    .filter((item) => item.length > 0)
     .join(",")}}`;
 }
 
@@ -51,10 +55,37 @@ export function base64UrlToBytes(value: string): Uint8Array {
   return bytes;
 }
 
+function remoteRuleDefinitionToJsonValue(rule: RemoteDetectorRuleDefinition): JsonValue {
+  return {
+    id: rule.id,
+    label: rule.label,
+    riskLevel: rule.riskLevel,
+    ...(rule.category ? { category: rule.category } : {}),
+    placeholderPrefix: rule.placeholderPrefix,
+    pattern: rule.pattern,
+    ...(rule.flags ? { flags: rule.flags } : {}),
+    ...(rule.message ? { message: rule.message } : {}),
+    ...(typeof rule.confidence === "number" ? { confidence: rule.confidence } : {}),
+    ...(typeof rule.enabled === "boolean" ? { enabled: rule.enabled } : {})
+  };
+}
+
+export function remoteRulePayloadToJsonValue(payload: RemoteRuleBundlePayload): JsonValue {
+  return {
+    schemaVersion: payload.schemaVersion,
+    version: payload.version,
+    generatedAt: payload.generatedAt,
+    ...(payload.expiresAt ? { expiresAt: payload.expiresAt } : {}),
+    ...(payload.deliveryStatus ? { deliveryStatus: payload.deliveryStatus } : {}),
+    ...(payload.minExtensionVersion ? { minExtensionVersion: payload.minExtensionVersion } : {}),
+    rules: payload.rules.map(remoteRuleDefinitionToJsonValue)
+  };
+}
+
 export function createRemoteRuleSigningTarget(bundle: Pick<SignedRemoteRuleBundle, "alg" | "keyId" | "payload">): string {
   return canonicalizeJson({
     alg: bundle.alg,
     keyId: bundle.keyId,
-    payload: bundle.payload as unknown as JsonValue
+    payload: remoteRulePayloadToJsonValue(bundle.payload)
   });
 }

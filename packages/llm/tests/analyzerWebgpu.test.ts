@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createLlmContextAnalyzer, DEFAULT_MODEL_ID } from "../src";
+import { isWebLlmModuleShape } from "../src/webllmLifecycle";
 
 let completionText = JSON.stringify({
   candidates: [],
@@ -39,6 +40,29 @@ class TestWorker {
 
   terminate() {}
 }
+
+describe("WebLLM module shape", () => {
+  it("必要なWorker engine APIとモデル一覧の形を確認する", () => {
+    expect(
+      isWebLlmModuleShape({
+        CreateWebWorkerMLCEngine: async () => createEngineMock(),
+        prebuiltAppConfig: {
+          model_list: [{ model_id: DEFAULT_MODEL_ID }]
+        }
+      })
+    ).toBe(true);
+
+    expect(isWebLlmModuleShape({ prebuiltAppConfig: { model_list: [] } })).toBe(false);
+    expect(
+      isWebLlmModuleShape({
+        CreateWebWorkerMLCEngine: async () => createEngineMock(),
+        prebuiltAppConfig: {
+          model_list: "invalid"
+        }
+      })
+    ).toBe(false);
+  });
+});
 
 describe("WebGPU事前チェック", () => {
   afterEach(() => {
