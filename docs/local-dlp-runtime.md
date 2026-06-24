@@ -120,6 +120,25 @@ flowchart TD
 
 現在の `evaluateDlpPolicy` は、互換性のため `DlpPolicyDecision` に `canSendRaw` と `requiresSanitization` を残しつつ、完全な戻り値型 `PolicyDecision` として `action`、`severity`、`reason`、`requiredFindingIds`、`optionalFindingIds` を返します。UIはこの結果を表示とボタン状態に使い、独自の送信可否ロジックを持たない方向へ寄せます。
 
+### blockアクションの0.2系再評価結果
+
+0.2系の再評価でも、現時点では独立した `block` action は導入しません。
+
+理由:
+
+- ユーザーの入力欄を完全に遮断するより、検出箇所を安全化して送信可能にするほうがプロダクトの「消し忘れに気づく補助ツール」という説明と合う
+- high / critical / 秘密情報保護対象は `sanitize_required` で安全化なし送信不可にできており、実質的な保護は担保できる
+- 非対応ファイルや解析不能ファイルは「安全ではない」と説明すべきですが、本文を解析していない状態で強い遮断判定を出すと誤解を招く
+- WebLLM候補は補助情報であり、LLM結果だけで完全遮断を決めない方針を維持する
+
+将来 `block` を検討する条件:
+
+- 安全化後の再スキャンでも秘密情報保護対象が残り続け、ユーザー操作で解消できない
+- 対象サイト仕様上、安全化版への置換やキャンセル案内が成立しない
+- 企業向けポリシーなど、ユーザー裁量ではなく管理者ポリシーが必要になる
+
+この条件を満たすまでは、`PolicyDecision.action` は `allow` / `confirm` / `sanitize_required` の3種類に留めます。
+
 後続:
 
 - Policy Decisionの判定を追加する場合は、まず `packages/core/src/policy.ts` と `packages/core/tests/policy.test.ts` に寄せる。

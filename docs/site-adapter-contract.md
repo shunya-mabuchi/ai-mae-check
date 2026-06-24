@@ -231,6 +231,27 @@ adapter観点:
 
 将来対応する場合も、`<all_urls>` を無条件に要求しません。対象サイトと目的を限定し、本文、ファイル本文、検出結果、placeholderMap、現在URLをログや診断情報に含めない方針を維持します。
 
+0.2系で検証する場合のadapter契約候補:
+
+```ts
+interface FileAttachmentProbe {
+  source: "file-input" | "drop" | "clipboard";
+  files: File[];
+  canReplace: boolean;
+}
+```
+
+この契約を入れる場合も、DLP判定やファイル本文抽出はSiteAdapterへ持ち込まず、adapterは添付入口の特定と置き換え可否だけを返します。本文抽出、対応形式判定、検出、安全化版ファイル作成は共通ロジックへ寄せます。
+
+0.2系の検証表:
+
+| SiteAdapter | 確認する入口 | 介入条件 | 非対応時の扱い |
+| --- | --- | --- | --- |
+| ChatGPT | `input[type=file]`, composer周辺drop, clipboard file | 対象ファイルを特定でき、サイトUIを壊さずキャンセルまたは置換できる | 対象外としてユーザーへ手動確認を促す |
+| Claude | 添付ボタン配下input, ProseMirror周辺drop, clipboard file | ProseMirrorの入力イベントと添付状態が崩れない | 対象外としてユーザーへ手動確認を促す |
+| Gemini | rich-textarea周辺drop, 添付UI, clipboard file | 検索/送信ボタンと添付操作を誤判定しない | 対象外としてユーザーへ手動確認を促す |
+| Perplexity | 検索composer周辺drop, 添付ボタン, clipboard file | 検索モード切替や添付ボタンを誤操作しない | 対象外としてユーザーへ手動確認を促す |
+
 ## 新しいSiteAdapter追加手順
 
 1. `apps/extension/src/lib/sites.ts` に対象site ID、表示名、host、match patternを追加する

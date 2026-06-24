@@ -4,7 +4,10 @@ import { describe, expect, it } from "vitest";
 
 describe("Options Page onboarding", () => {
   it("初回ユーザー向けに拡張本体・対象サイト・WebLLM初回ロードを説明する", () => {
-    const source = readFileSync(resolve(process.cwd(), "entrypoints/options/OptionsApp.tsx"), "utf8");
+    const source = [
+      readFileSync(resolve(process.cwd(), "entrypoints/options/OptionsApp.tsx"), "utf8"),
+      readFileSync(resolve(process.cwd(), "entrypoints/options/OptionsSections.tsx"), "utf8")
+    ].join("\n");
 
     expect(source).toContain("AIまえチェックの本体はChrome拡張です");
     expect(source).toContain("ChatGPT、Claude、Gemini、Perplexity");

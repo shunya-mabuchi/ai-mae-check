@@ -25,6 +25,7 @@ const latestRules: RemoteRuleBundlePayload = {
   schemaVersion: REMOTE_RULE_BUNDLE_SCHEMA_VERSION,
   version: "2026.06.23.1",
   generatedAt: "2026-06-23T00:00:00.000Z",
+  expiresAt: "2099-12-31T00:00:00.000Z",
   minExtensionVersion: "0.1.0",
   rules: [
     {

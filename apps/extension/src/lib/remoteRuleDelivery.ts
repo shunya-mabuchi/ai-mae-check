@@ -3,6 +3,7 @@ import {
   type DetectorRule,
   type RemoteRulePublicKey,
   type RemoteRulePublicKeyInput,
+  type RemoteRuleVerificationOptions,
   type RemoteRuleVerificationResult,
   type SignedRemoteRuleBundle
 } from "@ai-mae-check/core";
@@ -75,8 +76,20 @@ function verificationKeyInput(options: RemoteRuleDeliveryOptions): RemoteRulePub
   return RULE_DELIVERY_PUBLIC_KEYS;
 }
 
-function verificationOptions(options: RemoteRuleDeliveryOptions): { expectedKeyId?: string } {
-  return options.expectedKeyId ? { expectedKeyId: options.expectedKeyId } : {};
+function verificationOptions(options: RemoteRuleDeliveryOptions, now?: number): RemoteRuleVerificationOptions {
+  return {
+    ...(options.expectedKeyId ? { expectedKeyId: options.expectedKeyId } : {}),
+    now: () => now ?? options.now?.() ?? Date.now()
+  };
+}
+
+function effectiveCacheExpiresAt(payloadExpiresAt: string | undefined, now: number, ttlMs: number): number {
+  const ttlExpiresAt = now + ttlMs;
+  if (!payloadExpiresAt) {
+    return ttlExpiresAt;
+  }
+
+  return Math.min(ttlExpiresAt, Date.parse(payloadExpiresAt));
 }
 
 function resultFromVerification(
@@ -112,7 +125,7 @@ function createCacheEntry(
     version: result.payload.version,
     generatedAt: result.payload.generatedAt,
     cachedAt: now,
-    expiresAt: now + ttlMs
+    expiresAt: effectiveCacheExpiresAt(result.payload.expiresAt, now, ttlMs)
   };
 }
 
@@ -169,7 +182,7 @@ async function loadCachedVerifiedRemoteRules(
     return null;
   }
 
-  const result = await verifySignedRemoteRuleBundle(entry.bundle, verificationKeyInput(options), verificationOptions(options));
+  const result = await verifySignedRemoteRuleBundle(entry.bundle, verificationKeyInput(options), verificationOptions(options, now));
 
   if (!result.ok) {
     await clearCache(cacheStore);
@@ -228,7 +241,7 @@ export async function loadVerifiedRemoteRules(options: RemoteRuleDeliveryOptions
     }
 
     const bundle = (await response.json()) as SignedRemoteRuleBundle;
-    const result = await verifySignedRemoteRuleBundle(bundle, verificationKeyInput(options), verificationOptions(options));
+    const result = await verifySignedRemoteRuleBundle(bundle, verificationKeyInput(options), verificationOptions(options, now));
 
     if (!result.ok) {
       await clearCache(cacheStore);

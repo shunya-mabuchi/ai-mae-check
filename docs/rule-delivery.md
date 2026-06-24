@@ -2,7 +2,7 @@
 
 AIまえチェックでは、ユーザー本文をサーバーへ送らずに、検出ルールだけを安全に更新できる仕組みを追加しています。
 
-0.1.0では、拡張ZIPに埋め込まれた公開鍵に対応する `privateJwk` が手元に残っていなかったため、署名付きルール配信の本番有効化は見送りました。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい公開JWKを拡張へ反映済みです。運用手順は [rule-delivery-operations.md](./rule-delivery-operations.md) を参照してください。
+0.1.0では、拡張ZIPに埋め込まれた公開鍵に対応する `privateJwk` が手元に残っていなかったため、署名付きルール配信の本番有効化は見送りました。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい公開JWKを拡張へ反映済みです。ルールバンドルには `expiresAt` を含め、署名検証後に期限切れの配信ルールを採用しないようにしています。運用手順は [rule-delivery-operations.md](./rule-delivery-operations.md) を参照してください。
 
 ## 方針
 

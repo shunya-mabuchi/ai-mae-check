@@ -13,6 +13,7 @@ const paths = {
   playwrightConfig: "apps/extension/playwright.extension.config.ts",
   mockComposer: "apps/extension/e2e/mock-composer.html",
   extensionSpec: "apps/extension/e2e/extension.spec.ts",
+  extensionE2eWorkflow: ".github/workflows/extension-e2e.yml",
   buildScript: "scripts/build-extension-e2e.mjs",
   runScript: "scripts/run-extension-e2e.mjs",
   wxtConfig: "apps/extension/wxt.config.ts",
@@ -65,6 +66,9 @@ for (const phrase of [
   "実サイト手動QA",
   "WebLLM実モデルロード",
   "CIには載せない",
+  "workflow_dispatch",
+  "xvfb-run",
+  "手動CI",
   "E2E専用build",
   "EXTENSION_E2E=1",
   "localhost",
@@ -108,5 +112,7 @@ assertIncludes(read(paths.playwrightConfig), "mock-composer.html", paths.playwri
 assertIncludes(read(paths.extensionSpec), "安全化して入力", paths.extensionSpec);
 assertIncludes(read(paths.extensionSpec), "安全化して送信", paths.extensionSpec);
 assertIncludes(read(paths.extensionSpec), "contenteditable", paths.extensionSpec);
+assertIncludes(read(paths.extensionE2eWorkflow), "workflow_dispatch", paths.extensionE2eWorkflow);
+assertIncludes(read(paths.extensionE2eWorkflow), "xvfb-run --auto-servernum pnpm test:extension:e2e", paths.extensionE2eWorkflow);
 
 console.log("Extension E2E harness QA passed");
