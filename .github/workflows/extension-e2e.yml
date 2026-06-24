@@ -1,6 +1,9 @@
 name: Extension E2E
 
 on:
+  pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -8,7 +11,7 @@ permissions:
 
 jobs:
   extension-e2e:
-    name: Manual extension E2E harness
+    name: Extension E2E harness
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
