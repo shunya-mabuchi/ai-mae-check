@@ -25,9 +25,10 @@ Chromeで次を行います。
 2. デベロッパーモードを有効にする
 3. 「パッケージ化されていない拡張機能を読み込む」を選ぶ
 4. `apps/extension/.output/chrome-mv3` を読み込む
-5. AIまえチェックのOptions Pageを開く
-6. 拡張機能が有効、対象サイトがON、WebLLMは手動実行になっていることを確認する
-7. 確認対象サイトのタブを再読み込みする
+5. 初回インストール時にAIまえチェックのOptions Pageが開くことを確認する
+6. 開かない場合は拡張アイコンをクリックしてOptions Pageを開く
+7. 拡張機能が有効、対象サイトがON、WebLLMは手動実行になっていることを確認する
+8. 確認対象サイトのタブを再読み込みする
 
 ## 静的manifest QA
 
@@ -95,6 +96,7 @@ https://user:password@example.com/internal/proposal
 - [ ] 拡張機能を再読み込み後、対象ページも再読み込みした
 - [ ] 対象hostだけでcontent scriptが動き、`<all_urls>` に頼っていない
 - [ ] Options Pageの対象サイトON/OFFが反映される
+- [ ] 初回インストール後にOptions Pageが開き、はじめにセクションが表示される
 - [ ] 拡張アイコンをクリックするとOptions Pageが開く
 - [ ] ページ右下などに常時ステータス表示が出ない
 - [ ] 通常の入力欄を検出できる

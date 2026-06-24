@@ -57,6 +57,15 @@ function SummaryCard({ title, body }: { title: string; body: string }) {
   );
 }
 
+function OnboardingStep({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-md border border-line bg-white p-4">
+      <p className="text-sm font-bold text-ink">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-stone-600">{body}</p>
+    </div>
+  );
+}
+
 export function OptionsApp() {
   const [settings, setSettings] = useState<AiMaeCheckSettings>(DEFAULT_SETTINGS);
   const [savedMessage, setSavedMessage] = useState("設定を読み込んでいます。");
@@ -179,6 +188,32 @@ export function OptionsApp() {
           <SummaryCard title="保存しないもの" body="貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は保存しません。" />
           <SummaryCard title="設定状態" body={validation.valid ? "現在の設定形式は有効です。" : validation.messages.join(" ")} />
         </div>
+
+        <section className="mb-5 rounded-md border border-line bg-paper p-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h2 className="text-xl font-bold tracking-normal text-ink">はじめに</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">
+                AIまえチェックの本体はChrome拡張です。ChatGPT、Claude、Geminiで貼り付け前・送信前に確認モーダルを表示します。
+              </p>
+            </div>
+            <p className="rounded-md border border-line bg-white px-3 py-2 text-sm font-semibold text-leaf">初回インストール後に表示されます</p>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <OnboardingStep
+              title="1. 対象サイトを確認"
+              body="ChatGPT、Claude、Geminiが初期対象です。必要に応じて下の対象サイト設定でON/OFFできます。"
+            />
+            <OnboardingStep
+              title="2. いつチェックされるか"
+              body="対象サイトの入力欄へ貼り付けるとき、または送信しようとしたときに、必要な場合だけ確認モーダルが開きます。"
+            />
+            <OnboardingStep
+              title="3. AI文脈チェック"
+              body="WebLLMは手動実行が初期設定です。初回利用時はローカル推論用モデルファイルの取得に時間がかかる場合があります。"
+            />
+          </div>
+        </section>
 
         <div className="grid gap-5">
           <Section icon={<CheckCircle2 size={20} aria-hidden="true" />} title="基本設定">

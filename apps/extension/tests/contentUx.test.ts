@@ -16,6 +16,7 @@ describe("content script UX", () => {
     const backgroundScript = readFileSync(resolve(process.cwd(), "entrypoints/background.ts"), "utf8");
     const configSource = readFileSync(resolve(process.cwd(), "wxt.config.ts"), "utf8");
 
+    expect(backgroundScript).toContain('details.reason === "install"');
     expect(backgroundScript).toContain("chrome.action.onClicked.addListener");
     expect(backgroundScript).toContain("chrome.runtime.openOptionsPage");
     expect(configSource).toContain('default_title: "AIまえチェック"');
