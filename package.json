@@ -37,6 +37,7 @@
     "qa:rules:production": "node scripts/verify-production-rule-delivery.mjs",
     "qa:extension:e2e-harness": "node scripts/check-extension-e2e-harness-doc.mjs",
     "qa:test-maintenance": "node scripts/check-test-maintenance.mjs",
+    "qa:script-maintenance": "node scripts/check-script-maintenance.mjs",
     "qa:dependency-policy": "node scripts/check-dependency-policy.mjs",
     "qa:release-policy": "node scripts/check-release-policy.mjs",
     "qa:issue-pr-workflow": "node scripts/check-issue-pr-workflow.mjs",

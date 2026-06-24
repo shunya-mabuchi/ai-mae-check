@@ -14,7 +14,8 @@ const paths = {
   siteRoutes: "apps/demo/src/lib/siteRoutes.ts",
   privacyPage: "apps/demo/src/components/PrivacyPolicyPage.tsx",
   supportPage: "apps/demo/src/components/SupportPage.tsx",
-  fileInspectionRoadmap: "docs/file-inspection-roadmap.md"
+  fileInspectionRoadmap: "docs/file-inspection-roadmap.md",
+  scriptMaintenance: "docs/script-maintenance.md"
 };
 
 const internalPolicyPaths = {
@@ -37,6 +38,7 @@ const privacyClaims = [
   "情報漏洩を完全に防ぐものではありません"
 ];
 const ocrDecisionClaims = ["画像OCR", "現時点では実装しない判断", "安全判定済みとは扱いません"];
+const scriptMaintenanceClaims = ["QA/生成スクリプト", "pnpm qa:script-maintenance", "ユーザー本文"];
 
 function read(relativePath) {
   return readFileSync(resolve(rootDir, relativePath), "utf8");
@@ -122,6 +124,10 @@ for (const claim of ocrDecisionClaims) {
   for (const requiredDoc of ["privacyPolicy", "privacyPage", "supportPage", "fileInspectionRoadmap", "readme"]) {
     assertIncludes(docs[requiredDoc], claim, requiredDoc);
   }
+}
+
+for (const claim of scriptMaintenanceClaims) {
+  assertIncludes(docs.scriptMaintenance, claim, "scriptMaintenance");
 }
 
 if (listing.dataUsage?.collectsUserData !== true) {
