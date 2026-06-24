@@ -73,7 +73,7 @@ flowchart LR
 
 ## ルール配信と署名検証
 
-0.1.1では、ルール配信用の鍵ペアを再発行し、Cloudflare側のSecretと拡張側の公開鍵を一致させる予定です。署名検証に失敗した場合や、ネットワークエラーが起きた場合は、同梱ルールだけで動作します。
+0.1.1では、ルール配信用の鍵ペアを再発行し、Cloudflare側のSecretと拡張側の公開鍵を一致させています。本番APIの署名は `pnpm qa:rules:production` で検証できます。署名検証に失敗した場合や、ネットワークエラーが起きた場合は、同梱ルールだけで動作します。
 
 ```mermaid
 sequenceDiagram
@@ -118,7 +118,7 @@ AIまえチェックは情報漏洩を完全に防ぐものではありません
 
 ## 今後
 
-- #287 署名付きルール配信の本番有効化
+- 0.1.1 ZIP再生成とChrome Web Store再提出
 - Policy Decisionの独立
 - ContextBuilderによるWebLLM入力短縮
 - 評価fixtureと `eval:dlp`

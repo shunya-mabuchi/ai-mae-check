@@ -1,6 +1,6 @@
 # ルール配信Worker 運用メモ
 
-ルール配信Workerは、ユーザー本文を受け取らず、署名付きルールJSONだけを返すための補助サーバーです。0.1.0では本番署名鍵が未設定のため、同梱ルールへフォールバックする状態です。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい鍵ペアで有効化します。
+ルール配信Workerは、ユーザー本文を受け取らず、署名付きルールJSONだけを返すための補助サーバーです。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい鍵ペアで本番署名付きルール配信を有効化しています。署名検証失敗時やネットワークエラー時は、拡張側が同梱ルールへフォールバックします。
 
 ## 絶対に守る方針
 
@@ -96,6 +96,12 @@ Cloudflare PagesのSecretを追加・更新した場合は、既存のProduction
 
 ```powershell
 Invoke-RestMethod -Uri https://ai-mae-check.pages.dev/api/rules/latest
+```
+
+拡張側に埋め込んだ公開鍵と本番APIの署名が一致するかは、次のQAで確認します。
+
+```bash
+pnpm qa:rules:production
 ```
 
 期待する状態:

@@ -64,7 +64,7 @@ Release本文には次を含めます。
 
 ## 0.1.1の扱い
 
-0.1.1では、`ai-mae-check-rules-2026-06-v2` の公開鍵を拡張へ埋め込み、Cloudflare Pages Functions側のSecretと一致させます。
+0.1.1では、`ai-mae-check-rules-2026-06-v2` の公開鍵を拡張へ埋め込み、Cloudflare Pages Functions側のSecretと一致させます。本番APIの署名検証は `pnpm qa:rules:production` で確認します。
 
 ただし、0.1.1 ZIPはすでに一度作成済みでも、残Issueをすべて解消してから作り直します。最終提出候補のZIPは、その時点のmainから `pnpm package:extension` で再生成します。
 
@@ -73,7 +73,7 @@ Release本文には次を含めます。
 - Chrome Web Store公開URLが表示される
 - LPの主CTAが公開済みストアへ遷移する
 - `/privacy`、`/support` が開ける
-- `/api/rules/latest` が本番の `keyId` と署名付きpayloadを返す
+- `/api/rules/latest` が本番の `keyId` と署名付きpayloadを返し、`pnpm qa:rules:production` が通る
 - GitHub Release本文がCHANGELOGと矛盾していない
 - READMEの公開ステータス、スクリーンショット、ストアURLが最新
 

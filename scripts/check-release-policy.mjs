@@ -60,6 +60,7 @@ for (const command of [
   "pnpm qa:extension:e2e-harness",
   "pnpm qa:dependency-policy",
   "pnpm qa:demo:seo",
+  "pnpm qa:rules:production",
   "pnpm qa:portfolio-case-study",
   "pnpm qa:extension:size",
   "pnpm qa:extension:manifest",

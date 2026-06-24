@@ -2,23 +2,26 @@
 
 0.1.0の公開済みZIPは触りません。署名付きルール配信の本番有効化は、0.1.1で鍵ペアを再発行して対応します。
 
+2026-06-24時点で、`ai-mae-check-rules-2026-06-v2` の本番署名付きルール配信は有効化済みです。Chrome Web Storeへ0.1.1 ZIPを提出する作業は、残Issueをすべて解消してから行います。ZIPを先にアップロードしません。
+
 ## 背景
 
 - 0.1.0の拡張ZIPには、`apps/extension/config/rule-delivery.release.json` の公開鍵が埋め込まれています。
 - その公開鍵に対応する `privateJwk` は手元に残っていません。
 - 秘密鍵は公開鍵から復元できないため、Cloudflare Secretへ既存鍵として設定することはできません。
-- 現在の本番API `https://ai-mae-check.pages.dev/api/rules/latest` は、署名鍵未設定時に本文なしのエラーJSONを返します。
+- 現在の本番API `https://ai-mae-check.pages.dev/api/rules/latest` は、`keyId: ai-mae-check-rules-2026-06-v2` の署名付きJSONを返します。
 - 拡張側は通信失敗・署名検証失敗時に同梱ルールへフォールバックする設計です。
 
 ## 0.1.1でやること
 
-1. `pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out <git管理外の一時ファイル>` で新しいECDSA P-256鍵ペアを生成する。
-2. 生成した `publicJwk` と `keyId` を `apps/extension/config/rule-delivery.release.json` へ反映する。
-3. 生成した `privateJwk` をCloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` に設定する。
-4. `https://ai-mae-check.pages.dev/api/rules/latest` が署名付きルールJSONを返すことを確認する。
-5. 残Issueをすべて解消してから、最終提出候補のZIPを作り直す。
-6. `pnpm build:extension`、`pnpm package:extension`、`pnpm qa:public-repo`、`pnpm qa:public-docs`、`pnpm qa:privacy-regression`、`pnpm qa:webllm-model-policy`、`pnpm qa:dependency-policy`、`pnpm qa:release-policy`、`pnpm qa:demo:seo`、`pnpm qa:portfolio-case-study`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
-7. Chrome Web Storeへ0.1.1として新しいZIPを提出する。
+1. 完了: `pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out <git管理外の一時ファイル>` で新しいECDSA P-256鍵ペアを生成する。
+2. 完了: 生成した `publicJwk` と `keyId` を `apps/extension/config/rule-delivery.release.json` へ反映する。
+3. 完了: 生成した `privateJwk` をCloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` に設定する。
+4. 完了: `https://ai-mae-check.pages.dev/api/rules/latest` が署名付きルールJSONを返すことを確認する。
+5. 完了: `pnpm qa:rules:production` で、本番APIの署名が拡張側公開鍵で検証できることを確認する。
+6. 残作業: 残Issueをすべて解消してから、最終提出候補のZIPを作り直す。
+7. 残作業: `pnpm build:extension`、`pnpm package:extension`、`pnpm qa:public-repo`、`pnpm qa:public-docs`、`pnpm qa:privacy-regression`、`pnpm qa:webllm-model-policy`、`pnpm qa:dependency-policy`、`pnpm qa:release-policy`、`pnpm qa:rules:production`、`pnpm qa:demo:seo`、`pnpm qa:portfolio-case-study`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
+8. 残作業: Chrome Web Storeへ0.1.1として新しいZIPを提出する。
 
 鍵ローテーション、壊れたルール配信時のロールバック、旧 `keyId` の扱いは [rule-delivery-operations.md](./rule-delivery-operations.md) に従います。
 

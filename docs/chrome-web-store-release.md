@@ -6,8 +6,8 @@
 
 - 0.1.0はChrome Web Storeで一般公開済みです。
 - 公開URL: <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc>
-- ルール配信APIはCloudflare Pages Functionsで実装済みです。0.1.0の署名鍵に対応する `privateJwk` が手元に残っていないため、0.1.1で `keyId` を `ai-mae-check-rules-2026-06-v2` へ更新します。
-- 署名付きルール配信の鍵ローテーションとロールバック手順は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめます。
+- ルール配信APIはCloudflare Pages Functionsで実装済みです。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` へ更新し、本番署名付きルールJSONを拡張側公開鍵で検証できる状態にしています。
+- 署名付きルール配信の鍵ローテーションとロールバック手順は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
 
 ## 参照する公式ドキュメント
 
@@ -137,7 +137,7 @@ pnpm qa:chrome-store
 - [x] Chrome Web Store公開URLを確認する
 - [x] サポートURLとプライバシーポリシーURLが開けることを確認する
 - [x] LPの主CTAをChrome Web Store追加リンクへ差し替える
-- [ ] 0.1.1でルール配信署名を有効化し、本番APIの署名付きJSONを確認する
+- [x] 0.1.1でルール配信署名を有効化し、本番APIの署名付きJSONを確認する
 
 次バージョン提出前:
 
@@ -187,7 +187,7 @@ pnpm qa:chrome-store
 1. Chrome Web Store公開URLをREADMEとLPに反映する。
 2. LPの主CTAが「Chrome Web Storeで追加」になっていることを確認する。
 3. GitHub Release v0.1.0を公開する。
-4. 0.1.1の署名付きルール配信対応に着手する。
+4. 残Issueを解消した後、0.1.1の最終ZIPを作り直してChrome Web Storeへ提出する。
 
 ## 差し戻し時の対応
 
