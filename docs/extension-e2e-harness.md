@@ -127,35 +127,37 @@ pnpm test:extension:e2e
 
 ## CI判断
 
-0.1.1時点では、拡張E2Eハーネス本体を必須CIにはしません。第一段階として、`.github/workflows/extension-e2e.yml` の `workflow_dispatch` で手動実行できるGitHub Actionsを用意します。
+0.1.1時点では、拡張E2Eハーネス本体をPR/push時のCIとして実行します。`.github/workflows/extension-e2e.yml` は `pull_request`、`push`、`workflow_dispatch` で起動し、GitHub Actions上のChromiumでローカル模擬composerを検証します。
 
 理由:
 
-- リリース用manifestへテスト専用host permissionを混入させない設計が先に必要
-- GitHub Actions上のheaded ChromiumとMV3拡張読み込みの安定性を検証する必要がある
-- WebLLM実モデルロードをCI必須にすると、GPU、保存領域、ネットワークに依存して不安定になりやすい
+- #431で起動直後の `chrome://extensions/?options=...` 割り込みとWindowsの一時プロファイル削除レースを緩和した
+- #432で修正後の `main` を3回手動実行し、3回とも成功した
+- 1回あたりの実行時間は約1分20秒から1分30秒で、通常PRの待ち時間として許容できる
+- リリース用manifestへE2E専用host permissionを混入させないQAを維持している
 
-ただし、方針ドキュメント、E2E実装ファイルの存在確認、リリースmanifest QAは必須CIで維持します。手動CIでheaded Chromium相当のMV3拡張読み込みが安定することを確認できた段階で、`pnpm test:extension:e2e` をPR必須CIへ昇格するか判断します。
+WebLLM実モデルロードは引き続きCI必須条件にしません。WebLLMはGPU、保存領域、ネットワークに依存するため、実機確認と互換性マトリクスで扱います。
 
 ### 2026-06-24時点の判断
 
-PR必須CIへの昇格は、現時点では見送ります。
+PR/push時の自動CIへ昇格します。
 
 理由:
 
-- GitHub Actions上のheaded Chromium相当実行は、ローカルよりもタイミング差やブラウザ起動差分が出やすい
-- MV3拡張読み込み、ローカルHTTPサーバー、Playwrightの3要素が絡むため、失敗時の調査コストが通常のユニットテストより高い
-- Chrome Web Store提出前の必須チェックは、manifest QA、Chrome Store readiness QA、拡張ユニットテスト、手元のE2Eで十分に担保する
+- 修正後の手動CIで3回連続成功した
+- E2E専用buildは `.output-e2e` に分離され、リリースZIPへ混入しない
+- `pnpm qa:extension:manifest` と `pnpm qa:chrome-store` でリリースmanifestの権限を継続確認できる
+- WebLLM実モデルロードは対象外のままなので、CIの不安定要因を増やしすぎない
 
-再判断条件:
+継続監視条件:
 
-- `workflow_dispatch` の手動CIを少なくとも3回実行し、失敗がないか、失敗原因がリトライ不要な設定問題として解消済みである
-- `pnpm test:extension:e2e` のCI実行時間が、通常PRの待ち時間として許容できる
-- リリースZIPへE2E専用host permissionが混入しないことを、`pnpm qa:extension:manifest` と `pnpm qa:chrome-store` で継続確認できる
+- GitHub Actions上で起動レースが再発した場合は、失敗ログを見て設定問題か一時的な揺れかを分類する
+- 連続して不安定になる場合は、一時的に `workflow_dispatch` へ戻す判断も許可する
+- リリースZIPへE2E専用host permissionが混入しないことを継続確認する
 
 手動CIの役割:
 
-- `workflow_dispatch` で必要なタイミングだけ実行する
+- `workflow_dispatch` で必要なタイミングにも実行できる
 - `xvfb-run` 上でheaded相当のChromiumを起動する
 - WebLLM実モデルロードは必須条件にしない
 - E2E専用host permissionがリリースZIPへ混入しない方針を維持する
@@ -175,7 +177,7 @@ PR必須CIへの昇格は、現時点では見送ります。
 
 ## 後続拡張候補
 
-- CIでheaded Chromium相当の実行が安定するか検証する
+- CIでheaded Chromium相当の実行が継続して安定するか監視する
 - 実サイト手動QAの結果とE2Eケースの対応表を増やす
 - Perplexityを0.1.1以降のadapter継続検証対象として扱う
 
@@ -189,10 +191,22 @@ Issue #425 / #429 の対応として、拡張E2Eの手動CIとローカルE2Eを
 - WindowsではChromeプロファイルの `lockfile` 解放が遅れることがあるため、一時プロファイル削除にもリトライを入れています。
 - ローカルでは `pnpm test:extension:e2e` が10件すべて成功しました。
 
-PR必須CIへの昇格は、現時点では見送ります。理由は、手動CIで1回の起動レースを確認しており、PR必須化するにはこの修正後のGitHub Actions上で複数回安定することを確認したいからです。
+#431時点では、手動CIで1回の起動レースを確認していたため、PR必須CIへの昇格はいったん見送りました。その後、#432で修正後の `main` を複数回確認し、PR/push時CIへ昇格しています。
 
 今回追加・確認した自動シナリオ:
 
 - 貼り付け確認のキャンセル時に入力欄へ反映しない
 - mediumリスクだけの場合、詳細確認後にそのまま送信できる
 - highリスクの場合、そのまま送信へ切り替えられない
+
+## 2026-06-24 #432 追加確認
+
+#431反映後の `main` で `extension-e2e.yml` を3回手動実行し、3回とも成功しました。
+
+| Run | 結果 | 所要時間 | URL |
+| --- | --- | --- | --- |
+| 28086696311 | success | 約1分24秒 | https://github.com/shunya-mabuchi/ai-mae-check/actions/runs/28086696311 |
+| 28086714135 | success | 約1分21秒 | https://github.com/shunya-mabuchi/ai-mae-check/actions/runs/28086714135 |
+| 28086731353 | success | 約1分26秒 | https://github.com/shunya-mabuchi/ai-mae-check/actions/runs/28086731353 |
+
+この結果を受けて、`.github/workflows/extension-e2e.yml` を `pull_request` と `push` でも起動するPR/push時CIへ昇格します。`workflow_dispatch` は、リリース前や失敗調査時に単独実行できる導線として残します。
