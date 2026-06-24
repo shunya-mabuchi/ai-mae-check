@@ -38,6 +38,8 @@ export type RemoteRuleVerificationResult =
 
 export interface RemoteRuleVerificationOptions {
   expectedKeyId?: string;
+  now?: () => number;
+  maxGeneratedAtSkewMs?: number;
 }
 
 export interface RemoteRulePublicKey {
@@ -138,6 +140,24 @@ function createRemoteRule(rule: RemoteDetectorRuleDefinition): DetectorRule | nu
   };
 }
 
+const DEFAULT_MAX_GENERATED_AT_SKEW_MS = 10 * 60 * 1000;
+
+function temporalVerificationReason(payload: RemoteRuleBundlePayload, options: RemoteRuleVerificationOptions): string | null {
+  const now = options.now?.() ?? Date.now();
+  const maxGeneratedAtSkewMs = options.maxGeneratedAtSkewMs ?? DEFAULT_MAX_GENERATED_AT_SKEW_MS;
+  const generatedAtMs = Date.parse(payload.generatedAt);
+
+  if (generatedAtMs > now + maxGeneratedAtSkewMs) {
+    return "ルールバンドルの生成日時が未来です";
+  }
+
+  if (payload.expiresAt && Date.parse(payload.expiresAt) <= now) {
+    return "ルールバンドルの有効期限が切れています";
+  }
+
+  return null;
+}
+
 export function createRemoteDetectorRules(payload: RemoteRuleBundlePayload): DetectorRule[] {
   return payload.rules.map(createRemoteRule).filter((rule): rule is DetectorRule => rule !== null);
 }
@@ -218,6 +238,11 @@ export async function verifySignedRemoteRuleBundle(
 
     if (!ok) {
       return { ok: false, reason: "ルールバンドルの署名を検証できません" };
+    }
+
+    const temporalReason = temporalVerificationReason(payload, options);
+    if (temporalReason) {
+      return { ok: false, reason: temporalReason };
     }
 
     return {

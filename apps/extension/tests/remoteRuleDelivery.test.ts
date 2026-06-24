@@ -16,6 +16,7 @@ import {
 import type { RemoteRuleCacheStore, VerifiedRemoteRuleCacheEntry } from "../src/lib/remoteRuleCache";
 
 const keyId = "extension-test-key";
+const validBundleNow = Date.parse("2026-06-16T00:10:00.000Z");
 
 async function createKeyPair() {
   const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
@@ -30,6 +31,7 @@ function payload(): RemoteRuleBundlePayload {
     schemaVersion: 1,
     version: "2026.06.16.1",
     generatedAt: "2026-06-16T00:00:00.000Z",
+    expiresAt: "2026-06-16T00:30:00.000Z",
     rules: [
       {
         id: "demo_secret_marker",
@@ -84,7 +86,8 @@ describe("loadVerifiedRemoteRules", () => {
       endpoint: "https://rules.example.test/api/rules/latest",
       publicJwk,
       expectedKeyId: keyId,
-      fetcher
+      fetcher,
+      now: () => validBundleNow
     });
 
     expect(result.status).toBe("verified");
@@ -111,7 +114,8 @@ describe("loadVerifiedRemoteRules", () => {
     const result = await loadVerifiedRemoteRules({
       endpoint: "https://rules.example.test/api/rules/latest",
       publicKeys,
-      fetcher
+      fetcher,
+      now: () => validBundleNow
     });
 
     expect(result.status).toBe("verified");
@@ -122,7 +126,7 @@ describe("loadVerifiedRemoteRules", () => {
     const { privateJwk, publicJwk } = await createKeyPair();
     const signed = await signRemoteRuleBundle(payload(), privateJwk, keyId);
     const cacheStore = createMemoryCache();
-    const now = 1_000_000;
+    const now = Date.parse("2026-06-16T00:10:00.000Z");
     const okFetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
 
     const verified = await loadVerifiedRemoteRules({
@@ -140,7 +144,7 @@ describe("loadVerifiedRemoteRules", () => {
       version: payload().version,
       generatedAt: payload().generatedAt,
       cachedAt: now,
-      expiresAt: now + REMOTE_RULE_CACHE_TTL_MS
+      expiresAt: Date.parse(payload().expiresAt ?? "")
     });
 
     const failingFetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response("{}", { status: 503 }));
@@ -210,6 +214,26 @@ describe("loadVerifiedRemoteRules", () => {
     expect(tamperedCache.entry).toBeNull();
   });
 
+  it("falls back without caching when the signed bundle itself is expired", async () => {
+    const { privateJwk, publicJwk } = await createKeyPair();
+    const signed = await signRemoteRuleBundle(payload(), privateJwk, keyId);
+    const cacheStore = createMemoryCache();
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
+
+    const result = await loadVerifiedRemoteRules({
+      endpoint: "https://rules.example.test/api/rules/latest",
+      publicJwk,
+      expectedKeyId: keyId,
+      fetcher,
+      cacheStore,
+      now: () => Date.parse("2026-06-16T00:31:00.000Z")
+    });
+
+    expect(result.status).toBe("fallback");
+    expect(result.reason).toBe("ルールバンドルの有効期限が切れています");
+    expect(cacheStore.entry).toBeNull();
+  });
+
   it("falls back when signature verification fails", async () => {
     const { privateJwk, publicJwk } = await createKeyPair();
     const signed = await signRemoteRuleBundle(payload(), privateJwk, keyId);
@@ -226,7 +250,8 @@ describe("loadVerifiedRemoteRules", () => {
       endpoint: "https://rules.example.test/api/rules/latest",
       publicJwk,
       expectedKeyId: keyId,
-      fetcher
+      fetcher,
+      now: () => validBundleNow
     });
 
     expect(result.status).toBe("fallback");

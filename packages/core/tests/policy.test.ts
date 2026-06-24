@@ -93,6 +93,16 @@ describe("evaluateDlpPolicy", () => {
     expect(decision.requiresSanitization).toBe(true);
   });
 
+  it("PolicyDecisionのactionは3種類に留め、blockへ分岐させない", () => {
+    const samples = [
+      evaluateDlpPolicy([]),
+      evaluateDlpPolicy([finding({ id: "legal:1", riskLevel: "medium", category: "legal" })]),
+      evaluateDlpPolicy([finding({ id: "critical:1", riskLevel: "critical", category: "secret" })])
+    ];
+
+    expect(samples.map((decision) => decision.action)).toEqual(["allow", "confirm", "sanitize_required"]);
+  });
+
   it("秘密情報保護の対象は安全化必須にする", () => {
     const detection = detectSensitiveText("AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE");
     const decision = evaluateDlpPolicy(detection.findings);

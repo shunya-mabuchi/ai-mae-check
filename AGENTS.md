@@ -2,7 +2,7 @@
 
 ## プロジェクト概要
 
-「AIまえチェック」は、ChatGPT / Claude / Gemini などのLLMサービスへ文章を送る前に、個人情報・秘密情報・APIキー・社外秘っぽい内容をブラウザ内で検出し、安全化を促すChrome拡張です。
+「AIまえチェック」は、ChatGPT / Claude / Gemini / Perplexity などのLLMサービスへ文章を送る前に、個人情報・秘密情報・APIキー・社外秘っぽい内容をブラウザ内で検出し、安全化を促すChrome拡張です。
 
 単なるAIチャットではなく、LLMに送信される前のDLPレイヤーとして動作させます。サイドパネルや独自入力欄を主役にせず、対象サイトの通常入力体験をできるだけ維持します。
 
@@ -25,8 +25,8 @@
 
 ## 対象サイト方針
 
-- 初期対象は ChatGPT / Claude / Gemini。
-- Perplexityは後続adapterで対応する。
+- 対象サイトは ChatGPT / Claude / Gemini / Perplexity。
+- Perplexityもadapter実装済みの対象サイトとして扱う。
 - 対象サイトはadapterで分離し、DOM変更に追従しやすくする。
 - サイドパネルや大きな独自入力UIではなく、通常入力欄、risk badge、送信前確認モーダルを中心にする。
 

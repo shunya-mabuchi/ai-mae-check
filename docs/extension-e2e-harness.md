@@ -106,7 +106,7 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 | --- | --- | --- | --- |
 | ユニットテスト | 検出、マスク、ポリシー、UI状態の安定性 | packages / extension内部 | 実行する |
 | デモE2E | LP兼ミニデモの体験確認 | `apps/demo` | 実行する |
-| 拡張E2Eハーネス | 実拡張を読み込んだpaste/submit確認 | ローカル模擬composer | 段階的に導入 |
+| 拡張E2Eハーネス | 実拡張を読み込んだpaste/submit確認 | ローカル模擬composer | 手動CIから段階的に導入 |
 | 実サイト手動QA | 対象サイトDOMと実操作の確認 | ChatGPT / Claude / Gemini / Perplexity | CIには載せない |
 | WebLLM実機確認 | WebGPU、モデル取得、保存領域の確認 | 実ブラウザ/実端末 | CIには載せない |
 
@@ -127,7 +127,7 @@ pnpm test:extension:e2e
 
 ## CI判断
 
-0.1.1時点では、拡張E2Eハーネス本体をCI必須にはしません。
+0.1.1時点では、拡張E2Eハーネス本体を必須CIにはしません。第一段階として、`.github/workflows/extension-e2e.yml` の `workflow_dispatch` で手動実行できるGitHub Actionsを用意します。
 
 理由:
 
@@ -135,7 +135,14 @@ pnpm test:extension:e2e
 - GitHub Actions上のheaded ChromiumとMV3拡張読み込みの安定性を検証する必要がある
 - WebLLM実モデルロードをCI必須にすると、GPU、保存領域、ネットワークに依存して不安定になりやすい
 
-ただし、方針ドキュメント、E2E実装ファイルの存在確認、リリースmanifest QAはCIで維持します。将来、headed ChromiumでのMV3拡張読み込みが安定することを確認できた段階で、`pnpm test:extension:e2e` をCIへ追加します。
+ただし、方針ドキュメント、E2E実装ファイルの存在確認、リリースmanifest QAは必須CIで維持します。手動CIでheaded Chromium相当のMV3拡張読み込みが安定することを確認できた段階で、`pnpm test:extension:e2e` をPR必須CIへ昇格するか判断します。
+
+手動CIの役割:
+
+- `workflow_dispatch` で必要なタイミングだけ実行する
+- `xvfb-run` 上でheaded相当のChromiumを起動する
+- WebLLM実モデルロードは必須条件にしない
+- E2E専用host permissionがリリースZIPへ混入しない方針を維持する
 
 ## 最小シナリオ
 

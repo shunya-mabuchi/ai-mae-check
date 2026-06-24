@@ -25,6 +25,12 @@ function assertIncludes(text, needle, context) {
   }
 }
 
+function assertNotIncludes(text, needle, context) {
+  if (text.includes(needle)) {
+    fail(`${context} must not include stale phrase: ${needle}`);
+  }
+}
+
 for (const path of Object.values(paths)) {
   if (!existsSync(resolve(rootDir, path))) {
     fail(`${path} is missing`);
@@ -55,6 +61,10 @@ for (const phrase of [
   "pnpm qa:performance-budget"
 ]) {
   assertIncludes(docs, phrase, paths.docs);
+}
+
+for (const phrase of ["今後 `WebLLM準備済み時だけ自動実行する`", "将来の `ContextBuilder`"]) {
+  assertNotIncludes(docs, phrase, paths.docs);
 }
 
 for (const phrase of [

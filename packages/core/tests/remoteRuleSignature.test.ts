@@ -12,6 +12,7 @@ function samplePayload(): RemoteRuleBundlePayload {
     schemaVersion: 1,
     version: "2026.06.17.1",
     generatedAt: "2026-06-17T00:00:00.000Z",
+    expiresAt: "2026-07-17T00:00:00.000Z",
     minExtensionVersion: undefined,
     rules: [
       {
@@ -36,6 +37,7 @@ describe("remoteRuleSignature", () => {
         placeholderPrefix: rule.placeholderPrefix,
         pattern: rule.pattern
       })),
+      expiresAt: payload.expiresAt,
       generatedAt: payload.generatedAt,
       version: payload.version,
       schemaVersion: payload.schemaVersion,

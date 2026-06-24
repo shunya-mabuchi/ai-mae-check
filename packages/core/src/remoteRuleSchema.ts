@@ -20,6 +20,7 @@ export interface RemoteRuleBundlePayload {
   schemaVersion: typeof REMOTE_RULE_BUNDLE_SCHEMA_VERSION;
   version: string;
   generatedAt: string;
+  expiresAt?: string;
   minExtensionVersion?: string;
   rules: RemoteDetectorRuleDefinition[];
 }
@@ -103,6 +104,7 @@ export function validateRemoteRuleBundlePayload(value: unknown): RemoteRuleBundl
   const schemaVersion = value.schemaVersion;
   const version = typeof value.version === "string" ? value.version.trim() : "";
   const generatedAt = typeof value.generatedAt === "string" ? value.generatedAt.trim() : "";
+  const expiresAt = typeof value.expiresAt === "string" ? value.expiresAt.trim() : undefined;
   const minExtensionVersion =
     typeof value.minExtensionVersion === "string" ? value.minExtensionVersion.trim() : undefined;
   const rules = Array.isArray(value.rules)
@@ -113,6 +115,13 @@ export function validateRemoteRuleBundlePayload(value: unknown): RemoteRuleBundl
     return null;
   }
 
+  if (expiresAt) {
+    const expiresAtMs = Date.parse(expiresAt);
+    if (Number.isNaN(expiresAtMs) || expiresAtMs <= Date.parse(generatedAt)) {
+      return null;
+    }
+  }
+
   if (!Array.isArray(value.rules) || rules.length !== value.rules.length || rules.length > 100) {
     return null;
   }
@@ -121,6 +130,7 @@ export function validateRemoteRuleBundlePayload(value: unknown): RemoteRuleBundl
     schemaVersion: REMOTE_RULE_BUNDLE_SCHEMA_VERSION,
     version,
     generatedAt,
+    ...(expiresAt ? { expiresAt } : {}),
     ...(minExtensionVersion ? { minExtensionVersion } : {}),
     rules
   };

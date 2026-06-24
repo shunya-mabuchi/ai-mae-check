@@ -16,6 +16,10 @@ const paths = {
   supportPage: "apps/demo/src/components/SupportPage.tsx"
 };
 
+const internalPolicyPaths = {
+  agents: "AGENTS.md"
+};
+
 const forbiddenOverclaims = ["絶対安全", "100%検出", "すべての情報漏洩を防ぎます", "完全に通信しません"];
 const supportedSites = ["ChatGPT", "Claude", "Gemini", "Perplexity"];
 const forbiddenStalePhrases = [
@@ -54,6 +58,7 @@ function assertNotIncludes(text, needle, context) {
 
 const listing = JSON.parse(read(paths.listing));
 const docs = Object.fromEntries(Object.entries(paths).map(([key, path]) => [key, read(path)]));
+const internalPolicyDocs = Object.fromEntries(Object.entries(internalPolicyPaths).map(([key, path]) => [key, read(path)]));
 
 for (const field of ["name", "homepageUrl", "supportUrl", "privacyPolicyUrl", "shortDescription", "detailedDescription"]) {
   if (typeof listing[field] !== "string" || listing[field].trim().length === 0) {
@@ -67,7 +72,7 @@ for (const [key, text] of Object.entries(docs)) {
   }
 }
 
-for (const [key, text] of Object.entries(docs)) {
+for (const [key, text] of Object.entries({ ...docs, ...internalPolicyDocs })) {
   for (const phrase of forbiddenStalePhrases) {
     assertNotIncludes(text, phrase, key);
   }

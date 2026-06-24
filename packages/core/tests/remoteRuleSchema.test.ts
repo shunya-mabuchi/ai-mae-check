@@ -10,6 +10,7 @@ function validPayload(): RemoteRuleBundlePayload {
     schemaVersion: REMOTE_RULE_BUNDLE_SCHEMA_VERSION,
     version: "2026.06.17.1",
     generatedAt: "2026-06-17T00:00:00.000Z",
+    expiresAt: "2026-07-17T00:00:00.000Z",
     rules: [
       {
         id: "sample_secret",
@@ -35,6 +36,13 @@ describe("remoteRuleSchema", () => {
   it("危険な正規表現flagsを含むルールは拒否する", () => {
     const payload = validPayload();
     payload.rules[0].flags = "gix";
+
+    expect(validateRemoteRuleBundlePayload(payload)).toBeNull();
+  });
+
+  it("generatedAt以前のexpiresAtは拒否する", () => {
+    const payload = validPayload();
+    payload.expiresAt = "2026-06-16T23:59:59.000Z";
 
     expect(validateRemoteRuleBundlePayload(payload)).toBeNull();
   });

@@ -23,6 +23,7 @@ function samplePayload(): RemoteRuleBundlePayload {
     schemaVersion: 1,
     version: "2026.06.16.1",
     generatedAt: "2026-06-16T00:00:00.000Z",
+    expiresAt: "2026-07-16T00:00:00.000Z",
     minExtensionVersion: "0.1.0",
     rules: [
       {
@@ -44,7 +45,7 @@ describe("signed remote rules", () => {
   it("署名付きルールバンドルを検証して追加DetectorRuleとして使える", async () => {
     const { privateJwk, publicJwk } = await createKeyPair();
     const signed = await signRemoteRuleBundle(samplePayload(), privateJwk, keyId);
-    const result = await verifySignedRemoteRuleBundle(signed, publicJwk, { expectedKeyId: keyId });
+    const result = await verifySignedRemoteRuleBundle(signed, publicJwk, { expectedKeyId: keyId, now: () => Date.parse("2026-06-20T00:00:00.000Z") });
 
     expect(result.ok).toBe(true);
     if (!result.ok) {
@@ -105,10 +106,40 @@ describe("signed remote rules", () => {
       }
     };
 
-    await expect(verifySignedRemoteRuleBundle(oldSigned, publicKeys)).resolves.toMatchObject({ ok: true });
-    await expect(verifySignedRemoteRuleBundle(newSigned, publicKeys)).resolves.toMatchObject({ ok: true });
-    await expect(verifySignedRemoteRuleBundle(unknownSigned, publicKeys)).resolves.toMatchObject({ ok: false });
-    await expect(verifySignedRemoteRuleBundle(tampered, publicKeys)).resolves.toMatchObject({ ok: false });
+    const options = { now: () => Date.parse("2026-06-20T00:00:00.000Z") };
+
+    await expect(verifySignedRemoteRuleBundle(oldSigned, publicKeys, options)).resolves.toMatchObject({ ok: true });
+    await expect(verifySignedRemoteRuleBundle(newSigned, publicKeys, options)).resolves.toMatchObject({ ok: true });
+    await expect(verifySignedRemoteRuleBundle(unknownSigned, publicKeys, options)).resolves.toMatchObject({ ok: false });
+    await expect(verifySignedRemoteRuleBundle(tampered, publicKeys, options)).resolves.toMatchObject({ ok: false });
+  });
+
+  it("有効期限切れの署名済みルールは採用しない", async () => {
+    const { privateJwk, publicJwk } = await createKeyPair();
+    const signed = await signRemoteRuleBundle(samplePayload(), privateJwk, keyId);
+    const result = await verifySignedRemoteRuleBundle(signed, publicJwk, {
+      expectedKeyId: keyId,
+      now: () => Date.parse("2026-07-17T00:00:00.000Z")
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      reason: "ルールバンドルの有効期限が切れています"
+    });
+  });
+
+  it("生成日時が未来すぎる署名済みルールは採用しない", async () => {
+    const { privateJwk, publicJwk } = await createKeyPair();
+    const signed = await signRemoteRuleBundle(samplePayload(), privateJwk, keyId);
+    const result = await verifySignedRemoteRuleBundle(signed, publicJwk, {
+      expectedKeyId: keyId,
+      now: () => Date.parse("2026-06-15T00:00:00.000Z")
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      reason: "ルールバンドルの生成日時が未来です"
+    });
   });
 
   it("検証済みルールを渡さなければ同梱ルールだけで検出する", () => {

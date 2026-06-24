@@ -47,6 +47,14 @@ async function verifyBundle(bundle, config) {
     fail("payload shape is invalid");
   }
 
+  if (typeof bundle.payload.expiresAt !== "string" || Number.isNaN(Date.parse(bundle.payload.expiresAt))) {
+    fail("payload expiresAt is missing or invalid");
+  }
+
+  if (Date.parse(bundle.payload.expiresAt) <= Date.now()) {
+    fail("payload expiresAt is already expired");
+  }
+
   const publicKey = await crypto.subtle.importKey(
     "jwk",
     publicKeyEntry.publicJwk,
@@ -92,6 +100,7 @@ console.log(
     endpoint: config.endpoint,
     keyId: bundle.keyId,
     version: bundle.payload.version,
+    expiresAt: bundle.payload.expiresAt,
     ruleCount: bundle.payload.rules.length
   })
 );
