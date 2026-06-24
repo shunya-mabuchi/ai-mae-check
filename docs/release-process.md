@@ -60,7 +60,7 @@ Release本文には次を含めます。
 - 手動確認した対象サイト
 - 署名付きルール配信の状態
 
-0.1.0のRelease下書きは [docs/releases/v0.1.0.md](releases/v0.1.0.md) にあります。
+0.1.0のRelease下書きは [docs/releases/v0.1.0.md](releases/v0.1.0.md) にあります。0.1.1のRelease下書きは [docs/releases/v0.1.1.md](releases/v0.1.1.md) にあります。
 
 ## 0.1.1の扱い
 
