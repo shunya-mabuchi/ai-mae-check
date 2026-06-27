@@ -281,6 +281,17 @@ interface FileAttachmentProbe {
 
 実サイトのログイン、A/Bテスト、DOM更新、利用規約、ネットワーク状態に依存する確認はCIに載せず、手動QAとして記録します。手動QAの記録には、貼り付け本文、送信本文、検出文字列、placeholderMap、現在のページURLを含めません。
 
+## 2026-06-27 実サイト手動QAとの対応
+
+ユーザー手動確認により、ChatGPT / Claude / Gemini / Perplexity の4サイトで、AI文脈チェックの候補取りこぼしを除く基本動作は通過しました。本文、検出文字列、placeholderMap、現在のページURL全文は記録していません。
+
+| 確認観点 | 実サイト手動QA | 自動E2Eでの扱い | 補足 |
+| --- | --- | --- | --- |
+| paste確認モーダル | 4サイトでpass | ローカル模擬composerで継続確認 | 実DOM差分は手動QAで監視する |
+| 送信前確認 | 4サイトでpass | ローカル模擬composerでclick / Enterを継続確認 | サイトごとの送信ボタンDOMは手動QAで監視する |
+| 安全化後の入力反映 | 4サイトでpass | textarea / contenteditable / Lexical / ProseMirror風DOMで継続確認 | React系イベント反映は実サイトでも確認済み |
+| AI文脈チェック候補 | partial | packages/llmのテストで候補補助を拡充 | 人名・社名・案件名・採用/契約/未公開文脈は #455-#459 で補強する |
+
 ## 関連文書
 
 - [実サイトQAチェックリスト](./extension-site-qa.md)

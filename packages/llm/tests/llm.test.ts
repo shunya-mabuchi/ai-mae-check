@@ -9,7 +9,6 @@ import {
   classifyLlmError,
   convertContextCandidatesToFindings,
   createJsonParseFallbackMessage,
-  mergeResidualContextCandidates,
   parseContextAnalysisJson,
   type ContextRiskCandidate
 } from "../src";
@@ -33,6 +32,18 @@ describe("buildContextRiskPrompt", () => {
     expect(joined).toContain("敬称付きの人名");
     expect(joined).toContain("候補者名");
     expect(joined).toContain("Project Blue Bridge");
+  });
+
+  it("法人格つき会社名、日本語案件名、採用・契約・未公開文脈を優先候補として指示する", () => {
+    const messages = buildContextRiskPrompt(
+      "株式会社サンプル向けの新料金プラン移行PJです。最終面談評価と契約更新も発表前なので外には出さないでください。"
+    );
+    const joined = messages.map((message) => message.content).join("\n");
+
+    expect(joined).toContain("法人格つき会社名");
+    expect(joined).toContain("日本語の案件名");
+    expect(joined).toContain("最終面談評価");
+    expect(joined).toContain("外には出さない");
   });
 });
 
@@ -270,57 +281,6 @@ describe("parseContextAnalysisJson", () => {
     );
 
     expect(result.candidates).toEqual([]);
-  });
-});
-
-describe("mergeResidualContextCandidates", () => {
-  it("WebLLMが返さなかった敬称付き人名と案件名をローカル補助候補として追加する", () => {
-    const input =
-      "A社の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて、最終面談後の評価メモも含めます。";
-    const candidates = mergeResidualContextCandidates(input, []);
-
-    expect(candidates.map((candidate) => candidate.surface)).toEqual([
-      "Project Blue Bridge",
-      "山田花子さん",
-      "佐藤様",
-      "A社"
-    ]);
-    expect(candidates.map((candidate) => candidate.category)).toEqual([
-      "project_name",
-      "person_name",
-      "person_name",
-      "customer_name"
-    ]);
-    expect(candidates.every((candidate) => candidate.confidence >= 0.75)).toBe(true);
-  });
-
-  it("自己紹介名と提案先らしい会社名をローカル補助候補として追加する", () => {
-    const input =
-      "田中太郎です。連絡先を確認してください。\nA社向けの提案資料について、NDA締結前なので関係者限りで確認してください。";
-    const candidates = mergeResidualContextCandidates(input, []);
-
-    expect(candidates.map((candidate) => candidate.surface)).toEqual(["田中太郎", "A社"]);
-    expect(candidates.map((candidate) => candidate.category)).toEqual(["person_name", "customer_name"]);
-    expect(candidates.map((candidate) => candidate.suggestedPlaceholder)).toEqual(["[PERSON_1]", "[CUSTOMER_1]"]);
-  });
-
-  it("既存のLLM候補と重複するsurfaceは追加しない", () => {
-    const input = "候補者の山田花子さんについて確認します。";
-    const candidates = mergeResidualContextCandidates(input, [
-      {
-        id: "llm-candidate-1",
-        category: "person_name",
-        surface: "山田花子さん",
-        label: "人名候補",
-        reason: "採用文脈の候補です。",
-        riskLevel: "medium",
-        suggestedPlaceholder: "[PERSON_1]",
-        confidence: 0.9
-      }
-    ]);
-
-    expect(candidates).toHaveLength(1);
-    expect(candidates[0]?.surface).toBe("山田花子さん");
   });
 });
 

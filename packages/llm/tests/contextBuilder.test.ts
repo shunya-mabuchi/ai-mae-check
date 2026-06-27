@@ -49,6 +49,17 @@ describe("ContextBuilder", () => {
     expect(result.reasons).toContain("near_secret");
   });
 
+  it("採用・契約・未公開・法務の文脈語をAI文脈チェックの入口ヒントとして扱う", () => {
+    const result = evaluateContextHint(
+      "最終面談評価と年収条件を内定前に確認します。契約更新は発表前なので外には出さない予定です。社内だけで確認し、法務確認もお願いします。"
+    );
+
+    expect(result.shouldOffer).toBe(true);
+    expect(result.reasons).toContain("near_person_like");
+    expect(result.reasons).toContain("near_confidential_hint");
+    expect(result.reasons).toContain("near_money");
+  });
+
   it("検出箇所の周辺だけを短いwindowに切り出す", () => {
     const input = [
       "これは前置きです。".repeat(40),

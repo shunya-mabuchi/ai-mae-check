@@ -150,7 +150,9 @@ describe("WebGPU事前チェック", () => {
     const result = await analyzer.analyze("候補者の山田花子さんへ Project Blue Bridge の評価メモを送ります。");
 
     expect(result.errorDetail?.kind).toBe("worker");
-    expect(result.candidates.map((candidate) => candidate.surface)).toEqual(["Project Blue Bridge", "山田花子さん"]);
+    expect(result.candidates.map((candidate) => candidate.surface)).toEqual(
+      expect.arrayContaining(["Project Blue Bridge", "山田花子さん"])
+    );
     expect(result.errorDetail?.technicalDetail).not.toContain("山田花子");
   });
 });

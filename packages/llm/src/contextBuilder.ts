@@ -33,7 +33,24 @@ const contextTerms: Array<{ reason: ContextHintReason; score: number; terms: str
   {
     reason: "near_confidential_hint",
     score: 3,
-    terms: ["nda", "confidential", "社外秘", "秘密", "取扱注意", "関係者限り", "未公開", "口外禁止", "正式発表前", "社外共有", "社内だけ", "社内限り"]
+    terms: [
+      "nda",
+      "confidential",
+      "社外秘",
+      "秘密",
+      "取扱注意",
+      "関係者限り",
+      "未公開",
+      "口外禁止",
+      "正式発表前",
+      "発表前",
+      "外には出さない",
+      "社外共有",
+      "社内だけ",
+      "社内限り",
+      "法務",
+      "法務確認"
+    ]
   },
   {
     reason: "near_business_context",
@@ -43,12 +60,12 @@ const contextTerms: Array<{ reason: ContextHintReason; score: number; terms: str
   {
     reason: "near_money",
     score: 2,
-    terms: ["給与", "月額", "年額", "初期費用", "契約金額", "見積金額", "万円", "円"]
+    terms: ["給与", "年収", "年収条件", "月額", "年額", "初期費用", "契約金額", "見積金額", "粗利", "原価", "予算", "単価", "請求条件", "万円", "円"]
   },
   {
     reason: "near_person_like",
     score: 2,
-    terms: ["採用", "候補者", "面談", "評価メモ", "内定"]
+    terms: ["採用", "候補者", "面談", "最終面談評価", "評価メモ", "退職理由", "内定", "内定前"]
   }
 ];
 

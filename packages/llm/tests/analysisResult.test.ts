@@ -44,7 +44,8 @@ describe("createContextAnalysisResultFromRawText", () => {
     expect(result.error).toBeUndefined();
     expect(result.errorDetail?.kind).toBe("json_parse");
     expect(result.summary).toBe("ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。");
-    expect(result.candidates.map((candidate) => candidate.surface)).toEqual(["山田花子さん"]);
+    expect(result.candidates.map((candidate) => candidate.surface)).toEqual(expect.arrayContaining(["山田花子さん"]));
+    expect(result.candidates.some((candidate) => candidate.category === "hr_info")).toBe(true);
   });
 
   it("JSONを読み取れず補助候補もない場合はルールベース継続メッセージにする", () => {
