@@ -1,7 +1,8 @@
-import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createQaContext } from "./lib/qa-helpers.mjs";
 
 const rootDir = resolve(".");
+const qa = createQaContext({ rootDir, errorPrefix: "release policy QA failed" });
 
 const paths = {
   rootPackage: "package.json",
@@ -14,41 +15,25 @@ const paths = {
   readme: "README.md"
 };
 
-function fail(message) {
-  throw new Error(`release policy QA failed: ${message}`);
-}
-
-function read(relativePath) {
-  return readFileSync(resolve(rootDir, relativePath), "utf8");
-}
-
-function assertIncludes(text, needle, context) {
-  if (!text.includes(needle)) {
-    fail(`${context} must include: ${needle}`);
-  }
-}
-
 for (const path of Object.values(paths)) {
-  if (!existsSync(resolve(rootDir, path))) {
-    fail(`${path} is missing`);
-  }
+  qa.assertFileExists(path);
 }
 
-const rootPackage = JSON.parse(read(paths.rootPackage));
-const extensionPackage = JSON.parse(read(paths.extensionPackage));
-const changelog = read(paths.changelog);
-const releaseProcess = read(paths.releaseProcess);
-const chromeStoreRelease = read(paths.chromeStoreRelease);
-const ruleDeliveryPlan = read(paths.ruleDeliveryPlan);
-const releaseDraft011 = read(paths.releaseDraft011);
-const readme = read(paths.readme);
+const rootPackage = qa.readJson(paths.rootPackage);
+const extensionPackage = qa.readJson(paths.extensionPackage);
+const changelog = qa.read(paths.changelog);
+const releaseProcess = qa.read(paths.releaseProcess);
+const chromeStoreRelease = qa.read(paths.chromeStoreRelease);
+const ruleDeliveryPlan = qa.read(paths.ruleDeliveryPlan);
+const releaseDraft011 = qa.read(paths.releaseDraft011);
+const readme = qa.read(paths.readme);
 
 if (rootPackage.version !== extensionPackage.version) {
-  fail(`root package version (${rootPackage.version}) must match extension version (${extensionPackage.version})`);
+  qa.fail(`root package version (${rootPackage.version}) must match extension version (${extensionPackage.version})`);
 }
 
 for (const text of [changelog, releaseProcess, ruleDeliveryPlan]) {
-  assertIncludes(text, rootPackage.version, "release docs");
+  qa.assertIncludes(text, rootPackage.version, "release docs");
 }
 
 for (const command of [
@@ -68,18 +53,18 @@ for (const command of [
   "pnpm qa:extension:manifest",
   "pnpm qa:chrome-store"
 ]) {
-  assertIncludes(releaseProcess, command, paths.releaseProcess);
+  qa.assertIncludes(releaseProcess, command, paths.releaseProcess);
 }
 
 for (const phrase of ["残Issueをすべて解消", "ZIPを先にアップロードしません", "GitHub Release", "Chrome Web Store"]) {
-  assertIncludes(releaseProcess, phrase, paths.releaseProcess);
+  qa.assertIncludes(releaseProcess, phrase, paths.releaseProcess);
 }
 
-assertIncludes(changelog, "## Unreleased", paths.changelog);
-assertIncludes(changelog, "## 0.1.0 - 2026-06-20", paths.changelog);
-assertIncludes(chromeStoreRelease, "pnpm qa:extension:size", paths.chromeStoreRelease);
-assertIncludes(ruleDeliveryPlan, "残Issueをすべて解消", paths.ruleDeliveryPlan);
-assertIncludes(readme, "CHANGELOG.md", paths.readme);
+qa.assertIncludes(changelog, "## Unreleased", paths.changelog);
+qa.assertIncludes(changelog, "## 0.1.0 - 2026-06-20", paths.changelog);
+qa.assertIncludes(chromeStoreRelease, "pnpm qa:extension:size", paths.chromeStoreRelease);
+qa.assertIncludes(ruleDeliveryPlan, "残Issueをすべて解消", paths.ruleDeliveryPlan);
+qa.assertIncludes(readme, "CHANGELOG.md", paths.readme);
 
 for (const phrase of [
   "2026-06-27",
@@ -87,8 +72,8 @@ for (const phrase of [
   "1111C923375284F978C01D1925D1BF857275EBB44F48EAFF9BCD9BC2A271471C",
   "Chrome Web Store Developer Dashboardへ手動アップロード"
 ]) {
-  assertIncludes(chromeStoreRelease, phrase, paths.chromeStoreRelease);
-  assertIncludes(releaseDraft011, phrase, paths.releaseDraft011);
+  qa.assertIncludes(chromeStoreRelease, phrase, paths.chromeStoreRelease);
+  qa.assertIncludes(releaseDraft011, phrase, paths.releaseDraft011);
 }
 
 console.log("release policy QA passed");
