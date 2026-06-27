@@ -14,8 +14,25 @@ export function createQaContext({ rootDir = resolve("."), errorPrefix }) {
     return JSON.parse(read(relativePath));
   }
 
+  function lineCount(relativePath) {
+    return read(relativePath).split(/\r?\n/u).length;
+  }
+
+  function createLineBudgetFinding({ file, maxLines, splitBy, message }) {
+    const lines = lineCount(file);
+    if (lines <= maxLines) {
+      return null;
+    }
+
+    return message({ file, lines, maxLines, splitBy });
+  }
+
+  function fileExists(relativePath) {
+    return existsSync(resolve(rootDir, relativePath));
+  }
+
   function assertFileExists(relativePath) {
-    if (!existsSync(resolve(rootDir, relativePath))) {
+    if (!fileExists(relativePath)) {
       fail(`${relativePath} is missing`);
     }
   }
@@ -36,7 +53,10 @@ export function createQaContext({ rootDir = resolve("."), errorPrefix }) {
     assertFileExists,
     assertIncludes,
     assertNotIncludes,
+    createLineBudgetFinding,
     fail,
+    fileExists,
+    lineCount,
     read,
     readJson,
     rootDir

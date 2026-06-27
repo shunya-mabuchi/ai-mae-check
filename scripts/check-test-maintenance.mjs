@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createQaContext } from "./lib/qa-helpers.mjs";
 
 const rootDir = resolve(".");
+const qa = createQaContext({ rootDir, errorPrefix: "Test maintenance QA failed" });
 
 const trackedLargeTests = [
   {
@@ -26,26 +27,20 @@ const trackedLargeTests = [
   }
 ];
 
-function read(relativePath) {
-  return readFileSync(resolve(rootDir, relativePath), "utf8");
-}
-
-function lineCount(relativePath) {
-  return read(relativePath).split(/\r?\n/u).length;
-}
-
 const findings = [];
 
 for (const target of trackedLargeTests) {
-  const lines = lineCount(target.file);
-  if (lines > target.maxLines) {
-    findings.push(
-      `${target.file} is ${lines} lines; split by ${target.splitBy} before raising the ${target.maxLines} line budget`
-    );
+  const finding = qa.createLineBudgetFinding({
+    ...target,
+    message: ({ file, lines, maxLines, splitBy }) =>
+      `${file} is ${lines} lines; split by ${splitBy} before raising the ${maxLines} line budget`
+  });
+  if (finding) {
+    findings.push(finding);
   }
 }
 
-const docs = read("docs/test-maintenance.md");
+const docs = qa.read("docs/test-maintenance.md");
 for (const target of trackedLargeTests) {
   if (!docs.includes(target.file) || !docs.includes(String(target.maxLines))) {
     findings.push(`docs/test-maintenance.md must mention ${target.file} and its ${target.maxLines} line budget`);
@@ -56,7 +51,7 @@ if (!docs.includes("シナリオ単位に分割する") || !docs.includes("今�
   findings.push("docs/test-maintenance.md must explain the scenario-based split policy and current no-split decision");
 }
 
-const ci = read(".github/workflows/ci.yml");
+const ci = qa.read(".github/workflows/ci.yml");
 if (!ci.includes("pnpm qa:test-maintenance")) {
   findings.push(".github/workflows/ci.yml must run pnpm qa:test-maintenance");
 }

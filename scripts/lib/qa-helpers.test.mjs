@@ -32,4 +32,30 @@ describe("qa-helpers", () => {
       "公開文書QA failed: README must not include overclaim: abc"
     );
   });
+
+  it("行数を数え、行数予算超過の説明を組み立てられる", () => {
+    const dir = mkdtempSync(join(tmpdir(), "ai-mae-check-qa-"));
+
+    try {
+      mkdirSync(join(dir, "scripts"));
+      writeFileSync(join(dir, "scripts", "sample.mjs"), "line1\nline2\nline3", "utf8");
+
+      const qa = createQaContext({ rootDir: dir, errorPrefix: "保守QA failed" });
+
+      expect(qa.fileExists("scripts/sample.mjs")).toBe(true);
+      expect(qa.fileExists("scripts/missing.mjs")).toBe(false);
+      expect(qa.lineCount("scripts/sample.mjs")).toBe(3);
+      expect(
+        qa.createLineBudgetFinding({
+          file: "scripts/sample.mjs",
+          maxLines: 2,
+          splitBy: "reader / checker",
+          message: ({ file, lines, maxLines, splitBy }) =>
+            `${file} は ${lines} 行です。${splitBy} で分割してから ${maxLines} 行の予算を見直してください`
+        })
+      ).toBe("scripts/sample.mjs は 3 行です。reader / checker で分割してから 2 行の予算を見直してください");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

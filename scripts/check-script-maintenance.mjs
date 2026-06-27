@@ -1,7 +1,8 @@
-import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createQaContext } from "./lib/qa-helpers.mjs";
 
 const rootDir = resolve(".");
+const qa = createQaContext({ rootDir, errorPrefix: "Script maintenance QA failed" });
 
 const trackedScripts = [
   {
@@ -21,31 +22,27 @@ const trackedScripts = [
   }
 ];
 
-function read(relativePath) {
-  return readFileSync(resolve(rootDir, relativePath), "utf8");
-}
-
-function lineCount(relativePath) {
-  return read(relativePath).split(/\r?\n/u).length;
-}
-
 const findings = [];
 
-if (!existsSync(resolve(rootDir, "docs/script-maintenance.md"))) {
+if (!qa.fileExists("docs/script-maintenance.md")) {
   findings.push("docs/script-maintenance.md がありません");
 }
 
-const docs = read("docs/script-maintenance.md");
+const docs = qa.read("docs/script-maintenance.md");
 
 for (const target of trackedScripts) {
-  if (!existsSync(resolve(rootDir, target.file))) {
+  if (!qa.fileExists(target.file)) {
     findings.push(`${target.file} がありません`);
     continue;
   }
 
-  const lines = lineCount(target.file);
-  if (lines > target.maxLines) {
-    findings.push(`${target.file} は ${lines} 行です。${target.splitBy} の単位で分割してから ${target.maxLines} 行の予算を見直してください`);
+  const finding = qa.createLineBudgetFinding({
+    ...target,
+    message: ({ file, lines, maxLines, splitBy }) =>
+      `${file} は ${lines} 行です。${splitBy} の単位で分割してから ${maxLines} 行の予算を見直してください`
+  });
+  if (finding) {
+    findings.push(finding);
   }
 
   if (!docs.includes(target.file) || !docs.includes(String(target.maxLines)) || !docs.includes(target.splitBy)) {
