@@ -52,6 +52,39 @@ describe("pasteReviewSelection", () => {
     expect(findings.every((finding) => finding.text !== "存在しない候補")).toBe(true);
   });
 
+  it("AI文脈チェック後の自己紹介名と会社名候補を安全化対象Findingに変換する", () => {
+    const input =
+      "田中太郎です。連絡先を確認してください。\nA社向けの提案資料について、NDA締結前なので関係者限りで確認してください。";
+    const candidates = [
+      buildContextRiskCandidate({
+        id: "person",
+        category: "person_name",
+        surface: "田中太郎",
+        suggestedPlaceholder: "[PERSON_1]",
+        confidence: 0.86
+      }),
+      buildContextRiskCandidate({
+        id: "customer",
+        category: "customer_name",
+        surface: "A社",
+        suggestedPlaceholder: "[CUSTOMER_1]",
+        confidence: 0.8
+      })
+    ];
+    const selectedCandidateIds = createInitialSelectedCandidateIds(candidates);
+
+    const findings = resolvePasteReviewFindings({
+      input,
+      ruleFindings: [],
+      selectedRuleFindingIds: new Set(),
+      candidates,
+      selectedCandidateIds
+    });
+
+    expect(findings.map((finding) => finding.text)).toEqual(["田中太郎", "A社"]);
+    expect(findings.map((finding) => finding.placeholder)).toEqual(["[PERSON_1]", "[CUSTOMER_1]"]);
+  });
+
   it("チェック状態に応じて選択済みID Setを更新する", () => {
     const selectedIds = new Set(["email", "phone"]);
 

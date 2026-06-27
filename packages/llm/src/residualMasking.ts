@@ -4,8 +4,8 @@ import type { ContextRiskCandidate, ContextRiskCategory } from "./types";
 
 export interface ResidualContextTerm {
   surface: string;
-  prefix: "PERSON" | "PROJECT";
-  category: Extract<ContextRiskCategory, "person_name" | "project_name">;
+  prefix: "PERSON" | "CUSTOMER" | "PROJECT";
+  category: Extract<ContextRiskCategory, "person_name" | "customer_name" | "project_name">;
   label: string;
   reason: string;
   riskLevel: RiskLevel;
@@ -13,6 +13,8 @@ export interface ResidualContextTerm {
 }
 
 const honorificNamePattern = /[\p{Script=Han}々〆ヵヶ]{1,6}(?:様|さん|氏|先生|くん|ちゃん)/gu;
+const selfIntroductionNamePattern = /(?:^|[\n。！？])([\p{Script=Han}々〆ヵヶ]{2,6})です(?:。|、|\s|$)/gu;
+const customerCompanyPattern = /[A-ZＡ-Ｚ][A-ZＡ-Ｚ0-9０-９]{0,3}社(?=向け|宛て|への|へ|との|には|に|の)/gu;
 const projectNamePattern = /\bProject\s+[A-Z][A-Za-z0-9-]*(?:\s+[A-Z][A-Za-z0-9-]*){1,5}\b/g;
 
 function personTerm(surface: string): ResidualContextTerm {
@@ -24,6 +26,18 @@ function personTerm(surface: string): ResidualContextTerm {
     reason: "敬称つきの個人名らしい表現です。外部に送る前に確認したい候補です。",
     riskLevel: "medium",
     confidence: 0.86
+  };
+}
+
+function customerTerm(surface: string): ResidualContextTerm {
+  return {
+    surface,
+    prefix: "CUSTOMER",
+    category: "customer_name",
+    label: "顧客名・会社名候補",
+    reason: "提案先や顧客名らしい表現です。外部に送る前に確認したい候補です。",
+    riskLevel: "medium",
+    confidence: 0.8
   };
 }
 
@@ -73,6 +87,17 @@ export function extractResidualContextTerms(input: string): ResidualContextTerm[
     terms.push(personTerm(match[0]));
   }
 
+  for (const match of input.matchAll(selfIntroductionNamePattern)) {
+    const surface = match[1];
+    if (surface) {
+      terms.push(personTerm(surface));
+    }
+  }
+
+  for (const match of input.matchAll(customerCompanyPattern)) {
+    terms.push(customerTerm(match[0]));
+  }
+
   for (const match of input.matchAll(projectNamePattern)) {
     terms.push(projectTerm(match[0]));
   }
@@ -90,7 +115,14 @@ export function mergeResidualContextCandidates(
   const counters = new Map<ResidualContextTerm["prefix"], number>();
 
   for (const candidate of candidates) {
-    const prefix = candidate.category === "person_name" ? "PERSON" : candidate.category === "project_name" ? "PROJECT" : null;
+    const prefix =
+      candidate.category === "person_name"
+        ? "PERSON"
+        : candidate.category === "customer_name"
+          ? "CUSTOMER"
+          : candidate.category === "project_name"
+            ? "PROJECT"
+            : null;
     if (prefix) {
       counters.set(prefix, (counters.get(prefix) ?? 0) + 1);
     }

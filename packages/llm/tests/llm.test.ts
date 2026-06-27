@@ -279,9 +279,29 @@ describe("mergeResidualContextCandidates", () => {
       "A社の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて、最終面談後の評価メモも含めます。";
     const candidates = mergeResidualContextCandidates(input, []);
 
-    expect(candidates.map((candidate) => candidate.surface)).toEqual(["Project Blue Bridge", "山田花子さん", "佐藤様"]);
-    expect(candidates.map((candidate) => candidate.category)).toEqual(["project_name", "person_name", "person_name"]);
+    expect(candidates.map((candidate) => candidate.surface)).toEqual([
+      "Project Blue Bridge",
+      "山田花子さん",
+      "佐藤様",
+      "A社"
+    ]);
+    expect(candidates.map((candidate) => candidate.category)).toEqual([
+      "project_name",
+      "person_name",
+      "person_name",
+      "customer_name"
+    ]);
     expect(candidates.every((candidate) => candidate.confidence >= 0.75)).toBe(true);
+  });
+
+  it("自己紹介名と提案先らしい会社名をローカル補助候補として追加する", () => {
+    const input =
+      "田中太郎です。連絡先を確認してください。\nA社向けの提案資料について、NDA締結前なので関係者限りで確認してください。";
+    const candidates = mergeResidualContextCandidates(input, []);
+
+    expect(candidates.map((candidate) => candidate.surface)).toEqual(["田中太郎", "A社"]);
+    expect(candidates.map((candidate) => candidate.category)).toEqual(["person_name", "customer_name"]);
+    expect(candidates.map((candidate) => candidate.suggestedPlaceholder)).toEqual(["[PERSON_1]", "[CUSTOMER_1]"]);
   });
 
   it("既存のLLM候補と重複するsurfaceは追加しない", () => {
