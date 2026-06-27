@@ -89,6 +89,7 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
     });
 
     let llmCandidates: ContextRiskCandidate[] = [];
+    let llmEmptyCandidateMessageVisible = false;
     let llmHasStarted = false;
     let llmRunning = false;
     const selectedRuleFindingIds = createInitialSelectedFindingIds(options.detection.findings);
@@ -112,7 +113,9 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
       const findings = currentFindings();
       renderReviewFindingList(list, options.detection.findings, selectedRuleFindingIds, renderAfterSelectionChange);
       preview.textContent = createPasteReviewPreviewText(options.inputText, findings);
-      renderReviewCandidateList(candidateList, llmCandidates, selectedCandidateIds, renderAfterSelectionChange);
+      renderReviewCandidateList(candidateList, llmCandidates, selectedCandidateIds, renderAfterSelectionChange, {
+        showEmptyMessage: llmEmptyCandidateMessageVisible
+      });
       const footerState = createPasteReviewFooterState({
         mode,
         selectedFindingCount: findings.length,
@@ -144,6 +147,9 @@ export async function showPasteReviewModal(options: PasteReviewModalOptions): Pr
           selectedCandidateIds,
           setCandidates: (candidates) => {
             llmCandidates = candidates;
+          },
+          setEmptyCandidateMessageVisible: (visible) => {
+            llmEmptyCandidateMessageVisible = visible;
           },
           render
         });

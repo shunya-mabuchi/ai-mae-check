@@ -101,4 +101,15 @@ describe("pasteReviewListRenderers", () => {
 
     expect(joinedText(container)).toContain("AI文脈チェックの追加候補はありません。");
   });
+
+  it("AI文脈チェック未実行時は候補が空でも空状態を描画しない", () => {
+    stubFakeDocument();
+    const container = new FakeElement("div");
+
+    renderReviewCandidateList(asDomElement<HTMLElement>(container), [], new Set(), vi.fn(), {
+      showEmptyMessage: false
+    });
+
+    expect(joinedText(container)).not.toContain("AI文脈チェックの追加候補はありません。");
+  });
 });

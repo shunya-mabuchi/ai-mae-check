@@ -14,6 +14,7 @@ export interface PasteReviewLlmResultState {
   candidates: ContextRiskCandidate[];
   selectedCandidateIds: string[];
   statusMessage: string;
+  emptyCandidateMessageVisible: boolean;
 }
 
 export const PASTE_REVIEW_LLM_INITIAL_MESSAGE = "AI文脈チェックは手動で実行できます。";
@@ -43,7 +44,8 @@ export function createPasteReviewLlmResultState(
   return {
     candidates: result.candidates,
     selectedCandidateIds: selectContextCandidateIdsByConfidence(result.candidates),
-    statusMessage: createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail)
+    statusMessage: createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail),
+    emptyCandidateMessageVisible: result.candidates.length === 0 && result.errorDetail?.kind !== "json_parse"
   };
 }
 

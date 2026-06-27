@@ -3,6 +3,16 @@ import { createPasteReviewCandidateListView } from "../src/lib/pasteReviewCandid
 import { buildContextRiskCandidate } from "./testBuilders";
 
 describe("createPasteReviewCandidateListView", () => {
+  it("AI文脈チェック未実行時は候補が空でも空状態メッセージを返さない", () => {
+    const view = createPasteReviewCandidateListView([], new Set(), {
+      showEmptyMessage: false
+    });
+
+    expect(view).toEqual({
+      items: []
+    });
+  });
+
   it("候補がない場合は空状態メッセージを返す", () => {
     const view = createPasteReviewCandidateListView([], new Set());
 

@@ -34,16 +34,18 @@ export interface RunReviewLlmOptions {
   llmButton: HTMLButtonElement;
   selectedCandidateIds: Set<string>;
   setCandidates: (candidates: ContextRiskCandidate[]) => void;
+  setEmptyCandidateMessageVisible?: (visible: boolean) => void;
   render: () => void;
   analyze?: AnalyzeReviewContext;
 }
 
 function applyReviewLlmResult(
-  options: Pick<RunReviewLlmOptions, "selectedCandidateIds" | "setCandidates" | "render">,
+  options: Pick<RunReviewLlmOptions, "selectedCandidateIds" | "setCandidates" | "setEmptyCandidateMessageVisible" | "render">,
   result: Pick<ContextAnalysisResult, "candidates" | "summary" | "errorDetail">
 ): ReturnType<typeof createPasteReviewLlmResultState> {
   const resultState = createPasteReviewLlmResultState(result);
   options.setCandidates(resultState.candidates);
+  options.setEmptyCandidateMessageVisible?.(resultState.emptyCandidateMessageVisible);
   options.selectedCandidateIds.clear();
   for (const candidateId of resultState.selectedCandidateIds) {
     options.selectedCandidateIds.add(candidateId);
@@ -61,6 +63,10 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
   const analyze = options.analyze ?? analyzeContextWithBridge;
   options.llmButton.setAttribute("disabled", "true");
   options.llmStatus.textContent = PASTE_REVIEW_LLM_LOADING_MESSAGE;
+  if (options.setEmptyCandidateMessageVisible) {
+    options.setEmptyCandidateMessageVisible(false);
+    options.render();
+  }
 
   try {
     const result = await analyze(options.inputText, {

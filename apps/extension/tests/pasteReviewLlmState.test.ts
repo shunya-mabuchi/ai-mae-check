@@ -95,6 +95,16 @@ describe("pasteReviewLlmState", () => {
     expect(result.statusMessage).toBe("AI文脈チェックで注意候補が見つかりました。");
     expect(result.candidates.map((candidate) => candidate.id)).toEqual(["high-confidence", "low-confidence"]);
     expect(result.selectedCandidateIds).toEqual(["high-confidence"]);
+    expect(result.emptyCandidateMessageVisible).toBe(false);
+  });
+
+  it("AI文脈チェックが正常完了して候補0件なら空候補メッセージを表示可能にする", () => {
+    const result = createPasteReviewLlmResultState({
+      candidates: [],
+      summary: "追加候補はありません。"
+    });
+
+    expect(result.emptyCandidateMessageVisible).toBe(true);
   });
 
   it("AI文脈チェック結果状態でもjson_parseは非致命メッセージを維持する", () => {
@@ -107,7 +117,8 @@ describe("pasteReviewLlmState", () => {
     expect(result).toEqual({
       candidates: [],
       selectedCandidateIds: [],
-      statusMessage: "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
+      statusMessage: "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。",
+      emptyCandidateMessageVisible: false
     });
   });
 

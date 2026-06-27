@@ -145,6 +145,37 @@ describe("runReviewLlm", () => {
     expect(render).not.toHaveBeenCalled();
   });
 
+  it("実行開始時に前回の空候補メッセージを隠して再描画する", async () => {
+    const analyze = vi.fn(async (): Promise<ContextAnalysisResult> => ({
+      candidates: [],
+      summary: "追加候補はありません。",
+      rawText: "",
+      modelId: "test-model",
+      elapsedMs: 10
+    }));
+    const llmStatus = { textContent: "" };
+    const llmButton = new FakeButton();
+    const setEmptyCandidateMessageVisible = vi.fn();
+    const render = vi.fn();
+
+    await runReviewLlm({
+      enabled: true,
+      inputText: "テスト",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      existingFindings: [],
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(llmButton),
+      selectedCandidateIds: new Set(),
+      setCandidates: vi.fn(),
+      setEmptyCandidateMessageVisible,
+      render,
+      analyze
+    });
+
+    expect(setEmptyCandidateMessageVisible.mock.calls[0]).toEqual([false]);
+    expect(render).toHaveBeenCalledTimes(2);
+  });
+
   it("JSON読み取り失敗の非致命結果は診断メモではなく続行メッセージとして表示する", async () => {
     const result: ContextAnalysisResult = {
       candidates: [

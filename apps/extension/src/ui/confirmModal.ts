@@ -47,6 +47,7 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
     const selectedFindingIds = new Set(options.detection.findings.map((finding) => finding.id));
     const selectedCandidateIds = new Set<string>();
     let llmCandidates: ContextRiskCandidate[] = [];
+    let llmEmptyCandidateMessageVisible = false;
     let llmHasStarted = false;
     let llmRunning = false;
     const mode: TransformMode = options.defaultMode ?? "generalize";
@@ -133,6 +134,8 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
       renderConfirmModalCandidateList(elements.candidateList, llmCandidates, selectedCandidateIds, () => {
         renderPreview();
         renderCandidates();
+      }, {
+        showEmptyMessage: llmEmptyCandidateMessageVisible
       });
     };
 
@@ -177,6 +180,9 @@ export async function showSendConfirmModal(options: SendConfirmModalOptions): Pr
           selectedCandidateIds,
           setCandidates: (candidates) => {
             llmCandidates = candidates;
+          },
+          setEmptyCandidateMessageVisible: (visible) => {
+            llmEmptyCandidateMessageVisible = visible;
           },
           render: renderAfterLlm
         });

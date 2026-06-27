@@ -5,6 +5,10 @@ import { createPasteReviewCandidateListView } from "./pasteReviewCandidateListVi
 import { createPasteReviewFindingListView } from "./pasteReviewFindingListView";
 import { handleReviewSelectionToggle } from "./reviewSelection";
 
+export interface RenderReviewCandidateListOptions {
+  showEmptyMessage?: boolean;
+}
+
 export function renderReviewFindingList(
   container: HTMLElement,
   findings: Finding[],
@@ -52,10 +56,11 @@ export function renderReviewCandidateList(
   container: HTMLElement,
   candidates: ContextRiskCandidate[],
   selectedCandidateIds: Set<string>,
-  onChange: () => void
+  onChange: () => void,
+  options: RenderReviewCandidateListOptions = {}
 ): void {
   container.replaceChildren();
-  const listView = createPasteReviewCandidateListView(candidates, selectedCandidateIds);
+  const listView = createPasteReviewCandidateListView(candidates, selectedCandidateIds, options);
   if (listView.emptyMessage) {
     container.append(createElement("p", "review-message", listView.emptyMessage));
     return;

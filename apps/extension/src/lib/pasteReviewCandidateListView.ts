@@ -20,11 +20,21 @@ export interface PasteReviewCandidateListItemView extends PasteReviewSelectableL
 
 export type PasteReviewCandidateListView = PasteReviewSelectableListView<PasteReviewCandidateListItemView>;
 
+export interface PasteReviewCandidateListViewOptions {
+  showEmptyMessage?: boolean;
+}
+
 export function createPasteReviewCandidateListView(
   candidates: ContextRiskCandidate[],
-  selectedCandidateIds: Set<string>
+  selectedCandidateIds: Set<string>,
+  options: PasteReviewCandidateListViewOptions = {}
 ): PasteReviewCandidateListView {
   if (candidates.length === 0) {
+    if (options.showEmptyMessage === false) {
+      return {
+        items: []
+      };
+    }
     return createPasteReviewEmptySelectableListView(PASTE_REVIEW_CANDIDATE_EMPTY_MESSAGE);
   }
 
