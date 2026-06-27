@@ -15,6 +15,8 @@ const paths = {
   privacyPage: "apps/demo/src/components/PrivacyPolicyPage.tsx",
   supportPage: "apps/demo/src/components/SupportPage.tsx",
   fileInspectionRoadmap: "docs/file-inspection-roadmap.md",
+  extensionSiteQa: "docs/extension-site-qa.md",
+  siteAdapterContract: "docs/site-adapter-contract.md",
   scriptMaintenance: "docs/script-maintenance.md"
 };
 
@@ -49,6 +51,15 @@ const fileInspectionCandidateClaims = [
   "5秒以上",
   "進捗表示",
   "キャンセル"
+];
+const perplexityDecisionClaims = [
+  "Perplexity",
+  "0.1.xで有効",
+  "paste確認",
+  "送信前確認",
+  "安全化後の入力反映",
+  "0.2系では添付経路",
+  "<all_urls>"
 ];
 const scriptMaintenanceClaims = ["QA/生成スクリプト", "pnpm qa:script-maintenance", "ユーザー本文"];
 
@@ -140,6 +151,12 @@ for (const claim of ocrDecisionClaims) {
 
 for (const claim of fileInspectionCandidateClaims) {
   assertIncludes(docs.fileInspectionRoadmap, claim, "fileInspectionRoadmap");
+}
+
+for (const claim of perplexityDecisionClaims) {
+  for (const requiredDoc of ["extensionSiteQa", "siteAdapterContract"]) {
+    assertIncludes(docs[requiredDoc], claim, requiredDoc);
+  }
 }
 
 for (const claim of scriptMaintenanceClaims) {
