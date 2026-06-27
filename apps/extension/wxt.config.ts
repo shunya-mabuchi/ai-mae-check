@@ -57,7 +57,14 @@ export default defineConfig({
     },
     web_accessible_resources: [
       {
-        resources: ["llm-worker.js", "llm-bridge.html"],
+        resources: [
+          "llm-worker.js",
+          "llm-bridge.html",
+          "icon/16.png",
+          "icon/32.png",
+          "icon/48.png",
+          "icon/128.png"
+        ],
         matches: manifestMatches
       }
     ],

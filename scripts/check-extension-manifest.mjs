@@ -75,6 +75,12 @@ if (!bridgeResource) {
   fail("web_accessible_resources must expose llm-worker.js and llm-bridge.html for WebLLM bridge");
 }
 
+for (const iconResource of ["icon/16.png", "icon/32.png", "icon/48.png", "icon/128.png"]) {
+  if (!bridgeResource.resources.includes(iconResource)) {
+    fail(`web_accessible_resources must expose ${iconResource} for Content Script modal icons`);
+  }
+}
+
 assertNoUnexpectedHosts(bridgeResource.matches ?? []);
 if (!sameMembers(bridgeResource.matches ?? [], expectedTargetMatches)) {
   fail(`WebLLM bridge matches mismatch. actual=${JSON.stringify(bridgeResource.matches ?? [])}`);
