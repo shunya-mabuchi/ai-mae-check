@@ -62,15 +62,19 @@ export function createSharedModalCss(options: SharedModalCssOptions): string {
   }
   .${prefix}-brand-mark {
     display: inline-grid;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     place-items: center;
-    border: 1px solid ${colors.accentBorder};
+    overflow: hidden;
     border-radius: ${radius.content};
-    background: ${colors.accentSoft};
-    color: ${colors.accent};
-    font-size: 12px;
-    font-weight: 900;
+    background: transparent;
+    box-shadow: 0 8px 18px rgba(15, 159, 105, 0.18);
+  }
+  .${prefix}-brand-mark-image {
+    display: block;
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
   }
   .${prefix}-brand-name {
     margin: 0;

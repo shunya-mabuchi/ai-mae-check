@@ -1,4 +1,5 @@
 import { createElement } from "./domElement";
+import { createBrandIcon } from "./brandIcon";
 import type { PasteReviewModalCopy } from "./pasteReviewModalCopy";
 import type { PasteReviewSummaryItem } from "./pasteReviewSummaryView";
 
@@ -70,7 +71,7 @@ export function createPasteReviewModalElements(
   const header = createElement("header", "hm-header");
   const headerTop = createElement("div", "hm-header-top");
   const brand = createElement("div", "hm-brand");
-  brand.append(createElement("span", "hm-brand-mark", "AI"));
+  brand.append(createBrandIcon("hm-brand-mark"));
   brand.append(createElement("h2", "hm-brand-name", "AIまえチェック"));
   const modeBadge = createElement("span", "hm-mode-badge", "貼り付け前チェック");
   headerTop.append(brand, modeBadge, createHeaderRiskBadge(options.summaryItems));

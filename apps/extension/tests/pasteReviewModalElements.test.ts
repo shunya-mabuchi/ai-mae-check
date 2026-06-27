@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PasteReviewSummaryItem } from "../src/lib/pasteReviewSummaryView";
 import { createPasteReviewModalElements } from "../src/lib/pasteReviewModalElements";
-import { asDomElement, FakeElement, joinedText, stubFakeDocument } from "./helpers/fakeDom";
+import { allElements, asDomElement, FakeElement, joinedText, stubFakeDocument } from "./helpers/fakeDom";
 
 const summaryItems: PasteReviewSummaryItem[] = [
   {
@@ -67,5 +67,12 @@ describe("createPasteReviewModalElements", () => {
     expect(text).toContain("重大リスク件数\n1");
     expect(text).toContain("ブラウザ内で実行");
     expect(text).toContain("AI文脈チェックは手動で実行できます。");
+
+    const brandMark = allElements(asDomElement<FakeElement>(elements.overlay)).find(
+      (element) => element.className === "hm-brand-mark"
+    );
+    expect(brandMark?.textContent).toBe("");
+    expect(brandMark?.children[0]?.tagName).toBe("img");
+    expect(brandMark?.children[0]?.className).toBe("hm-brand-mark-image");
   });
 });

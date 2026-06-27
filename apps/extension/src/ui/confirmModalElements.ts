@@ -1,4 +1,5 @@
 import { createElement } from "../lib/domElement";
+import { createBrandIcon } from "../lib/brandIcon";
 
 export interface ConfirmModalSummaryItem {
   label: string;
@@ -56,7 +57,7 @@ export function createConfirmModalElements(options: CreateConfirmModalElementsOp
   const header = createElement("header", "amc-header");
   const headerTop = createElement("div", "amc-header-top");
   const brand = createElement("div", "amc-brand");
-  brand.append(createElement("span", "amc-brand-mark", "AI"));
+  brand.append(createBrandIcon("amc-brand-mark"));
   brand.append(createElement("h2", "amc-brand-name", "AIまえチェック"));
   const decision = options.summaryItems[0]?.value ?? "確認";
   headerTop.append(
