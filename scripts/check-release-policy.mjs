@@ -10,6 +10,7 @@ const paths = {
   releaseProcess: "docs/release-process.md",
   chromeStoreRelease: "docs/chrome-web-store-release.md",
   ruleDeliveryPlan: "docs/release-0.1.1-rule-delivery-plan.md",
+  releaseDraft011: "docs/releases/v0.1.1.md",
   readme: "README.md"
 };
 
@@ -39,6 +40,7 @@ const changelog = read(paths.changelog);
 const releaseProcess = read(paths.releaseProcess);
 const chromeStoreRelease = read(paths.chromeStoreRelease);
 const ruleDeliveryPlan = read(paths.ruleDeliveryPlan);
+const releaseDraft011 = read(paths.releaseDraft011);
 const readme = read(paths.readme);
 
 if (rootPackage.version !== extensionPackage.version) {
@@ -78,5 +80,15 @@ assertIncludes(changelog, "## 0.1.0 - 2026-06-20", paths.changelog);
 assertIncludes(chromeStoreRelease, "pnpm qa:extension:size", paths.chromeStoreRelease);
 assertIncludes(ruleDeliveryPlan, "残Issueをすべて解消", paths.ruleDeliveryPlan);
 assertIncludes(readme, "CHANGELOG.md", paths.readme);
+
+for (const phrase of [
+  "2026-06-27",
+  "8.37 MB",
+  "1111C923375284F978C01D1925D1BF857275EBB44F48EAFF9BCD9BC2A271471C",
+  "Chrome Web Store Developer Dashboardへ手動アップロード"
+]) {
+  assertIncludes(chromeStoreRelease, phrase, paths.chromeStoreRelease);
+  assertIncludes(releaseDraft011, phrase, paths.releaseDraft011);
+}
 
 console.log("release policy QA passed");
