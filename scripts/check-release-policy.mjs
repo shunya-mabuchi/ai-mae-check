@@ -69,7 +69,7 @@ qa.assertIncludes(readme, "CHANGELOG.md", paths.readme);
 for (const phrase of [
   "2026-06-27",
   "8.37 MB",
-  "1111C923375284F978C01D1925D1BF857275EBB44F48EAFF9BCD9BC2A271471C",
+  "6F74A9C2312413F15B58D66D9B95796BF654368AE8A53FF5D17B4D1A7790B42F",
   "Chrome Web Store Developer Dashboardへ手動アップロード"
 ]) {
   qa.assertIncludes(chromeStoreRelease, phrase, paths.chromeStoreRelease);
