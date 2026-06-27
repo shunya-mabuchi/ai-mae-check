@@ -38,6 +38,18 @@ const privacyClaims = [
   "情報漏洩を完全に防ぐものではありません"
 ];
 const ocrDecisionClaims = ["画像OCR", "現時点では実装しない判断", "安全判定済みとは扱いません"];
+const fileInspectionCandidateClaims = [
+  "候補ライブラリ",
+  "pdfjs-dist",
+  "mammoth",
+  "xlsx",
+  "tesseract.js",
+  "@tesseract.js-data/jpn",
+  "Web Worker",
+  "5秒以上",
+  "進捗表示",
+  "キャンセル"
+];
 const scriptMaintenanceClaims = ["QA/生成スクリプト", "pnpm qa:script-maintenance", "ユーザー本文"];
 
 function read(relativePath) {
@@ -124,6 +136,10 @@ for (const claim of ocrDecisionClaims) {
   for (const requiredDoc of ["privacyPolicy", "privacyPage", "supportPage", "fileInspectionRoadmap", "readme"]) {
     assertIncludes(docs[requiredDoc], claim, requiredDoc);
   }
+}
+
+for (const claim of fileInspectionCandidateClaims) {
+  assertIncludes(docs.fileInspectionRoadmap, claim, "fileInspectionRoadmap");
 }
 
 for (const claim of scriptMaintenanceClaims) {
