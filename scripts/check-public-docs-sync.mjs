@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createQaContext } from "./lib/qa-helpers.mjs";
 
 const rootDir = resolve(".");
+const qa = createQaContext({ rootDir, errorPrefix: "Public docs sync QA failed" });
 
 const paths = {
   listing: "docs/chrome-web-store-listing.json",
@@ -63,111 +64,93 @@ const perplexityDecisionClaims = [
 ];
 const scriptMaintenanceClaims = ["QA/生成スクリプト", "pnpm qa:script-maintenance", "ユーザー本文"];
 
-function read(relativePath) {
-  return readFileSync(resolve(rootDir, relativePath), "utf8");
-}
-
-function fail(message) {
-  throw new Error(`Public docs sync QA failed: ${message}`);
-}
-
-function assertIncludes(text, needle, context) {
-  if (!text.includes(needle)) {
-    fail(`${context} must include: ${needle}`);
-  }
-}
-
-function assertNotIncludes(text, needle, context) {
-  if (text.includes(needle)) {
-    fail(`${context} must not include overclaim: ${needle}`);
-  }
-}
-
-const listing = JSON.parse(read(paths.listing));
-const docs = Object.fromEntries(Object.entries(paths).map(([key, path]) => [key, read(path)]));
-const internalPolicyDocs = Object.fromEntries(Object.entries(internalPolicyPaths).map(([key, path]) => [key, read(path)]));
+const listing = qa.readJson(paths.listing);
+const docs = Object.fromEntries(Object.entries(paths).map(([key, path]) => [key, qa.read(path)]));
+const internalPolicyDocs = Object.fromEntries(
+  Object.entries(internalPolicyPaths).map(([key, path]) => [key, qa.read(path)])
+);
 
 for (const field of ["name", "homepageUrl", "supportUrl", "privacyPolicyUrl", "shortDescription", "detailedDescription"]) {
   if (typeof listing[field] !== "string" || listing[field].trim().length === 0) {
-    fail(`listing.${field} must be a non-empty string`);
+    qa.fail(`listing.${field} must be a non-empty string`);
   }
 }
 
 for (const [key, text] of Object.entries(docs)) {
   for (const phrase of forbiddenOverclaims) {
-    assertNotIncludes(text, phrase, key);
+    qa.assertNotIncludes(text, phrase, key);
   }
 }
 
 for (const [key, text] of Object.entries({ ...docs, ...internalPolicyDocs })) {
   for (const phrase of forbiddenStalePhrases) {
-    assertNotIncludes(text, phrase, key);
+    qa.assertNotIncludes(text, phrase, key);
   }
 }
 
 for (const requiredDoc of ["submissionCopy", "releaseMemo", "readme"]) {
-  assertIncludes(docs[requiredDoc], listing.name, requiredDoc);
-  assertIncludes(docs[requiredDoc], listing.supportUrl, requiredDoc);
-  assertIncludes(docs[requiredDoc], listing.privacyPolicyUrl, requiredDoc);
+  qa.assertIncludes(docs[requiredDoc], listing.name, requiredDoc);
+  qa.assertIncludes(docs[requiredDoc], listing.supportUrl, requiredDoc);
+  qa.assertIncludes(docs[requiredDoc], listing.privacyPolicyUrl, requiredDoc);
 }
 
-assertIncludes(docs.readme, "Chrome Web Store", "README");
-assertIncludes(docs.readme, listing.homepageUrl, "README");
-assertIncludes(docs.launchFlow, "https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc", "productLaunchFlow");
-assertIncludes(docs.launchFlow, "Chrome Web Store公開中", "productLaunchFlow");
-assertIncludes(docs.hero, "Chrome拡張が本体", "Hero");
-assertIncludes(docs.hero, "Chrome Web Store公開中", "Hero");
+qa.assertIncludes(docs.readme, "Chrome Web Store", "README");
+qa.assertIncludes(docs.readme, listing.homepageUrl, "README");
+qa.assertIncludes(docs.launchFlow, "https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc", "productLaunchFlow");
+qa.assertIncludes(docs.launchFlow, "Chrome Web Store公開中", "productLaunchFlow");
+qa.assertIncludes(docs.hero, "Chrome拡張が本体", "Hero");
+qa.assertIncludes(docs.hero, "Chrome Web Store公開中", "Hero");
 
 for (const [route, url] of Object.entries({
   home: listing.homepageUrl,
   privacy: listing.privacyPolicyUrl,
   support: listing.supportUrl
 })) {
-  assertIncludes(docs.siteRoutes, url, `siteRoutes.${route}`);
+  qa.assertIncludes(docs.siteRoutes, url, `siteRoutes.${route}`);
 }
 
 for (const site of supportedSites) {
   for (const requiredDoc of ["listing", "submissionCopy", "releaseMemo", "readme", "launchFlow"]) {
-    assertIncludes(docs[requiredDoc], site, requiredDoc);
+    qa.assertIncludes(docs[requiredDoc], site, requiredDoc);
   }
 }
 
 for (const claim of privacyClaims) {
   for (const requiredDoc of ["listing", "submissionCopy", "privacyPolicy", "privacyPage", "readme"]) {
-    assertIncludes(docs[requiredDoc], claim, requiredDoc);
+    qa.assertIncludes(docs[requiredDoc], claim, requiredDoc);
   }
 }
 
 for (const requiredDoc of ["privacyPolicy", "supportPage", "readme"]) {
-  assertIncludes(docs[requiredDoc], "実APIキー", requiredDoc);
-  assertIncludes(docs[requiredDoc], "実トークン", requiredDoc);
+  qa.assertIncludes(docs[requiredDoc], "実APIキー", requiredDoc);
+  qa.assertIncludes(docs[requiredDoc], "実トークン", requiredDoc);
 }
 
 for (const claim of ocrDecisionClaims) {
   for (const requiredDoc of ["privacyPolicy", "privacyPage", "supportPage", "fileInspectionRoadmap", "readme"]) {
-    assertIncludes(docs[requiredDoc], claim, requiredDoc);
+    qa.assertIncludes(docs[requiredDoc], claim, requiredDoc);
   }
 }
 
 for (const claim of fileInspectionCandidateClaims) {
-  assertIncludes(docs.fileInspectionRoadmap, claim, "fileInspectionRoadmap");
+  qa.assertIncludes(docs.fileInspectionRoadmap, claim, "fileInspectionRoadmap");
 }
 
 for (const claim of perplexityDecisionClaims) {
   for (const requiredDoc of ["extensionSiteQa", "siteAdapterContract"]) {
-    assertIncludes(docs[requiredDoc], claim, requiredDoc);
+    qa.assertIncludes(docs[requiredDoc], claim, requiredDoc);
   }
 }
 
 for (const claim of scriptMaintenanceClaims) {
-  assertIncludes(docs.scriptMaintenance, claim, "scriptMaintenance");
+  qa.assertIncludes(docs.scriptMaintenance, claim, "scriptMaintenance");
 }
 
 if (listing.dataUsage?.collectsUserData !== true) {
-  fail("Chrome Web Store dataUsage.collectsUserData must remain true for inspected website content disclosure");
+  qa.fail("Chrome Web Store dataUsage.collectsUserData must remain true for inspected website content disclosure");
 }
 
-assertIncludes(listing.dataUsage?.explanation ?? "", "開発者のサーバーへ送信・収集せず", "listing.dataUsage.explanation");
-assertIncludes(listing.remoteCode?.explanation ?? "", "任意のコードを取得して実行しません", "listing.remoteCode.explanation");
+qa.assertIncludes(listing.dataUsage?.explanation ?? "", "開発者のサーバーへ送信・収集せず", "listing.dataUsage.explanation");
+qa.assertIncludes(listing.remoteCode?.explanation ?? "", "任意のコードを取得して実行しません", "listing.remoteCode.explanation");
 
 console.log("Public docs sync QA passed");
