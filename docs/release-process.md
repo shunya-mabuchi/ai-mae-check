@@ -10,7 +10,7 @@ AIまえチェックはChrome拡張がプロダクト本体です。GitHub Relea
 
 ## リリース前の順序
 
-0.1.1のChrome Web Store再アップロードは、残Issueをすべて解消してから行います。ZIPを先にアップロードしません。
+0.1.1は2026-06-27にChrome Web Storeへ審査送信済みです。審査通過後に、GitHub Releaseと公開後導線を更新します。次バージョンでも、対象Issueを解消してQAを通してからZIPを提出します。
 
 1. 対象IssueをIssueごとにPR化してmainへマージする
 2. `CHANGELOG.md` の `Unreleased` を更新する
@@ -21,8 +21,8 @@ AIまえチェックはChrome拡張がプロダクト本体です。GitHub Relea
 7. `pnpm build` を実行する
 8. `pnpm package:extension` でZIPを作成する
 9. 公開前QAをすべて実行する
-10. Chrome Web StoreへZIPをアップロードする
-11. 審査通過後にGit tagとGitHub Releaseを作成する
+10. Chrome Web StoreへZIPをアップロードし、審査へ送信する
+11. 審査通過後にGit tag、GitHub Release、README、LPの公開導線を更新する
 
 公開前QA:
 

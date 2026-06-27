@@ -129,11 +129,11 @@ pnpm qa:extension:manifest
 pnpm qa:chrome-store
 ```
 
-0.1.0公開後に新しいZIPを作成した場合でも、Developer Dashboardへアップロードするのは0.1.1の修正計画と確認項目が固まってからにします。
+0.1.1は2026-06-27にChrome Web Storeへ審査送信済みです。審査通過後に、README、LP、GitHub Release、Chrome Web Store公開状態の導線を更新します。
 
-### 0.1.1最終提出候補ZIP
+### 0.1.1審査送信済みZIP
 
-2026-06-27時点で、残っている自動対応可能Issueを反映した0.1.1提出候補ZIPを再生成しました。Chrome Web Store Developer Dashboardへ手動アップロードする対象は次です。
+2026-06-27時点で、残っている自動対応可能Issueを反映した0.1.1 ZIPを再生成し、Chrome Web Storeへ審査送信しました。提出済みの対象は次です。
 
 - ZIP: `apps/extension/.output/ai-mae-checkextension-0.1.1-chrome.zip`
 - ファイルサイズ: 8,773,528 bytes
@@ -141,6 +141,7 @@ pnpm qa:chrome-store
 - サイズQA表示: 8.37 MB
 - SHA-256: `6F74A9C2312413F15B58D66D9B95796BF654368AE8A53FF5D17B4D1A7790B42F`
 - 生成方法: `VITE_RULE_DELIVERY_URL=https://ai-mae-check.pages.dev/api/rules/latest` を指定して `wxt zip` を実行
+- 審査状態: 2026-06-27にChrome Web Storeへ審査送信済み
 - 補足: この環境では `pnpm package:extension` がpnpmの依存ビルド承認チェックで実行前に失敗したため、同等のWXT zipを直接実行しています。CIのTypecheck / test / build / release QAはPRで確認します。
 
 ## 手動チェックリスト

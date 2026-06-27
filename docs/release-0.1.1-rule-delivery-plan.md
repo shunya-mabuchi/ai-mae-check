@@ -2,7 +2,7 @@
 
 0.1.0の公開済みZIPは触りません。署名付きルール配信の本番有効化は、0.1.1で鍵ペアを再発行して対応します。
 
-2026-06-24時点で、`ai-mae-check-rules-2026-06-v2` の本番署名付きルール配信は有効化済みです。Chrome Web Storeへ0.1.1 ZIPを提出する作業は、残Issueをすべて解消してから行います。ZIPを先にアップロードしません。
+2026-06-24時点で、`ai-mae-check-rules-2026-06-v2` の本番署名付きルール配信は有効化済みです。2026-06-27に0.1.1 ZIPをChrome Web Storeへ審査送信済みで、現在は審査待ちです。
 
 ## 背景
 
@@ -19,9 +19,11 @@
 3. 完了: 生成した `privateJwk` をCloudflare Pages Production Secret `RULE_SIGNING_PRIVATE_JWK` に設定する。
 4. 完了: `https://ai-mae-check.pages.dev/api/rules/latest` が署名付きルールJSONを返すことを確認する。
 5. 完了: `pnpm qa:rules:production` で、本番APIの署名が拡張側公開鍵で検証できることを確認する。
-6. 残作業: 残Issueをすべて解消してから、最終提出候補のZIPを作り直す。
-7. 残作業: `pnpm build:extension`、`pnpm package:extension`、`pnpm qa:public-repo`、`pnpm qa:public-docs`、`pnpm qa:privacy-regression`、`pnpm qa:webllm-model-policy`、`pnpm qa:dependency-policy`、`pnpm qa:release-policy`、`pnpm qa:rules:production`、`pnpm qa:demo:seo`、`pnpm qa:portfolio-case-study`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
-8. 残作業: Chrome Web Storeへ0.1.1として新しいZIPを提出する。
+6. 完了: 残Issueを解消してから、最終提出候補のZIPを作り直す。
+7. 完了: `pnpm build:extension`、`pnpm package:extension`相当のWXT zip生成、`pnpm qa:public-repo`、`pnpm qa:public-docs`、`pnpm qa:privacy-regression`、`pnpm qa:webllm-model-policy`、`pnpm qa:dependency-policy`、`pnpm qa:release-policy`、`pnpm qa:rules:production`、`pnpm qa:demo:seo`、`pnpm qa:portfolio-case-study`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
+8. 完了: Chrome Web Storeへ0.1.1として新しいZIPを提出する。
+
+審査通過後は、Chrome Web Store公開状態を確認し、README、LP、GitHub Release、CHANGELOGの公開後導線を更新します。
 
 鍵ローテーション、壊れたルール配信時のロールバック、旧 `keyId` の扱いは [rule-delivery-operations.md](./rule-delivery-operations.md) に従います。
 
