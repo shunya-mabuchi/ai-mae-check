@@ -118,7 +118,7 @@ AIまえチェックは情報漏洩を完全に防ぐものではありません
 
 ## 今後
 
-- Chrome Web Store 0.1.1の再提出と公開後導線更新
+- Chrome Web Store公開後の実サイトadapter継続QAと導線メンテナンス
 - SiteAdapterの実サイト継続QA運用
 - Chrome拡張E2Eハーネス
 - 署名付きルール配信の鍵ローテーションと短期キャッシュ

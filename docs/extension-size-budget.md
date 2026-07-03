@@ -30,4 +30,4 @@ pnpm qa:extension:size
 
 ## Chrome Web Storeへの提出との関係
 
-このQAはChrome Web Storeの公式審査条件そのものではありません。0.1.1のZIPは、残Issueをすべて解消してから作り直して提出します。提出前には `pnpm package:extension`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を通します。
+このQAはChrome Web Storeの公式審査条件そのものではありません。次バージョンのZIPは、対象Issueを解消してから作り直して提出します。提出前には `pnpm package:extension`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を通します。

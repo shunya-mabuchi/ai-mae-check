@@ -10,7 +10,7 @@ AIまえチェックはChrome拡張がプロダクト本体です。GitHub Relea
 
 ## リリース前の順序
 
-0.1.1は2026-06-27にChrome Web Storeへ審査送信済みです。審査通過後に、GitHub Releaseと公開後導線を更新します。次バージョンでも、対象Issueを解消してQAを通してからZIPを提出します。
+0.1.1は2026-07-03にChrome Web Storeで公開を確認しました。次バージョンでも、対象Issueを解消してQAを通してからZIPを提出します。
 
 1. 対象IssueをIssueごとにPR化してmainへマージする
 2. `CHANGELOG.md` の `Unreleased` を更新する
@@ -66,7 +66,7 @@ Release本文には次を含めます。
 
 0.1.1では、`ai-mae-check-rules-2026-06-v2` の公開鍵を拡張へ埋め込み、Cloudflare Pages Functions側のSecretと一致させます。本番APIの署名検証は `pnpm qa:rules:production` で確認します。
 
-ただし、0.1.1 ZIPはすでに一度作成済みでも、残Issueをすべて解消してから作り直します。最終提出候補のZIPは、その時点のmainから `pnpm package:extension` で再生成します。
+0.1.1は、残Issueを解消したmainから最終ZIPを作り直し、公開前QAを通したうえでChrome Web Storeへ提出しました。
 
 ## リリース後の確認
 

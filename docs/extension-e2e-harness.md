@@ -12,7 +12,7 @@ SiteAdapterの責務、ChatGPT / Claude / Gemini / PerplexityごとのDOM差分�
 - ユーザー本文、実APIキー、実トークン、実在する個人情報を使わない
 - ローカルの模擬composerページでpaste検知と送信前確認を検証する
 - ChatGPT / Claude / Gemini / Perplexityの実サイト確認は手動QAとして残す
-- 0.1.1のZIP再提出前は、残Issueをすべて解消してから最終buildとpackageを行う
+- 次バージョンのZIP提出前は、対象Issueを解消してから最終buildとpackageを行う
 - E2E専用buildのmanifest変更を、Chrome Web Store提出用ZIPへ混入させない
 
 ## Playwrightで拡張を読み込む方式
