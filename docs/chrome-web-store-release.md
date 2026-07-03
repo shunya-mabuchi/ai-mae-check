@@ -153,6 +153,7 @@ pnpm qa:chrome-store
 - [x] LPの主CTAをChrome Web Store追加リンクへ差し替える
 - [x] 0.1.1でルール配信署名を有効化し、本番APIの署名付きJSONを確認する
 - [x] READMEとChrome Web Store関連ドキュメントを0.1.1公開済み状態へ更新する
+- [x] GitHub Release v0.1.1を作成する: <https://github.com/shunya-mabuchi/ai-mae-check/releases/tag/v0.1.1>
 
 次バージョン提出前:
 
