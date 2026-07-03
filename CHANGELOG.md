@@ -4,10 +4,19 @@ AIまえチェックの変更履歴です。Chrome Web Storeへ提出する拡�
 
 ## Unreleased
 
-- 残Issueをすべて解消してから、0.1.1のChrome Web Store提出ZIPを作り直す
+- ChatGPT / Claude / Gemini / Perplexity adapterの実サイト継続QA
+- Chrome拡張E2EハーネスのCI安定化
+- ルールカタログと署名付きルール配信の継続運用
+- 拡張モーダルのプロダクトUI再設計、ローカルDLPランタイム再設計、PolicyDecision分離などは、IssueごとのPRで扱う
+
+## 0.1.1 - 2026-07-03
+
+- Chrome Web StoreでAIまえチェック 0.1.1を一般公開
+- 署名付きルール配信の本番APIを有効化
 - 0.1.1では署名付きルール配信の本番鍵を `ai-mae-check-rules-2026-06-v2` に更新する
 - 公開前QAとして、public repo safety、public docs sync、WebLLM model policy、dependency policy、extension size budget、manifest、Chrome Web Store readinessをCIで確認する
-- 拡張モーダルのプロダクトUI再設計、ローカルDLPランタイム再設計、PolicyDecision分離などは、IssueごとのPRで扱う
+- Chrome拡張E2Eハーネスを追加し、paste / submit / 安全化の最小フローをCIで検証する
+- 検証済みリモートルールの短期キャッシュ、TTL、緊急停止フラグ `deliveryStatus: "paused"` に対応する
 
 ## 0.1.0 - 2026-06-20
 

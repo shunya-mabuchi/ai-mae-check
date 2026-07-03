@@ -8,7 +8,7 @@
 
 ## 現在の位置づけ
 
-**公開ステータス:** Chrome Web Storeで0.1.0を一般公開済みです。公開ページは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。0.1.1は2026-06-27にChrome Web Storeへ審査送信済みで、現在は審査待ちです。
+**公開ステータス:** Chrome Web Storeで0.1.1を一般公開済みです。公開ページは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。0.1.1は2026-07-03に公開を確認しました。
 
 このリポジトリには、すでに以下の基盤があります。
 
@@ -496,7 +496,7 @@ WebLLMの初回利用時には、ローカル推論用のモデルファイル�
 
 ## 今後追加したい機能
 
-- Chrome Web Store 0.1.1の審査通過後に、README / LP / GitHub Release導線を公開状態へ更新
+- Chrome Web Store公開後の導線、GitHub Release、サポート導線の継続メンテナンス
 - ChatGPT / Claude / Gemini / Perplexity adapterの実サイト継続QA
 - Chrome拡張E2EハーネスのCI安定化と実サイトQA対応表の継続更新
 - 署名付きルール配信の運用メモに沿ったルールカタログの継続拡充

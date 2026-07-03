@@ -56,21 +56,23 @@ for (const command of [
   qa.assertIncludes(releaseProcess, command, paths.releaseProcess);
 }
 
-for (const phrase of ["審査送信済み", "審査通過後", "GitHub Release", "Chrome Web Store"]) {
+for (const phrase of ["公開を確認", "GitHub Release", "Chrome Web Store"]) {
   qa.assertIncludes(releaseProcess, phrase, paths.releaseProcess);
 }
 
 qa.assertIncludes(changelog, "## Unreleased", paths.changelog);
+qa.assertIncludes(changelog, "## 0.1.1 - 2026-07-03", paths.changelog);
 qa.assertIncludes(changelog, "## 0.1.0 - 2026-06-20", paths.changelog);
 qa.assertIncludes(chromeStoreRelease, "pnpm qa:extension:size", paths.chromeStoreRelease);
-qa.assertIncludes(ruleDeliveryPlan, "審査待ち", paths.ruleDeliveryPlan);
+qa.assertIncludes(ruleDeliveryPlan, "公開を確認", paths.ruleDeliveryPlan);
 qa.assertIncludes(readme, "CHANGELOG.md", paths.readme);
 
 for (const phrase of [
   "2026-06-27",
+  "2026-07-03",
   "8.37 MB",
   "6F74A9C2312413F15B58D66D9B95796BF654368AE8A53FF5D17B4D1A7790B42F",
-  "Chrome Web Storeへ審査送信済み"
+  "Chrome Web Storeで0.1.1公開を確認"
 ]) {
   qa.assertIncludes(chromeStoreRelease, phrase, paths.chromeStoreRelease);
   qa.assertIncludes(releaseDraft011, phrase, paths.releaseDraft011);

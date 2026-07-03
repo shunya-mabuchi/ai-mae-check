@@ -1,6 +1,6 @@
 # Chrome Web Store 掲載文 最終版
 
-このファイルは、Chrome Web Store Developer Dashboardへ貼り付けた入力文の控えです。0.1.0はChrome Web Storeで一般公開済みです。0.1.1は2026-06-27に審査送信済みで、現在は審査待ちです。今後の掲載文修正は、この内容を基準にします。
+このファイルは、Chrome Web Store Developer Dashboardへ貼り付けた入力文の控えです。0.1.1はChrome Web Storeで一般公開済みです。2026-07-03に公開を確認しました。今後の掲載文修正は、この内容を基準にします。
 
 公開URLは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。Cloudflare Pages上のサポートページとプライバシーポリシーページを使い、サポートページ内の問い合わせ先としてGitHub Issuesと公開メールアドレスを案内します。
 
@@ -143,4 +143,4 @@ Chrome Web Storeの申告では、拡張機能が入力欄テキストをブラ�
 
 - 公式URL: Google Search Consoleで所有確認が済んだ後に設定する。未設定でもホームページURLは使用できます。
 - LP上の主CTA: Chrome Web Store追加リンクへ差し替え済み。
-- 0.1.1審査送信時: 署名付きルール配信は `keyId: ai-mae-check-rules-2026-06-v2` で有効化済み。提出前QAと本番ルール配信署名検証を通したZIPをChrome Web Storeへアップロードし、審査送信済み。
+- 0.1.1公開時: 署名付きルール配信は `keyId: ai-mae-check-rules-2026-06-v2` で有効化済み。提出前QAと本番ルール配信署名検証を通したZIPがChrome Web Storeで公開済み。
