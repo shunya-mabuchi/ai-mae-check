@@ -13,7 +13,6 @@ import { installPasteInterceptor, type PasteReviewDecision } from "../src/conten
 import { installSendInterceptor, type SendReviewDecision } from "../src/content/dom/sendInterceptor";
 import { DEFAULT_SETTINGS, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
 import { loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
-import { createRemoteRuleFetchProxy } from "../src/lib/remoteRuleTransport";
 import { targetMatches } from "../src/lib/sites";
 import { showPasteReviewModal } from "../src/lib/modal";
 import { showSendConfirmModal } from "../src/ui/confirmModal";
@@ -28,7 +27,7 @@ export default defineContentScript({
     let remoteRules: DetectorRule[] = [];
 
     const refreshRemoteRules = async () => {
-      const result = await loadVerifiedRemoteRules({ fetcher: createRemoteRuleFetchProxy() });
+      const result = await loadVerifiedRemoteRules();
       remoteRules = result.status === "verified" || result.status === "cached" ? result.rules : [];
     };
 

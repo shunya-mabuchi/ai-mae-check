@@ -11,10 +11,7 @@ const expectedTargetMatches = [
   "https://www.perplexity.ai/*",
   "https://perplexity.ai/*"
 ];
-const expectedHostPermissions = [
-  ...expectedTargetMatches,
-  "https://shunya-mabuchi.github.io/ai-mae-check/*"
-];
+const expectedHostPermissions = expectedTargetMatches;
 
 function fail(message) {
   throw new Error(`manifest QA failed: ${message}`);
@@ -31,6 +28,10 @@ function assertNoUnexpectedHosts(hosts) {
 
   if (hosts.some((host) => host.includes("localhost") || host.includes("127.0.0.1"))) {
     fail("localhost or 127.0.0.1 must remain test-only and must not be included in the release manifest");
+  }
+
+  if (hosts.some((host) => host.includes("shunya-mabuchi.github.io"))) {
+    fail("GitHub Pages must be accessed by CORS GET without adding a required host permission");
   }
 }
 
@@ -101,7 +102,7 @@ for (const size of ["16", "32", "48", "128"]) {
 }
 
 const csp = manifest.content_security_policy?.extension_pages ?? "";
-for (const required of ["'wasm-unsafe-eval'", "worker-src 'self'", "https://shunya-mabuchi.github.io", "https://huggingface.co"]) {
+for (const required of ["'wasm-unsafe-eval'", "worker-src 'self'", "https://huggingface.co"]) {
   if (!csp.includes(required)) {
     fail(`extension_pages CSP must include ${required}`);
   }

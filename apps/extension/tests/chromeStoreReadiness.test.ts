@@ -7,6 +7,8 @@ const listingPath = resolve(rootDir, "docs/chrome-web-store-listing.json");
 const assetManifestPath = resolve(rootDir, "docs/chrome-web-store-assets.json");
 const submissionCopyPath = resolve(rootDir, "docs/chrome-web-store-submission-copy.md");
 const qaScriptPath = resolve(rootDir, "scripts/check-chrome-store-readiness.mjs");
+const publishedQaScriptPath = resolve(rootDir, "scripts/check-published-chrome-store.mjs");
+const publishedStatePath = resolve(rootDir, "docs/chrome-web-store-published.json");
 const releaseConfigPath = resolve(rootDir, "apps/extension/config/rule-delivery.release.json");
 
 function readJson<T>(path: string): T {
@@ -107,8 +109,11 @@ describe("Chrome Web Store readiness", () => {
     const rootPackage = readJson<{ scripts: Record<string, string> }>(resolve(rootDir, "package.json"));
 
     expect(existsSync(qaScriptPath)).toBe(true);
+    expect(existsSync(publishedQaScriptPath)).toBe(true);
+    expect(existsSync(publishedStatePath)).toBe(true);
     expect(existsSync(releaseConfigPath)).toBe(true);
     expect(rootPackage.scripts["qa:chrome-store"]).toBe("node scripts/check-chrome-store-readiness.mjs");
+    expect(rootPackage.scripts["qa:chrome-store:published"]).toBe("node scripts/check-published-chrome-store.mjs");
     expect(rootPackage.scripts["package:extension"]).toBe("node scripts/package-extension-release.mjs");
   });
 

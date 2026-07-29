@@ -79,7 +79,7 @@ AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章�
 
 ### ホスト権限 が必要な理由
 
-ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使用します。対象AIサイトは https://chatgpt.com/*、https://chat.openai.com/*、https://claude.ai/*、https://gemini.google.com/*、https://www.perplexity.ai/*、https://perplexity.ai/* に限定しています。また、署名付き追加ルールJSONを取得するため https://shunya-mabuchi.github.io/ai-mae-check/* を使用します。この取得は本文なしのGETだけで行い、ユーザー本文を送信しません。<all_urls> は要求していません。
+ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使用します。対象AIサイトは https://chatgpt.com/*、https://chat.openai.com/*、https://claude.ai/*、https://gemini.google.com/*、https://www.perplexity.ai/*、https://perplexity.ai/* に限定しています。<all_urls> は要求していません。
 
 ### リモートコード
 

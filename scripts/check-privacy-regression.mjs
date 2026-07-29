@@ -18,7 +18,6 @@ const paths = {
   settings: "apps/extension/src/lib/settings.ts",
   remoteRuleCache: "apps/extension/src/lib/remoteRuleCache.ts",
   remoteRuleDelivery: "apps/extension/src/lib/remoteRuleDelivery.ts",
-  remoteRuleBackground: "apps/extension/entrypoints/background.ts",
   pageSigner: "scripts/sign-github-pages-rules.ts",
   ruleSource: "rules/latest.json"
 };
@@ -58,7 +57,7 @@ function trackedFiles() {
   return execFileSync("git", ["ls-files"], { encoding: "utf8" })
     .split(/\r?\n/u)
     .map((file) => file.trim().replace(/\\/gu, "/"))
-    .filter(Boolean);
+    .filter((file) => file && existsSync(resolve(rootDir, file)));
 }
 
 function isProtectedRuntimeFile(file) {
@@ -127,7 +126,7 @@ for (const forbidden of ["pastedText", "inputText", "placeholderMap", "Detection
 }
 
 const extensionFetchPattern = /\bfetch\s*\(/u;
-const allowedExtensionFetchFiles = new Set([paths.remoteRuleDelivery, paths.remoteRuleBackground]);
+const allowedExtensionFetchFiles = new Set([paths.remoteRuleDelivery]);
 for (const file of trackedFiles().filter((file) => file.startsWith("apps/extension/") && /\.(?:ts|tsx|js|mjs)$/u.test(file))) {
   for (const match of findLines(file, extensionFetchPattern)) {
     if (!allowedExtensionFetchFiles.has(file)) {
@@ -146,19 +145,6 @@ assertIncludes(remoteRuleSource, 'method: "GET"', paths.remoteRuleDelivery);
 assertIncludes(remoteRuleSource, 'accept: "application/json"', paths.remoteRuleDelivery);
 if (/\bbody\s*:/u.test(remoteRuleSource)) {
   fail(`${paths.remoteRuleDelivery} must not send a request body`);
-}
-
-const remoteRuleBackgroundSource = read(paths.remoteRuleBackground);
-assertIncludes(remoteRuleBackgroundSource, 'method: "GET"', paths.remoteRuleBackground);
-assertIncludes(remoteRuleBackgroundSource, "message.endpoint !== RULE_DELIVERY_ENDPOINT", paths.remoteRuleBackground);
-const backgroundFetchOptions = remoteRuleBackgroundSource.match(
-  /void fetch\(message\.endpoint,\s*(\{[\s\S]*?\})\)\.then/u
-)?.[1];
-if (!backgroundFetchOptions) {
-  fail(`${paths.remoteRuleBackground} must keep the reviewed fixed-endpoint fetch`);
-}
-if (/\bbody\s*:/u.test(backgroundFetchOptions)) {
-  fail(`${paths.remoteRuleBackground} must not send a request body`);
 }
 
 const pageSignerSource = read(paths.pageSigner);
