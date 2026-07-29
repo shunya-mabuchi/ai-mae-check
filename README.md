@@ -8,7 +8,7 @@
 
 ## 現在の位置づけ
 
-**公開ステータス:** Chrome Web Storeで0.1.1を一般公開済みです。公開ページは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。0.1.1は2026-07-03に公開を確認しました。
+**公開ステータス:** Chrome Web Storeで0.1.1を一般公開済みです。公開ページは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。0.1.1は2026-07-03に公開を確認し、GitHub Pages移行を反映した0.1.2は2026-07-30に審査送信しました。
 
 このリポジトリには、すでに以下の基盤があります。
 

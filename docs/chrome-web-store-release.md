@@ -6,6 +6,7 @@
 
 - 0.1.1はChrome Web Storeで一般公開済みです。
 - 公開URL: <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc>
+- 0.1.2は2026-07-30に審査送信済みです。審査完了までは公開版0.1.1の表示と導線を維持します。
 - 0.1.2では署名付き追加ルールをGitHub Actionsでビルド時に生成し、GitHub Pagesの静的JSONとして配信します。拡張は埋め込み公開鍵で署名を検証します。
 - 署名付きルール配信の鍵ローテーションとロールバック手順は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
 
