@@ -7,8 +7,6 @@ const rootDir = resolve(".");
 const protectedRoots = [
   "apps/extension/entrypoints/",
   "apps/extension/src/",
-  "apps/worker/src/",
-  "functions/",
   "packages/core/src/",
   "packages/llm/src/"
 ];
@@ -20,8 +18,9 @@ const paths = {
   settings: "apps/extension/src/lib/settings.ts",
   remoteRuleCache: "apps/extension/src/lib/remoteRuleCache.ts",
   remoteRuleDelivery: "apps/extension/src/lib/remoteRuleDelivery.ts",
-  worker: "apps/worker/src/index.ts",
-  pagesFunction: "functions/api/rules/latest.ts"
+  remoteRuleBackground: "apps/extension/entrypoints/background.ts",
+  pageSigner: "scripts/sign-github-pages-rules.mjs",
+  ruleSource: "rules/latest.json"
 };
 
 const forbiddenPatterns = [
@@ -128,9 +127,10 @@ for (const forbidden of ["pastedText", "inputText", "placeholderMap", "Detection
 }
 
 const extensionFetchPattern = /\bfetch\s*\(/u;
+const allowedExtensionFetchFiles = new Set([paths.remoteRuleDelivery, paths.remoteRuleBackground]);
 for (const file of trackedFiles().filter((file) => file.startsWith("apps/extension/") && /\.(?:ts|tsx|js|mjs)$/u.test(file))) {
   for (const match of findLines(file, extensionFetchPattern)) {
-    if (file !== paths.remoteRuleDelivery) {
+    if (!allowedExtensionFetchFiles.has(file)) {
       findings.push({
         file,
         line: match.line,
@@ -148,12 +148,23 @@ if (/\bbody\s*:/u.test(remoteRuleSource)) {
   fail(`${paths.remoteRuleDelivery} must not send a request body`);
 }
 
-for (const path of [paths.worker, paths.pagesFunction]) {
-  const source = read(path);
-  for (const forbidden of ["request.text(", "request.json(", "request.formData(", "request.arrayBuffer("]) {
-    if (source.includes(forbidden)) {
-      fail(`${path} must not read request body via ${forbidden}`);
-    }
+const remoteRuleBackgroundSource = read(paths.remoteRuleBackground);
+assertIncludes(remoteRuleBackgroundSource, 'method: "GET"', paths.remoteRuleBackground);
+assertIncludes(remoteRuleBackgroundSource, "message.endpoint !== RULE_DELIVERY_ENDPOINT", paths.remoteRuleBackground);
+const backgroundFetchOptions = remoteRuleBackgroundSource.match(
+  /void fetch\(message\.endpoint,\s*(\{[\s\S]*?\})\)\.then/u
+)?.[1];
+if (!backgroundFetchOptions) {
+  fail(`${paths.remoteRuleBackground} must keep the reviewed fixed-endpoint fetch`);
+}
+if (/\bbody\s*:/u.test(backgroundFetchOptions)) {
+  fail(`${paths.remoteRuleBackground} must not send a request body`);
+}
+
+const pageSignerSource = read(paths.pageSigner);
+for (const forbidden of ["request.text(", "request.json(", "request.formData(", "request.arrayBuffer("]) {
+  if (pageSignerSource.includes(forbidden)) {
+    fail(`${paths.pageSigner} must not read an HTTP request body via ${forbidden}`);
   }
 }
 
@@ -171,7 +182,7 @@ for (const phrase of [
   "chrome.storage.local",
   "検証済みの署名付きリモートルールキャッシュ",
   "console.log",
-  "GET /api/rules/latest",
+  "GET /api/rules/latest.json",
   "postMessage",
   "placeholderMap"
 ]) {

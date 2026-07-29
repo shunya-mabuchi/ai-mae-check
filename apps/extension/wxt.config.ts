@@ -12,6 +12,7 @@ const targetMatches = [
 ];
 
 const extensionE2eMatches = ["http://127.0.0.1/*", "http://localhost/*"];
+const ruleDeliveryMatches = ["https://shunya-mabuchi.github.io/ai-mae-check/*"];
 const isExtensionE2eBuild = process.env.EXTENSION_E2E === "1";
 const manifestMatches = isExtensionE2eBuild ? [...targetMatches, ...extensionE2eMatches] : targetMatches;
 
@@ -37,9 +38,9 @@ export default defineConfig({
   manifest: {
     name: "AIまえチェック",
     description: "AIに送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認します。",
-    version: "0.1.1",
+    version: "0.1.2",
     permissions: ["storage"],
-    host_permissions: manifestMatches,
+    host_permissions: [...manifestMatches, ...ruleDeliveryMatches],
     icons: {
       16: "icon/16.png",
       32: "icon/32.png",
@@ -70,7 +71,7 @@ export default defineConfig({
     ],
     content_security_policy: {
       extension_pages:
-        "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; connect-src 'self' https://huggingface.co https://*.huggingface.co https://hf.co https://*.hf.co https://raw.githubusercontent.com https://*.githubusercontent.com https://*.xethub.hf.co https://cdn-lfs.huggingface.co"
+        "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; connect-src 'self' https://shunya-mabuchi.github.io https://huggingface.co https://*.huggingface.co https://hf.co https://*.hf.co https://raw.githubusercontent.com https://*.githubusercontent.com https://*.xethub.hf.co https://cdn-lfs.huggingface.co"
     }
   }
 });

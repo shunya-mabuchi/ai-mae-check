@@ -6,7 +6,7 @@ AIまえチェックはpublicリポジトリとして公開するため、実API
 
 - 実APIキー、実トークン、実個人情報をコミットしない
 - テストデータとスクリーンショットはダミー情報だけを使う
-- `privateJwk` はCloudflare Secretに保存し、Git、Issue、PR、CIログ、チャットへ残さない
+- `privateJwk` はGitHub Environment Secretに保存し、Git、Issue、PR、CIログ、チャットへ残さない
 - 拡張ZIP、`.output`、`dist`、ログ、Playwright出力、ローカル秘密鍵ファイルはGit管理しない
 - READMEやChrome Web Store素材に載せる検出例は、実在しない情報かマスク済みの情報だけにする
 
@@ -32,8 +32,8 @@ pnpm qa:public-repo
 - `secret_scanning_non_provider_patterns` は同日時点で `disabled` のため、独自のダミー判定や生成物混入は `pnpm qa:public-repo` でも補助確認する
 - Chrome Web Store用スクリーンショットは、実メール、実電話番号、実顧客名、実プロジェクト名、実トークンを含めない
 - `docs/assets/store` の画像は見た目だけでなく、写り込む本文がダミーまたはマスク済みであることを確認する
-- Cloudflare PagesやWranglerのログをIssueやPRへ貼る場合、Secret値やOAuth URLの不要なクエリを含めない
-- ローカルに残した `*.private.jwk.json` はCloudflare Secret設定後に削除する
+- GitHub ActionsのログをIssueやPRへ貼る場合、Secret値や署名用環境変数を含めない
+- ローカルに残した `*.private.jwk.json` はGitHub Environment Secret設定後に削除する
 
 ## 既知の許可済みダミー
 

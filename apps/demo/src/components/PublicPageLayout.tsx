@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { sitePath } from "../lib/siteRoutes";
 import { Footer } from "./Footer";
 
 export function PublicPageLayout({
@@ -17,20 +18,20 @@ export function PublicPageLayout({
           aria-label="公開ページ"
           className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-1 py-1"
         >
-          <a href="/" className="text-base font-black text-ink">
+          <a href={sitePath("/")} className="text-base font-black text-ink">
             AIまえチェック
           </a>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-muted">
-            <a href="/#install" className="transition hover:text-ink">
+            <a href={sitePath("/#install")} className="transition hover:text-ink">
               拡張機能
             </a>
-            <a href="/#demo" className="transition hover:text-ink">
+            <a href={sitePath("/#demo")} className="transition hover:text-ink">
               デモ
             </a>
-            <a href="/privacy" className="transition hover:text-ink">
+            <a href={sitePath("/privacy/")} className="transition hover:text-ink">
               プライバシー
             </a>
-            <a href="/support" className="transition hover:text-ink">
+            <a href={sitePath("/support/")} className="transition hover:text-ink">
               サポート
             </a>
           </div>

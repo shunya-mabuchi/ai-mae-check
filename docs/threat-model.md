@@ -14,7 +14,7 @@ AIまえチェックの主な実行面は次のとおりです。
 - `packages/core`: ルールベース検出、マスキング、risk score、policy判定、リモートルール署名検証を担当します。
 - `packages/llm`: WebLLMによる文脈リスク候補チェック、Worker、プロンプト生成、JSONパースを担当します。
 - `apps/demo`: 紹介LP兼ミニデモ。拡張機能を入れる前に価値を試す補助体験です。
-- `apps/worker`: Cloudflare Workers想定の署名付きルール配信APIです。ユーザー本文は受け取らず、署名付きルールJSONだけを返します。
+- `rules` / GitHub Pages: Git管理した追加ルールをGitHub Actionsで署名し、静的JSONとして配信します。ユーザー本文は受け取りません。
 
 守りたい主な資産は次のとおりです。
 
@@ -145,11 +145,11 @@ WebLLMは、顧客名、人名、会社名、案件名、契約・採用・給�
 
 主な対策:
 
-- リクエスト本文を使わず、`GET /api/rules/latest` だけにする
+- リクエスト本文を使わず、`GET /api/rules/latest.json` だけにする
 - 署名対象に `alg`、`keyId`、`payload` を含める
 - 拡張側は公開鍵で署名検証できたルールだけを使う
 - 署名検証失敗、HTTPエラー、URL未設定時は同梱ルールへフォールバックする
-- 秘密鍵はリポジトリに置かず、Cloudflare Workersのsecretとして管理する
+- 秘密鍵はリポジトリに置かず、GitHub Environment Secretとして管理する
 - 鍵ローテーションとロールバックを [rule-delivery-operations.md](./rule-delivery-operations.md) に残す
 
 署名検証で守れること:

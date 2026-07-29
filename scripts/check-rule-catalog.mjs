@@ -122,7 +122,7 @@ for (const phrase of [
   "署名付き配信前レビュー",
   "pnpm qa:rule-catalog",
   "pnpm test:core",
-  "pnpm test:worker",
+  "pnpm test:pages",
   "ユーザー本文",
   "実secret",
   "同梱ルールへフォールバック",

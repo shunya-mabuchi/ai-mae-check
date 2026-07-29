@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const textExtensions = new Set([
@@ -108,6 +108,10 @@ const findings = [];
 const files = trackedFiles();
 
 for (const file of files) {
+  if (!existsSync(file)) {
+    continue;
+  }
+
   const normalized = file.replace(/\\/gu, "/");
   if (forbiddenTrackedPathPatterns.some((pattern) => pattern.test(normalized))) {
     addFinding(findings, file, 0, "tracked generated artifact", "生成物・ログ・秘密鍵ファイル候補がGit追跡対象です");

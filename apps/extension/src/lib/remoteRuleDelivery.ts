@@ -32,6 +32,9 @@ export const RULE_DELIVERY_PUBLIC_KEYS: RemoteRulePublicKey[] =
     ? typedReleaseConfig.publicKeys
     : [{ keyId: RULE_DELIVERY_KEY_ID, publicJwk: RULE_DELIVERY_PUBLIC_JWK }];
 
+export const RULE_DELIVERY_ENDPOINT =
+  configuredEndpoint() || typedReleaseConfig.endpoint?.trim() || "";
+
 export const REMOTE_RULE_CACHE_TTL_MS = 30 * 60 * 1000;
 
 export type RemoteRuleLoadStatus = "disabled" | "verified" | "cached" | "fallback";
@@ -211,7 +214,7 @@ async function fallbackWithCache(options: RemoteRuleDeliveryOptions, reason: str
 }
 
 export async function loadVerifiedRemoteRules(options: RemoteRuleDeliveryOptions = {}): Promise<RemoteRuleLoadResult> {
-  const endpoint = (options.endpoint ?? configuredEndpoint()).trim();
+  const endpoint = (options.endpoint ?? RULE_DELIVERY_ENDPOINT).trim();
   if (endpoint.length === 0) {
     return {
       status: "disabled",

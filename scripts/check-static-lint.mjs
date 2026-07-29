@@ -8,8 +8,6 @@ const runtimeRoots = [
   "apps/demo/src/",
   "apps/extension/entrypoints/",
   "apps/extension/src/",
-  "apps/worker/src/",
-  "functions/",
   "packages/core/src/",
   "packages/llm/src/"
 ];
@@ -19,7 +17,6 @@ const codeRoots = [
   "apps/demo/tests/",
   "apps/extension/e2e/",
   "apps/extension/tests/",
-  "apps/worker/tests/",
   "packages/core/tests/",
   "packages/llm/tests/",
   "scripts/"

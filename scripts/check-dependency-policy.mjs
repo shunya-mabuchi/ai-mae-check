@@ -60,7 +60,7 @@ for (const command of [
   assertIncludes(policy, command, paths.policy);
 }
 
-for (const term of ["@mlc-ai/web-llm", "WXT", "Vite", "React", "Playwright", "Wrangler", "pnpm-lock.yaml"]) {
+for (const term of ["@mlc-ai/web-llm", "WXT", "Vite", "React", "Playwright", "GitHub Actions", "pnpm-lock.yaml"]) {
   assertIncludes(policy, term, paths.policy);
 }
 

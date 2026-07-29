@@ -44,7 +44,7 @@ AIまえチェックでは、検出ルールを増やすたびに、検出精度
 - `payload.version` を上げた
 - `generatedAt` と `expiresAt` が妥当
 - 緊急停止が必要な場合は、署名済みpayloadの `deliveryStatus: "paused"` で停止できる
-- `pnpm test:worker` と `pnpm qa:rules:production` の確認手順をPRに残す
+- `pnpm test:pages` と `pnpm qa:rules:production` の確認手順をPRに残す
 
 ## fixture追加基準
 
@@ -100,7 +100,7 @@ pnpm qa:privacy-regression
 リモートルール配信を更新する場合:
 
 ```bash
-pnpm test:worker
+pnpm test:pages
 pnpm qa:rules:production
 ```
 

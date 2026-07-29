@@ -1,23 +1,23 @@
 {
-  "endpoint": "https://ai-mae-check.pages.dev/api/rules/latest",
-  "keyId": "ai-mae-check-rules-2026-06-v2",
+  "endpoint": "https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json",
+  "keyId": "ai-mae-check-rules-2026-07-v3",
   "publicJwk": {
     "key_ops": ["verify"],
     "ext": true,
     "kty": "EC",
-    "x": "QsmqlOn0nJQPGLSHKS4wvdNt_5DUJxR7OGMvw0pSgvU",
-    "y": "fyB_tA1GS0P_6CBhVyboXxUM6Ln4EtkZwGh7hoeZFGY",
+    "x": "P-4hTVs-1kF3qSd1WwpDF9RjV5PSeTjFqsoZsVcYfwk",
+    "y": "7UCMtcUZSgYJ3raz6FzHVWYVVT1DD9bACwc246EHDqo",
     "crv": "P-256"
   },
   "publicKeys": [
     {
-      "keyId": "ai-mae-check-rules-2026-06-v2",
+      "keyId": "ai-mae-check-rules-2026-07-v3",
       "publicJwk": {
         "key_ops": ["verify"],
         "ext": true,
         "kty": "EC",
-        "x": "QsmqlOn0nJQPGLSHKS4wvdNt_5DUJxR7OGMvw0pSgvU",
-        "y": "fyB_tA1GS0P_6CBhVyboXxUM6Ln4EtkZwGh7hoeZFGY",
+        "x": "P-4hTVs-1kF3qSd1WwpDF9RjV5PSeTjFqsoZsVcYfwk",
+        "y": "7UCMtcUZSgYJ3raz6FzHVWYVVT1DD9bACwc246EHDqo",
         "crv": "P-256"
       }
     }

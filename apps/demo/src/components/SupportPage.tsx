@@ -1,4 +1,5 @@
 import { PublicPageLayout } from "./PublicPageLayout";
+import { sitePath } from "../lib/siteRoutes";
 
 const faqItems = [
   {
@@ -124,7 +125,7 @@ export function SupportPage() {
             ))}
           </ul>
         </section>
-        <a href="/" className="inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud">
+        <a href={sitePath("/")} className="inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud">
           トップへ戻る
         </a>
       </div>

@@ -11,6 +11,10 @@ const expectedTargetMatches = [
   "https://www.perplexity.ai/*",
   "https://perplexity.ai/*"
 ];
+const expectedHostPermissions = [
+  ...expectedTargetMatches,
+  "https://shunya-mabuchi.github.io/ai-mae-check/*"
+];
 
 function fail(message) {
   throw new Error(`manifest QA failed: ${message}`);
@@ -55,7 +59,7 @@ if (!sameMembers(permissions, ["storage"])) {
 
 const hostPermissions = manifest.host_permissions ?? [];
 assertNoUnexpectedHosts(hostPermissions);
-if (!sameMembers(hostPermissions, expectedTargetMatches)) {
+if (!sameMembers(hostPermissions, expectedHostPermissions)) {
   fail(`host_permissions mismatch. actual=${JSON.stringify(hostPermissions)}`);
 }
 
@@ -97,7 +101,7 @@ for (const size of ["16", "32", "48", "128"]) {
 }
 
 const csp = manifest.content_security_policy?.extension_pages ?? "";
-for (const required of ["'wasm-unsafe-eval'", "worker-src 'self'", "https://huggingface.co"]) {
+for (const required of ["'wasm-unsafe-eval'", "worker-src 'self'", "https://shunya-mabuchi.github.io", "https://huggingface.co"]) {
   if (!csp.includes(required)) {
     fail(`extension_pages CSP must include ${required}`);
   }

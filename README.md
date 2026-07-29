@@ -159,14 +159,16 @@ WebLLMは通常のHugging Faceモデルをそのまま読み込む仕組みで�
 - Web Worker
 - WebGPU
 - `chrome.storage.local`
-- Cloudflare Workers想定のルール配信API
+- GitHub Pages / GitHub Actionsによる署名付き静的ルール配信
 
 ## アーキテクチャ図
 
 ```mermaid
 flowchart LR
   User["ユーザー入力 / 送信操作"] --> Adapter["apps/extension\nsite adapter"]
-  RuleApi["apps/worker\n署名付きルール配信API"] --> Verify["packages/core\n署名検証"]
+  RuleSource["rules/latest.json\nGit管理された追加ルール"] --> BuildSign["GitHub Actions\nビルド時署名"]
+  BuildSign --> RuleApi["GitHub Pages\n署名付き静的JSON"]
+  RuleApi --> Verify["packages/core\n公開鍵で署名検証"]
   Verify --> Core
   Adapter --> Core["packages/core\nルール検出 / risk score / policy"]
   Core --> Decision{"送信前判定"}
@@ -192,10 +194,11 @@ repository-root/
   apps/
     extension/  Chrome拡張本体
     demo/       紹介LP兼Webミニデモサイト
-    worker/     署名付きルール配信API
   packages/
     core/       ルールベース検出、署名検証、マスキング、型定義
     llm/        WebLLM文脈チェック、Worker、プロンプト、JSONパース
+  rules/        Git管理する追加ルール定義
+  scripts/      GitHub Pages生成、ビルド時署名、公開QA
   docs/
     superpowers/plans/  実装計画
   AGENTS.md
@@ -226,7 +229,7 @@ pnpm build
 pnpm build:extension
 pnpm build:extension:e2e
 pnpm build:demo
-pnpm build:worker
+pnpm build:pages
 pnpm package:extension
 pnpm qa:public-repo
 pnpm qa:public-docs
@@ -240,6 +243,7 @@ pnpm qa:dependency-policy
 pnpm qa:release-policy
 pnpm qa:issue-pr-workflow
 pnpm qa:demo:seo
+pnpm qa:github-pages
 pnpm qa:portfolio-case-study
 pnpm qa:extension:size
 pnpm qa:extension:manifest
@@ -247,7 +251,7 @@ pnpm qa:chrome-store
 pnpm test
 pnpm test:core
 pnpm test:llm
-pnpm test:worker
+pnpm test:pages
 pnpm test:e2e
 pnpm test:extension:e2e
 pnpm rules:keygen
@@ -255,7 +259,7 @@ pnpm lint
 pnpm typecheck
 ```
 
-`pnpm lint` は現時点では `pnpm typecheck` の別名です。
+`pnpm lint` は、文字化け、`any`、実行時の不要なconsole出力などを確認するリポジトリ独自の静的検査です。
 
 `pnpm package:extension` はChrome Web Store提出用のZIPを作成するためのコマンドです。`apps/extension/config/rule-delivery.release.json` の本番ルール配信URL・`keyId`・公開JWKがそろっていない場合は失敗します。
 
@@ -323,15 +327,15 @@ Chrome Web Store提出時の説明文、権限理由、プライバシー方針�
 
 サポートFAQと既知の制限は [docs/support-faq.md](docs/support-faq.md) にまとめています。問い合わせ時は、貼り付け本文、実APIキー、実トークン、実個人情報、顧客名、案件名を送らず、ダミー情報で再現してください。
 
-ルール配信Workerへ送るのは `GET /api/rules/latest` だけで、貼り付け本文・送信本文・検出結果・placeholderMap は送信しません。外部LLM APIも使わず、WebLLMの推論もブラウザ内で完結します。
+追加ルール取得で送るのは `GET /api/rules/latest.json` だけで、貼り付け本文・送信本文・検出結果・placeholderMap は送信しません。外部LLM APIも使わず、WebLLMの推論もブラウザ内で完結します。
 
 公開ページは以下です。
 
-- LP: <https://ai-mae-check.pages.dev/>
-- プライバシー方針: <https://ai-mae-check.pages.dev/privacy>
-- サポート: <https://ai-mae-check.pages.dev/support>
+- LP: <https://shunya-mabuchi.github.io/ai-mae-check/>
+- プライバシー方針: <https://shunya-mabuchi.github.io/ai-mae-check/privacy/>
+- サポート: <https://shunya-mabuchi.github.io/ai-mae-check/support/>
 
-0.1.0の公開ZIPに対応するルール配信用 `privateJwk` は手元に残っていないため、0.1.1では鍵ペアを再発行し、`keyId` を `ai-mae-check-rules-2026-06-v2` として本番APIの署名付きルール配信を有効化しています。運用メモは [docs/rule-delivery-operations.md](docs/rule-delivery-operations.md) にまとめています。
+0.1.2ではGitHub Pages移行用の鍵ペアを再発行し、秘密鍵はGitHub Environment Secretだけに保存しています。追加ルールはGit管理、CI検証、ビルド時署名を経て静的JSONとして公開します。運用メモは [docs/rule-delivery-operations.md](docs/rule-delivery-operations.md) にまとめています。
 
 プライバシー方針の本文は [docs/privacy-policy.md](docs/privacy-policy.md) にあります。
 
@@ -347,20 +351,18 @@ pnpm dev:demo
 
 ## デモサイトの公開方針
 
-ポートフォリオ用の紹介ページ兼デモは、Cloudflare Pagesで公開しています。Viteの静的ビルドをそのまま配信でき、無料枠で運用しやすく、署名付きルール配信APIも同じCloudflare Pages Functions上で説明できるためです。
+ポートフォリオ用の紹介ページ兼デモは、GitHub Pagesで公開します。公開リポジトリ、標準のGitHub Actions、`github.io`ドメインを使うため、現時点では月額費用なしで運用できます。本文の検出処理はブラウザ内で行い、GitHub Pagesや外部LLM APIへ送りません。
 
-GitHub Pagesでも `apps/demo/dist` を公開できますが、現在の主運用はCloudflare Pagesです。どちらの場合もデモ本文はブラウザ内で処理し、外部LLM APIや独自バックエンドへ送信しません。
-
-Cloudflare Pagesの設定値、公開URL、公開後の確認手順は [docs/cloudflare-pages.md](docs/cloudflare-pages.md) にまとめています。
+署名付き追加ルールはGitHub Actionsのビルド時に生成し、同じGitHub Pages成果物として公開します。公開URL、Secret、ロールバック、確認手順は [docs/github-pages.md](docs/github-pages.md) にまとめています。
 
 LP上では、Chrome Web Store公開中の状態を表示し、主CTAをストア追加ボタンにしています。GitHubとミニデモは、実装確認と導入前の補助体験として残しています。
 
-現在のCloudflare Pages設定:
+現在のGitHub Pages設定:
 
-1. `pnpm build:demo` で `apps/demo/dist` を生成する
-2. Cloudflare PagesのBuild commandを `pnpm build:demo` にする
-3. Output directoryを `apps/demo/dist` にする
-4. 公開後、[docs/portfolio-demo-qa.md](docs/portfolio-demo-qa.md) の1440px / 390px確認観点で表示を確認する
+1. `pnpm build:pages` で `apps/demo/dist` と署名付きJSONを生成する
+2. `.github/workflows/github-pages.yml` が成果物をGitHub Pagesへデプロイする
+3. `privateJwk` はEnvironment `github-pages` のSecretにだけ保存する
+4. 公開後、`pnpm qa:rules:production` と [docs/portfolio-demo-qa.md](docs/portfolio-demo-qa.md) の1440px / 390px確認を行う
 
 ## 検出対象
 

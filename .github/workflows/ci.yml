@@ -84,6 +84,9 @@ jobs:
       - name: Demo SEO QA
         run: pnpm qa:demo:seo
 
+      - name: GitHub Pages QA
+        run: pnpm qa:github-pages
+
       - name: Portfolio case study QA
         run: pnpm qa:portfolio-case-study
 

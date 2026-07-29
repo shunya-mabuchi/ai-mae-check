@@ -14,7 +14,7 @@ AIまえチェックは、ChatGPT / Claude / Gemini / Perplexityへ文章を貼�
 
 ## 職務経歴書向け
 
-日本語ユーザー向けのChrome拡張「AIまえチェック」を個人開発しました。ChatGPT / Claude / Gemini / Perplexityへ文章を貼り付ける前・送信する前に、メールアドレス、電話番号、APIキー風文字列、秘密鍵、.env形式の秘密情報、社外秘に近い注意語などをブラウザ内で検出し、安全化候補を提示します。本文は永続保存せず、外部LLM APIへ送信しない設計です。TypeScript / React / WXT / Vite / Tailwind CSS / Vitest / Playwright / WebLLM / Cloudflare Pages Functionsを用い、Chrome Web Store公開を前提に権限説明、プライバシーポリシー、ストア素材、QA手順まで整備しました。
+日本語ユーザー向けのChrome拡張「AIまえチェック」を個人開発しました。ChatGPT / Claude / Gemini / Perplexityへ文章を貼り付ける前・送信する前に、メールアドレス、電話番号、APIキー風文字列、秘密鍵、.env形式の秘密情報、社外秘に近い注意語などをブラウザ内で検出し、安全化候補を提示します。本文は永続保存せず、外部LLM APIへ送信しない設計です。TypeScript / React / WXT / Vite / Tailwind CSS / Vitest / Playwright / WebLLM / GitHub Pages / GitHub Actionsを用い、Chrome Web Store公開、署名付き追加ルール、権限説明、プライバシーポリシー、ストア素材、QA手順まで整備しました。
 
 ## SNS向け
 

@@ -157,12 +157,12 @@ if (listing.language !== "日本語") {
   fail("language must be 日本語");
 }
 
-if (listing.supportUrl !== "https://ai-mae-check.pages.dev/support") {
-  fail("supportUrl must point to the Cloudflare Pages support page");
+if (listing.supportUrl !== "https://shunya-mabuchi.github.io/ai-mae-check/support/") {
+  fail("supportUrl must point to the GitHub Pages support page");
 }
 
-if (listing.privacyPolicyUrl !== "https://ai-mae-check.pages.dev/privacy") {
-  fail("privacyPolicyUrl must point to the Cloudflare Pages privacy policy");
+if (listing.privacyPolicyUrl !== "https://shunya-mabuchi.github.io/ai-mae-check/privacy/") {
+  fail("privacyPolicyUrl must point to the GitHub Pages privacy policy");
 }
 
 if (!listing.singlePurpose.includes("AIまえチェック")) {
@@ -206,7 +206,7 @@ if (!Array.isArray(listing.testInstructions) || listing.testInstructions.length 
 }
 
 for (const requiredPhrase of [
-  "GET /api/rules/latest",
+  "GET /api/rules/latest.json",
   "リクエスト本文は使用しません",
   "外部LLM API",
   "chrome.storage.local"

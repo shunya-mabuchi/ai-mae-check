@@ -2,7 +2,7 @@
 
 このファイルは、Chrome Web Store Developer Dashboardへ貼り付けた入力文の控えです。0.1.1はChrome Web Storeで一般公開済みです。2026-07-03に公開を確認しました。今後の掲載文修正は、この内容を基準にします。
 
-公開URLは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。Cloudflare Pages上のサポートページとプライバシーポリシーページを使い、サポートページ内の問い合わせ先としてGitHub Issuesと公開メールアドレスを案内します。
+公開URLは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。GitHub Pages上のサポートページとプライバシーポリシーページを使い、サポートページ内の問い合わせ先としてGitHub Issuesと公開メールアドレスを案内します。
 
 ## Store listing
 
@@ -53,15 +53,15 @@ AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章�
 
 ### ホームページURL
 
-https://ai-mae-check.pages.dev/
+https://shunya-mabuchi.github.io/ai-mae-check/
 
 ### サポートURL
 
-https://ai-mae-check.pages.dev/support
+https://shunya-mabuchi.github.io/ai-mae-check/support/
 
 ### プライバシーポリシーURL
 
-https://ai-mae-check.pages.dev/privacy
+https://shunya-mabuchi.github.io/ai-mae-check/privacy/
 
 ### 成人向けコンテンツ
 
@@ -79,13 +79,13 @@ AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章�
 
 ### ホスト権限 が必要な理由
 
-ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使用します。対象サイトは https://chatgpt.com/*、https://chat.openai.com/*、https://claude.ai/*、https://gemini.google.com/*、https://www.perplexity.ai/*、https://perplexity.ai/* に限定しており、<all_urls> は要求していません。
+ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使用します。対象AIサイトは https://chatgpt.com/*、https://chat.openai.com/*、https://claude.ai/*、https://gemini.google.com/*、https://www.perplexity.ai/*、https://perplexity.ai/* に限定しています。また、署名付き追加ルールJSONを取得するため https://shunya-mabuchi.github.io/ai-mae-check/* を使用します。この取得は本文なしのGETだけで行い、ユーザー本文を送信しません。<all_urls> は要求していません。
 
 ### リモートコード
 
 いいえ、リモートコードを使用していません。
 
-拡張機能のロジックとして外部から任意のコードを取得して実行しません。WebLLMの初回利用時にはローカル推論用のモデルファイルを取得する場合がありますが、これは推論用モデルデータであり、ユーザー本文を外部LLM APIへ送信するものではありません。ルール配信を有効にしている場合も、取得するのは GET /api/rules/latest の署名付きルールJSONのみで、リクエスト本文は使用しません。
+拡張機能のロジックとして外部から任意のコードを取得して実行しません。WebLLMの初回利用時にはローカル推論用のモデルファイルを取得する場合がありますが、これは推論用モデルデータであり、ユーザー本文を外部LLM APIへ送信するものではありません。ルール配信を有効にしている場合も、取得するのは GET /api/rules/latest.json の署名付きルールJSONのみで、リクエスト本文は使用しません。
 
 ### データ使用
 
@@ -137,7 +137,7 @@ Chrome Web Storeの申告では、拡張機能が入力欄テキストをブラ�
 5. 安全化して貼り付け、または安全化して送信で、検出箇所が日本語ラベルのプレースホルダーに置き換わることを確認します。
 6. Options Pageを開き、対象サイトや検出ルールのON/OFF設定が保存されることを確認します。テストデータには実在の個人情報や実APIキーを使わないでください。
 
-ルール配信Workerへ送るのは `GET /api/rules/latest` だけで、リクエスト本文は使用しません。外部LLM APIへ本文を送ることもありません。
+GitHub Pagesへ送るのは `GET /api/rules/latest.json` だけで、リクエスト本文は使用しません。外部LLM APIへ本文を送ることもありません。
 
 ## 手動で差し替える可能性がある項目
 

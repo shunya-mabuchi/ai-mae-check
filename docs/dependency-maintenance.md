@@ -1,6 +1,6 @@
 # 依存関係アップデートとライセンス確認
 
-AIまえチェックは、Chrome拡張、紹介LP、WebLLM、Cloudflare Pages Functionsを含むmonorepoです。依存関係の更新は、機能追加と同じくIssueとPRで管理します。
+AIまえチェックは、Chrome拡張、紹介LP、WebLLM、GitHub Pages用ビルドを含むmonorepoです。依存関係の更新は、機能追加と同じくIssueとPRで管理します。
 
 ## 基本方針
 
@@ -32,7 +32,7 @@ pnpm audit
 - `@mlc-ai/web-llm`
 - WebLLMが取得するモデルファイル
 - Chrome Web Store用画像やREADME掲載画像
-- Cloudflare Workers/Pages関連ツール
+- GitHub Actions / Pages関連actions
 
 確認コマンド:
 

@@ -40,7 +40,7 @@ for (const phrase of [
   "署名付きルール配信",
   "chrome.storage.local",
   "外部LLM API",
-  "Cloudflare Pages Functions",
+  "GitHub Pages",
   "情報漏洩を完全に防ぐものではありません",
   "ポートフォリオとして見てほしい点",
   "mermaid"

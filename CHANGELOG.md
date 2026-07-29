@@ -9,6 +9,13 @@ AIまえチェックの変更履歴です。Chrome Web Storeへ提出する拡�
 - ルールカタログと署名付きルール配信の継続運用
 - 拡張モーダルのプロダクトUI再設計、ローカルDLPランタイム再設計、PolicyDecision分離などは、IssueごとのPRで扱う
 
+## 0.1.2 - 未公開
+
+- 紹介LP、プライバシー方針、サポートページをGitHub Pagesへ移行
+- 署名付き追加ルールをGitHub Actionsでビルド時に生成し、静的JSONとして配信
+- GitHub Pages移行用の署名鍵と拡張側公開鍵を更新
+- Cloudflare Worker / Pages Functionsの実行時依存を削除
+
 ## 0.1.1 - 2026-07-03
 
 - Chrome Web StoreでAIまえチェック 0.1.1を一般公開

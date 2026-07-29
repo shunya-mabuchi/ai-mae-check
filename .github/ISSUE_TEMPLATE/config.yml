@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/shunya-mabuchi/ai-mae-check/blob/main/SECURITY.md
     about: 脆弱性や秘密情報を含む相談では、実データを公開Issueに書かないでください。
   - name: サポートページ
-    url: https://ai-mae-check.pages.dev/support
+    url: https://shunya-mabuchi.github.io/ai-mae-check/support/
     about: 利用上の制限や問い合わせ先を確認できます。
