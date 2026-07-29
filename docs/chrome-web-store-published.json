@@ -1,6 +1,9 @@
 {
   "extensionId": "idedmkfplfieijdcflcogkngplhkkecc",
   "version": "0.1.1",
+  "pendingVersion": "0.1.2",
+  "pendingStatus": "review",
+  "pendingSubmittedAt": "2026-07-30",
   "supportUrl": "https://shunya-mabuchi.github.io/ai-mae-check/support/",
   "privacyPolicyUrl": "https://shunya-mabuchi.github.io/ai-mae-check/privacy/",
   "checkedAt": "2026-07-30"

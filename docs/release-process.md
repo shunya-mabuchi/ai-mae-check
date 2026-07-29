@@ -68,7 +68,7 @@ Release本文には次を含めます。
 
 0.1.2では、`ai-mae-check-rules-2026-07-v3` の公開鍵を拡張へ埋め込み、GitHub Environment Secretの秘密鍵と一致させます。本番JSONの署名検証は `pnpm qa:rules:production` で確認します。
 
-0.1.1は2026-07-03に公開を確認済みです。0.1.2はGitHub Pages移行と署名鍵更新を含むため、Pages本番確認後に最終ZIPを作り直してChrome Web Storeへ提出します。
+0.1.1は2026-07-03に公開を確認済みです。GitHub Pages移行と署名鍵更新を含む0.1.2は、本番確認と最終ZIP再生成を終えて2026-07-30にChrome Web Storeへ審査送信しました。
 
 ## リリース後の確認
 

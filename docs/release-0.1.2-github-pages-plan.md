@@ -4,7 +4,7 @@
 
 0.1.2では、紹介LP、公開文書、署名付き追加ルール配信をCloudflareからGitHub Pagesへ完全移行します。移行後にCloudflare Pagesプロジェクトを停止し、二重運用は行いません。
 
-2026-07-30時点でGitHub Pagesの公開とCloudflare Pagesプロジェクトの削除は完了しています。0.1.2はChrome Web Storeへの提出準備中です。
+2026-07-30時点でGitHub Pagesの公開とCloudflare Pagesプロジェクトの削除は完了し、0.1.2をChrome Web Storeへ審査送信済みです。公開確認後に公開状態QAとリリース導線更新を行います。
 
 ## 公開構成
 
@@ -24,7 +24,7 @@
 1. `pnpm test`、`pnpm typecheck`、`pnpm build`、`pnpm qa:github-pages` が通る。
 2. 完了: GitHub Pagesで4つの公開URLを確認する。
 3. 完了: `pnpm qa:rules:production` で本番JSONの署名検証が通る。
-4. 0.1.2用ZIPを作成し、Chrome Web Storeへ提出する。
+4. 完了: 0.1.2用ZIPを作成し、2026-07-30にChrome Web Storeへ審査送信する。
 5. 0.1.2の公開を確認後、Chrome Web Store、README、GitHub ReleaseのURLをそろえる。
 6. 完了: GitHub Pagesの公開確認後、2026-07-30にCloudflare Pagesプロジェクトを削除する。
 
