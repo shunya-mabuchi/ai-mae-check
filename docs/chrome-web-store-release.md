@@ -4,7 +4,7 @@
 
 ## 現在のステータス
 
-- 0.1.0はChrome Web Storeで一般公開済みです。
+- 0.1.1はChrome Web Storeで一般公開済みです。
 - 公開URL: <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc>
 - 0.1.2では署名付き追加ルールをGitHub Actionsでビルド時に生成し、GitHub Pagesの静的JSONとして配信します。拡張は埋め込み公開鍵で署名を検証します。
 - 署名付きルール配信の鍵ローテーションとロールバック手順は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
@@ -53,7 +53,7 @@ Developer Dashboardへ入力する掲載情報の原本は [chrome-web-store-lis
 
 ### Host permissions
 
-ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使用します。追加で `https://shunya-mabuchi.github.io/ai-mae-check/*` を、署名付き追加ルールJSONの本文なしGETにだけ使用します。`<all_urls>` は要求しません。
+ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使用します。対象AIサイト以外のホスト権限と `<all_urls>` は要求しません。署名付き追加ルールJSONは、CORS対応した固定URLへ本文なしGETを行って取得します。
 
 ## Privacy practices入力方針
 
@@ -128,6 +128,14 @@ pnpm qa:extension:size
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
 ```
+
+公開後は、ネットワーク依存の確認を通常CIから分離して実行します。
+
+```bash
+pnpm qa:chrome-store:published
+```
+
+このQAは `docs/chrome-web-store-published.json` を基準に、Googleの更新情報で公開バージョンを確認し、公開掲載ページのサポートURLとプライバシーポリシーURLがGitHub Pagesを指していることを確認します。
 
 0.1.1は2026-07-03にChrome Web Storeで公開を確認しました。README、LP、GitHub Release、Chrome Web Store公開状態の導線を公開済み状態へ更新します。
 

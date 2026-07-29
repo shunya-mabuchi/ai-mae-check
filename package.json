@@ -19,7 +19,7 @@
     "test:core": "pnpm --filter @ai-mae-check/core test",
     "test:demo": "pnpm --filter @ai-mae-check/demo test",
     "test:llm": "pnpm --filter @ai-mae-check/llm test",
-    "test:pages": "vitest run scripts/github-pages-rule-delivery.test.ts",
+    "test:pages": "vitest run scripts/github-pages-rule-delivery.test.ts scripts/chrome-web-store-publication.test.ts",
     "test:e2e": "pnpm --filter @ai-mae-check/demo test:e2e",
     "test:extension:e2e": "node scripts/run-extension-e2e.mjs",
     "eval:dlp": "vitest run scripts/eval-dlp.test.ts --reporter=verbose",
@@ -48,6 +48,7 @@
     "qa:extension:size": "node scripts/check-extension-size-budget.mjs",
     "qa:extension:manifest": "node scripts/check-extension-manifest.mjs",
     "qa:chrome-store": "node scripts/check-chrome-store-readiness.mjs",
+    "qa:chrome-store:published": "node scripts/check-published-chrome-store.mjs",
     "bench:rules": "vitest run scripts/bench-rule-detection.test.ts --reporter=verbose"
   },
   "devDependencies": {

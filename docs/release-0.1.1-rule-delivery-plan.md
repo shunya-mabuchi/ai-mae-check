@@ -1,5 +1,7 @@
 # 0.1.1 ルール配信署名対応計画
 
+> この文書は0.1.1公開時の履歴です。Cloudflare Pagesは2026-07-30に削除済みで、現在の配信先はGitHub Pagesです。
+
 0.1.0の公開済みZIPは触りません。署名付きルール配信の本番有効化は、0.1.1で鍵ペアを再発行して対応します。
 
 2026-06-24時点で、`ai-mae-check-rules-2026-06-v2` の本番署名付きルール配信は有効化済みです。2026-06-27に0.1.1 ZIPをChrome Web Storeへ審査送信し、2026-07-03に公開を確認しました。
@@ -9,7 +11,7 @@
 - 0.1.0の拡張ZIPには、`apps/extension/config/rule-delivery.release.json` の公開鍵が埋め込まれています。
 - その公開鍵に対応する `privateJwk` は手元に残っていません。
 - 秘密鍵は公開鍵から復元できないため、Cloudflare Secretへ既存鍵として設定することはできません。
-- 現在の本番API `https://ai-mae-check.pages.dev/api/rules/latest` は、`keyId: ai-mae-check-rules-2026-06-v2` の署名付きJSONを返します。
+- 当時の本番API `https://ai-mae-check.pages.dev/api/rules/latest` は、`keyId: ai-mae-check-rules-2026-06-v2` の署名付きJSONを返していました。
 - 拡張側は通信失敗・署名検証失敗時に同梱ルールへフォールバックする設計です。
 
 ## 0.1.1でやること
