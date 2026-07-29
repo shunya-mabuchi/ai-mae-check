@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "version": "2026.07.29.1",
+  "generatedAt": "2026-07-29T00:00:00.000Z",
+  "expiresAt": "2099-12-31T00:00:00.000Z",
+  "deliveryStatus": "active",
+  "minExtensionVersion": "0.1.2",
+  "rules": [
+    {
+      "id": "slack_webhook_url",
+      "label": "Slack Webhook URL",
+      "riskLevel": "high",
+      "category": "secret",
+      "placeholderPrefix": "WEBHOOK_URL",
+      "pattern": "https://hooks\\.slack\\.com/services/[A-Za-z0-9/_-]+",
+      "flags": "g",
+      "message": "Slack Webhook URLは外部共有前に安全化してください。",
+      "confidence": 0.96
+    }
+  ]
+}

@@ -38,9 +38,9 @@
 
 ## 公開方針
 
-公開先はCloudflare Pagesです。Viteの静的ビルドを無料枠で配信しやすく、署名付きルール配信APIも同じCloudflare Pages Functions上で説明できるためです。
+公開先はGitHub Pagesです。公開リポジトリと標準GitHub ActionsでViteの静的ビルドを配信し、署名付き追加ルールも同じ成果物へ含めます。
 
-GitHub Pagesは代替候補です。GitHubだけで完結できる利点はありますが、Pages Functions、Preview deploy、Production rollbackを含めた運用説明まで考えると、現在の主運用はCloudflare Pagesに寄せています。
+GitHub Pagesへの完全移行により、LP、公開文書、追加ルールの配信元をGitHubへ統一します。実行時バックエンドは持たず、ロールバックはGit revertとPages再デプロイで行います。
 
 Chrome Web Store公開後は、LP上で「Chrome Web Store公開中」と明示し、Heroと導入セクションの主CTAをChrome Web Storeの追加リンクにする。GitHubとローカル読み込み手順は、実装確認や開発者向けの補助導線として残す。
 
@@ -56,4 +56,4 @@ Chrome Web Store公開後は、LP上で「Chrome Web Store公開中」と明示�
 ## 未確認・手動確認が必要な範囲
 
 - WebLLM実モデルロードは端末のWebGPU対応やモデル保存容量に依存するため、ポートフォリオ公開前に実機で別途確認する。
-- Cloudflare PagesのProduction deploy後、LP、`/privacy`、`/support`、`/api/rules/latest` を再確認する。
+- GitHub PagesのProduction deploy後、LP、`/privacy/`、`/support/`、`/api/rules/latest.json` を再確認する。

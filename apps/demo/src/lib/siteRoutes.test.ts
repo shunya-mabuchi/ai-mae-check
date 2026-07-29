@@ -1,37 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { cloudflarePagesConfig, resolveSiteRoute } from "./siteRoutes";
+import { githubPagesConfig, resolveSiteRoute, sitePath } from "./siteRoutes";
 
-describe("site routes", () => {
-  it("Cloudflare Pagesで直接開く公開ページを判定できる", () => {
-    expect(resolveSiteRoute("/")).toBe("home");
-    expect(resolveSiteRoute("/privacy")).toBe("privacy");
-    expect(resolveSiteRoute("/privacy/")).toBe("privacy");
-    expect(resolveSiteRoute("/support")).toBe("support");
-    expect(resolveSiteRoute("/support/")).toBe("support");
+describe("resolveSiteRoute", () => {
+  it("GitHub Pagesのbase pathを除いて公開ページを判定する", () => {
+    expect(resolveSiteRoute("/ai-mae-check/")).toBe("home");
+    expect(resolveSiteRoute("/ai-mae-check/privacy/")).toBe("privacy");
+    expect(resolveSiteRoute("/ai-mae-check/support/")).toBe("support");
   });
 
-  it("未知のパスはLPへ戻してSPAとして壊さない", () => {
-    expect(resolveSiteRoute("/unknown")).toBe("home");
-    expect(resolveSiteRoute("/demo")).toBe("home");
+  it("ローカル開発時のルート直下も判定する", () => {
+    expect(resolveSiteRoute("/")).toBe("home");
+    expect(resolveSiteRoute("/privacy")).toBe("privacy");
+    expect(resolveSiteRoute("/support")).toBe("support");
   });
 });
 
-describe("cloudflarePagesConfig", () => {
-  it("Cloudflare Pagesの設定値をドキュメントとコードで共有できる", () => {
-    expect(cloudflarePagesConfig).toEqual({
-      projectName: "ai-mae-check",
+describe("githubPagesConfig", () => {
+  it("公開URLとビルド設定をコードで共有する", () => {
+    expect(githubPagesConfig).toEqual({
+      repository: "shunya-mabuchi/ai-mae-check",
       productionBranch: "main",
-      rootDirectory: ".",
-      buildCommand: "pnpm build:demo",
+      workflow: ".github/workflows/github-pages.yml",
+      buildCommand: "pnpm build:pages",
       buildOutputDirectory: "apps/demo/dist",
       nodeVersion: "22",
       pnpmVersion: "10.12.1",
-      spaFallback: "cloudflare-pages-default",
+      basePath: "/ai-mae-check",
       urls: {
-        home: "https://ai-mae-check.pages.dev/",
-        privacy: "https://ai-mae-check.pages.dev/privacy",
-        support: "https://ai-mae-check.pages.dev/support"
+        home: "https://shunya-mabuchi.github.io/ai-mae-check/",
+        privacy: "https://shunya-mabuchi.github.io/ai-mae-check/privacy/",
+        support: "https://shunya-mabuchi.github.io/ai-mae-check/support/",
+        rules: "https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json"
       }
     });
+  });
+
+  it("内部リンクへbase pathを付与する", () => {
+    expect(sitePath("/")).toBe("/ai-mae-check/");
+    expect(sitePath("/#demo")).toBe("/ai-mae-check/#demo");
+    expect(sitePath("/privacy/")).toBe("/ai-mae-check/privacy/");
   });
 });

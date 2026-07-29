@@ -1,11 +1,11 @@
 # バージョニングとリリース運用
 
-AIまえチェックはChrome拡張がプロダクト本体です。GitHub Release、CHANGELOG、Chrome Web Store提出、Cloudflare Pagesの公開状態を分けて管理します。
+AIまえチェックはChrome拡張がプロダクト本体です。GitHub Release、CHANGELOG、Chrome Web Store提出、GitHub Pagesの公開状態を分けて管理します。
 
 ## バージョンの基準
 
 - Chrome Web Store提出バージョンは root `package.json` と `apps/extension/package.json` の `version` を基準にします。
-- `apps/demo`、`packages/core`、`packages/llm`、`apps/worker` はprivate packageとして扱い、npm公開バージョンではありません。
+- `apps/demo`、`packages/core`、`packages/llm` はprivate packageとして扱い、npm公開バージョンではありません。
 - ただし、拡張の提出に含まれる挙動が変わる場合は、rootとextensionのversionを更新します。
 
 ## リリース前の順序
@@ -36,6 +36,8 @@ pnpm qa:rule-catalog
 pnpm qa:extension:e2e-harness
 pnpm qa:dependency-policy
 pnpm qa:demo:seo
+pnpm qa:github-pages
+pnpm qa:rules:production
 pnpm qa:portfolio-case-study
 pnpm qa:extension:size
 pnpm qa:extension:manifest
@@ -60,20 +62,20 @@ Release本文には次を含めます。
 - 手動確認した対象サイト
 - 署名付きルール配信の状態
 
-0.1.0のRelease下書きは [docs/releases/v0.1.0.md](releases/v0.1.0.md) にあります。0.1.1のRelease下書きは [docs/releases/v0.1.1.md](releases/v0.1.1.md) にあります。
+0.1.0のRelease下書きは [docs/releases/v0.1.0.md](releases/v0.1.0.md)、0.1.1は [docs/releases/v0.1.1.md](releases/v0.1.1.md)、0.1.2は [docs/releases/v0.1.2.md](releases/v0.1.2.md) にあります。
 
-## 0.1.1の扱い
+## 0.1.2の扱い
 
-0.1.1では、`ai-mae-check-rules-2026-06-v2` の公開鍵を拡張へ埋め込み、Cloudflare Pages Functions側のSecretと一致させます。本番APIの署名検証は `pnpm qa:rules:production` で確認します。
+0.1.2では、`ai-mae-check-rules-2026-07-v3` の公開鍵を拡張へ埋め込み、GitHub Environment Secretの秘密鍵と一致させます。本番JSONの署名検証は `pnpm qa:rules:production` で確認します。
 
-0.1.1は、残Issueを解消したmainから最終ZIPを作り直し、公開前QAを通したうえでChrome Web Storeへ提出しました。
+0.1.1は2026-07-03に公開を確認済みです。0.1.2はGitHub Pages移行と署名鍵更新を含むため、Pages本番確認後に最終ZIPを作り直してChrome Web Storeへ提出します。
 
 ## リリース後の確認
 
 - Chrome Web Store公開URLが表示される
 - LPの主CTAが公開済みストアへ遷移する
-- `/privacy`、`/support` が開ける
-- `/api/rules/latest` が本番の `keyId` と署名付きpayloadを返し、`pnpm qa:rules:production` が通る
+- `/privacy/`、`/support/` が開ける
+- `/api/rules/latest.json` が本番の `keyId` と署名付きpayloadを返し、`pnpm qa:rules:production` が通る
 - GitHub Release本文がCHANGELOGと矛盾していない
 - READMEの公開ステータス、スクリーンショット、ストアURLが最新
 

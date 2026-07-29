@@ -1,123 +1,41 @@
-# ルール配信・署名検証サーバー
+# 署名付き追加ルール配信
 
-AIまえチェックでは、ユーザー本文をサーバーへ送らずに、検出ルールだけを安全に更新できる仕組みを追加しています。
+AIまえチェックは、同梱ルールを必ず使える状態にしたうえで、GitHub Pagesから署名付き追加ルールを取得できます。ユーザー本文、検出結果、placeholderMapは送信しません。
 
-0.1.0では、拡張ZIPに埋め込まれた公開鍵に対応する `privateJwk` が手元に残っていなかったため、署名付きルール配信の本番有効化は見送りました。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` に更新し、新しい公開JWKを拡張へ反映済みです。ルールバンドルには `expiresAt` と任意の `deliveryStatus` を含め、署名検証後に期限切れまたは停止中の配信ルールを採用しないようにしています。運用手順は [rule-delivery-operations.md](./rule-delivery-operations.md) を参照してください。
+## エンドポイント
 
-## 方針
+### `GET /api/rules/latest.json`
 
-- サーバーへユーザーの貼り付け本文、送信本文、添付ファイル本文、検出結果、placeholderMapを送らない
-- ルール配信APIは署名付きルールバンドルだけを返す
-- 拡張側は署名検証できたルールだけを追加ルールとして使う
-- 署名検証に失敗した場合、URL未設定の場合は同梱ルールだけで動く
-- ネットワークエラーやHTTPエラーの場合は、期限内かつ再検証できたリモートルールキャッシュだけを使う
-- リモートルールは署名検証できたものだけを採用し、最後に検証済みの署名付きリモートルールだけを短時間キャッシュする
+本番URLは `https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json` です。リクエスト本文はありません。レスポンスは `schema`、`keyId`、`payload`、`signature` を持つ静的JSONです。
 
-## API仕様
+## 生成
 
-### `GET /api/rules/latest`
+1. `rules/latest.json` をPRで変更する。
+2. CIでschema、正規表現、fixture、公開リポジトリ安全性を検証する。
+3. `main` のGitHub Pages workflowがEnvironment Secretの秘密鍵で署名する。
+4. 署名済みJSONをPages artifactへ含める。
+5. 拡張が埋め込み公開鍵で署名を検証する。
 
-最新の署名付きルールバンドルを返します。
+秘密鍵をリポジトリや成果物へ含めません。署名できない場合はデプロイ自体を失敗させます。
 
-リクエスト本文は使いません。拡張側もGETだけを行い、本文や検出対象テキストを送信しません。
+## 拡張側
 
-レスポンス例:
+Content Script起動時に `GET /api/rules/latest.json` を実行し、次を満たす場合だけ採用します。
 
-```json
-{
-  "alg": "ECDSA-P256-SHA256",
-  "keyId": "ai-mae-check-rules-2026-06-v2",
-  "payload": {
-    "schemaVersion": 1,
-    "version": "2026.06.23.1",
-    "generatedAt": "2026-06-16T00:00:00.000Z",
-    "expiresAt": "2099-12-31T00:00:00.000Z",
-    "deliveryStatus": "active",
-    "minExtensionVersion": "0.1.0",
-    "rules": [
-      {
-        "id": "slack_webhook_url",
-        "label": "Slack webhook URL風文字列",
-        "riskLevel": "high",
-        "category": "secret",
-        "placeholderPrefix": "WEBHOOK_URL",
-        "pattern": "https://hooks\\.slack\\.com/services/[A-Za-z0-9/_-]+",
-        "flags": "g",
-        "message": "Webhook URLは外部へ送る前に確認したい秘密情報です。",
-        "confidence": 0.96
-      }
-    ]
-  },
-  "signature": "base64url-signature"
-}
-```
+- `keyId` が許可された公開鍵に対応する
+- ECDSA P-256署名を検証できる
+- schema、期限、最小拡張バージョンが有効
+- 正規表現とrule定義を安全に変換できる
 
-### `GET /health`
+取得失敗、署名不一致、期限切れ、`deliveryStatus: paused` の場合は、検証済みキャッシュまたは同梱ルールへフォールバックします。リモート障害で拡張全体を止めません。
 
-ヘルスチェック用です。
+## ルール作成
 
-```json
-{ "ok": true }
-```
-
-## 署名方式
-
-- 方式: ECDSA P-256 + SHA-256
-- 署名対象: `alg`, `keyId`, `payload` を安定JSON化した文字列
-- 署名形式: base64url
-- 実装場所: `packages/core/src/remoteRules.ts`
-
-`payload`だけでなく`alg`と`keyId`も署名対象に含め、署名方式や鍵IDの差し替えを検出できるようにしています。
-
-## 鍵管理方針
-
-- 公開鍵: 拡張機能に埋め込む
-- 秘密鍵: Cloudflare Workersの環境変数またはsecretとして管理する
-- 本番用秘密鍵はリポジトリに置かない
-- `apps/worker/.dev.vars.example` はプレースホルダーであり、そのまま本番利用しない
-- `keyId` は鍵世代を表し、拡張側の公開JWKとWorker側の署名鍵を対応づける
-- `payload.version` はルール配信内容の世代を表し、ロールバック判断に使う
-
-鍵生成:
+ルールの詳細は [検出ルール作成ガイド](detection-rule-authoring.md)、品質評価は [DLPルール品質評価プロセス](dlp-rule-quality-process.md)、運用は [ルール配信運用](rule-delivery-operations.md) を参照してください。
 
 ```bash
-pnpm rules:keygen -- --key-id ai-mae-check-rules-2026-06-v2 --private-out ../ai-mae-check-rules-2026-06-v2.private.jwk.json
+pnpm test:core
+pnpm test:pages
+pnpm qa:rule-catalog
+pnpm qa:github-pages
 ```
-
-出力された `publicJwk` を拡張側の公開鍵へ反映し、`--private-out` で保存した `privateJwk` をWorkerの `RULE_SIGNING_PRIVATE_JWK` に設定します。本番鍵では `--include-private` を使って標準出力へ秘密鍵を出さないでください。
-
-鍵ローテーション、壊れたルール配信時のロールバック、`privateJwk` の扱いは [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
-
-検出ルール作成ガイド、同梱ルールカタログ、ルールID・riskLevel・placeholderPrefix・テスト観点は [detection-rule-authoring.md](./detection-rule-authoring.md) にまとめています。
-
-## 拡張側フロー
-
-1. `VITE_RULE_DELIVERY_URL` が未設定なら、リモート取得を行わず同梱ルールだけで検出する
-2. URLが設定されている場合、Content Script起動時に `GET /api/rules/latest` を実行する
-3. レスポンスを `verifySignedRemoteRuleBundle` で検証する
-4. 検証OKなら `detectSensitiveText(input, { extraRules })` に追加ルールとして渡す
-5. 検証OKなら、署名付きルールJSON、`keyId`、`version`、`generatedAt`、`cachedAt`、`expiresAt` を短期間キャッシュする
-6. 通信失敗またはHTTPエラーの場合は、期限内かつ再検証できたキャッシュだけを利用する
-7. 検証NG、JSON形式不正、署名欠落、`keyId` 不一致、期限切れキャッシュ、`deliveryStatus: "paused"` の場合は空の追加ルールとして扱い、同梱ルールへフォールバックする
-
-Chrome Web Store提出用のZIPは `apps/extension/config/rule-delivery.release.json` を基準に組み立てます。`pnpm package:extension` は、本番URL・`keyId`・公開JWKがそろっていない場合は失敗します。
-
-このフローにユーザー本文は含まれません。`chrome.storage.local` へ保存するリモートルールキャッシュにも、貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は含めません。
-
-## ローカル開発
-
-WorkerはCloudflare Workersを想定しています。
-
-```bash
-pnpm build:worker
-pnpm test:worker
-```
-
-Wranglerで動かす場合は、`apps/worker/.dev.vars.example` を `.dev.vars` にコピーし、`pnpm rules:keygen` で生成した秘密鍵へ差し替えてください。
-
-## 制限
-
-- リモートルールキャッシュは短時間だけ利用し、期限切れや再検証失敗時は破棄します
-- 正規表現ルールの安全性は署名者がレビューする前提です
-- 署名検証に失敗したルールは使いません
-- ルール配信サーバーが落ちても、期限内キャッシュまたは同梱ルールベース検出で継続します

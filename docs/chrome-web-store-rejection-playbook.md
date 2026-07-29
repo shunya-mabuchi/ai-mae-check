@@ -80,7 +80,7 @@ Chrome Web Storeの審査で差し戻しが発生した場合の原因分類、�
 - 初期実装で `<all_urls>` を要求していない
 - host permissionsが対象サイトに限定されている
 - `storage` は設定保存と検証済みリモートルールキャッシュだけに使う説明になっている
-- ルール配信を使う場合も、送るのは `GET /api/rules/latest` だけで本文を送らない
+- ルール配信を使う場合も、送るのは `GET /api/rules/latest.json` だけで本文を送らない
 - E2E専用host permissionやlocalhost設定がリリースmanifestへ混入していない
 
 ## プライバシー申告指摘時の確認項目

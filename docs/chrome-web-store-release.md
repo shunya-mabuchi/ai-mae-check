@@ -6,7 +6,7 @@
 
 - 0.1.0はChrome Web Storeで一般公開済みです。
 - 公開URL: <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc>
-- ルール配信APIはCloudflare Pages Functionsで実装済みです。0.1.1では `keyId` を `ai-mae-check-rules-2026-06-v2` へ更新し、本番署名付きルールJSONを拡張側公開鍵で検証できる状態にしています。
+- 0.1.2では署名付き追加ルールをGitHub Actionsでビルド時に生成し、GitHub Pagesの静的JSONとして配信します。拡張は埋め込み公開鍵で署名を検証します。
 - 署名付きルール配信の鍵ローテーションとロールバック手順は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
 
 ## 参照する公式ドキュメント
@@ -41,9 +41,9 @@ Developer Dashboardへ入力する掲載情報の原本は [chrome-web-store-lis
 
 掲載カテゴリは `ツール`、言語は `日本語` です。ホームページURL、サポートURL、プライバシーポリシーURLは以下を使います。
 
-- ホームページ: <https://ai-mae-check.pages.dev/>
-- サポート: <https://ai-mae-check.pages.dev/support>
-- プライバシーポリシー: <https://ai-mae-check.pages.dev/privacy>
+- ホームページ: <https://shunya-mabuchi.github.io/ai-mae-check/>
+- サポート: <https://shunya-mabuchi.github.io/ai-mae-check/support/>
+- プライバシーポリシー: <https://shunya-mabuchi.github.io/ai-mae-check/privacy/>
 
 ## 権限理由
 
@@ -53,7 +53,7 @@ Developer Dashboardへ入力する掲載情報の原本は [chrome-web-store-lis
 
 ### Host permissions
 
-ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使用します。対象サイトは対応サイトに限定し、`<all_urls>` は要求しません。
+ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送信前操作を検知し、ユーザーに確認画面を表示するために使用します。追加で `https://shunya-mabuchi.github.io/ai-mae-check/*` を、署名付き追加ルールJSONの本文なしGETにだけ使用します。`<all_urls>` は要求しません。
 
 ## Privacy practices入力方針
 
@@ -65,7 +65,7 @@ AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章�
 
 「いいえ、リモートコードを使用していません」を選択します。
 
-拡張機能のロジックとして外部から任意のコードを取得して実行しません。WebLLMの初回利用時にはローカル推論用のモデルファイルを取得する場合がありますが、これは推論用モデルデータであり、ユーザー本文を外部LLM APIへ送信するものではありません。ルール配信を有効にしている場合も、取得するのは `GET /api/rules/latest` の署名付きルールJSONのみで、リクエスト本文は使用しません。
+拡張機能のロジックとして外部から任意のコードを取得して実行しません。WebLLMの初回利用時にはローカル推論用のモデルファイルを取得する場合がありますが、これは推論用モデルデータであり、ユーザー本文を外部LLM APIへ送信するものではありません。ルール配信を有効にしている場合も、取得するのは `GET /api/rules/latest.json` の署名付きルールJSONのみで、リクエスト本文は使用しません。
 
 ### Data usage
 
@@ -140,7 +140,7 @@ pnpm qa:chrome-store
 - WXT表示: 8.77 MB
 - サイズQA表示: 8.37 MB
 - SHA-256: `6F74A9C2312413F15B58D66D9B95796BF654368AE8A53FF5D17B4D1A7790B42F`
-- 生成方法: `VITE_RULE_DELIVERY_URL=https://ai-mae-check.pages.dev/api/rules/latest` を指定して `wxt zip` を実行
+- 生成方法: `apps/extension/config/rule-delivery.release.json` のGitHub Pages URLと公開JWKを使い、`pnpm package:extension` を実行
 - 公開状態: 2026-07-03にChrome Web Storeで0.1.1公開を確認
 - 補足: この環境では `pnpm package:extension` がpnpmの依存ビルド承認チェックで実行前に失敗したため、同等のWXT zipを直接実行しています。CIのTypecheck / test / build / release QAはPRで確認します。
 

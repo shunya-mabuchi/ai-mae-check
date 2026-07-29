@@ -36,7 +36,7 @@ AIまえチェックは、ChatGPT、Claude、Geminiなどへ文章を貼り付�
 - メールアドレス、電話番号、住所、氏名などの実個人情報
 - APIキー、OAuth token、JWT、秘密鍵、`.env` の実値
 - 顧客名、案件名、契約条件、給与、採用、法務に関する実データ
-- Cloudflare、GitHub、Chrome Web Store、Hugging Faceなどの認証情報
+- GitHub、Chrome Web Store、Hugging Faceなどの認証情報
 
 再現に文字列が必要な場合は、`taro@example.com`、`AKIAIOSFODNN7EXAMPLE`、`ghp_dummyDummyDummyDummyDummyDummy123456` のようなダミー値を使ってください。
 
@@ -47,7 +47,7 @@ AIまえチェックは、ChatGPT、Claude、Geminiなどへ文章を貼り付�
 1. ユーザー本文を保存・送信していない設計が破れていないか
 2. 検出、マスク、安全化、送信抑止の判断が想定どおりか
 3. ルール配信や署名検証の失敗時に、安全側へ倒れているか
-4. 拡張権限、CSP、WebLLM Worker、Cloudflare Pages Functionsに不要なリスクがないか
+4. 拡張権限、CSP、WebLLM Worker、GitHub Pagesの署名付き静的ルール配信に不要なリスクがないか
 
 重大度が高い場合は、修正PR、リリースノート、Chrome Web Storeへの更新提出を優先します。
 

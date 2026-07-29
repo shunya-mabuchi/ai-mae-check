@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("サンプル文を挿入し、ルールベース検出とマスキングを確認できる", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/ai-mae-check/");
 
   await expect(page.getByRole("heading", { name: "貼り付け前チェックの動きを試す" })).toBeVisible();
   await expect(page.getByText("デモで確認できること")).toBeVisible();
@@ -22,15 +22,15 @@ test("サンプル文を挿入し、ルールベース検出とマスキング�
 });
 
 test("プライバシーポリシーを公開URLとして直接開ける", async ({ page }) => {
-  await page.goto("/privacy");
+  await page.goto("/ai-mae-check/privacy/");
 
   await expect(page.getByRole("heading", { name: "プライバシーポリシー" })).toBeVisible();
   await expect(page.getByText(/貼り付け本文やファイル本文は永続保存しません。/)).toBeVisible();
-  await expect(page.getByRole("link", { name: "トップへ戻る" })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: "トップへ戻る" })).toHaveAttribute("href", "/ai-mae-check/");
 });
 
 test("公開ページのナビはカード風に浮かせずページ導線として表示する", async ({ page }) => {
-  await page.goto("/privacy");
+  await page.goto("/ai-mae-check/privacy/");
 
   const publicNavigation = page.getByRole("navigation", { name: "公開ページ" });
   await expect(publicNavigation).toBeVisible();
@@ -41,7 +41,7 @@ test("公開ページのナビはカード風に浮かせずページ導線と�
 });
 
 test("公開ページのフッターはカード風に浮かせずページ下部の導線として表示する", async ({ page }) => {
-  await page.goto("/privacy");
+  await page.goto("/ai-mae-check/privacy/");
 
   const footer = page.locator("footer");
   const footerShell = page.locator("footer > div");
@@ -51,11 +51,11 @@ test("公開ページのフッターはカード風に浮かせずページ下�
   await expect(footerShell).not.toHaveClass(/shadow-soft/);
   await expect(footerShell).not.toHaveClass(/rounded-card/);
   await expect(footerShell).not.toHaveClass(/border-line/);
-  await expect(page.getByRole("link", { name: "拡張機能の使い方" })).toHaveAttribute("href", "/#extension");
+  await expect(page.getByRole("link", { name: "拡張機能の使い方" })).toHaveAttribute("href", "/ai-mae-check/#extension");
 });
 
 test("サポートページを公開URLとして直接開ける", async ({ page }) => {
-  await page.goto("/support");
+  await page.goto("/ai-mae-check/support/");
 
   await expect(page.getByRole("heading", { name: "サポート" })).toBeVisible();
   await expect(page.getByText(/不具合報告や改善相談はGitHub Issuesで受け付けます。/)).toBeVisible();

@@ -1,4 +1,5 @@
 import { chromeWebStoreUrl } from "../lib/productLaunchFlow";
+import { sitePath } from "../lib/siteRoutes";
 
 export function Footer() {
   return (
@@ -19,10 +20,10 @@ export function Footer() {
             Chrome Web Storeで追加
           </a>
           <div className="flex flex-wrap gap-x-5 gap-y-2 font-semibold text-muted md:justify-end">
-            <a href="/#extension" className="transition hover:text-ink">
+            <a href={sitePath("/#extension")} className="transition hover:text-ink">
               拡張機能の使い方
             </a>
-            <a href="/#demo" className="transition hover:text-ink">
+            <a href={sitePath("/#demo")} className="transition hover:text-ink">
               ミニデモ
             </a>
             <a href="https://github.com/shunya-mabuchi/ai-mae-check" className="transition hover:text-ink">
@@ -34,10 +35,10 @@ export function Footer() {
             <a href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/portfolio-case-study.md" className="transition hover:text-ink">
               ケーススタディ
             </a>
-            <a href="/privacy" className="transition hover:text-ink">
+            <a href={sitePath("/privacy/")} className="transition hover:text-ink">
               プライバシー方針
             </a>
-            <a href="/support" className="transition hover:text-ink">
+            <a href={sitePath("/support/")} className="transition hover:text-ink">
               サポート
             </a>
           </div>

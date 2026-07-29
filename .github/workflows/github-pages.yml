@@ -1,0 +1,61 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: GitHub Pagesへ公開
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: リポジトリを取得
+        uses: actions/checkout@v4
+
+      - name: pnpmを準備
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+          run_install: false
+
+      - name: Node.jsを準備
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 依存関係をインストール
+        run: pnpm install --frozen-lockfile
+
+      - name: GitHub Pages成果物と署名付きルールを生成
+        run: pnpm build:pages
+        env:
+          RULE_KEY_ID: ai-mae-check-rules-2026-07-v3
+          RULE_SIGNING_PRIVATE_JWK: ${{ secrets.RULE_SIGNING_PRIVATE_JWK }}
+
+      - name: Pagesを設定
+        uses: actions/configure-pages@v5
+
+      - name: Pages成果物をアップロード
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: apps/demo/dist
+
+      - name: GitHub Pagesへデプロイ
+        id: deployment
+        uses: actions/deploy-pages@v4

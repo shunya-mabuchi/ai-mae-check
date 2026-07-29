@@ -49,7 +49,7 @@ for (const needle of [
   "<title>AIまえチェック | AIに送る前に、消し忘れを見つける。</title>",
   'name="description"',
   'rel="canonical"',
-  'href="https://ai-mae-check.pages.dev/"',
+  'href="https://shunya-mabuchi.github.io/ai-mae-check/"',
   'rel="icon"',
   'rel="apple-touch-icon"',
   'rel="manifest"',
@@ -76,17 +76,17 @@ if (manifest.name !== "AIまえチェック" || manifest.short_name !== "AIま�
   fail("site.webmanifest must use the product name");
 }
 
-assertIncludes(read(paths.robots), "Sitemap: https://ai-mae-check.pages.dev/sitemap.xml", paths.robots);
-for (const url of ["https://ai-mae-check.pages.dev/", "https://ai-mae-check.pages.dev/privacy", "https://ai-mae-check.pages.dev/support"]) {
+assertIncludes(read(paths.robots), "Sitemap: https://shunya-mabuchi.github.io/ai-mae-check/sitemap.xml", paths.robots);
+for (const url of ["https://shunya-mabuchi.github.io/ai-mae-check/", "https://shunya-mabuchi.github.io/ai-mae-check/privacy/", "https://shunya-mabuchi.github.io/ai-mae-check/support/"]) {
   assertIncludes(sitemap, url, paths.sitemap);
   assertIncludes(docs, url, paths.docs);
 }
 
 for (const phrase of [
   "カスタムドメイン方針",
-  "0.1.xでは `ai-mae-check.pages.dev`",
-  "2026-06-24時点の判断",
-  "独自ドメインとGoogle Search Console導入は、現時点では見送ります",
+  "GitHub Pages",
+  "2026-07-29時点の判断",
+  "独自ドメインとGoogle Search Console導入は現時点では見送ります",
   "Google Search Console",
   "pnpm qa:demo:seo"
 ]) {

@@ -37,7 +37,7 @@ AIまえチェックの検出ルールは、メールアドレスやAPIキー風
 ### 署名付き配信ルール
 
 - schema: `RemoteDetectorRuleDefinition`
-- 取得API: `GET /api/rules/latest`
+- 取得先: GitHub Pagesの静的JSON `GET /api/rules/latest.json`
 - 検証: `verifySignedRemoteRuleBundle`
 - 合流方法: `detectSensitiveText(input, { extraRules })`
 - ruleId: 拡張側では `remote:<id>` になる
@@ -243,7 +243,7 @@ Webhook URLは外部へ送る前に確認したい秘密情報です。
 - `packages/core/tests/remoteRules.test.ts` で署名検証後に `detectSensitiveText(input, { extraRules })` へ合流できることを確認する
 - `payload.version` を上げる
 - ユーザー本文や実secretをfixtureへ入れない
-- `pnpm test:core` と `pnpm test:worker` を実行する
+- `pnpm test:core` と `pnpm test:pages` を実行する
 - プレビューAPIで `alg`、`keyId`、`payload.version`、`signature` を確認する
 
 ## 署名付き配信前レビュー
@@ -254,9 +254,9 @@ Webhook URLは外部へ送る前に確認したい秘密情報です。
 4. ReDoSにつながる表現がないか確認する
 5. `payload.version` と `generatedAt` が更新されているか確認する
 6. `minExtensionVersion` を上げる場合は理由をPRに書く
-7. `pnpm qa:rule-catalog`、`pnpm test:core`、`pnpm test:worker` を実行する
-8. Cloudflare Pages Previewで署名付きレスポンスを確認する
-9. mainへマージ後、Productionの `/api/rules/latest` を確認する
+7. `pnpm qa:rule-catalog`、`pnpm test:core`、`pnpm test:pages` を実行する
+8. PRのCIでGitHub Pages成果物の構造を確認する
+9. mainへマージ後、本番の `/api/rules/latest.json` を確認する
 
 ## ロールバック基準
 

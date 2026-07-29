@@ -1,6 +1,6 @@
 # AIまえチェック プライバシー方針
 
-最終更新日: 2026-06-24
+最終更新日: 2026-07-29
 
 AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章を送る前に、個人情報・秘密情報・APIキーなどの消し忘れに気づくためのChrome拡張です。
 
@@ -89,8 +89,9 @@ AIまえチェックは、初期対象サイトとして次のサイトでのみ
 対象サイトのhost permissions:
 
 - 対象サイト上で貼り付け操作、送信前操作、テキスト入力欄を確認するために使います。
+- `https://shunya-mabuchi.github.io/ai-mae-check/*` は、署名付き追加ルールJSONをbackground service workerから取得するために使います。ユーザー本文は送信しません。
 
-ルール配信を有効にしている場合でも、拡張機能がルール配信Workerへ送るのは `GET /api/rules/latest` だけです。貼り付け本文、送信本文、検出結果、placeholderMap は送信しません。外部LLM APIへ本文を送ることもありません。
+ルール配信を有効にしている場合でも、拡張機能がGitHub Pagesへ送るのは署名付き静的JSONを取得する `GET /api/rules/latest.json` だけです。貼り付け本文、送信本文、検出結果、placeholderMap は送信しません。外部LLM APIへ本文を送ることもありません。
 
 ## 第三者への提供
 

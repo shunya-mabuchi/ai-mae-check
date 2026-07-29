@@ -34,11 +34,11 @@ WebLLMは、顧客名、会社名、案件名、契約・採用・給与・法�
 
 ### 4. 本文を保存しない
 
-貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は永続保存しません。`chrome.storage.local` に保存するのは、ユーザー設定と検証済みの署名付きリモートルールキャッシュだけです。ルール配信を使う場合も、拡張が送るのは署名付きルールJSONを取得する `GET /api/rules/latest` だけで、本文は送りません。
+貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は永続保存しません。`chrome.storage.local` に保存するのは、ユーザー設定と検証済みの署名付きリモートルールキャッシュだけです。ルール配信を使う場合も、拡張が送るのは署名付きルールJSONを取得する `GET /api/rules/latest.json` だけで、本文は送りません。
 
 ### 5. 署名付きルール配信を運用基盤として実装する
 
-ルールはGit管理し、CIで検証し、Cloudflare Pages Functionsから署名付きJSONとして配信します。拡張側は公開鍵で署名を検証し、検証できないルールは採用しません。これにより、拡張を毎回更新しなくても検出ルールを増やしつつ、改ざんや誤配信に対して安全側へ倒せます。
+ルールはGit管理し、CIで検証し、GitHub Actionsでビルド時に署名してGitHub Pagesから静的JSONとして配信します。拡張側は公開鍵で署名を検証し、検証できないルールは採用しません。これにより、拡張を毎回更新しなくても検出ルールを増やしつつ、改ざんや誤配信に対して安全側へ倒せます。
 
 ## アーキテクチャ
 
@@ -52,7 +52,7 @@ flowchart LR
   Modal --> Insert["安全化して入力"]
   Modal --> LLM["packages/llm\nWebLLM Context Risk Engine"]
   LLM --> Modal
-  Rules["Cloudflare Pages Functions\n署名付きルール配信"] --> Verify["公開鍵で署名検証"]
+  Rules["GitHub Pages\n署名付き静的ルール配信"] --> Verify["公開鍵で署名検証"]
   Verify --> Core
   Options["Options Page"] --> Storage["chrome.storage.local\n設定と検証済みルールキャッシュ"]
 ```
@@ -68,25 +68,25 @@ flowchart LR
 - Playwright
 - Chrome Extension Manifest V3
 - WebLLM / WebGPU / Web Worker
-- Cloudflare Pages / Pages Functions
+- GitHub Pages / GitHub Actions
 - pnpm workspace
 
 ## ルール配信と署名検証
 
-0.1.1では、ルール配信用の鍵ペアを再発行し、Cloudflare側のSecretと拡張側の公開鍵を一致させています。本番APIの署名は `pnpm qa:rules:production` で検証できます。署名検証に失敗した場合や、ネットワークエラーが起きた場合は、同梱ルールだけで動作します。
+0.1.2では、GitHub Pages移行用の鍵ペアを再発行し、GitHub Environment Secretと拡張側の公開鍵を一致させています。本番JSONの署名は `pnpm qa:rules:production` で検証できます。署名検証に失敗した場合や、ネットワークエラーが起きた場合は、同梱ルールだけで動作します。
 
 ```mermaid
 sequenceDiagram
   participant Repo as Git管理されたルール
   participant CI as CI検証
-  participant Worker as Cloudflare Pages Functions
+  participant Pages as GitHub Pages
   participant Extension as Chrome拡張
 
   Repo->>CI: ルール変更PR
   CI->>CI: schema / test / public safety QA
-  CI->>Worker: main反映後に署名付きJSONを配信
-  Extension->>Worker: GET /api/rules/latest
-  Worker-->>Extension: signed payload
+  CI->>Pages: main反映後に署名付きJSONを配信
+  Extension->>Pages: GET /api/rules/latest.json
+  Pages-->>Extension: signed payload
   Extension->>Extension: 公開鍵とkeyIdを検証
   Extension->>Extension: 検証OKなら採用 / NGなら同梱ルールへfallback
 ```
@@ -113,7 +113,7 @@ AIまえチェックは情報漏洩を完全に防ぐものではありません
 - UIではなく `packages/core` に検出エンジンを分離したこと
 - WebLLMを安全判定の中心に置かず、補助候補として扱ったこと
 - 本文を保存しないプライバシー設計
-- Cloudflareを使った無料運用と署名付きルール配信の拡張余地
+- GitHub Pagesを使った無料運用と署名付きルール配信の拡張余地
 - Chrome Web Store公開、掲載素材、プライバシーポリシー、サポート導線、QAコマンドまで整えたこと
 
 ## 今後

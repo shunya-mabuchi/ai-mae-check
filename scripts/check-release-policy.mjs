@@ -10,8 +10,9 @@ const paths = {
   changelog: "CHANGELOG.md",
   releaseProcess: "docs/release-process.md",
   chromeStoreRelease: "docs/chrome-web-store-release.md",
-  ruleDeliveryPlan: "docs/release-0.1.1-rule-delivery-plan.md",
+  ruleDeliveryPlan: "docs/release-0.1.2-github-pages-plan.md",
   releaseDraft011: "docs/releases/v0.1.1.md",
+  releaseDraft012: "docs/releases/v0.1.2.md",
   readme: "README.md"
 };
 
@@ -26,6 +27,7 @@ const releaseProcess = qa.read(paths.releaseProcess);
 const chromeStoreRelease = qa.read(paths.chromeStoreRelease);
 const ruleDeliveryPlan = qa.read(paths.ruleDeliveryPlan);
 const releaseDraft011 = qa.read(paths.releaseDraft011);
+const releaseDraft012 = qa.read(paths.releaseDraft012);
 const readme = qa.read(paths.readme);
 
 if (rootPackage.version !== extensionPackage.version) {
@@ -47,6 +49,7 @@ for (const command of [
   "pnpm qa:extension:e2e-harness",
   "pnpm qa:dependency-policy",
   "pnpm qa:demo:seo",
+  "pnpm qa:github-pages",
   "pnpm qa:rules:production",
   "pnpm qa:portfolio-case-study",
   "pnpm qa:extension:size",
@@ -61,11 +64,14 @@ for (const phrase of ["公開を確認", "GitHub Release", "Chrome Web Store"]) 
 }
 
 qa.assertIncludes(changelog, "## Unreleased", paths.changelog);
+qa.assertIncludes(changelog, "0.1.2", paths.changelog);
 qa.assertIncludes(changelog, "## 0.1.1 - 2026-07-03", paths.changelog);
 qa.assertIncludes(changelog, "## 0.1.0 - 2026-06-20", paths.changelog);
 qa.assertIncludes(chromeStoreRelease, "pnpm qa:extension:size", paths.chromeStoreRelease);
 qa.assertIncludes(ruleDeliveryPlan, "公開を確認", paths.ruleDeliveryPlan);
 qa.assertIncludes(readme, "CHANGELOG.md", paths.readme);
+qa.assertIncludes(releaseDraft012, "GitHub Pages", paths.releaseDraft012);
+qa.assertIncludes(releaseDraft012, "0.1.2", paths.releaseDraft012);
 
 for (const phrase of [
   "2026-06-27",
