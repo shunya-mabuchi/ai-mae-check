@@ -1,11 +1,14 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   signRemoteRuleBundle,
   validateRemoteRuleBundlePayload,
   verifySignedRemoteRuleBundle
 } from "../packages/core/src";
+import { signGithubPagesRules } from "./sign-github-pages-rules";
 
 const rootDir = resolve(__dirname, "..");
 
@@ -50,6 +53,34 @@ describe("GitHub Pages署名付きルール配信", () => {
     if (result.ok) {
       expect(result.payload.version).toBe("2026.07.29.1");
       expect(result.rules[0]?.id).toBe("remote:slack_webhook_url");
+    }
+  });
+
+  it("公開用署名スクリプトが実ファイルへ検証可能なJSONを出力する", async () => {
+    const temporaryDirectory = await mkdtemp(join(tmpdir(), "ai-mae-check-pages-"));
+    const outputPath = resolve(temporaryDirectory, "api/rules/latest.json");
+    const { privateJwk, publicJwk } = await createKeyPair();
+
+    try {
+      await signGithubPagesRules({
+        sourcePath: resolve(rootDir, "rules/latest.json"),
+        outputPath,
+        keyId: "test-github-pages-script-key",
+        privateJwkText: JSON.stringify(privateJwk)
+      });
+
+      const signed = JSON.parse(await readFile(outputPath, "utf8")) as unknown;
+      const result = await verifySignedRemoteRuleBundle(signed, publicJwk, {
+        expectedKeyId: "test-github-pages-script-key",
+        now: () => Date.parse("2026-07-29T01:00:00.000Z")
+      });
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.payload.version).toBe("2026.07.29.1");
+      }
+    } finally {
+      await rm(temporaryDirectory, { recursive: true, force: true });
     }
   });
 
