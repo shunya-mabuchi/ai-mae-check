@@ -7,7 +7,7 @@ const paths = {
   viteConfig: "apps/demo/vite.config.ts",
   siteRoutes: "apps/demo/src/lib/siteRoutes.ts",
   routeBuilder: "scripts/prepare-github-pages-artifact.mjs",
-  signer: "scripts/sign-github-pages-rules.mjs",
+  signer: "scripts/sign-github-pages-rules.ts",
   rules: "rules/latest.json",
   releaseConfig: "apps/extension/config/rule-delivery.release.json",
   rootPackage: "package.json"
@@ -88,7 +88,7 @@ if (JSON.stringify(releaseConfig).includes('"d"')) {
 }
 
 const rootPackage = JSON.parse(read(paths.rootPackage));
-if (rootPackage.scripts?.["build:pages"] !== "pnpm build:demo && node scripts/sign-github-pages-rules.mjs") {
+if (rootPackage.scripts?.["build:pages"] !== "pnpm build:demo && tsx scripts/sign-github-pages-rules.ts") {
   fail("build:pages script is not wired");
 }
 

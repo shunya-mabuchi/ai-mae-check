@@ -19,7 +19,7 @@ const paths = {
   remoteRuleCache: "apps/extension/src/lib/remoteRuleCache.ts",
   remoteRuleDelivery: "apps/extension/src/lib/remoteRuleDelivery.ts",
   remoteRuleBackground: "apps/extension/entrypoints/background.ts",
-  pageSigner: "scripts/sign-github-pages-rules.mjs",
+  pageSigner: "scripts/sign-github-pages-rules.ts",
   ruleSource: "rules/latest.json"
 };
 
