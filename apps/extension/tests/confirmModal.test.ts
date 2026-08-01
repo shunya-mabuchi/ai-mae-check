@@ -12,38 +12,45 @@ import { confirmModalTokens } from "../src/ui/styles";
 
 describe("confirmModal helpers", () => {
   it("keeps the AI check action label and does not restore safe-prompt copy", () => {
-    const source = readFileSync(new URL("../src/ui/confirmModal.ts", import.meta.url), "utf8");
+    const source = readFileSync(new URL("../src/ui/SendConfirmDialog.tsx", import.meta.url), "utf8");
 
-    expect(source).toContain('"AIチェック"');
-    expect(source).not.toContain('"要約"');
+    expect(source).toContain("AIチェック");
+    expect(source).not.toContain("要約");
     expect(source).not.toContain("AI文脈チェックで安全な依頼文の候補を作る");
   });
 
   it("splits modal rendering into focused modules", () => {
-    const source = readFileSync(new URL("../src/ui/confirmModal.ts", import.meta.url), "utf8");
+    const source = readFileSync(new URL("../src/ui/confirmModal.tsx", import.meta.url), "utf8");
+    const controller = readFileSync(new URL("../src/ui/confirmModalController.ts", import.meta.url), "utf8");
+    const dialog = readFileSync(new URL("../src/ui/SendConfirmDialog.tsx", import.meta.url), "utf8");
     const styles = readFileSync(new URL("../src/ui/styles.ts", import.meta.url), "utf8");
 
-    expect(source).toContain('from "./confirmModalCandidateList"');
-    expect(source).toContain('from "./confirmModalCategoryList"');
-    expect(source).toContain('from "./confirmModalElements"');
-    expect(source).toContain('from "./confirmModalFooter"');
-    expect(source).toContain('from "../lib/dialogAccessibility"');
-    expect(source).toContain("setupDialogAccessibility");
-    expect(source).not.toContain("pasteReviewListRenderers");
-    expect(source).not.toContain("pasteReviewSelection");
-    expect(source).not.toContain("pasteReviewLlmRunner");
+    expect(source).toContain('from "react-dom/client"');
+    expect(source).toContain('from "../lib/shadowHost"');
+    expect(source).toContain('from "./confirmModalController"');
+    expect(source).toContain("createReactShadowHost(confirmModalCss)");
+    expect(source).not.toContain("setupDialogAccessibility");
+    expect(controller).toContain('from "./confirmModalCandidateList"');
+    expect(controller).toContain('from "./confirmModalCategoryList"');
+    expect(controller).toContain('from "./confirmModalFooter"');
+    expect(controller).toContain("isActive");
+    expect(dialog).toContain("<ModalOverlay");
+    expect(dialog).toContain("<Dialog");
+    expect(dialog).toContain("aria-label={title}");
+    expect(dialog).toContain("useShadowDialogTabContainment");
     expect(styles).not.toContain(".hm-");
     expect(styles).toContain(".review-candidate");
   });
 
-  it("adds dialog ARIA labels and live regions to send confirmation modal elements", () => {
-    const elements = readFileSync(new URL("../src/ui/confirmModalElements.ts", import.meta.url), "utf8");
+  it("adds React Aria dialog labels and live regions to the send confirmation modal", () => {
+    const dialog = readFileSync(new URL("../src/ui/SendConfirmDialog.tsx", import.meta.url), "utf8");
 
-    expect(elements).toContain('dialog.setAttribute("aria-label"');
-    expect(elements).toContain('status.setAttribute("role", "status")');
-    expect(elements).toContain('llmStatus.setAttribute("aria-live", "polite")');
-    expect(elements).toContain('candidateList.setAttribute("aria-label"');
-    expect(elements).toContain('button.type = "button"');
+    expect(dialog).toContain("<Dialog");
+    expect(dialog).toContain("aria-label={title}");
+    expect(dialog).toContain('role="status" aria-live="polite"');
+    expect(dialog).toContain('role="group"');
+    expect(dialog).toContain('type="button"');
+    expect(dialog).toContain('className="amc-brand-mark-image"');
   });
 
   it("exports style tokens and protects disabled hover states", () => {
@@ -77,6 +84,31 @@ describe("confirmModal helpers", () => {
     expect(policy.requiresSanitization).toBe(true);
     expect(groups.every((group) => group.locked)).toBe(true);
     expect(canSubmitSelection(groups, new Set())).toBe(false);
+  });
+
+  it("locks only required categories when high and medium risks are mixed", () => {
+    const detection = detectSensitiveText("メールは taro@example.com、予算は300万円です。");
+    const policy = evaluateDlpPolicy(detection.findings);
+    const groups = createCategoryGroups(detection.findings, policy);
+
+    expect(groups.find((group) => group.category === "email")?.locked).toBe(true);
+    expect(groups.find((group) => group.category === "financial")?.locked).toBe(false);
+  });
+
+  it("同じカテゴリでも安全化必須と任意の検出項目を分ける", () => {
+    const detection = detectSensitiveText("カード番号は 4111 1111 1111 1111、予算は300万円です。");
+    const policy = evaluateDlpPolicy(detection.findings);
+    const financialGroups = createCategoryGroups(detection.findings, policy).filter(
+      (group) => group.category === "financial"
+    );
+
+    expect(financialGroups).toHaveLength(2);
+    expect(financialGroups.find((group) => group.locked)?.findings.map((finding) => finding.ruleId)).toContain(
+      "credit_card"
+    );
+    expect(financialGroups.find((group) => !group.locked)?.findings.map((finding) => finding.ruleId)).toContain(
+      "amount"
+    );
   });
 
   it("allows deselecting medium-risk categories when raw send is allowed", () => {

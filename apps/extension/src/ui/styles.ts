@@ -18,6 +18,27 @@ ${createSharedModalCss({
   footerLayout: "actionsOnly",
   footerMaxHeight: "40vh"
 })}
+  .amc-react-root,
+  .amc-portal-root {
+    display: contents;
+  }
+  .amc-dialog-content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    max-height: inherit;
+    flex-direction: column;
+    outline: none;
+  }
+  .amc-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .amc-categories {
     display: grid;
     gap: 10px;

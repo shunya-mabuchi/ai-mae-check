@@ -8,6 +8,7 @@ import type {
   PasteReviewModalDecision
 } from "../lib/pasteReviewModalTypes";
 import type { PasteReviewSummaryItem } from "../lib/pasteReviewSummaryView";
+import { useShadowDialogTabContainment } from "./shadowDialogTabContainment";
 
 const riskSummaryLabels = {
   critical: "重大リスク",
@@ -61,6 +62,8 @@ export function PasteReviewDialog({
   const llmButtonRef = useRef<HTMLButtonElement>(null);
   const rawButtonRef = useRef<HTMLButtonElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  useShadowDialogTabContainment(dialogRef);
   const selectedRisk = selectHeaderRisk(summaryItems);
 
   const close = useCallback(
@@ -132,7 +135,11 @@ export function PasteReviewDialog({
         className="hm-overlay"
       >
         <Modal className="hm-dialog">
-          <Dialog aria-label={modalCopy.title} className="hm-dialog-content">
+          <Dialog
+            aria-label={modalCopy.title}
+            className="hm-dialog-content"
+            ref={dialogRef}
+          >
             <header className="hm-header">
               <div className="hm-header-top">
                 <div className="hm-brand">

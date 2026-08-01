@@ -17,7 +17,9 @@ describe("file preflight modal UI", () => {
     expect(dialogSource).toContain("<ModalOverlay");
     expect(dialogSource).toContain("isOpen={isOpen}");
     expect(dialogSource).toContain("isDismissable");
-    expect(dialogSource).toContain('<Dialog aria-label="ファイル添付前確認"');
+    expect(dialogSource).toContain("<Dialog");
+    expect(dialogSource).toContain('aria-label="ファイル添付前確認"');
+    expect(dialogSource).toContain("useShadowDialogTabContainment");
     expect(dialogSource).toContain("<button autoFocus");
     expect(dialogSource).toContain('onClick={() => close("safe")}');
     expect(dialogSource).not.toContain("onPress=");

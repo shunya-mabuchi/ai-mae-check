@@ -22,4 +22,13 @@ describe("content script UX", () => {
     expect(configSource).toContain('default_title: "AIまえチェック"');
     expect(configSource).not.toContain("default_popup");
   });
+
+  it("貼り付け・送信確認UIを遅延ランタイムから読み込み、失敗時は送信しない", () => {
+    const contentScript = readFileSync(resolve(process.cwd(), "entrypoints/content.ts"), "utf8");
+
+    expect(contentScript).not.toContain('from "../src/ui/confirmModal"');
+    expect(contentScript).toContain("runtime.showSendConfirmModal");
+    expect(contentScript).toContain("showPasteReviewModal");
+    expect(contentScript.match(/window\.alert\(REVIEW_MODAL_LOAD_FAILURE_MESSAGE\)/g)).toHaveLength(4);
+  });
 });

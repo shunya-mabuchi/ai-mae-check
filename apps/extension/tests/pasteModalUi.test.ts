@@ -66,7 +66,9 @@ describe("paste review modal UI", () => {
   it("モーダルに最低限のARIA属性とlive regionを持たせる", () => {
     const dialogSource = readFileSync(resolve(process.cwd(), "src/ui/PasteReviewDialog.tsx"), "utf8");
 
-    expect(dialogSource).toContain("<Dialog aria-label={modalCopy.title}");
+    expect(dialogSource).toContain("<Dialog");
+    expect(dialogSource).toContain("aria-label={modalCopy.title}");
+    expect(dialogSource).toContain("useShadowDialogTabContainment");
     expect(dialogSource).toContain('role="status"');
     expect(dialogSource).toContain('aria-live="polite"');
     expect(dialogSource).toContain('aria-label="安全化後プレビュー"');

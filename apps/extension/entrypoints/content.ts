@@ -14,7 +14,6 @@ import { installSendInterceptor, type SendReviewDecision } from "../src/content/
 import { DEFAULT_SETTINGS, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
 import { loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
 import { targetMatches } from "../src/lib/sites";
-import { showSendConfirmModal } from "../src/ui/confirmModal";
 import {
   loadReviewModalRuntime,
   REVIEW_MODAL_LOAD_FAILURE_MESSAGE
@@ -94,30 +93,50 @@ async function launchPasteReview(
   }
 
   const { showPasteReviewModal } = runtime;
-  return showPasteReviewModal({
-    inputText: request.inputText,
-    detection: request.detection,
-    settings,
-    mode: request.mode
-  });
+  try {
+    return await showPasteReviewModal({
+      inputText: request.inputText,
+      detection: request.detection,
+      settings,
+      mode: request.mode
+    });
+  } catch {
+    window.alert(REVIEW_MODAL_LOAD_FAILURE_MESSAGE);
+    return { type: "cancel" };
+  }
 }
 
 async function launchSendReview(
   request: ContentReviewRequest,
   settings: AiMaeCheckSettings
 ): Promise<SendReviewDecision> {
-  const decision = await showSendConfirmModal({
-    inputText: request.inputText,
-    detection: request.detection,
-    llm: settings.llm
-  });
-
-  if (decision.type === "submit") {
-    return {
-      type: "replaceAndSubmit",
-      text: decision.text
-    };
+  let runtime;
+  try {
+    runtime = await loadReviewModalRuntime({
+      moduleUrl: chrome.runtime.getURL("review-modal-runtime.js")
+    });
+  } catch {
+    window.alert(REVIEW_MODAL_LOAD_FAILURE_MESSAGE);
+    return { type: "cancel" };
   }
 
-  return { type: "cancel" };
+  try {
+    const decision = await runtime.showSendConfirmModal({
+      inputText: request.inputText,
+      detection: request.detection,
+      llm: settings.llm
+    });
+
+    if (decision.type === "submit") {
+      return {
+        type: "replaceAndSubmit",
+        text: decision.text
+      };
+    }
+
+    return { type: "cancel" };
+  } catch {
+    window.alert(REVIEW_MODAL_LOAD_FAILURE_MESSAGE);
+    return { type: "cancel" };
+  }
 }

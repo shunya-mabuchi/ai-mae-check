@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { detectSensitiveText } from "@ai-mae-check/core";
 import { DEFAULT_SETTINGS } from "../src/lib/settings";
 import type { PasteReviewDialogElements } from "../src/lib/pasteReviewModalTypes";
+import type { SendConfirmDialogElements } from "../src/ui/confirmModalTypes";
 
 interface Deferred<T> {
   promise: Promise<T>;
@@ -34,8 +35,6 @@ interface PasteElements {
 }
 
 interface ConfirmElements {
-  overlay: FakeElement;
-  dialog: FakeElement;
   categoryList: FakeElement;
   preview: FakeElement;
   status: FakeElement;
@@ -113,8 +112,6 @@ function createPasteElements(): PasteElements {
 
 function createConfirmElements(): ConfirmElements {
   return {
-    overlay: createFakeElement(),
-    dialog: createFakeElement(),
     categoryList: createFakeElement(),
     preview: createFakeElement(),
     status: createFakeElement(),
@@ -159,10 +156,36 @@ async function launchPasteController(
   return { decisions };
 }
 
+async function launchSendController(
+  confirmElements: ConfirmElements,
+  inputText: string,
+  llm = DEFAULT_SETTINGS.llm
+) {
+  const { initializeSendConfirmModalController } = await import(
+    "../src/ui/confirmModalController"
+  );
+  const decisions: unknown[] = [];
+  let closed = false;
+  let controller: { dispose: () => void } | undefined;
+  controller = initializeSendConfirmModalController({
+    inputText,
+    detection: detectSensitiveText(inputText),
+    llm,
+    elements: confirmElements as unknown as SendConfirmDialogElements,
+    close: (decision) => {
+      decisions.push(decision);
+      closed = true;
+      controller?.dispose();
+    },
+    isClosed: () => closed
+  });
+
+  return { decisions };
+}
+
 function installModalMocks(readyPromise: Promise<boolean>) {
   const pasteElements = createPasteElements();
   const confirmElements = createConfirmElements();
-  const cleanup = vi.fn();
   const runReviewLlm = vi.fn(async () => {});
   const isLlmBridgeModelReady = vi.fn(() => readyPromise);
   const renderReviewCandidateList = vi.fn();
@@ -174,18 +197,6 @@ function installModalMocks(readyPromise: Promise<boolean>) {
   }));
   vi.doMock("../src/lib/reviewLlmRunner", () => ({
     runReviewLlm
-  }));
-  vi.doMock("../src/lib/shadowHost", () => ({
-    createShadowHost: () => ({
-      shadow: createFakeElement(),
-      cleanup
-    })
-  }));
-  vi.doMock("../src/lib/dialogAccessibility", () => ({
-    setupDialogAccessibility: () => ({
-      activate: vi.fn(),
-      dispose: vi.fn()
-    })
   }));
   vi.doMock("../src/lib/reviewListRenderers", () => ({
     renderReviewCandidateList,
@@ -200,10 +211,6 @@ function installModalMocks(readyPromise: Promise<boolean>) {
   vi.doMock("../src/ui/confirmModalFooter", () => ({
     applyConfirmModalFooterState: vi.fn()
   }));
-  vi.doMock("../src/ui/confirmModalElements", () => ({
-    createConfirmModalElements: () => confirmElements
-  }));
-
   return {
     confirmElements,
     isLlmBridgeModelReady,
@@ -331,19 +338,14 @@ describe("モーダルのAI文脈チェック自動実行", () => {
   it("送信確認を閉じた後にモデル準備済みになってもAI文脈チェックを開始しない", async () => {
     const ready = createDeferred<boolean>();
     const mocks = installModalMocks(ready.promise);
-    const { showSendConfirmModal } = await import("../src/ui/confirmModal");
     const inputText = "メールは taro@example.com です。";
-    const decision = showSendConfirmModal({
-      inputText,
-      detection: detectSensitiveText(inputText),
-      llm: {
+    const controller = await launchSendController(mocks.confirmElements, inputText, {
         ...DEFAULT_SETTINGS.llm,
         mode: "auto"
-      }
     });
 
     mocks.confirmElements.cancelButton.click();
-    await expect(decision).resolves.toEqual({ type: "cancel" });
+    expect(controller.decisions).toEqual([{ type: "cancel" }]);
 
     ready.resolve(true);
     await flushPromises();
@@ -355,15 +357,10 @@ describe("モーダルのAI文脈チェック自動実行", () => {
   it("送信確認で手動実行済みなら、遅れて返った自動実行は二重起動しない", async () => {
     const ready = createDeferred<boolean>();
     const mocks = installModalMocks(ready.promise);
-    const { showSendConfirmModal } = await import("../src/ui/confirmModal");
     const inputText = "メールは taro@example.com です。";
-    const decision = showSendConfirmModal({
-      inputText,
-      detection: detectSensitiveText(inputText),
-      llm: {
+    await launchSendController(mocks.confirmElements, inputText, {
         ...DEFAULT_SETTINGS.llm,
         mode: "auto"
-      }
     });
 
     mocks.confirmElements.llmButton.click();
@@ -371,7 +368,6 @@ describe("モーダルのAI文脈チェック自動実行", () => {
     ready.resolve(true);
     await flushPromises();
     mocks.confirmElements.cancelButton.click();
-    await decision;
 
     expect(mocks.runReviewLlm).toHaveBeenCalledTimes(1);
   });
@@ -379,17 +375,11 @@ describe("モーダルのAI文脈チェック自動実行", () => {
   it("送信確認の初期表示ではAI候補なしメッセージを出さない", async () => {
     const ready = createDeferred<boolean>();
     const mocks = installModalMocks(ready.promise);
-    const { showSendConfirmModal } = await import("../src/ui/confirmModal");
     const inputText = "メールは taro@example.com です。";
-    const decision = showSendConfirmModal({
-      inputText,
-      detection: detectSensitiveText(inputText),
-      llm: DEFAULT_SETTINGS.llm
-    });
+    await launchSendController(mocks.confirmElements, inputText);
 
     await flushPromises();
     mocks.confirmElements.cancelButton.click();
-    await decision;
 
     expect(mocks.renderConfirmModalCandidateList).toHaveBeenCalledWith(
       mocks.confirmElements.candidateList,
@@ -408,18 +398,12 @@ describe("モーダルのAI文脈チェック自動実行", () => {
       options.setEmptyCandidateMessageVisible?.(true);
       options.render();
     });
-    const { showSendConfirmModal } = await import("../src/ui/confirmModal");
     const inputText = "メールは taro@example.com です。";
-    const decision = showSendConfirmModal({
-      inputText,
-      detection: detectSensitiveText(inputText),
-      llm: DEFAULT_SETTINGS.llm
-    });
+    await launchSendController(mocks.confirmElements, inputText);
 
     mocks.confirmElements.llmButton.click();
     await flushPromises();
     mocks.confirmElements.cancelButton.click();
-    await decision;
 
     expect(mocks.renderConfirmModalCandidateList).toHaveBeenLastCalledWith(
       mocks.confirmElements.candidateList,
@@ -428,5 +412,27 @@ describe("モーダルのAI文脈チェック自動実行", () => {
       expect.any(Function),
       { showEmptyMessage: true }
     );
+  });
+
+  it("送信確認を閉じた後に遅れて返ったAI候補を再描画しない", async () => {
+    const ready = createDeferred<boolean>();
+    const analysis = createDeferred<void>();
+    const mocks = installModalMocks(ready.promise);
+    mocks.runReviewLlm.mockImplementationOnce(async (options) => {
+      await analysis.promise;
+      options.setCandidates([]);
+      options.setEmptyCandidateMessageVisible?.(true);
+      options.render();
+    });
+    const inputText = "メールは taro@example.com です。";
+    await launchSendController(mocks.confirmElements, inputText);
+    const renderCountBeforeExecution = mocks.renderConfirmModalCandidateList.mock.calls.length;
+
+    mocks.confirmElements.llmButton.click();
+    mocks.confirmElements.cancelButton.click();
+    analysis.resolve();
+    await flushPromises();
+
+    expect(mocks.renderConfirmModalCandidateList).toHaveBeenCalledTimes(renderCountBeforeExecution);
   });
 });

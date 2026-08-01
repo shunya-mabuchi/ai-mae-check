@@ -4,7 +4,7 @@ import {
 } from "./reviewModalRuntimeContract";
 
 export const REVIEW_MODAL_LOAD_FAILURE_MESSAGE =
-  "AIまえチェックの貼り付け確認画面を準備できませんでした。貼り付けは中止しました。ページを再読み込みしてから再試行してください。";
+  "AIまえチェックの確認画面を準備できませんでした。操作は中止しました。ページを再読み込みしてから再試行してください。";
 
 type ImportRuntimeModule = (moduleUrl: string) => Promise<unknown>;
 
@@ -34,7 +34,7 @@ export function createReviewModalRuntimeLoader() {
       .then(() => {
         const runtime = readReviewModalRuntime(target);
         if (!runtime) {
-          throw new Error("貼り付け確認画面を準備できませんでした。");
+          throw new Error("確認画面を準備できませんでした。");
         }
         return runtime;
       })
