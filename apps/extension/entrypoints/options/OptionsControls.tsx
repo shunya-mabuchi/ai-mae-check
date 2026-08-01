@@ -38,7 +38,7 @@ export function OptionsButton({
     <AriaButton
       {...props}
       type="button"
-      className={`inline-flex min-h-11 items-center justify-center rounded-md border px-4 text-sm font-bold outline-none transition data-[pressed]:translate-y-px data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-55 ${buttonClassByVariant[variant]} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center rounded-md border px-4 text-sm font-bold outline-hidden transition data-[pressed]:translate-y-px data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-55 ${buttonClassByVariant[variant]} ${className}`}
     >
       {children}
     </AriaButton>
@@ -65,7 +65,7 @@ export function OptionsCheckbox({
       {...props}
       isSelected={isSelected}
       onChange={onChange}
-      className="group flex cursor-pointer items-start justify-between gap-4 rounded-md border border-line bg-white p-4 outline-none transition data-[hovered]:border-leaf/50 data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-55"
+      className="group flex cursor-pointer items-start justify-between gap-4 rounded-md border border-line bg-white p-4 outline-hidden transition data-[hovered]:border-leaf/50 data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-55"
     >
       {({ isSelected: selected }) => (
         <>
@@ -121,7 +121,7 @@ export function LlmModeRadioGroup({ value, onChange, ...props }: LlmModeRadioGro
         <AriaRadio
           key={mode.value}
           value={mode.value}
-          className="group flex cursor-pointer items-start gap-3 rounded-md border border-line bg-white p-4 outline-none transition data-[hovered]:border-leaf/50 data-[selected]:border-leaf/60 data-[selected]:bg-[#f3faf6] data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2"
+          className="group flex cursor-pointer items-start gap-3 rounded-md border border-line bg-white p-4 outline-hidden transition data-[hovered]:border-leaf/50 data-[selected]:border-leaf/60 data-[selected]:bg-[#f3faf6] data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2"
         >
           {({ isSelected }) => (
             <>

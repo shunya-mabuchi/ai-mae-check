@@ -6,7 +6,7 @@ AIまえチェックは、Chrome拡張、紹介LP、WebLLM、GitHub Pages用ビ�
 
 - 依存関係の更新は1つのPRに詰め込みすぎない
 - Chrome拡張の権限、CSP、bundleサイズ、Chrome Web Store提出物へ影響する更新は個別PRにする
-- `@mlc-ai/web-llm`、WXT、Vite、React、Playwright、GitHub Actions関連パッケージは、更新時に実機またはE2E観点を明記する
+- `@mlc-ai/web-llm`、WXT、Vite、React、Tailwind CSS、Playwright、GitHub Actions関連パッケージは、更新時に実機またはE2E観点を明記する
 - WebLLMモデルはnpm依存とは別に、モデルライセンスと配信元を確認する
 - `pnpm-lock.yaml` の差分を必ず確認する
 - 実APIキー、private JWK、ローカル生成物、ZIP、ログを依存更新PRへ含めない
@@ -65,10 +65,11 @@ MPL-2.0、CC-BY-4.0、GPLを含む複数ライセンス表記などは、利用�
 - [ ] `pnpm qa:public-repo` が通った
 - [ ] `pnpm qa:public-docs` が通った
 - [ ] `pnpm qa:webllm-model-policy` が通った
+- [ ] `pnpm qa:tailwind4` が通った
 - [ ] `pnpm qa:extension:size` が通った
 - [ ] `pnpm qa:extension:manifest` が通った
 - [ ] `pnpm qa:chrome-store` が通った
-- [ ] WebLLM、WXT、Vite、React、Playwright、GitHub Actions関連パッケージの更新時は、影響範囲をPR本文に書いた
+- [ ] WebLLM、WXT、Vite、React、Tailwind CSS、Playwright、GitHub Actions関連パッケージの更新時は、影響範囲をPR本文に書いた
 - [ ] Chrome拡張の権限、CSP、対象サイト、WebLLM bridge、ルール配信URLに意図しない差分がない
 
 ## 更新を急がないケース

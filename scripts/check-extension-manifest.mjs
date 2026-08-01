@@ -53,6 +53,10 @@ if (manifest.description !== "AIに送る前に、個人情報・秘密情報・
   fail("manifest description is not the public Japanese description");
 }
 
+if (manifest.minimum_chrome_version !== "111") {
+  fail("minimum_chrome_version must be 111 for Tailwind CSS 4 browser support");
+}
+
 const permissions = manifest.permissions ?? [];
 if (!sameMembers(permissions, ["storage"])) {
   fail(`permissions must only contain storage. actual=${JSON.stringify(permissions)}`);

@@ -146,7 +146,7 @@ export function DemoWorkbench({
                 </div>
                 <span className="rounded-card bg-cloud px-3 py-2 text-xs font-black text-muted">{text.length.toLocaleString()}文字</span>
               </div>
-              <div className="rounded-card border border-line bg-paper p-3 shadow-inner">
+              <div className="rounded-card border border-line bg-paper p-3 inset-shadow-sm">
                 <TextAreaField
                   value={text}
                   onChange={onTextChange}

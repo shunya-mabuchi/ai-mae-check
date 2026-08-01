@@ -154,7 +154,7 @@ WebLLMは通常のHugging Faceモデルをそのまま読み込む仕組みで�
 - React Aria Components
 - WXT
 - Vite
-- Tailwind CSS
+- Tailwind CSS 4
 - Vitest
 - Playwright
 - Chrome Extension Manifest V3
@@ -215,6 +215,8 @@ repository-root/
 
 ## セットアップ
 
+Chrome拡張はChrome 111以降を対象とします。AI文脈チェックには、これに加えてWebGPUを利用できる環境が必要です。
+
 ```bash
 pnpm install
 ```
@@ -246,6 +248,7 @@ pnpm qa:webllm-compatibility
 pnpm qa:rule-catalog
 pnpm qa:extension:e2e-harness
 pnpm qa:dependency-policy
+pnpm qa:tailwind4
 pnpm qa:release-policy
 pnpm qa:issue-pr-workflow
 pnpm qa:site:publication
@@ -291,6 +294,8 @@ Options Pageの設定グループ、保存対象、`settingsVersion`、設定マ
 `pnpm qa:extension:e2e-harness` は、Chrome拡張をPlaywrightで読み込む拡張E2Eハーネス方針、ローカル模擬composerでの検証範囲、実装済みファイル、実サイト手動QAとの境界、E2E専用host permissionをリリースZIPへ混入させない方針が [docs/extension-e2e-harness.md](docs/extension-e2e-harness.md) とずれていないか確認するQAです。
 
 `pnpm qa:dependency-policy` は、依存関係アップデートとライセンス確認の運用ドキュメントが、現在のCIと公開前QAの前提からずれていないか確認するQAです。運用は [docs/dependency-maintenance.md](docs/dependency-maintenance.md) にまとめています。
+
+`pnpm qa:tailwind4` は、CSS-first設定、明示的なscan対象、semantic token、React Ariaのstate selectorがproduction CSSへ残っていることを確認するQAです。
 
 `pnpm qa:release-policy` は、rootと拡張のversion、CHANGELOG、リリース手順、Chrome Web Store再提出前QAがずれていないか確認するQAです。運用は [docs/release-process.md](docs/release-process.md) と [CHANGELOG.md](CHANGELOG.md) にまとめています。
 

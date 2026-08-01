@@ -115,13 +115,14 @@ READMEでは、ビルド済み拡張をE2E用composer上で動かして撮影し
 ```bash
 pnpm test
 pnpm typecheck
-pnpm build:extension
+pnpm build
 pnpm package:extension
 pnpm qa:public-repo
 pnpm qa:public-docs
 pnpm qa:privacy-regression
 pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
+pnpm qa:tailwind4
 pnpm qa:release-policy
 pnpm qa:site:publication
 pnpm qa:portfolio-case-study
@@ -168,7 +169,7 @@ pnpm qa:chrome-store:published
 
 - [ ] `pnpm test` が通る
 - [ ] `pnpm typecheck` が通る
-- [ ] `pnpm build:extension` が通る
+- [ ] `pnpm build` が通る
 - [ ] `pnpm package:extension` でZIPを作成できる
 - [ ] `pnpm qa:public-repo` が通る
 - [ ] `pnpm qa:public-docs` が通る
@@ -179,6 +180,7 @@ pnpm qa:chrome-store:published
 - [ ] `pnpm qa:extension:e2e-harness` が通る
 - [ ] ローカル環境で `pnpm test:extension:e2e` が通る、または実行できない理由をPR/Release本文に記録する
 - [ ] `pnpm qa:dependency-policy` が通る
+- [ ] `pnpm qa:tailwind4` が通る
 - [ ] `pnpm qa:release-policy` が通る
 - [ ] `pnpm qa:site:publication` が通る
 - [ ] `pnpm qa:portfolio-case-study` が通る
