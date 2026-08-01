@@ -1,66 +1,13 @@
-import { chromium, expect, test, type BrowserContext, type Locator, type Page } from "@playwright/test";
-import { existsSync } from "node:fs";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const here = fileURLToPath(new URL(".", import.meta.url));
-const extensionDir = resolve(here, "../.output-e2e/chrome-mv3");
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import {
+  closeExtensionContext,
+  dismissExtensionStartupPages,
+  launchExtensionContext
+} from "./extensionTestHarness";
 const sensitiveText = "田中太郎です。メールは taro@example.com、電話番号は 090-1234-5678 です。";
 const mediumRiskText = "来月の契約更新に向けて、月額80万円で進める予定です。";
 const expectedPasteActionLabel = "安全化して入力";
 const expectedSendActionLabel = "安全化して送信";
-
-interface ExtensionTestContext {
-  context: BrowserContext;
-  userDataDir: string;
-}
-
-async function launchExtensionContext(): Promise<ExtensionTestContext> {
-  if (!existsSync(extensionDir)) {
-    throw new Error("拡張E2E用buildが見つかりません。先に pnpm build:extension:e2e を実行してください。");
-  }
-
-  const userDataDir = await mkdtemp(join(tmpdir(), "ai-mae-check-extension-e2e-"));
-  const context = await chromium.launchPersistentContext(userDataDir, {
-    headless: process.env.EXTENSION_E2E_HEADLESS === "1",
-    args: [`--disable-extensions-except=${extensionDir}`, `--load-extension=${extensionDir}`]
-  });
-
-  return { context, userDataDir };
-}
-
-async function dismissExtensionStartupPages(context: BrowserContext, preservePage?: Page): Promise<void> {
-  await context.waitForEvent("page", { timeout: 800 }).catch(() => null);
-  await Promise.all(
-    context
-      .pages()
-      .filter((page) => page !== preservePage && page.url().startsWith("chrome://extensions/"))
-      .map((page) => page.close())
-  );
-}
-
-async function closeExtensionContext(target: ExtensionTestContext): Promise<void> {
-  await target.context.close().catch(() => undefined);
-  await removeUserDataDirWithRetry(target.userDataDir);
-}
-
-async function removeUserDataDirWithRetry(userDataDir: string): Promise<void> {
-  let lastError: unknown;
-
-  for (let attempt = 0; attempt < 12; attempt += 1) {
-    try {
-      await rm(userDataDir, { recursive: true, force: true, maxRetries: 2, retryDelay: 120 });
-      return;
-    } catch (error) {
-      lastError = error;
-      await new Promise((resolveDelay) => setTimeout(resolveDelay, 200));
-    }
-  }
-
-  throw lastError;
-}
 
 async function openMockComposer(page: Page): Promise<void> {
   await dismissExtensionStartupPages(page.context(), page);
