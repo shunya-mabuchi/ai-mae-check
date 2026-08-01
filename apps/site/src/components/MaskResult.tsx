@@ -1,5 +1,5 @@
 import { CopyCheck, ShieldCheck } from "lucide-react";
-import { Button } from "./ui";
+import { Button } from "./ui/Button";
 
 export function MaskResult({
   maskedText,
@@ -18,8 +18,8 @@ export function MaskResult({
           <h3 className="mt-1 text-xl font-black text-ink">安全化結果</h3>
           <p className="mt-2 text-sm leading-6 text-muted">チェックした項目だけを置き換えます。外部へ送る前の最終確認用です。</p>
         </div>
-        <Button onClick={onCopy} variant="ghost" disabled={!maskedText}>
-          <CopyCheck size={17} aria-hidden="true" />
+        <Button onPress={onCopy} variant="ghost" isDisabled={!maskedText}>
+          <CopyCheck data-icon="inline-start" aria-hidden="true" />
           コピー
         </Button>
       </div>

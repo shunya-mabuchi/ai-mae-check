@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useRef, type Dispatch } from "react";
 import { detectSensitiveText, type DetectionResult } from "@ai-mae-check/core";
 import {
   classifyLlmError,
   createLocalLlmRuntimeService,
   isContextAnalysisExecutionError,
-  type ContextRiskCandidate,
   type LocalLlmRuntimeService
 } from "@ai-mae-check/llm";
 import {
@@ -12,33 +11,26 @@ import {
   createErrorLlmUiState,
   createLlmResultUiState,
   createLoadingLlmUiState,
-  createProgressLlmUiState,
-  type DemoLlmUiState
+  createProgressLlmUiState
 } from "../lib/demoLlmUiState";
-import { createInitialSelectedFindingIds } from "../lib/demoSelection";
 import { selectCandidateIdsByConfidence } from "../lib/demoMasking";
+import { resolveLlmSelectedFindingIds } from "../lib/demoSelection";
+import type { DemoWorkbenchAction } from "../lib/demoWorkbenchState";
 
 export interface RunDemoLlmDetectionOptions {
   text: string;
   detection: DetectionResult | null;
-  setDetection: (detection: DetectionResult) => void;
-  setSelectedRuleFindingIds: Dispatch<SetStateAction<string[]>>;
-  setLlmCandidates: Dispatch<SetStateAction<ContextRiskCandidate[]>>;
-  setSelectedCandidateIds: Dispatch<SetStateAction<string[]>>;
+  selectedRuleFindingIds: string[];
+  requestId: number;
+  dispatch: Dispatch<DemoWorkbenchAction>;
 }
 
 export interface DemoLlmAnalysisViewModel {
-  llmUiState: DemoLlmUiState;
   runLlmDetection: (options: RunDemoLlmDetectionOptions) => Promise<void>;
 }
 
 export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
   const runtimeServiceRef = useRef<LocalLlmRuntimeService | null>(null);
-  const [llmUiState, setLlmUiState] = useState<DemoLlmUiState>(() => ({
-    status: "idle",
-    message: "AI文脈チェックは手動で実行できます。",
-    errorDetail: null
-  }));
 
   useEffect(() => {
     return () => {
@@ -58,57 +50,89 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
   }, []);
 
   const runLlmDetection = useCallback(
-    async (options: RunDemoLlmDetectionOptions) => {
-      if (options.text.trim().length === 0) {
-        setLlmUiState(createEmptyInputLlmUiState());
+    async ({
+      text,
+      detection,
+      selectedRuleFindingIds,
+      requestId,
+      dispatch
+    }: RunDemoLlmDetectionOptions) => {
+      if (text.trim().length === 0) {
+        dispatch({
+          type: "llm_validation_failed",
+          uiState: createEmptyInputLlmUiState()
+        });
         return;
       }
 
-      let currentDetection = options.detection;
-      if (!currentDetection) {
-        currentDetection = detectSensitiveText(options.text);
-        options.setDetection(currentDetection);
-        options.setSelectedRuleFindingIds(createInitialSelectedFindingIds(currentDetection.findings));
-      }
+      const currentDetection = detection ?? detectSensitiveText(text);
+      dispatch({
+        type: "llm_started",
+        requestId,
+        detection: currentDetection,
+        selectedRuleFindingIds: resolveLlmSelectedFindingIds({
+          hasDetection: detection !== null,
+          selectedFindingIds: selectedRuleFindingIds,
+          findings: currentDetection.findings
+        }),
+        uiState: createLoadingLlmUiState()
+      });
 
-      setLlmUiState(createLoadingLlmUiState());
       const runtimeService = getRuntimeService();
 
       try {
         const result = await runtimeService.analyze({
-          input: options.text,
+          input: text,
           existingFindings: currentDetection.findings,
-          onProgress: (progress) => setLlmUiState(createProgressLlmUiState(progress))
+          onProgress: (progress) =>
+            dispatch({
+              type: "llm_progressed",
+              requestId,
+              uiState: createProgressLlmUiState(progress)
+            })
         });
 
         if (isContextAnalysisExecutionError(result)) {
-          setLlmUiState(
-            result.errorDetail
+          dispatch({
+            type: "llm_failed",
+            requestId,
+            uiState: result.errorDetail
               ? createErrorLlmUiState(result.errorDetail)
               : {
                   status: "error",
-                  message: result.error ?? "AI文脈チェックを実行できませんでした。",
+                  message:
+                    result.error ??
+                    "AI文脈チェックを実行できませんでした。",
                   errorDetail: null
                 }
-          );
+          });
           await disposeRuntimeService();
           return;
         }
 
-        options.setLlmCandidates(result.candidates);
-        options.setSelectedCandidateIds(selectCandidateIdsByConfidence(result.candidates));
-        setLlmUiState(createLlmResultUiState(result.candidates.length, result.errorDetail));
+        dispatch({
+          type: "llm_completed",
+          requestId,
+          candidates: result.candidates,
+          selectedCandidateIds: selectCandidateIdsByConfidence(
+            result.candidates
+          ),
+          uiState: createLlmResultUiState(
+            result.candidates.length,
+            result.errorDetail
+          )
+        });
       } catch (error) {
-        const errorDetail = classifyLlmError(error);
-        setLlmUiState(createErrorLlmUiState(errorDetail));
+        dispatch({
+          type: "llm_failed",
+          requestId,
+          uiState: createErrorLlmUiState(classifyLlmError(error))
+        });
         await disposeRuntimeService();
       }
     },
     [disposeRuntimeService, getRuntimeService]
   );
 
-  return {
-    llmUiState,
-    runLlmDetection
-  };
+  return { runLlmDetection };
 }

@@ -16,9 +16,36 @@ test("サンプル文を挿入し、ルールベース検出とマスキング�
   await expect(page.getByText("[電話番号]")).toBeVisible();
 
   const emailFinding = page.locator("label").filter({ hasText: "メールアドレス" });
-  await emailFinding.getByRole("checkbox").uncheck();
+  await emailFinding.click();
+  await expect(emailFinding.getByRole("checkbox")).not.toBeChecked();
   await expect(page.locator("pre").filter({ hasText: "taro@example.com" })).toBeVisible();
   await expect(page.locator("pre").filter({ hasText: "[電話番号]" })).toBeVisible();
+});
+
+test("ミニデモをキーボードで操作し、フォーカス位置を確認できる", async ({ page }) => {
+  await page.goto("/ai-mae-check/");
+
+  const ruleSampleButton = page.getByRole("button", { name: "ルール用サンプル" });
+  const contextSampleButton = page.getByRole("button", { name: "文脈用サンプル" });
+
+  await ruleSampleButton.focus();
+  await page.keyboard.press("Tab");
+  await expect(contextSampleButton).toBeFocused();
+  await expect(contextSampleButton).toHaveAttribute("data-focus-visible");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("textbox", { name: "AIに貼る前の入力テキスト" })).toHaveValue(/Project Blue Bridge/);
+
+  await ruleSampleButton.focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: "検出する" }).focus();
+  await page.keyboard.press("Enter");
+
+  const emailFinding = page.locator("label").filter({ hasText: "メールアドレス" });
+  const emailCheckbox = emailFinding.getByRole("checkbox");
+  await emailCheckbox.focus();
+  await page.keyboard.press("Space");
+  await expect(emailCheckbox).not.toBeChecked();
+  await expect(page.locator("pre").filter({ hasText: "taro@example.com" })).toBeVisible();
 });
 
 test("プライバシーポリシーを公開URLとして直接開ける", async ({ page }) => {

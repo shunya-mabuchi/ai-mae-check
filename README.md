@@ -149,6 +149,7 @@ WebLLMは通常のHugging Faceモデルをそのまま読み込む仕組みで�
 - pnpm workspace
 - TypeScript
 - React
+- React Aria Components
 - WXT
 - Vite
 - Tailwind CSS

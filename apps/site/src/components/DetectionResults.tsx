@@ -1,11 +1,13 @@
 import { AlertTriangle, CheckCircle2, ListChecks, Sparkles } from "lucide-react";
 import type { DetectionSummary, Finding } from "@ai-mae-check/core";
 import type { ContextRiskCandidate, LlmErrorDetail } from "@ai-mae-check/llm";
-import { riskMeterTone, type LlmStatus } from "../lib/demoConstants";
+import type { LlmStatus } from "../lib/demoConstants";
 import {
   createDemoDetectionResultsViewModel,
   type DemoDetectionResultsViewModel
 } from "../lib/demoDetectionResultsView";
+import { RiskMeter } from "./ui/RiskMeter";
+import { SelectionCheckbox } from "./ui/SelectionCheckbox";
 
 function LlmCandidates({
   items,
@@ -19,28 +21,22 @@ function LlmCandidates({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <h4 className="text-sm font-black text-ink">AI文脈チェック結果</h4>
       {items.map((item) => (
-        <label key={item.id} className="block rounded-card border border-line bg-white p-3 shadow-soft">
-          <div className="flex items-start gap-3">
-            <input
-              type="checkbox"
-              className="mt-1 h-4 w-4 accent-leaf"
-              checked={item.selected}
-              onChange={() => onToggle(item.id)}
-            />
-            <div className="min-w-0 flex-1">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="font-black text-ink">{item.label}</span>
-                <span className={item.riskBadgeClassName}>{item.riskBadgeText}</span>
-                <span className="text-xs text-muted">{item.confidenceText}</span>
-              </div>
-              <p className="break-all rounded-[6px] bg-cloud px-2 py-1 font-mono text-sm">{item.surface}</p>
-              <p className="mt-2 text-xs leading-5 text-muted">{item.reason}</p>
-            </div>
+        <SelectionCheckbox
+          key={item.id}
+          isSelected={item.selected}
+          onChange={() => onToggle(item.id)}
+        >
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="font-black text-ink">{item.label}</span>
+            <span className={item.riskBadgeClassName}>{item.riskBadgeText}</span>
+            <span className="text-xs text-muted">{item.confidenceText}</span>
           </div>
-        </label>
+          <p className="break-all rounded-[6px] bg-cloud px-2 py-1 font-mono text-sm">{item.surface}</p>
+          <p className="mt-2 text-xs leading-5 text-muted">{item.reason}</p>
+        </SelectionCheckbox>
       ))}
     </div>
   );
@@ -79,7 +75,7 @@ export function DetectionResults({
   });
 
   return (
-    <div className="space-y-5" aria-label="検出結果" aria-live="polite">
+    <div className="flex flex-col gap-5" aria-label="検出結果" aria-live="polite">
       <div className="rounded-card border border-line bg-white p-4 shadow-soft">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -88,22 +84,11 @@ export function DetectionResults({
           </div>
           <div className="rounded-card bg-ink px-3 py-2 text-sm font-black text-white">{view.totalText}</div>
         </div>
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <p className="text-sm font-black text-ink">{view.riskSummary.status.label}</p>
-          <p className="text-xs font-bold text-muted">{view.riskSummary.meterWidth}%</p>
-        </div>
-        <div className="h-3 overflow-hidden rounded-full bg-cloud">
-          <div
-            role="meter"
-            aria-label="リスクメーター"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={view.riskSummary.meterWidth}
-            aria-valuetext={view.riskSummary.status.label}
-            className={`h-full rounded-full ${riskMeterTone[view.riskSummary.meterRisk]}`}
-            style={{ width: `${view.riskSummary.meterWidth}%` }}
-          />
-        </div>
+        <RiskMeter
+          value={view.riskSummary.meterWidth}
+          label={view.riskSummary.status.label}
+          riskLevel={view.riskSummary.meterRisk}
+        />
         <p className="mt-3 text-sm leading-6 text-muted">{view.riskSummary.status.text}</p>
         <div className="mt-4 grid grid-cols-3 gap-2">
           {view.riskCountTiles.map((tile) => (
@@ -133,33 +118,27 @@ export function DetectionResults({
         )}
       </div>
 
-      <div className="max-h-[430px] space-y-3 overflow-auto pr-1">
+      <div className="flex max-h-[430px] flex-col gap-3 overflow-auto pr-1">
         {view.findingsEmptyMessage ? (
           <p className="rounded-card border border-dashed border-line bg-white/80 p-4 text-sm leading-6 text-muted">
             {view.findingsEmptyMessage}
           </p>
         ) : (
           view.findingItems.map((item) => (
-            <label key={item.id} className="block rounded-card border border-line bg-white p-3 shadow-soft">
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 accent-leaf"
-                  checked={item.selected}
-                  onChange={() => onToggleFinding(item.id)}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span className={item.riskBadgeClassName}>{item.riskBadgeText}</span>
-                    <span className="text-sm font-black text-ink">{item.label}</span>
-                    <span className="text-xs text-muted">{item.sourceLabel}</span>
-                    <span className={item.selectionClassName}>{item.selectionLabel}</span>
-                  </div>
-                  <p className="break-all rounded-[6px] bg-cloud px-2 py-1 font-mono text-sm text-ink">{item.text}</p>
-                  <p className="mt-2 text-xs leading-5 text-muted">{item.message}</p>
-                </div>
+            <SelectionCheckbox
+              key={item.id}
+              isSelected={item.selected}
+              onChange={() => onToggleFinding(item.id)}
+            >
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <span className={item.riskBadgeClassName}>{item.riskBadgeText}</span>
+                <span className="text-sm font-black text-ink">{item.label}</span>
+                <span className="text-xs text-muted">{item.sourceLabel}</span>
+                <span className={item.selectionClassName}>{item.selectionLabel}</span>
               </div>
-            </label>
+              <p className="break-all rounded-[6px] bg-cloud px-2 py-1 font-mono text-sm text-ink">{item.text}</p>
+              <p className="mt-2 text-xs leading-5 text-muted">{item.message}</p>
+            </SelectionCheckbox>
           ))
         )}
       </div>

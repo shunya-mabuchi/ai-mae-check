@@ -152,4 +152,4 @@ hero-scaleの文字はH1だけに使います。DemoWorkbench、Options、拡張
 | 文字と幅 | 390pxで横スクロールがなく、48pxのH1と長い日本語が切れないことを確認した |
 | JavaScriptなし | Playwrightでprivacyとsupportの本文・見出し・主要リンクが読めることを確認した |
 
-ミニデモのReact Aria移行と3ペイン再構成はIssue #493、WebLLMの遅延ロード境界はIssue #494で続けます。
+ミニデモはIssue #493でReact Aria Componentsへ移行し、デスクトップ3ペイン・モバイル縦積み・キーボード操作を実装しました。WebLLMの遅延ロード境界はIssue #494で続けます。

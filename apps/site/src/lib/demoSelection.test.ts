@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Finding } from "@ai-mae-check/core";
-import { createInitialSelectedFindingIds, toggleSelectedId } from "./demoSelection";
+import {
+  createInitialSelectedFindingIds,
+  resolveLlmSelectedFindingIds,
+  toggleSelectedId
+} from "./demoSelection";
 
 function finding(id: string): Finding {
   return {
@@ -37,5 +41,25 @@ describe("demoSelection", () => {
 
   it("検出結果から初期選択IDを作る", () => {
     expect(createInitialSelectedFindingIds([finding("email"), finding("phone")])).toEqual(["email", "phone"]);
+  });
+
+  it("検出済みならAIチェック開始時もユーザーの選択を維持する", () => {
+    expect(
+      resolveLlmSelectedFindingIds({
+        hasDetection: true,
+        selectedFindingIds: ["email"],
+        findings: [finding("email"), finding("phone")]
+      })
+    ).toEqual(["email"]);
+  });
+
+  it("未検出ならAIチェック開始時にルール候補を初期選択する", () => {
+    expect(
+      resolveLlmSelectedFindingIds({
+        hasDetection: false,
+        selectedFindingIds: [],
+        findings: [finding("email"), finding("phone")]
+      })
+    ).toEqual(["email", "phone"]);
   });
 });
