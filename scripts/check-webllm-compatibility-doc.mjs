@@ -8,7 +8,7 @@ const paths = {
   realDevice: "docs/webllm-real-device-check.md",
   modelPolicy: "docs/webllm-model-policy.md",
   readme: "README.md",
-  supportPage: "apps/demo/src/components/SupportPage.tsx",
+  supportPage: "apps/site/support/index.html",
   llmPackage: "packages/llm/package.json"
 };
 

@@ -3,25 +3,12 @@ import { DetectionTargetCards } from "./components/DetectionTargetCards";
 import { Footer } from "./components/Footer";
 import { Hero } from "./components/Hero";
 import { LaunchFlowSection } from "./components/LaunchFlowSection";
-import { PrivacyPolicyPage } from "./components/PrivacyPolicyPage";
 import { PrivacySection } from "./components/PrivacySection";
 import { StepCards } from "./components/StepCards";
-import { SupportPage } from "./components/SupportPage";
 import { TechStrip } from "./components/TechStrip";
 import { useDemoWorkbench } from "./hooks/useDemoWorkbench";
-import { resolveSiteRoute } from "./lib/siteRoutes";
 
 export function App() {
-  const route = resolveSiteRoute(window.location.pathname);
-
-  if (route === "privacy") {
-    return <PrivacyPolicyPage />;
-  }
-
-  if (route === "support") {
-    return <SupportPage />;
-  }
-
   return <DemoLandingPage />;
 }
 

@@ -1,5 +1,5 @@
 import { chromeWebStoreUrl } from "../lib/productLaunchFlow";
-import { sitePath } from "../lib/siteRoutes";
+import { sitePath } from "../lib/siteConfig";
 
 export function Footer() {
   return (

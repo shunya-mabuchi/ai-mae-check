@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 const rootDir = resolve(".");
 
 const runtimeRoots = [
-  "apps/demo/src/",
+  "apps/site/src/",
   "apps/extension/entrypoints/",
   "apps/extension/src/",
   "packages/core/src/",
@@ -14,7 +14,7 @@ const runtimeRoots = [
 
 const codeRoots = [
   ...runtimeRoots,
-  "apps/demo/tests/",
+  "apps/site/tests/",
   "apps/extension/e2e/",
   "apps/extension/tests/",
   "packages/core/tests/",

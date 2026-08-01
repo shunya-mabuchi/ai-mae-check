@@ -207,7 +207,7 @@ WebLLMとローカル補助候補により、ルールだけでは拾いにく�
 - `packages/core/src/mask.ts`
 - `apps/extension/src/lib/pasteReviewTextTransform.ts`
 - `apps/extension/src/lib/reviewSelection.ts`
-- `apps/demo/src/lib/demoMasking.ts`
+- `apps/site/src/lib/demoMasking.ts`
 - `docs/sanitization-concepts.md`
 
 ### 6. UX Layer
@@ -233,7 +233,7 @@ WebLLMとローカル補助候補により、ルールだけでは拾いにく�
 - `apps/extension/src/lib/modal.ts`
 - `apps/extension/src/lib/reviewListRenderers.ts`
 - `apps/extension/entrypoints/options/OptionsApp.tsx`
-- `apps/demo/src/components/*`
+- `apps/site/src/components/*`
 - `docs/chrome-web-store-submission-copy.md`
 
 ## 既存実装との対応表

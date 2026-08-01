@@ -4,14 +4,14 @@ import { resolve } from "node:path";
 const rootDir = resolve(".");
 
 const paths = {
-  index: "apps/demo/index.html",
-  manifest: "apps/demo/public/site.webmanifest",
-  robots: "apps/demo/public/robots.txt",
-  sitemap: "apps/demo/public/sitemap.xml",
-  ogp: "apps/demo/public/ogp.png",
-  favicon16: "apps/demo/public/favicon-16.png",
-  favicon32: "apps/demo/public/favicon-32.png",
-  icon128: "apps/demo/public/icon-128.png",
+  index: "apps/site/index.html",
+  manifest: "apps/site/public/site.webmanifest",
+  robots: "apps/site/public/robots.txt",
+  sitemap: "apps/site/public/sitemap.xml",
+  ogp: "apps/site/public/ogp.png",
+  favicon16: "apps/site/public/favicon-16.png",
+  favicon32: "apps/site/public/favicon-32.png",
+  icon128: "apps/site/public/icon-128.png",
   docs: "docs/lp-seo-publication.md"
 };
 

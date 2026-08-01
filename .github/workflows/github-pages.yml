@@ -54,7 +54,7 @@ jobs:
       - name: Pages成果物をアップロード
         uses: actions/upload-pages-artifact@v4
         with:
-          path: apps/demo/dist
+          path: apps/site/dist
 
       - name: GitHub Pagesへデプロイ
         id: deployment

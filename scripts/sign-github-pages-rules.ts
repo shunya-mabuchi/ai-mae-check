@@ -15,11 +15,11 @@ export interface SignGithubPagesRulesOptions {
 
 export async function signGithubPagesRules(options: SignGithubPagesRulesOptions = {}) {
   const sourcePath = options.sourcePath ?? resolve(repositoryRoot, "rules/latest.json");
-  const outputPath = options.outputPath ?? resolve(repositoryRoot, "apps/demo/dist/rules/latest.json");
+  const outputPath = options.outputPath ?? resolve(repositoryRoot, "apps/site/dist/rules/latest.json");
   const legacyOutputPath = options.legacyOutputPath === undefined
     ? options.outputPath
       ? null
-      : resolve(repositoryRoot, "apps/demo/dist/api/rules/latest.json")
+      : resolve(repositoryRoot, "apps/site/dist/api/rules/latest.json")
     : options.legacyOutputPath;
   const keyId = options.keyId?.trim() || process.env.RULE_KEY_ID?.trim();
   const privateJwkText = options.privateJwkText ?? process.env.RULE_SIGNING_PRIVATE_JWK;
