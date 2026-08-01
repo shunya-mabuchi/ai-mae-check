@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const manifestPath = resolve("apps/extension/.output/chrome-mv3/manifest.json");
+const extensionPackagePath = resolve("apps/extension/package.json");
 
 const expectedTargetMatches = [
   "https://chatgpt.com/*",
@@ -40,6 +41,7 @@ if (!existsSync(manifestPath)) {
 }
 
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+const extensionPackage = JSON.parse(readFileSync(extensionPackagePath, "utf8"));
 
 if (manifest.manifest_version !== 3) {
   fail("manifest_version must be 3");
@@ -47,6 +49,10 @@ if (manifest.manifest_version !== 3) {
 
 if (manifest.name !== "AIまえチェック") {
   fail("manifest name must be AIまえチェック");
+}
+
+if (manifest.version !== extensionPackage.version) {
+  fail(`manifest version (${manifest.version}) must match extension package version (${extensionPackage.version})`);
 }
 
 if (manifest.description !== "AIに送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認します。") {

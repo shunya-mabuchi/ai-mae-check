@@ -8,7 +8,7 @@
 
 ## 現在の位置づけ
 
-**公開ステータス:** Chrome Web Storeで0.1.2を一般公開済みです。公開ページは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。GitHub Pages移行と署名付き追加ルール配信の更新を反映した0.1.2は、2026-08-01に公開を確認しました。
+**公開ステータス:** Chrome Web Storeの一般公開版は0.1.2です。公開ページは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。リポジトリでは、公開サイトと拡張UIの再設計、React Aria Components、Tailwind CSS 4、Biome、提出QA強化をまとめた0.2.0提出候補を準備しています。0.2.0はまだ公開版ではありません。
 
 このリポジトリには、すでに以下の基盤があります。
 

@@ -1,7 +1,18 @@
 import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, rmSync } from "node:fs";
+import { resolve } from "node:path";
 import { assertRuleDeliveryReleaseConfig, loadRuleDeliveryReleaseConfig } from "./lib/rule-delivery-release-config.mjs";
 
 const releaseConfig = assertRuleDeliveryReleaseConfig(loadRuleDeliveryReleaseConfig());
+const outputDir = resolve("apps/extension/.output");
+
+if (existsSync(outputDir)) {
+  for (const file of readdirSync(outputDir)) {
+    if (file.endsWith("-chrome.zip")) {
+      rmSync(resolve(outputDir, file));
+    }
+  }
+}
 
 const result = spawnSync("pnpm", ["--filter", "@ai-mae-check/core", "build"], {
   stdio: "inherit",

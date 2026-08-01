@@ -1,9 +1,11 @@
 {
+  "releaseVersion": "0.2.0",
   "storeIcon": {
     "path": "docs/assets/store/icon-128.png",
     "width": 128,
     "height": 128,
-    "purpose": "Chrome Web Storeのストアアイコン"
+    "purpose": "Chrome Web Storeのストアアイコン",
+    "sha256": "E7C017B5C582567D6D00C1633FC8BEC978E1B9758A5EBF326F12588A373BF09D"
   },
   "screenshots": [
     {
@@ -15,7 +17,8 @@
       "sourceKind": "real_extension_capture",
       "sourceImage": "docs/assets/readme/extension-paste-modal.png",
       "width": 1280,
-      "height": 800
+      "height": 800,
+      "sha256": "C1B891932894D70357E9B081C31E30C507966AD9F8661FF6472CC875F723D1ED"
     },
     {
       "order": 2,
@@ -26,7 +29,8 @@
       "sourceKind": "real_extension_capture",
       "sourceImage": "docs/assets/readme/extension-send-modal.png",
       "width": 1280,
-      "height": 800
+      "height": 800,
+      "sha256": "C7C831BA1BB40E9858CCF4A86CB0B8008F1DD08D849DA80B5AA0E5368457D741"
     },
     {
       "order": 3,
@@ -37,7 +41,8 @@
       "sourceKind": "real_extension_capture",
       "sourceImage": "docs/assets/readme/extension-context-modal.png",
       "width": 1280,
-      "height": 800
+      "height": 800,
+      "sha256": "4A5EEC3EEBD109407697AF475E5ADDF6880A7BFEB12CAE9CB25912828A372390"
     }
   ],
   "promotionalImages": [
@@ -46,14 +51,16 @@
       "path": "docs/assets/store/promo-small-440x280.png",
       "width": 440,
       "height": 280,
-      "purpose": "Chrome Web Store一覧や小さな訴求枠で、貼り付け前チェックの価値を短く伝える画像。"
+      "purpose": "Chrome Web Store一覧や小さな訴求枠で、貼り付け前チェックの価値を短く伝える画像。",
+      "sha256": "C618C852B9121FD47E1DBC48F10179D0658252CC4B174C43DA3890FDC93C78F7"
     },
     {
       "type": "marquee",
       "path": "docs/assets/store/promo-marquee-1400x560.png",
       "width": 1400,
       "height": 560,
-      "purpose": "大きな訴求枠で、AIへ送る前の確認レイヤーであることを伝える画像。"
+      "purpose": "大きな訴求枠で、AIへ送る前の確認レイヤーであることを伝える画像。",
+      "sha256": "B9D9DA2F83F3AB4ECF55B43E396495377C57E4692D5B4EECC1538431C4D3CEEA"
     }
   ]
 }

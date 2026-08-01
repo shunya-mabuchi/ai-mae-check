@@ -1,4 +1,5 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { assertRuleDeliveryReleaseConfig, loadRuleDeliveryReleaseConfig } from "./lib/rule-delivery-release-config.mjs";
 
@@ -62,12 +63,18 @@ function assertPngFile(relativePath, context) {
 
 function assertAsset(asset, context) {
   assertText(asset?.path, `${context}.path`);
+  assertText(asset?.sha256, `${context}.sha256`);
 
   if (!Number.isInteger(asset.width) || !Number.isInteger(asset.height)) {
     fail(`${context}.width and ${context}.height must be integers`);
   }
 
   assertPngDimensions(asset.path, asset.width, asset.height);
+
+  const actualSha256 = createHash("sha256").update(readFileSync(resolve(rootDir, asset.path))).digest("hex").toUpperCase();
+  if (asset.sha256 !== actualSha256) {
+    fail(`${context}.sha256 does not match ${asset.path}`);
+  }
 }
 
 if (!existsSync(manifestPath)) {
@@ -76,23 +83,6 @@ if (!existsSync(manifestPath)) {
 
 if (!existsSync(outputDir)) {
   fail(`extension output directory not found at ${outputDir}. Run pnpm package:extension first.`);
-}
-
-const zipFiles = readdirSync(outputDir).filter((file) => file.endsWith(".zip"));
-if (zipFiles.length === 0) {
-  fail("Chrome Web Store submission ZIP is missing. Run pnpm package:extension first.");
-}
-
-for (const zipFile of zipFiles) {
-  const zipPath = resolve(outputDir, zipFile);
-  const { size } = statSync(zipPath);
-  if (size <= 0) {
-    fail(`${zipFile} is empty`);
-  }
-
-  if (size > maxZipBytes) {
-    fail(`${zipFile} exceeds Chrome Web Store package size limit`);
-  }
 }
 
 if (!existsSync(listingPath)) {
@@ -121,6 +111,21 @@ const listingText = readFileSync(listingPath, "utf8");
 const submissionCopyText = readFileSync(submissionCopyPath, "utf8");
 const listing = JSON.parse(listingText);
 const releaseConfig = assertRuleDeliveryReleaseConfig(loadRuleDeliveryReleaseConfig());
+const releaseZipName = `ai-mae-checkextension-${manifest.version}-chrome.zip`;
+const releaseZipPath = resolve(outputDir, releaseZipName);
+
+if (!existsSync(releaseZipPath)) {
+  fail(`current release ZIP is missing: ${releaseZipName}. Run pnpm package:extension first.`);
+}
+
+const { size: releaseZipBytes } = statSync(releaseZipPath);
+if (releaseZipBytes <= 0) {
+  fail(`${releaseZipName} is empty`);
+}
+
+if (releaseZipBytes > maxZipBytes) {
+  fail(`${releaseZipName} exceeds Chrome Web Store package size limit`);
+}
 
 for (const phrase of forbiddenPhrases) {
   if (listingText.includes(phrase)) {
@@ -138,6 +143,14 @@ if (manifest.name !== "AIまえチェック") {
 
 if (listing.name !== manifest.name) {
   fail("store listing name must match manifest name");
+}
+
+if (listing.releaseVersion !== manifest.version) {
+  fail("store listing releaseVersion must match manifest version");
+}
+
+if (assetManifest.releaseVersion !== manifest.version) {
+  fail("store assets releaseVersion must match manifest version");
 }
 
 assertText(listing.shortDescription, "shortDescription");
@@ -201,8 +214,8 @@ if (!listing.dataUsage?.explanation?.includes("販売・第三者提供")) {
   fail("data usage explanation must state how pasted/sent text is handled");
 }
 
-if (!Array.isArray(listing.testInstructions) || listing.testInstructions.length !== 6) {
-  fail("testInstructions must contain 6 reviewer steps");
+if (!Array.isArray(listing.testInstructions) || listing.testInstructions.length !== 7) {
+  fail("testInstructions must contain 7 reviewer steps");
 }
 
 for (const requiredPhrase of [
