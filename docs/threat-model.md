@@ -145,7 +145,7 @@ WebLLMは、顧客名、人名、会社名、案件名、契約・採用・給�
 
 主な対策:
 
-- リクエスト本文を使わず、`GET /api/rules/latest.json` だけにする
+- リクエスト本文を使わず、GitHub Pages上の署名付き静的JSON `GET /rules/latest.json` だけにする
 - 署名対象に `alg`、`keyId`、`payload` を含める
 - 拡張側は公開鍵で署名検証できたルールだけを使う
 - 署名検証失敗、HTTPエラー、URL未設定時は同梱ルールへフォールバックする

@@ -4,6 +4,7 @@ AIまえチェックの変更履歴です。Chrome Web Storeへ提出する拡�
 
 ## Unreleased
 
+- 署名付き追加ルールの正規URLを静的配信であることが明確な `/rules/latest.json` へ変更し、公開中0.1.2向けに旧URLの互換コピーを維持
 - ChatGPT / Claude / Gemini / Perplexity adapterの実サイト継続QA
 - Chrome拡張E2EハーネスのCI安定化
 - ルールカタログと署名付きルール配信の継続運用

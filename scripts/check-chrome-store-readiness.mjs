@@ -206,7 +206,7 @@ if (!Array.isArray(listing.testInstructions) || listing.testInstructions.length 
 }
 
 for (const requiredPhrase of [
-  "GET /api/rules/latest.json",
+  "GET /rules/latest.json",
   "リクエスト本文は使用しません",
   "外部LLM API",
   "chrome.storage.local"

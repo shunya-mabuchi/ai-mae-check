@@ -56,4 +56,4 @@ Chrome Web Store公開後は、LP上で「Chrome Web Store公開中」と明示�
 ## 未確認・手動確認が必要な範囲
 
 - WebLLM実モデルロードは端末のWebGPU対応やモデル保存容量に依存するため、ポートフォリオ公開前に実機で別途確認する。
-- GitHub PagesのProduction deploy後、LP、`/privacy/`、`/support/`、`/api/rules/latest.json` を再確認する。
+- GitHub PagesのProduction deploy後、LP、`/privacy/`、`/support/`、`/rules/latest.json` を再確認する。

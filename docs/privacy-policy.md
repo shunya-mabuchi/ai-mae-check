@@ -89,9 +89,9 @@ AIまえチェックは、初期対象サイトとして次のサイトでのみ
 対象サイトのhost permissions:
 
 - 対象サイト上で貼り付け操作、送信前操作、テキスト入力欄を確認するために使います。
-- `https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json` は、対象ページのContent Scriptから署名付き追加ルールJSONを取得するために使います。CORS対応した固定URLへの本文なしGETであり、この取得のための追加ホスト権限は要求しません。ユーザー本文は送信しません。
+- `https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json` は、対象ページのContent Scriptから署名付き追加ルールの静的JSONを取得するために使います。CORS対応した固定URLへの本文なしGETであり、この取得のための追加ホスト権限は要求しません。ユーザー本文は送信しません。
 
-ルール配信を有効にしている場合でも、拡張機能がGitHub Pagesへ送るのは署名付き静的JSONを取得する `GET /api/rules/latest.json` だけです。貼り付け本文、送信本文、検出結果、placeholderMap は送信しません。通常のWebアクセスと同様に、GitHub側でIPアドレスやUser-Agentなどのアクセス情報が処理される可能性はあります。外部LLM APIへ本文を送ることはありません。
+ルール配信を有効にしている場合でも、拡張機能がGitHub Pagesへ送るのは署名付き静的JSONを取得する `GET /rules/latest.json` だけです。貼り付け本文、送信本文、検出結果、placeholderMap は送信しません。通常のWebアクセスと同様に、GitHub側でIPアドレスやUser-Agentなどのアクセス情報が処理される可能性はあります。外部LLM APIへ本文を送ることはありません。
 
 ## 第三者への提供
 

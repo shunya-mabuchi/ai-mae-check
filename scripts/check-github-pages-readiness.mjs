@@ -67,7 +67,13 @@ for (const route of ["privacy", "support", "404.html", ".nojekyll"]) {
 }
 
 const signer = read(paths.signer);
-for (const phrase of ["RULE_KEY_ID", "RULE_SIGNING_PRIVATE_JWK", "signRemoteRuleBundle", "latest.json"]) {
+for (const phrase of [
+  "RULE_KEY_ID",
+  "RULE_SIGNING_PRIVATE_JWK",
+  "signRemoteRuleBundle",
+  "apps/demo/dist/rules/latest.json",
+  "apps/demo/dist/api/rules/latest.json"
+]) {
   assertIncludes(signer, phrase, paths.signer);
 }
 if (signer.includes("privateJwkText,")) {
@@ -80,7 +86,7 @@ if (rules.minExtensionVersion !== "0.1.2" || rules.deliveryStatus !== "active") 
 }
 
 const releaseConfig = JSON.parse(read(paths.releaseConfig));
-if (releaseConfig.endpoint !== "https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json") {
+if (releaseConfig.endpoint !== "https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json") {
   fail("extension endpoint must point to GitHub Pages");
 }
 if (JSON.stringify(releaseConfig).includes('"d"')) {

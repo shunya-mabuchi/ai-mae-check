@@ -83,7 +83,7 @@ describe("loadVerifiedRemoteRules", () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
 
     const result = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicJwk,
       expectedKeyId: keyId,
       fetcher,
@@ -93,7 +93,7 @@ describe("loadVerifiedRemoteRules", () => {
     expect(result.status).toBe("verified");
     expect(result.rules).toHaveLength(1);
     expect(fetcher).toHaveBeenCalledWith(
-      "https://rules.example.test/api/rules/latest",
+      "https://rules.example.test/rules/latest.json",
       expect.objectContaining({
         method: "GET"
       })
@@ -112,7 +112,7 @@ describe("loadVerifiedRemoteRules", () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
 
     const result = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicKeys,
       fetcher,
       now: () => validBundleNow
@@ -130,7 +130,7 @@ describe("loadVerifiedRemoteRules", () => {
     const okFetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
 
     const verified = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicJwk,
       expectedKeyId: keyId,
       fetcher: okFetcher,
@@ -149,7 +149,7 @@ describe("loadVerifiedRemoteRules", () => {
 
     const failingFetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response("{}", { status: 503 }));
     const cached = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicJwk,
       expectedKeyId: keyId,
       fetcher: failingFetcher,
@@ -175,7 +175,7 @@ describe("loadVerifiedRemoteRules", () => {
     const failingFetcher = vi.fn<typeof fetch>().mockRejectedValue(new TypeError("network error"));
 
     const expired = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicJwk,
       expectedKeyId: keyId,
       fetcher: failingFetcher,
@@ -202,7 +202,7 @@ describe("loadVerifiedRemoteRules", () => {
     });
 
     const tampered = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicJwk,
       expectedKeyId: keyId,
       fetcher: failingFetcher,
@@ -221,7 +221,7 @@ describe("loadVerifiedRemoteRules", () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
 
     const result = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicJwk,
       expectedKeyId: keyId,
       fetcher,
@@ -241,7 +241,7 @@ describe("loadVerifiedRemoteRules", () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(signed), { status: 200 }));
 
     const result = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicJwk,
       expectedKeyId: keyId,
       fetcher,
@@ -267,7 +267,7 @@ describe("loadVerifiedRemoteRules", () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify(tampered), { status: 200 }));
 
     const result = await loadVerifiedRemoteRules({
-      endpoint: "https://rules.example.test/api/rules/latest",
+      endpoint: "https://rules.example.test/rules/latest.json",
       publicJwk,
       expectedKeyId: keyId,
       fetcher,

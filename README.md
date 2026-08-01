@@ -327,7 +327,7 @@ Chrome Web Store提出時の説明文、権限理由、プライバシー方針�
 
 サポートFAQと既知の制限は [docs/support-faq.md](docs/support-faq.md) にまとめています。問い合わせ時は、貼り付け本文、実APIキー、実トークン、実個人情報、顧客名、案件名を送らず、ダミー情報で再現してください。
 
-追加ルール取得で送るのは `GET /api/rules/latest.json` だけで、貼り付け本文・送信本文・検出結果・placeholderMap は送信しません。外部LLM APIも使わず、WebLLMの推論もブラウザ内で完結します。
+追加ルール取得で送るのは、GitHub Pages上の署名付き静的JSON `GET /rules/latest.json` に対する本文なしリクエストだけです。貼り付け本文・送信本文・検出結果・placeholderMap は送信しません。外部LLM APIも使わず、WebLLMの推論もブラウザ内で完結します。公開中0.1.2との互換性を保つため、旧 `/api/rules/latest.json` にも同一JSONを一時配置します。
 
 公開ページは以下です。
 

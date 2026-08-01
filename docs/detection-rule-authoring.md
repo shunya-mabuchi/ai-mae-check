@@ -37,7 +37,7 @@ AIまえチェックの検出ルールは、メールアドレスやAPIキー風
 ### 署名付き配信ルール
 
 - schema: `RemoteDetectorRuleDefinition`
-- 取得先: GitHub Pagesの静的JSON `GET /api/rules/latest.json`
+- 取得先: GitHub Pagesの署名付き静的JSON `GET /rules/latest.json`
 - 検証: `verifySignedRemoteRuleBundle`
 - 合流方法: `detectSensitiveText(input, { extraRules })`
 - ruleId: 拡張側では `remote:<id>` になる
@@ -256,7 +256,7 @@ Webhook URLは外部へ送る前に確認したい秘密情報です。
 6. `minExtensionVersion` を上げる場合は理由をPRに書く
 7. `pnpm qa:rule-catalog`、`pnpm test:core`、`pnpm test:pages` を実行する
 8. PRのCIでGitHub Pages成果物の構造を確認する
-9. mainへマージ後、本番の `/api/rules/latest.json` を確認する
+9. mainへマージ後、本番の `/rules/latest.json` を確認する
 
 ## ロールバック基準
 
