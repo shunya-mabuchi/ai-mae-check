@@ -1,19 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { githubPagesConfig, resolveSiteRoute, sitePath } from "./siteRoutes";
-
-describe("resolveSiteRoute", () => {
-  it("GitHub Pagesのbase pathを除いて公開ページを判定する", () => {
-    expect(resolveSiteRoute("/ai-mae-check/")).toBe("home");
-    expect(resolveSiteRoute("/ai-mae-check/privacy/")).toBe("privacy");
-    expect(resolveSiteRoute("/ai-mae-check/support/")).toBe("support");
-  });
-
-  it("ローカル開発時のルート直下も判定する", () => {
-    expect(resolveSiteRoute("/")).toBe("home");
-    expect(resolveSiteRoute("/privacy")).toBe("privacy");
-    expect(resolveSiteRoute("/support")).toBe("support");
-  });
-});
+import { githubPagesConfig, sitePath } from "./siteConfig";
 
 describe("githubPagesConfig", () => {
   it("公開URLとビルド設定をコードで共有する", () => {
@@ -22,7 +8,7 @@ describe("githubPagesConfig", () => {
       productionBranch: "main",
       workflow: ".github/workflows/github-pages.yml",
       buildCommand: "pnpm build:pages",
-      buildOutputDirectory: "apps/demo/dist",
+      buildOutputDirectory: "apps/site/dist",
       nodeVersion: "22",
       pnpmVersion: "10.12.1",
       basePath: "/ai-mae-check",

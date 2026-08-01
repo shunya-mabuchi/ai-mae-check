@@ -11,7 +11,7 @@ AIまえチェックの公開LPは、Chrome拡張が本体であることを伝�
 
 ## OGP/SEO設定
 
-`apps/demo/index.html` でtitle、description、canonical、OGP、Twitter Card、favicon、web manifestを設定します。`robots.txt` と `sitemap.xml` もGitHub PagesのURLへそろえます。OGP画像は `apps/demo/public/ogp.png` を使います。
+`apps/site/index.html` でtitle、description、canonical、OGP、Twitter Card、favicon、web manifestを設定します。`robots.txt` と `sitemap.xml` もGitHub PagesのURLへそろえます。OGP画像は `apps/site/public/ogp.png` を使います。
 
 ## カスタムドメイン方針
 

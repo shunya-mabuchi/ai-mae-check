@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f8f5f" />
+    <meta
+      name="description"
+      content="AIまえチェックのプライバシーポリシーです。貼り付け本文を保存せず、外部LLM APIへ送信しない設計を説明します。"
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://shunya-mabuchi.github.io/ai-mae-check/privacy/" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="stylesheet" href="/src/index.css" />
+    <meta property="og:site_name" content="AIまえチェック" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://shunya-mabuchi.github.io/ai-mae-check/privacy/" />
+    <meta property="og:title" content="プライバシーポリシー | AIまえチェック" />
+    <meta
+      property="og:description"
+      content="本文を保存せず、外部LLM APIへ送信しないAIまえチェックのプライバシー設計を説明します。"
+    />
+    <title>プライバシーポリシー | AIまえチェック</title>
+  </head>
+  <body class="page-shell min-h-screen text-ink">
+    <header class="border-b border-line/70 px-5 py-5">
+      <nav aria-label="公開ページ" class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-1 py-1">
+        <a href="/ai-mae-check/" class="text-base font-black text-ink">AIまえチェック</a>
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-muted">
+          <a href="/ai-mae-check/#install" class="transition hover:text-ink">拡張機能</a>
+          <a href="/ai-mae-check/#demo" class="transition hover:text-ink">デモ</a>
+          <a href="/ai-mae-check/privacy/" aria-current="page" class="text-ink">プライバシー</a>
+          <a href="/ai-mae-check/support/" class="transition hover:text-ink">サポート</a>
+        </div>
+      </nav>
+    </header>
+    <main class="px-5 pb-16 pt-8 md:pb-24 md:pt-14">
+      <div class="mx-auto max-w-4xl">
+        <p class="mb-4 text-sm font-bold text-leaf">AIに貼る前の確認レイヤー</p>
+        <h1 class="text-4xl font-black leading-tight tracking-normal text-ink md:text-5xl">プライバシーポリシー</h1>
+        <p class="mt-5 max-w-3xl text-base leading-8 text-muted md:text-lg">
+          AIまえチェックは、ChatGPT・Claude・Gemini・Perplexityへ文章を貼る前に、ブラウザ内で消し忘れを確認するChrome拡張です。本文を保存しない設計を前提にしています。
+        </p>
+        <div class="mt-8 rounded-card border border-line bg-white/90 p-5 shadow-panel md:p-8">
+          <div class="flex flex-col gap-6">
+            <section>
+              <h2 class="text-lg font-black text-ink">収集しない情報</h2>
+              <p class="mt-2 text-sm leading-7 text-muted">貼り付け本文、送信本文、添付前チェックで読み取ったテキスト本文、検出結果、マスキング用の対応表、送信履歴は開発者のサーバーへ送信・収集しません。貼り付け本文やファイル本文は永続保存しません。</p>
+            </section>
+            <section>
+              <h2 class="text-lg font-black text-ink">保存する情報</h2>
+              <p class="mt-2 text-sm leading-7 text-muted">拡張機能の有効/無効、対象サイトや検出ルールのON/OFF、WebLLMモデルIDなどの設定と、検証済みの署名付きリモートルールキャッシュだけをchrome.storage.localに保存します。リモートルールキャッシュには本文や検出結果を含めません。</p>
+            </section>
+            <section>
+              <h2 class="text-lg font-black text-ink">AI文脈チェック</h2>
+              <p class="mt-2 text-sm leading-7 text-muted">検出とAI文脈チェックはユーザーのブラウザ内で実行されます。WebLLMの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。</p>
+            </section>
+            <section>
+              <h2 class="text-lg font-black text-ink">外部LLM API</h2>
+              <p class="mt-2 text-sm leading-7 text-muted">OpenAI API、Claude API、Gemini APIなどの外部LLM APIへ貼り付け本文を送信しません。開発者の推論サーバーにも貼り付け本文を送信しません。</p>
+            </section>
+            <section>
+              <h2 class="text-lg font-black text-ink">ファイル添付前チェック</h2>
+              <p class="mt-2 text-sm leading-7 text-muted">MVPではテキスト系ファイルのみをブラウザ内で確認します。PDF、docx、xlsx、画像や画像OCRが必要なファイルは解析せず、安全判定済みとは扱いません。画像OCRは外部OCR APIを使わない方針、ランニングコストゼロ、ブラウザ内処理、端末負荷、日本語精度の観点から、現時点では実装しない判断です。対象サイト独自のドラッグ&amp;ドロップ添付やクリップボード経由のファイル添付は、動作保証の対象外です。</p>
+            </section>
+            <section>
+              <h2 class="text-lg font-black text-ink">注意事項</h2>
+              <p class="mt-2 text-sm leading-7 text-muted">本ツールは情報漏洩を完全に防ぐものではありません。検出漏れや誤検出が発生する可能性があります。最終的に送信するかどうかはユーザーが判断してください。</p>
+            </section>
+            <div class="rounded-card border border-line bg-cloud p-4 text-sm leading-7 text-muted">
+              モデルファイルの取得は、WebLLMがローカル推論に必要なファイルを準備するためのものです。貼り付け本文を外部LLM APIへ送信するものではありません。
+            </div>
+            <p class="text-sm leading-7 text-muted">公開Issueや問い合わせへ、実APIキー、実トークン、実在の個人情報を貼り付けないでください。</p>
+            <a href="/ai-mae-check/" class="inline-flex min-h-11 w-fit items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud">トップへ戻る</a>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="border-t border-line/70 bg-cloud/80 px-5 py-8">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 text-sm">
+        <p class="font-black text-ink">AIまえチェック</p>
+        <div class="flex flex-wrap gap-5 font-semibold text-muted">
+          <a href="https://github.com/shunya-mabuchi/ai-mae-check" class="hover:text-ink">GitHub</a>
+          <a href="/ai-mae-check/privacy/" class="hover:text-ink">プライバシー</a>
+          <a href="/ai-mae-check/support/" class="hover:text-ink">サポート</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

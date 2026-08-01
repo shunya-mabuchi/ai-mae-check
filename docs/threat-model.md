@@ -13,7 +13,7 @@ AIまえチェックの主な実行面は次のとおりです。
 - `apps/extension`: Chrome拡張本体。対象サイト上の貼り付け・送信前操作を検知し、確認モーダル、Options Page、site adapterを提供します。
 - `packages/core`: ルールベース検出、マスキング、risk score、policy判定、リモートルール署名検証を担当します。
 - `packages/llm`: WebLLMによる文脈リスク候補チェック、Worker、プロンプト生成、JSONパースを担当します。
-- `apps/demo`: 紹介LP兼ミニデモ。拡張機能を入れる前に価値を試す補助体験です。
+- `apps/site`: 紹介LP兼ミニデモ。拡張機能を入れる前に価値を試す補助体験です。
 - `rules` / GitHub Pages: Git管理した追加ルールをGitHub Actionsで署名し、静的JSONとして配信します。ユーザー本文は受け取りません。
 
 守りたい主な資産は次のとおりです。

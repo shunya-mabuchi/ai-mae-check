@@ -16,7 +16,7 @@
 - `packages/core` のルールベース検出・マスキング
 - `packages/llm` のWebLLM文脈チェック基盤
 - `apps/extension` のChrome拡張
-- `apps/demo` の紹介LP兼ミニデモサイト
+- `apps/site` の紹介LP兼ミニデモサイト
 - Vitest / Playwrightのテスト基盤
 
 現在は、初期実装の「貼り付け時チェック」に加えて、送信ボタン・Enter送信を捕捉する「送信前DLPレイヤー」の基礎実装まで進んでいます。デモサイトは拡張機能を入れる前に価値を試す補助体験であり、プロダクト本体はChrome拡張です。実装ロードマップは [DLP Roadmap Implementation Plan](./docs/superpowers/plans/2026-06-16-dlp-roadmap.md) に整理しています。
@@ -183,7 +183,7 @@ flowchart LR
   Rescan --> Adapter
   Adapter --> Submit
   Options["Options Page"] --> Storage["chrome.storage.local\n設定と検証済みルールキャッシュ"]
-  Demo["apps/demo\n紹介LP兼ミニデモ"] --> Core
+  Demo["apps/site\n紹介LP兼ミニデモ"] --> Core
   Demo --> Llm
 ```
 
@@ -359,7 +359,7 @@ LP上では、Chrome Web Store公開中の状態を表示し、主CTAをスト�
 
 現在のGitHub Pages設定:
 
-1. `pnpm build:pages` で `apps/demo/dist` と署名付きJSONを生成する
+1. `pnpm build:pages` で `apps/site/dist` と署名付きJSONを生成する
 2. `.github/workflows/github-pages.yml` が成果物をGitHub Pagesへデプロイする
 3. `privateJwk` はEnvironment `github-pages` のSecretにだけ保存する
 4. 公開後、`pnpm qa:rules:production` と [docs/portfolio-demo-qa.md](docs/portfolio-demo-qa.md) の1440px / 390px確認を行う

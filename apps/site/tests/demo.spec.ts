@@ -51,7 +51,10 @@ test("公開ページのフッターはカード風に浮かせずページ下�
   await expect(footerShell).not.toHaveClass(/shadow-soft/);
   await expect(footerShell).not.toHaveClass(/rounded-card/);
   await expect(footerShell).not.toHaveClass(/border-line/);
-  await expect(page.getByRole("link", { name: "拡張機能の使い方" })).toHaveAttribute("href", "/ai-mae-check/#extension");
+  await expect(footer.getByRole("link", { name: "GitHub" })).toHaveAttribute(
+    "href",
+    "https://github.com/shunya-mabuchi/ai-mae-check"
+  );
 });
 
 test("サポートページを公開URLとして直接開ける", async ({ page }) => {
@@ -63,4 +66,17 @@ test("サポートページを公開URLとして直接開ける", async ({ page 
     "href",
     "https://github.com/shunya-mabuchi/ai-mae-check/issues"
   );
+});
+
+test("プライバシーとサポートはJavaScriptなしでも読める", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+
+  await page.goto("/ai-mae-check/privacy/");
+  await expect(page.getByRole("heading", { name: "プライバシーポリシー" })).toBeVisible();
+
+  await page.goto("/ai-mae-check/support/");
+  await expect(page.getByRole("heading", { name: "サポート" })).toBeVisible();
+
+  await context.close();
 });

@@ -105,7 +105,7 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 | 種類 | 目的 | 対象 | CI |
 | --- | --- | --- | --- |
 | ユニットテスト | 検出、マスク、ポリシー、UI状態の安定性 | packages / extension内部 | 実行する |
-| デモE2E | LP兼ミニデモの体験確認 | `apps/demo` | 実行する |
+| デモE2E | LP兼ミニデモの体験確認 | `apps/site` | 実行する |
 | 拡張E2Eハーネス | 実拡張を読み込んだpaste/submit確認 | ローカル模擬composer | 手動CIから段階的に導入 |
 | 実サイト手動QA | 対象サイトDOMと実操作の確認 | ChatGPT / Claude / Gemini / Perplexity | CIには載せない |
 | WebLLM実機確認 | WebGPU、モデル取得、保存領域の確認 | 実ブラウザ/実端末 | CIには載せない |

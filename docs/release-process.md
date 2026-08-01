@@ -5,7 +5,7 @@ AIまえチェックはChrome拡張がプロダクト本体です。GitHub Relea
 ## バージョンの基準
 
 - Chrome Web Store提出バージョンは root `package.json` と `apps/extension/package.json` の `version` を基準にします。
-- `apps/demo`、`packages/core`、`packages/llm` はprivate packageとして扱い、npm公開バージョンではありません。
+- `apps/site`、`packages/core`、`packages/llm` はprivate packageとして扱い、npm公開バージョンではありません。
 - ただし、拡張の提出に含まれる挙動が変わる場合は、rootとextensionのversionを更新します。
 
 ## リリース前の順序

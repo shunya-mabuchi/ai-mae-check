@@ -4,9 +4,12 @@ import { resolve } from "node:path";
 const rootDir = resolve(".");
 const paths = {
   workflow: ".github/workflows/github-pages.yml",
-  viteConfig: "apps/demo/vite.config.ts",
-  siteRoutes: "apps/demo/src/lib/siteRoutes.ts",
-  routeBuilder: "scripts/prepare-github-pages-artifact.mjs",
+  viteConfig: "apps/site/vite.config.ts",
+  siteConfig: "apps/site/src/lib/siteConfig.ts",
+  privacyPage: "apps/site/privacy/index.html",
+  supportPage: "apps/site/support/index.html",
+  notFoundPage: "apps/site/404.html",
+  noJekyll: "apps/site/public/.nojekyll",
   signer: "scripts/sign-github-pages-rules.ts",
   rules: "rules/latest.json",
   releaseConfig: "apps/extension/config/rule-delivery.release.json",
@@ -59,11 +62,18 @@ if (workflow.includes("pull_request:")) {
 
 assertIncludes(read(paths.viteConfig), 'base: "/ai-mae-check/"', paths.viteConfig);
 for (const phrase of ["SITE_BASE_PATH", "githubPagesConfig", "latest.json"]) {
-  assertIncludes(read(paths.siteRoutes), phrase, paths.siteRoutes);
+  assertIncludes(read(paths.siteConfig), phrase, paths.siteConfig);
 }
 
-for (const route of ["privacy", "support", "404.html", ".nojekyll"]) {
-  assertIncludes(read(paths.routeBuilder), route, paths.routeBuilder);
+for (const [pagePath, expectedTitle] of [
+  [paths.privacyPage, "プライバシーポリシー | AIまえチェック"],
+  [paths.supportPage, "サポート | AIまえチェック"],
+  [paths.notFoundPage, "ページが見つかりません | AIまえチェック"]
+]) {
+  assertIncludes(read(pagePath), expectedTitle, pagePath);
+  if (read(pagePath).includes('type="module"')) {
+    fail(`${pagePath} must remain readable without JavaScript`);
+  }
 }
 
 const signer = read(paths.signer);
@@ -71,8 +81,8 @@ for (const phrase of [
   "RULE_KEY_ID",
   "RULE_SIGNING_PRIVATE_JWK",
   "signRemoteRuleBundle",
-  "apps/demo/dist/rules/latest.json",
-  "apps/demo/dist/api/rules/latest.json"
+  "apps/site/dist/rules/latest.json",
+  "apps/site/dist/api/rules/latest.json"
 ]) {
   assertIncludes(signer, phrase, paths.signer);
 }
@@ -94,19 +104,19 @@ if (JSON.stringify(releaseConfig).includes('"d"')) {
 }
 
 const rootPackage = JSON.parse(read(paths.rootPackage));
-if (rootPackage.scripts?.["build:pages"] !== "pnpm build:demo && tsx scripts/sign-github-pages-rules.ts") {
+if (rootPackage.scripts?.["build:pages"] !== "pnpm build:site && tsx scripts/sign-github-pages-rules.ts") {
   fail("build:pages script is not wired");
 }
 
 for (const builtPath of [
-  "apps/demo/dist/index.html",
-  "apps/demo/dist/privacy/index.html",
-  "apps/demo/dist/support/index.html",
-  "apps/demo/dist/404.html",
-  "apps/demo/dist/.nojekyll"
+  "apps/site/dist/index.html",
+  "apps/site/dist/privacy/index.html",
+  "apps/site/dist/support/index.html",
+  "apps/site/dist/404.html",
+  "apps/site/dist/.nojekyll"
 ]) {
   if (!existsSync(resolve(rootDir, builtPath))) {
-    fail(`${builtPath} is missing. Run pnpm build:demo first.`);
+    fail(`${builtPath} is missing. Run pnpm build:site first.`);
   }
 }
 
@@ -115,9 +125,9 @@ for (const [route, expectedUrl] of Object.entries({
   support: "https://shunya-mabuchi.github.io/ai-mae-check/support/"
 })) {
   assertIncludes(
-    read(`apps/demo/dist/${route}/index.html`),
+    read(`apps/site/dist/${route}/index.html`),
     `<link rel="canonical" href="${expectedUrl}" />`,
-    `apps/demo/dist/${route}/index.html`
+    `apps/site/dist/${route}/index.html`
   );
 }
 

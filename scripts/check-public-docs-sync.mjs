@@ -10,11 +10,11 @@ const paths = {
   releaseMemo: "docs/chrome-web-store-release.md",
   privacyPolicy: "docs/privacy-policy.md",
   readme: "README.md",
-  hero: "apps/demo/src/components/Hero.tsx",
-  launchFlow: "apps/demo/src/lib/productLaunchFlow.ts",
-  siteRoutes: "apps/demo/src/lib/siteRoutes.ts",
-  privacyPage: "apps/demo/src/components/PrivacyPolicyPage.tsx",
-  supportPage: "apps/demo/src/components/SupportPage.tsx",
+  hero: "apps/site/src/components/Hero.tsx",
+  launchFlow: "apps/site/src/lib/productLaunchFlow.ts",
+  siteConfig: "apps/site/src/lib/siteConfig.ts",
+  privacyPage: "apps/site/privacy/index.html",
+  supportPage: "apps/site/support/index.html",
   fileInspectionRoadmap: "docs/file-inspection-roadmap.md",
   extensionSiteQa: "docs/extension-site-qa.md",
   siteAdapterContract: "docs/site-adapter-contract.md",
@@ -106,7 +106,7 @@ for (const [route, url] of Object.entries({
   privacy: listing.privacyPolicyUrl,
   support: listing.supportUrl
 })) {
-  qa.assertIncludes(docs.siteRoutes, url, `siteRoutes.${route}`);
+  qa.assertIncludes(docs.siteConfig, url, `siteConfig.${route}`);
 }
 
 for (const site of supportedSites) {
