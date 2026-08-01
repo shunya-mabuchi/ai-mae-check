@@ -15,6 +15,7 @@
     "@ai-mae-check/llm": "workspace:*",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
+    "react-aria": "^3.51.0",
     "react-aria-components": "^1.20.0",
     "react-dom": "^19.0.0"
   },

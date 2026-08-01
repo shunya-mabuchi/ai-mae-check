@@ -85,6 +85,16 @@
         white-space: pre-wrap;
         background: #ffffff;
       }
+
+      input[type="file"] {
+        display: block;
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid #c9d2c3;
+        border-radius: 10px;
+        padding: 10px;
+        background: #fbfcfa;
+      }
     </style>
   </head>
   <body>
@@ -132,6 +142,13 @@
         ></div>
       </section>
 
+      <section class="composer" aria-label="file composer">
+        <h1>file composer</h1>
+        <label for="file-input">確認するファイル</label>
+        <input id="file-input" data-testid="file-input" type="file" multiple />
+        <output data-testid="file-output" data-change-count="0"></output>
+      </section>
+
       <section class="composer" aria-label="送信結果">
         <h1>送信結果</h1>
         <output data-testid="submitted-output" data-submitted="false"></output>
@@ -145,6 +162,8 @@
       const prosemirror = document.querySelector('[data-testid="prosemirror-editor"]');
       const sendButton = document.querySelector('[data-testid="send-button"]');
       const output = document.querySelector('[data-testid="submitted-output"]');
+      const fileInput = document.querySelector('[data-testid="file-input"]');
+      const fileOutput = document.querySelector('[data-testid="file-output"]');
       const editors = [textarea, contenteditable, lexical, prosemirror].filter(Boolean);
       let activeEditor = textarea;
 
@@ -180,6 +199,10 @@
       }
 
       sendButton.addEventListener("click", () => recordSubmit(activeEditor));
+      fileInput.addEventListener("change", () => {
+        fileOutput.dataset.changeCount = String(Number(fileOutput.dataset.changeCount ?? "0") + 1);
+        fileOutput.textContent = Array.from(fileInput.files ?? [], (file) => file.name).join(", ");
+      });
     </script>
   </body>
 </html>

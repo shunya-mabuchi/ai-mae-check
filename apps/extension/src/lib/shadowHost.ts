@@ -4,6 +4,11 @@ export interface ShadowHostMount {
   cleanup: () => void;
 }
 
+export interface ReactShadowHostMount extends ShadowHostMount {
+  rootContainer: HTMLDivElement;
+  portalContainer: HTMLDivElement;
+}
+
 export function createShadowHost(cssText: string): ShadowHostMount {
   const host = document.createElement("div");
   const shadow = host.attachShadow({ mode: "open" });
@@ -16,5 +21,20 @@ export function createShadowHost(cssText: string): ShadowHostMount {
     host,
     shadow,
     cleanup: () => host.remove()
+  };
+}
+
+export function createReactShadowHost(cssText: string): ReactShadowHostMount {
+  const mounted = createShadowHost(cssText);
+  const rootContainer = document.createElement("div");
+  const portalContainer = document.createElement("div");
+  rootContainer.className = "amc-react-root";
+  portalContainer.className = "amc-portal-root";
+  mounted.shadow.append(rootContainer, portalContainer);
+
+  return {
+    ...mounted,
+    rootContainer,
+    portalContainer
   };
 }

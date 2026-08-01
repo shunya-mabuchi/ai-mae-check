@@ -105,7 +105,7 @@ React Ariaを使うもの:
 - Meter
 - Disclosure
 - Tooltip
-- Modal / Dialog（Shadow DOM検証後）
+- Modal / Dialog
 
 通常のHTMLとCSSを優先するもの:
 
@@ -185,6 +185,8 @@ React Aria Componentsの低レベルhookは、Components APIで実現できな�
 
 Options PageのButton、Checkbox、RadioGroup、RadioはReact Aria Componentsへ移行済みです。設定値と`chrome.storage.local`の保存形式は変更せず、Space、矢印キー、Enterによる操作と再読み込み後の永続化を拡張E2Eで確認します。
 
+ファイル確認モーダルはReact Ariaの制御型Modal / Dialogへ移行済みです。Shadow Root内にReact rootと専用Portalコンテナを作り、リスクファイルを選択したときだけ拡張パッケージ内の`file-modal-runtime.js`を読み込みます。通常の貼り付け・送信処理へReact Ariaのランタイムを含めないため、content scriptの初期サイズを維持できます。
+
 既存モーダルは命令型Promise APIです。React化する場合も、呼び出し側の決定値とDLPポリシーは変更しません。React rootのunmount時を含め、Promiseを一度だけ解決します。
 
 Modal導入時はShadow Root内に専用Portalコンテナを作り、次をE2Eで確認します。
@@ -199,7 +201,7 @@ Modal導入時はShadow Root内に専用Portalコンテナを作り、次をE2E�
 - backdrop操作
 - z-index
 
-React Ariaへ移行したモーダルでは、既存の手製フォーカス管理を併用しません。
+React Ariaへ移行したモーダルでは、既存の`setupDialogAccessibility`によるfocus trap、Escape、backdrop管理を併用しません。これらはReact Ariaへ集約します。ChromeではShadow DOM内のfocus要素を除去した後もhostが`activeElement`に残り、React Aria 3.51の復帰判定が動かない場合があるため、ファイル確認モーダルの境界層だけに、標準復帰後も`body`のままだった場合の元入力へのfocusフォールバックを置きます。
 
 ## 移行原則
 

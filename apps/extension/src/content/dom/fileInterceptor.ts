@@ -8,7 +8,11 @@ import {
   type DlpPolicyDecision,
   type TextFilePreflightKind
 } from "@ai-mae-check/core";
-import { showFilePreflightModal, type FilePreflightModalItem } from "../../ui/fileModal";
+import type { FilePreflightModalItem } from "../../ui/fileModalTypes";
+import {
+  readFileModalRuntime,
+  type FileModalRuntimeModule
+} from "../../ui/fileModalRuntimeContract";
 
 export interface FileDescriptor {
   name: string;
@@ -93,6 +97,21 @@ function createSafeFile(result: InspectedTextFile): File {
   });
 }
 
+async function loadFileModalRuntime(): Promise<FileModalRuntimeModule> {
+  const loadedRuntime = readFileModalRuntime(globalThis);
+  if (loadedRuntime) {
+    return loadedRuntime;
+  }
+
+  const runtimeUrl = chrome.runtime.getURL("file-modal-runtime.js");
+  await import(/* @vite-ignore */ runtimeUrl);
+  const runtime = readFileModalRuntime(globalThis);
+  if (!runtime) {
+    throw new Error("ファイル確認画面を準備できませんでした。");
+  }
+  return runtime;
+}
+
 export function installFileInterceptor(options: FileInterceptorOptions): () => void {
   const bypassInputs = new WeakSet<HTMLInputElement>();
 
@@ -150,11 +169,18 @@ async function handleFileInputChange(
     .filter((description) => description.kind === "unsupported_binary")
     .map((description) => description.name);
   const canAttachRaw = riskyFiles.every((result) => result.policy.canSendRaw);
-  const decision = await showFilePreflightModal({
-    items: riskyFiles.map(toModalItem),
-    unsupportedFileNames,
-    canAttachRaw
-  });
+  const { showFilePreflightModal } = await loadFileModalRuntime();
+
+  // React AriaのFocusScopeが、閉じた後の戻り先として元の入力欄を認識できる状態にする。
+  input.focus({ preventScroll: true });
+  const decision = await showFilePreflightModal(
+    {
+      items: riskyFiles.map(toModalItem),
+      unsupportedFileNames,
+      canAttachRaw
+    },
+    input
+  );
 
   if (decision === "allow_raw" && canAttachRaw) {
     return;
