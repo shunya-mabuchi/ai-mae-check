@@ -114,6 +114,9 @@ export function installSendInterceptor<TPrepared>(options: SendInterceptorOption
       .then((decision) => {
         submitAfterReview(currentEditor, decision);
       })
+      .catch(() => {
+        // 確認画面を完了できない場合は、本文を変更せず送信も中止する。
+      })
       .finally(() => {
         reviewInFlight = false;
       });

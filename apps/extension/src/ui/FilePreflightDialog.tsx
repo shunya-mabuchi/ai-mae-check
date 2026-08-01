@@ -4,6 +4,7 @@ import { UNSAFE_PortalProvider } from "react-aria/PortalProvider";
 import { formatFileSize } from "../lib/fileSize";
 import { decisionRiskLabels } from "../lib/riskLabels";
 import type { FilePreflightModalDecision, FilePreflightModalOptions } from "./fileModalTypes";
+import { useShadowDialogTabContainment } from "./shadowDialogTabContainment";
 
 interface FilePreflightDialogProps {
   options: FilePreflightModalOptions;
@@ -14,6 +15,8 @@ interface FilePreflightDialogProps {
 export function FilePreflightDialog({ options, portalContainer, onDecision }: FilePreflightDialogProps) {
   const [isOpen, setIsOpen] = useState(true);
   const pendingDecision = useRef<FilePreflightModalDecision | null>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  useShadowDialogTabContainment(dialogRef);
 
   const close = (decision: FilePreflightModalDecision) => {
     if (pendingDecision.current) {
@@ -65,7 +68,11 @@ export function FilePreflightDialog({ options, portalContainer, onDecision }: Fi
         className="amc-overlay"
       >
         <Modal className="amc-dialog">
-          <Dialog aria-label="ファイル添付前確認" className="amc-dialog-content">
+          <Dialog
+            aria-label="ファイル添付前確認"
+            className="amc-dialog-content"
+            ref={dialogRef}
+          >
             <header className="amc-header">
               <h2 className="amc-title">ファイル添付前に確認しますか？</h2>
               <p className="amc-description">

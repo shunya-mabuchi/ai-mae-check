@@ -189,7 +189,9 @@ Options PageのButton、Checkbox、RadioGroup、RadioはReact Aria Componentsへ
 
 貼り付け確認モーダルもReact Ariaの制御型Modal / Dialogへ移行済みです。DLP判定、選択、安全化、WebLLM実行制御は`pasteReviewModalController.ts`へ分離し、Reactコンポーネントは表示と閉じるライフサイクルを担当します。注意対象を貼り付けたときだけ、拡張パッケージ内の`review-modal-runtime.js`を読み込みます。WebLLM処理中に画面を閉じた場合は、遅れて返る進捗・候補・エラーを表示へ反映しません。
 
-呼び出し側の命令型Promise API、決定値、DLPポリシーは変更しません。React rootのunmount時を含め、Promiseを一度だけ解決します。送信前確認モーダルは次の段階で同じ`review-modal-runtime.js`へ統合します。
+送信前確認モーダルもReact Ariaの制御型Modal / Dialogへ移行済みです。カテゴリ選択、プレビュー生成、WebLLM実行制御は`confirmModalController.ts`へ分離し、貼り付け確認と同じ`review-modal-runtime.js`から必要時だけ読み込みます。高リスクと中リスクが混在する場合は、coreの`requiredFindingIds`に含まれるカテゴリだけを固定し、任意カテゴリはユーザーが安全化対象から外せます。
+
+呼び出し側の命令型Promise API、決定値、DLPポリシーは変更しません。React rootのunmount時を含め、Promiseを一度だけ解決します。モーダルの読込または描画に失敗した場合は、元の送信をキャンセルし、日本語の復旧メッセージを表示します。本文はエラーやログに含めません。
 
 Modal導入時はShadow Root内に専用Portalコンテナを作り、次をE2Eで確認します。
 
@@ -203,9 +205,11 @@ Modal導入時はShadow Root内に専用Portalコンテナを作り、次をE2E�
 - backdrop操作
 - z-index
 
-React Ariaへ移行したモーダルでは、既存の`setupDialogAccessibility`によるfocus trap、Escape、backdrop管理を併用しません。これらはReact Ariaへ集約します。ChromeではShadow DOM内のfocus要素を除去した後もhostが`activeElement`に残り、React Aria 3.51の復帰判定が動かない場合があります。そのため、ファイル確認と貼り付け確認の命令型Promise境界に限り、標準復帰後も`body`のままだった場合だけ元入力へfocusを戻します。
+React Ariaへ移行したモーダルでは、旧`setupDialogAccessibility`によるfocus trap、Escape、backdrop管理を併用しません。標準の管理はReact Ariaへ集約します。ただしChromeではShadow DOM境界でTab循環がページ側へ抜ける場合があるため、境界のTab / Shift+Tabだけを`shadowDialogTabContainment.ts`で補完します。また、Shadow DOM内のfocus要素を除去した後もhostが`activeElement`に残り、React Aria 3.51の復帰判定が動かない場合があります。そのため、ファイル確認、貼り付け確認、送信前確認の命令型Promise境界に限り、標準復帰後も`body`のままだった場合だけ元の操作要素へfocusを戻します。
 
 貼り付け確認では、textarea、contenteditable、Lexical風DOM、ProseMirror風DOMの安全化入力に加え、390px幅の長文、Escape、backdrop、スクロール復帰、高リスク情報の生貼り付け禁止を拡張E2Eで確認します。
+
+送信前確認では、送信ボタンとEnter系操作、安全化後の再送信、390px幅の長文、Escape、backdrop、スクロール復帰、高リスクと中リスクが混在する場合のカテゴリ固定範囲を拡張E2Eで確認します。
 
 ## 移行原則
 

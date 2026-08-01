@@ -231,6 +231,9 @@ WebLLMとローカル補助候補により、ルールだけでは拾いにく�
 現在の実装:
 
 - `apps/extension/src/lib/modal.tsx`
+- `apps/extension/src/ui/confirmModal.tsx`
+- `apps/extension/src/ui/confirmModalController.ts`
+- `apps/extension/src/ui/reviewModalRuntimeLoader.ts`
 - `apps/extension/src/lib/reviewListRenderers.ts`
 - `apps/extension/entrypoints/options/OptionsApp.tsx`
 - `apps/site/src/components/*`

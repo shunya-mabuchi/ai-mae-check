@@ -54,9 +54,9 @@ async function clickPasteSafeInput(page: Page): Promise<void> {
 }
 
 async function clickSendSafeSubmit(page: Page): Promise<void> {
-  await expect(page.locator(".amc-dialog")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "送信前に安全化しますか？" })).toBeVisible();
   expect(expectedSendActionLabel).toBe("安全化して送信");
-  await page.locator(".amc-dialog .amc-primary").click();
+  await page.getByRole("button", { name: expectedSendActionLabel }).click();
 }
 
 async function expectNoSend(page: Page): Promise<void> {
@@ -212,15 +212,16 @@ test.describe("AIまえチェック拡張E2E", () => {
 
       await page.getByTestId("send-button").click();
       await expectNoSend(page);
-      await expect(page.locator(".amc-dialog")).toBeVisible();
-      await expect(page.locator(".amc-dialog .amc-primary")).toHaveText("安全化して送信");
+      const dialog = page.getByRole("dialog", { name: "送信前に安全化しますか？" });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "安全化して送信" })).toBeVisible();
 
       const category = page.locator(".amc-category").filter({ hasText: "金額・金融情報" });
       await category.locator("summary").click();
       await expect(category).toContainText("80万円");
       await category.locator("input[type='checkbox']").uncheck();
-      await expect(page.locator(".amc-dialog .amc-primary")).toHaveText("そのまま送信");
-      await page.locator(".amc-dialog .amc-primary").click();
+      await expect(dialog.getByRole("button", { name: "そのまま送信" })).toBeVisible();
+      await dialog.getByRole("button", { name: "そのまま送信" }).click();
 
       await expect(output).toHaveAttribute("data-submitted", "true");
       await expect(output).toContainText("月額80万円");
@@ -241,9 +242,10 @@ test.describe("AIまえチェック拡張E2E", () => {
 
       await page.getByTestId("send-button").click();
       await expectNoSend(page);
-      await expect(page.locator(".amc-dialog")).toBeVisible();
-      await expect(page.locator(".amc-dialog .amc-primary")).toHaveText("安全化して送信");
-      await expect(page.locator(".amc-dialog")).not.toContainText("そのまま送信");
+      const dialog = page.getByRole("dialog", { name: "送信前に安全化しますか？" });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "安全化して送信" })).toBeVisible();
+      await expect(dialog).not.toContainText("そのまま送信");
 
       const lockedCheckboxes = page.locator(".amc-category input[type='checkbox']");
       await expect(lockedCheckboxes.first()).toBeDisabled();

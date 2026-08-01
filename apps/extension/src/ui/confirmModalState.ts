@@ -66,22 +66,36 @@ function highestRisk(findings: Finding[]): RiskLevel {
 }
 
 export function createCategoryGroups(findings: Finding[], policy: DlpPolicyDecision): CategoryGroup[] {
-  const byCategory = new Map<DlpCategory, Finding[]>();
+  const groups = new Map<
+    string,
+    {
+      category: DlpCategory;
+      findings: Finding[];
+      locked: boolean;
+    }
+  >();
+  const requiredFindingIds = new Set(policy.requiredFindingIds ?? []);
 
   for (const finding of findings) {
     const category = categoryForFinding(finding);
-    const current = byCategory.get(category) ?? [];
-    current.push(finding);
-    byCategory.set(category, current);
+    const locked = requiredFindingIds.has(finding.id);
+    const key = `${category}:${locked ? "required" : "optional"}`;
+    const current = groups.get(key) ?? {
+      category,
+      findings: [],
+      locked
+    };
+    current.findings.push(finding);
+    groups.set(key, current);
   }
 
-  return Array.from(byCategory.entries())
-    .map(([category, groupFindings]) => ({
+  return Array.from(groups.values())
+    .map(({ category, findings: groupFindings, locked }) => ({
       category,
       label: categoryLabels[category],
       count: groupFindings.length,
       riskLevel: highestRisk(groupFindings),
-      locked: policy.requiresSanitization,
+      locked,
       findingIds: groupFindings.map((finding) => finding.id),
       findings: groupFindings
     }))
