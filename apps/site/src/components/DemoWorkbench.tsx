@@ -7,7 +7,9 @@ import {
   type DemoWorkbenchActionIcon,
   type DemoWorkbenchActionId
 } from "../lib/demoWorkbenchActions";
-import { Button, Surface } from "./ui";
+import { Button } from "./ui/Button";
+import { Surface } from "./ui/Surface";
+import { TextAreaField } from "./ui/TextAreaField";
 import { DetectionResults } from "./DetectionResults";
 import { MaskResult } from "./MaskResult";
 
@@ -25,7 +27,7 @@ const actionIcons: Record<DemoWorkbenchActionIcon, LucideIcon> = {
   refresh: RefreshCcw
 };
 
-export function DemoCard({
+export function DemoWorkbench({
   text,
   onTextChange,
   onInsertSample,
@@ -121,12 +123,12 @@ export function DemoCard({
                   return (
                     <Button
                       key={action.id}
-                      onClick={actionHandlers[action.id]}
+                      onPress={actionHandlers[action.id]}
                       variant={action.variant}
-                      disabled={action.disabled}
+                      isDisabled={action.disabled}
                       className={action.className}
                     >
-                      <Icon size={17} aria-hidden="true" />
+                      <Icon data-icon="inline-start" aria-hidden="true" />
                       {action.label}
                     </Button>
                   );
@@ -135,8 +137,8 @@ export function DemoCard({
             </div>
           </div>
 
-          <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.82fr)_minmax(0,1fr)]">
-            <div className="border-b border-line bg-white p-4 md:p-6 xl:border-b-0 xl:border-r">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.82fr)_minmax(0,1fr)]">
+            <div className="border-b border-line bg-white p-4 md:p-6 lg:border-b-0 lg:border-r">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-black text-muted">外部AIへ送る前の下書き</p>
@@ -144,18 +146,17 @@ export function DemoCard({
                 </div>
                 <span className="rounded-card bg-cloud px-3 py-2 text-xs font-black text-muted">{text.length.toLocaleString()}文字</span>
               </div>
-              <div className="rounded-card border border-line bg-[#fbfdf9] p-3 shadow-inner">
-                <textarea
+              <div className="rounded-card border border-line bg-paper p-3 shadow-inner">
+                <TextAreaField
                   value={text}
-                  onChange={(event) => onTextChange(event.target.value)}
-                  aria-label="AIに貼る前の入力テキスト"
-                  className="min-h-[320px] w-full resize-y bg-transparent p-2 text-sm leading-7 text-ink outline-none placeholder:text-slate-400 md:min-h-[480px]"
+                  onChange={onTextChange}
+                  ariaLabel="AIに貼る前の入力テキスト"
                   placeholder="ここにAIへ貼る前の文章を入力してください。"
                 />
               </div>
             </div>
 
-            <div className="border-b border-line bg-[#f8faf7] p-4 md:p-6 xl:border-b-0 xl:border-r">
+            <div className="border-b border-line bg-paper p-4 md:p-6 lg:border-b-0 lg:border-r">
               <DetectionResults
                 findings={findings}
                 selectedFindingIds={selectedRuleFindingIds}

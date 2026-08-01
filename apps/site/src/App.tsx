@@ -1,4 +1,4 @@
-import { DemoCard } from "./components/DemoCard";
+import { DemoWorkbench } from "./components/DemoWorkbench";
 import { useDemoWorkbench } from "./hooks/useDemoWorkbench";
 
 export function App() {
@@ -24,7 +24,7 @@ export function App() {
   } = useDemoWorkbench();
 
   return (
-    <DemoCard
+    <DemoWorkbench
       text={text}
       onTextChange={setText}
       onInsertSample={insertSample}

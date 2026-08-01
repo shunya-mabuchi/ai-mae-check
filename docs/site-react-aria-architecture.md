@@ -33,7 +33,7 @@ packages
 - 静的HTML
 - React 19
 - React Aria Components
-- shadcn/uiのReact Ariaベース
+- React Aria Componentsを包むローカルUIコンポーネント
 - Tailwind CSS
 - Vitest
 - Playwright
@@ -100,6 +100,7 @@ React Ariaを使うもの:
 - Switch
 - RadioGroup
 - ProgressBar
+- Meter
 - Disclosure
 - Tooltip
 - Modal / Dialog（Shadow DOM検証後）
@@ -116,9 +117,9 @@ React Ariaを使うもの:
 
 React Aria Componentsの低レベルhookは、Components APIで実現できない要件がある場合だけ使います。
 
-## shadcn/ui
+## UIコンポーネント方針
 
-shadcn/uiはReact Ariaベースで初期化し、必要な部品だけをソースとして追加します。デフォルトテーマを完成デザインとして扱わず、AIまえチェックのデザイントークンへ接続します。
+完成済みテーマやコンポーネント集は導入せず、React Aria Componentsの操作部品を薄いローカルコンポーネントで包みます。必要な部品だけをソース管理し、見た目はAIまえチェックのデザイントークンへ接続します。
 
 静的LPをReact化する目的には使いません。CardやBadgeを機械的に増やさず、操作と状態表現に必要な部品だけを採用します。
 

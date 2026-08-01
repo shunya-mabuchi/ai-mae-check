@@ -1,18 +1,24 @@
-import { useCallback, useMemo, useState } from "react";
-import { type DetectionResult } from "@ai-mae-check/core";
+import { useCallback, useMemo, useReducer, useRef } from "react";
+import type { DetectionResult } from "@ai-mae-check/core";
 import type { ContextRiskCandidate } from "@ai-mae-check/llm";
 import { contextSampleText, sampleText } from "../lib/demoConstants";
 import { createDemoMaskingViewModel } from "../lib/demoMasking";
-import { toggleSelectedId } from "../lib/demoSelection";
 import type { DemoLlmUiState } from "../lib/demoLlmUiState";
 import {
   createDemoRuleDetectionState,
   createDemoTextReplacementState,
-  type DemoWorkbenchStateSnapshot
+  demoWorkbenchReducer
 } from "../lib/demoWorkbenchState";
 import { useDemoLlmAnalysis } from "./useDemoLlmAnalysis";
 
-const emptySummary = { total: 0, critical: 0, high: 0, medium: 0, low: 0, byRule: {} } as DetectionResult["summary"];
+const emptySummary = {
+  total: 0,
+  critical: 0,
+  high: 0,
+  medium: 0,
+  low: 0,
+  byRule: {}
+} as DetectionResult["summary"];
 
 export interface DemoWorkbenchViewModel {
   text: string;
@@ -36,64 +42,70 @@ export interface DemoWorkbenchViewModel {
 }
 
 export function useDemoWorkbench(): DemoWorkbenchViewModel {
-  const [text, setText] = useState("");
-  const [detection, setDetection] = useState<DetectionResult | null>(null);
-  const [selectedRuleFindingIds, setSelectedRuleFindingIds] = useState<string[]>([]);
-  const [llmCandidates, setLlmCandidates] = useState<ContextRiskCandidate[]>([]);
-  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
-  const [copyMessage, setCopyMessage] = useState("");
-
-  const { llmUiState, runLlmDetection: analyzeText } = useDemoLlmAnalysis();
+  const [state, dispatch] = useReducer(
+    demoWorkbenchReducer,
+    "",
+    createDemoTextReplacementState
+  );
+  const llmRequestSequence = useRef(0);
+  const { runLlmDetection: analyzeText } = useDemoLlmAnalysis();
 
   const maskingViewModel = useMemo(
     () =>
       createDemoMaskingViewModel({
-        inputText: text,
-        detection,
-        selectedRuleFindingIds,
-        llmCandidates,
-        selectedCandidateIds
+        inputText: state.text,
+        detection: state.detection,
+        selectedRuleFindingIds: state.selectedRuleFindingIds,
+        llmCandidates: state.llmCandidates,
+        selectedCandidateIds: state.selectedCandidateIds
       }),
-    [detection, llmCandidates, selectedCandidateIds, selectedRuleFindingIds, text]
+    [
+      state.detection,
+      state.llmCandidates,
+      state.selectedCandidateIds,
+      state.selectedRuleFindingIds,
+      state.text
+    ]
   );
 
-  const summary = detection?.summary ?? emptySummary;
-
-  const applyWorkbenchState = useCallback((state: DemoWorkbenchStateSnapshot) => {
-    setText(state.text);
-    setDetection(state.detection);
-    setSelectedRuleFindingIds(state.selectedRuleFindingIds);
-    setLlmCandidates(state.llmCandidates);
-    setSelectedCandidateIds(state.selectedCandidateIds);
-    setCopyMessage(state.copyMessage);
+  const setText = useCallback((text: string) => {
+    dispatch({ type: "text_changed", text });
   }, []);
 
   const insertSample = useCallback(() => {
-    applyWorkbenchState(createDemoTextReplacementState(sampleText));
-  }, [applyWorkbenchState]);
+    dispatch({ type: "text_replaced", text: sampleText });
+  }, []);
 
   const insertContextSample = useCallback(() => {
-    applyWorkbenchState(createDemoTextReplacementState(contextSampleText));
-  }, [applyWorkbenchState]);
+    dispatch({ type: "text_replaced", text: contextSampleText });
+  }, []);
 
   const runRuleDetection = useCallback(() => {
-    applyWorkbenchState(createDemoRuleDetectionState(text));
-  }, [applyWorkbenchState, text]);
+    dispatch({
+      type: "rule_detection_completed",
+      state: createDemoRuleDetectionState(state.text)
+    });
+  }, [state.text]);
 
   const runLlmDetection = useCallback(async () => {
+    const requestId = ++llmRequestSequence.current;
     await analyzeText({
-      text,
-      detection,
-      setDetection,
-      setSelectedRuleFindingIds,
-      setLlmCandidates,
-      setSelectedCandidateIds
+      text: state.text,
+      detection: state.detection,
+      selectedRuleFindingIds: state.selectedRuleFindingIds,
+      requestId,
+      dispatch
     });
-  }, [analyzeText, detection, text]);
+  }, [
+    analyzeText,
+    state.detection,
+    state.selectedRuleFindingIds,
+    state.text
+  ]);
 
   const reset = useCallback(() => {
-    applyWorkbenchState(createDemoTextReplacementState(""));
-  }, [applyWorkbenchState]);
+    dispatch({ type: "reset" });
+  }, []);
 
   const copyMaskedText = useCallback(async () => {
     if (!maskingViewModel.maskedText) {
@@ -101,31 +113,31 @@ export function useDemoWorkbench(): DemoWorkbenchViewModel {
     }
 
     await navigator.clipboard.writeText(maskingViewModel.maskedText);
-    setCopyMessage("安全化後テキストをコピーしました。");
+    dispatch({
+      type: "copy_completed",
+      message: "安全化後テキストをコピーしました。"
+    });
   }, [maskingViewModel.maskedText]);
 
   const toggleRuleFinding = useCallback((id: string) => {
-    setSelectedRuleFindingIds((current) => toggleSelectedId(current, id));
+    dispatch({ type: "rule_finding_toggled", id });
   }, []);
 
   const toggleCandidate = useCallback((id: string) => {
-    setSelectedCandidateIds((current) => toggleSelectedId(current, id));
+    dispatch({ type: "llm_candidate_toggled", id });
   }, []);
 
   return {
-    text,
-    detection,
-    summary,
-    selectedRuleFindingIds,
-    llmCandidates,
-    selectedCandidateIds,
+    text: state.text,
+    detection: state.detection,
+    summary: state.detection?.summary ?? emptySummary,
+    selectedRuleFindingIds: state.selectedRuleFindingIds,
+    llmCandidates: state.llmCandidates,
+    selectedCandidateIds: state.selectedCandidateIds,
     maskedText: maskingViewModel.maskedText,
-    copyMessage,
-    llmUiState,
-    setText: (value: string) => {
-      setText(value);
-      setCopyMessage("");
-    },
+    copyMessage: state.copyMessage,
+    llmUiState: state.llmUiState,
+    setText,
     insertSample,
     insertContextSample,
     runRuleDetection,
