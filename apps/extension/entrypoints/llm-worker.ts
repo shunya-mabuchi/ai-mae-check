@@ -1,6 +1,6 @@
 import { defineUnlistedScript } from "wxt/utils/define-unlisted-script";
-import "../../../packages/llm/src/worker";
+import "@ai-mae-check/llm/worker";
 
 export default defineUnlistedScript(() => {
-  // Worker本体は上のside effect importでメッセージ待受を開始します。
+  // WebLLM Worker本体はside effect importでメッセージ処理を登録します。
 });

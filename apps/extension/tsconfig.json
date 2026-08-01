@@ -7,6 +7,8 @@
     "types": ["chrome", "node"],
     "paths": {
       "@ai-mae-check/core": ["../../packages/core/src/index.ts"],
+      "@ai-mae-check/llm/runtime": ["../../packages/llm/src/runtime.ts"],
+      "@ai-mae-check/llm/worker": ["../../packages/llm/src/worker.ts"],
       "@ai-mae-check/llm": ["../../packages/llm/src/index.ts"]
     }
   },

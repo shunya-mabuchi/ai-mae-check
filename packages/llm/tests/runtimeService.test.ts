@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { classifyLlmError, createLocalLlmRuntimeService } from "../src";
+import { classifyLlmError } from "../src";
+import { createLocalLlmRuntimeService } from "../src/runtime";
 import type {
   AnalyzeContextOptions,
   ContextAnalysisResult,

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createLlmContextAnalyzer, DEFAULT_MODEL_ID } from "../src";
+import { DEFAULT_MODEL_ID } from "../src";
+import { createLlmContextAnalyzer } from "../src/runtime";
 import { isWebLlmModuleShape } from "../src/webllmLifecycle";
 
 let completionText = JSON.stringify({

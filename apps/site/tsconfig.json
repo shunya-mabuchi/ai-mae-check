@@ -7,7 +7,9 @@
     "types": ["vite/client"],
     "paths": {
       "@ai-mae-check/core": ["../../packages/core/src/index.ts"],
-      "@ai-mae-check/llm": ["../../packages/llm/src/index.ts"]
+      "@ai-mae-check/llm": ["../../packages/llm/src/index.ts"],
+      "@ai-mae-check/llm/shared": ["../../packages/llm/src/shared.ts"],
+      "@ai-mae-check/llm/runtime": ["../../packages/llm/src/runtime.ts"]
     }
   },
   "include": ["src", "vite.config.ts", "playwright.config.ts", "tests"]

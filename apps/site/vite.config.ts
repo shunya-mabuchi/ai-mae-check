@@ -19,10 +19,24 @@ export default defineConfig({
     }
   },
   resolve: {
-    alias: {
-      "@ai-mae-check/core": fileURLToPath(new URL("../../packages/core/src/index.ts", import.meta.url)),
-      "@ai-mae-check/llm": fileURLToPath(new URL("../../packages/llm/src/index.ts", import.meta.url))
-    }
+    alias: [
+      {
+        find: "@ai-mae-check/core",
+        replacement: fileURLToPath(new URL("../../packages/core/src/index.ts", import.meta.url))
+      },
+      {
+        find: "@ai-mae-check/llm/runtime",
+        replacement: fileURLToPath(new URL("../../packages/llm/src/runtime.ts", import.meta.url))
+      },
+      {
+        find: "@ai-mae-check/llm/shared",
+        replacement: fileURLToPath(new URL("../../packages/llm/src/shared.ts", import.meta.url))
+      },
+      {
+        find: "@ai-mae-check/llm",
+        replacement: fileURLToPath(new URL("../../packages/llm/src/index.ts", import.meta.url))
+      }
+    ]
   },
   test: {
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"]

@@ -112,6 +112,8 @@ ChatGPT / Claude / Gemini / Perplexity へ送る前に、送信内容を検出�
 
 Chrome拡張では、対象サイトのContent Scriptから直接WebLLM Workerを起動せず、拡張originのbridge iframe内でWebLLMを実行します。これにより、ChatGPTなど対象ページ側のCSPやorigin制約に巻き込まれにくい構成にしています。
 
+公開サイトのミニデモでは、初期表示とルール検出でWebLLM実行系を読み込みません。「AI文脈チェック」を明示的に実行した時だけruntimeとWorkerを遅延ロードし、WebLLMが失敗してもルール検出結果を維持します。
+
 ## WebLLMでやっていること
 
 - 正規表現では拾いにくい文脈リスクの候補検出
