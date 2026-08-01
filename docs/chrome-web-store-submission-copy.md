@@ -1,6 +1,6 @@
 # Chrome Web Store 掲載文 最終版
 
-このファイルは、Chrome Web Store Developer Dashboardへ貼り付けた入力文の控えです。0.1.1はChrome Web Storeで一般公開済みです。2026-07-03に公開を確認しました。今後の掲載文修正は、この内容を基準にします。
+このファイルは、Chrome Web Store Developer Dashboardへ貼り付けた入力文の控えです。0.1.2はChrome Web Storeで一般公開済みです。2026-08-01に公開を確認しました。今後の掲載文修正は、この内容を基準にします。
 
 公開URLは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。GitHub Pages上のサポートページとプライバシーポリシーページを使い、サポートページ内の問い合わせ先としてGitHub Issuesと公開メールアドレスを案内します。
 
