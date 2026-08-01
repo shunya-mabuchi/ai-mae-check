@@ -58,6 +58,10 @@ const typeSafetyPatterns = [
   {
     pattern: /eslint-disable/u,
     detail: "eslint-disable は導入前でも静的検査の迂回として扱います"
+  },
+  {
+    pattern: /biome-ignore/u,
+    detail: "biome-ignore で静的検査を迂回しないでください"
   }
 ];
 
@@ -124,13 +128,141 @@ for (const file of trackedFiles()) {
 }
 
 const packageJson = JSON.parse(read("package.json"));
-if (packageJson.scripts?.lint !== "node scripts/check-static-lint.mjs") {
+const biomeConfig = JSON.parse(read("biome.json"));
+const expectedLintCommand =
+  "biome ci . --diagnostic-level=error && node scripts/check-static-lint.mjs";
+
+if (packageJson.scripts?.lint !== expectedLintCommand) {
   findings.push({
     file: "package.json",
     line: 0,
-    detail: "pnpm lint は静的lintスクリプトを直接実行してください",
+    detail: "pnpm lint はBiomeとリポジトリ固有QAを順番に実行してください",
     text: String(packageJson.scripts?.lint ?? "")
   });
+}
+
+for (const [scriptName, expectedCommand] of Object.entries({
+  "lint:report": "biome lint .",
+  format: "biome format --write .",
+  "format:check": "biome format ."
+})) {
+  if (packageJson.scripts?.[scriptName] !== expectedCommand) {
+    findings.push({
+      file: "package.json",
+      line: 0,
+      detail: `${scriptName} はBiomeの標準コマンドを実行してください`,
+      text: String(packageJson.scripts?.[scriptName] ?? "")
+    });
+  }
+}
+
+if (!/^\d+\.\d+\.\d+$/u.test(String(packageJson.devDependencies?.["@biomejs/biome"] ?? ""))) {
+  findings.push({
+    file: "package.json",
+    line: 0,
+    detail: "@biomejs/biome は再現可能な固定バージョンで管理してください",
+    text: String(packageJson.devDependencies?.["@biomejs/biome"] ?? "")
+  });
+}
+
+const biomeRules = biomeConfig.linter?.rules;
+if (
+  biomeRules?.suspicious?.noExplicitAny !== "error" ||
+  biomeRules?.suspicious?.noTsIgnore !== "error"
+) {
+  findings.push({
+    file: "biome.json",
+    line: 0,
+    detail: "Biomeで明示的なanyと@ts-ignoreをエラーにしてください",
+    text: ""
+  });
+}
+
+const runtimeOverride = biomeConfig.overrides?.find((override) =>
+  override.includes?.includes("apps/extension/src/**")
+);
+if (runtimeOverride?.linter?.rules?.suspicious?.noConsole !== "error") {
+  findings.push({
+    file: "biome.json",
+    line: 0,
+    detail: "実行時コードではBiomeのnoConsoleをエラーにしてください",
+    text: ""
+  });
+}
+
+const biomeIncludes = biomeConfig.files?.includes ?? [];
+for (const requiredIgnore of [
+  "!!**/dist",
+  "!!**/.output",
+  "!!apps/site/public",
+  "!!rules/latest.json"
+]) {
+  if (!biomeIncludes.includes(requiredIgnore)) {
+    findings.push({
+      file: "biome.json",
+      line: 0,
+      detail: `生成物・署名済み配信物の除外「${requiredIgnore}」を維持してください`,
+      text: ""
+    });
+  }
+}
+
+if (biomeIncludes.some((pattern) => pattern.endsWith(".css"))) {
+  findings.push({
+    file: "biome.json",
+    line: 0,
+    detail: "Tailwind CSS 4固有構文を含むCSSは初期Biome対象から外してください",
+    text: ""
+  });
+}
+
+if (biomeConfig.assist?.enabled !== false) {
+  findings.push({
+    file: "biome.json",
+    line: 0,
+    detail: "大量のimport差分を避けるためBiome Assistは段階導入してください",
+    text: ""
+  });
+}
+
+for (const requiredFormatTarget of [
+  "biome.json",
+  "package.json",
+  "packages/design-tokens/src/**"
+]) {
+  if (!biomeConfig.formatter?.includes?.includes(requiredFormatTarget)) {
+    findings.push({
+      file: "biome.json",
+      line: 0,
+      detail: `Biome formatterの段階導入対象「${requiredFormatTarget}」を維持してください`,
+      text: ""
+    });
+  }
+}
+
+if (biomeConfig.formatter?.lineEnding !== "lf") {
+  findings.push({
+    file: "biome.json",
+    line: 0,
+    detail: "WindowsとCIで同じ合否になるようformatter.lineEndingはlfを維持してください",
+    text: String(biomeConfig.formatter?.lineEnding ?? "")
+  });
+}
+
+const gitAttributes = read(".gitattributes");
+for (const requiredAttribute of [
+  "biome.json text eol=lf",
+  "package.json text eol=lf",
+  "packages/design-tokens/src/** text eol=lf"
+]) {
+  if (!gitAttributes.includes(requiredAttribute)) {
+    findings.push({
+      file: ".gitattributes",
+      line: 0,
+      detail: `Biome formatter対象のLF固定「${requiredAttribute}」を維持してください`,
+      text: ""
+    });
+  }
 }
 
 const ci = read(".github/workflows/ci.yml");

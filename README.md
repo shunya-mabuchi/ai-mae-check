@@ -266,10 +266,13 @@ pnpm test:e2e
 pnpm test:extension:e2e
 pnpm rules:keygen
 pnpm lint
+pnpm lint:report
+pnpm format:check
+pnpm format
 pnpm typecheck
 ```
 
-`pnpm lint` は、文字化け、`any`、実行時の不要なconsole出力などを確認するリポジトリ独自の静的検査です。
+`pnpm lint` は、Biomeによる一般的なlintと段階導入中のformatter確認に加え、文字化け、`any`、実行時の不要なconsole出力などのリポジトリ固有QAを実行します。warningを含む改善候補は`pnpm lint:report`で確認できます。適用範囲と除外理由は [Biome段階導入方針](docs/biome-adoption.md) にまとめています。
 
 `pnpm package:extension` はChrome Web Store提出用のZIPを作成するためのコマンドです。`apps/extension/config/rule-delivery.release.json` の本番ルール配信URL・`keyId`・公開JWKがそろっていない場合は失敗します。
 

@@ -16,13 +16,14 @@ AIまえチェックはChrome拡張がプロダクト本体です。GitHub Relea
 2. `CHANGELOG.md` の `Unreleased` を更新する
 3. root `package.json` と `apps/extension/package.json` のversionを確認する
 4. `pnpm install --frozen-lockfile` を確認する
-5. `pnpm test` を実行する
-6. `pnpm typecheck` を実行する
-7. `pnpm build` を実行する
-8. `pnpm package:extension` でZIPを作成する
-9. 公開前QAをすべて実行する
-10. Chrome Web StoreへZIPをアップロードし、審査へ送信する
-11. 審査通過後にGit tag、GitHub Release、README、LPの公開導線を更新する
+5. `pnpm lint` を実行する
+6. `pnpm test` を実行する
+7. `pnpm typecheck` を実行する
+8. `pnpm build` を実行する
+9. `pnpm package:extension` でZIPを作成する
+10. 公開前QAをすべて実行する
+11. Chrome Web StoreへZIPをアップロードし、審査へ送信する
+12. 審査通過後にGit tag、GitHub Release、README、LPの公開導線を更新する
 
 公開前QA:
 

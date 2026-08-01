@@ -23,7 +23,10 @@
     "test:e2e": "pnpm --filter @ai-mae-check/site test:e2e",
     "test:extension:e2e": "node scripts/run-extension-e2e.mjs",
     "eval:dlp": "vitest run scripts/eval-dlp.test.ts --reporter=verbose",
-    "lint": "node scripts/check-static-lint.mjs",
+    "lint": "biome ci . --diagnostic-level=error && node scripts/check-static-lint.mjs",
+    "lint:report": "biome lint .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
     "typecheck": "pnpm -r --sort typecheck",
     "assets:brand": "node scripts/generate-brand-assets.mjs",
     "assets:screenshots": "node scripts/capture-public-screenshots.mjs",
@@ -54,6 +57,7 @@
     "bench:rules": "vitest run scripts/bench-rule-detection.test.ts --reporter=verbose"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.6",
     "@playwright/test": "^1.52.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/chrome": "^0.0.326",

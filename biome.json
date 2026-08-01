@@ -1,0 +1,95 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+  "files": {
+    "includes": [
+      "**/*.js",
+      "**/*.mjs",
+      "**/*.cjs",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.json",
+      "**/*.jsonc",
+      "!!**/node_modules",
+      "!!**/dist",
+      "!!**/.output",
+      "!!**/.output-e2e",
+      "!!**/.wxt",
+      "!!**/coverage",
+      "!!**/test-results",
+      "!!artifacts",
+      "!!apps/site/public",
+      "!!fixtures",
+      "!!rules/latest.json"
+    ],
+    "ignoreUnknown": true
+  },
+  "assist": {
+    "enabled": false
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf",
+    "includes": ["biome.json", "package.json", "packages/design-tokens/src/**"]
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "jsxQuoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "none"
+    }
+  },
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "a11y": {
+        "noAutofocus": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "useSemanticElements": "warn"
+      },
+      "correctness": {
+        "noUnusedFunctionParameters": "warn"
+      },
+      "suspicious": {
+        "noAssignInExpressions": "warn",
+        "noExplicitAny": "error",
+        "noImplicitAnyLet": "warn",
+        "noTsIgnore": "error",
+        "useIterableCallbackReturn": "warn"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "apps/site/src/**",
+        "apps/extension/entrypoints/**",
+        "apps/extension/src/**",
+        "packages/core/src/**",
+        "packages/llm/src/**"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "error"
+          }
+        }
+      }
+    }
+  ]
+}

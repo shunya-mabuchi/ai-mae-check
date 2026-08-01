@@ -56,7 +56,7 @@
 - TypeScriptの型安全性を重視する。
 - `any`は禁止。どうしても必要な場合は理由をコメントに残す。
 - UIから独立したロジックにはテストを書く。
-- 実装後に `pnpm test`、`pnpm typecheck`、必要に応じて `pnpm build` を実行する。
+- 実装後に `pnpm lint`、`pnpm test`、`pnpm typecheck`、必要に応じて `pnpm build` を実行する。
 - 公開サイトとミニデモの主要導線は可能な範囲でPlaywrightで確認する。
 
 ## GitHub運用
@@ -88,6 +88,7 @@
 
 ## 実装後チェック
 
+- `pnpm lint`
 - `pnpm test`
 - `pnpm typecheck`
 - `pnpm build`
