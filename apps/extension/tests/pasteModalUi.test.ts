@@ -10,17 +10,18 @@ import {
 
 describe("paste review modal UI", () => {
   it("paste_guardモードでも安全な依頼文生成を表示しない", () => {
-    const modalSource = readFileSync(resolve(process.cwd(), "src/lib/modal.ts"), "utf8");
-    const elementsSource = readFileSync(resolve(process.cwd(), "src/lib/pasteReviewModalElements.ts"), "utf8");
-    const modalUiSource = `${modalSource}\n${elementsSource}`;
+    const modalSource = readFileSync(resolve(process.cwd(), "src/lib/modal.tsx"), "utf8");
+    const dialogSource = readFileSync(resolve(process.cwd(), "src/ui/PasteReviewDialog.tsx"), "utf8");
+    const modalUiSource = `${modalSource}\n${dialogSource}`;
 
-    expect(elementsSource).toContain("footerActions.append(cancelButton, rawButton, llmButton, maskButton)");
-    expect(elementsSource).toContain("貼り付け前チェック");
-    expect(elementsSource).toContain("ブラウザ内で実行");
+    expect(dialogSource.indexOf("キャンセル")).toBeLessThan(dialogSource.indexOf("そのまま貼り付け"));
+    expect(dialogSource.indexOf("そのまま貼り付け")).toBeLessThan(dialogSource.indexOf("AI文脈チェックも実行"));
+    expect(dialogSource).toContain("貼り付け前チェック");
+    expect(dialogSource).toContain("ブラウザ内で実行");
     expect(modalUiSource).not.toContain("安全な依頼文に整える");
     expect(modalUiSource).not.toContain("安全な依頼文を入力");
     expect(modalUiSource).not.toContain("analyzeSanitizeWithBridge");
-    expect(elementsSource).toContain("そのまま貼り付け");
+    expect(dialogSource).toContain("そのまま貼り付け");
   });
 
   it("安全化必須のときも、そのまま貼り付けを不可状態として見せる", () => {
@@ -41,14 +42,15 @@ describe("paste review modal UI", () => {
 
   it("disabled状態のprimaryボタンにhoverしても白いボタンに変わらない", () => {
     const stylesPath = resolve(process.cwd(), "src/lib/modalStyles.ts");
-    const modalSource = readFileSync(resolve(process.cwd(), "src/lib/modal.ts"), "utf8");
+    const modalSource = readFileSync(resolve(process.cwd(), "src/lib/modal.tsx"), "utf8");
 
     expect(existsSync(stylesPath)).toBe(true);
     expect(modalSource).toContain('import { pasteReviewModalCss } from "./modalStyles"');
-    expect(modalSource).toContain('import { createShadowHost } from "./shadowHost"');
-    expect(modalSource).toContain('import { setupDialogAccessibility } from "./dialogAccessibility"');
-    expect(modalSource).toContain("createShadowHost(pasteReviewModalCss)");
-    expect(modalSource).toContain("setupDialogAccessibility");
+    expect(modalSource).toContain('import { createReactShadowHost } from "./shadowHost"');
+    expect(modalSource).toContain("createReactShadowHost(pasteReviewModalCss)");
+    expect(modalSource).not.toContain("setupDialogAccessibility");
+    expect(modalSource).toContain("let finalized = false");
+    expect(modalSource).toContain("if (finalized)");
     expect(modalSource).not.toContain('document.createElement("style")');
     expect(modalSource).not.toContain("const css = `");
 
@@ -62,13 +64,19 @@ describe("paste review modal UI", () => {
   });
 
   it("モーダルに最低限のARIA属性とlive regionを持たせる", () => {
-    const elementsSource = readFileSync(resolve(process.cwd(), "src/lib/pasteReviewModalElements.ts"), "utf8");
+    const dialogSource = readFileSync(resolve(process.cwd(), "src/ui/PasteReviewDialog.tsx"), "utf8");
 
-    expect(elementsSource).toContain('dialog.setAttribute("aria-label"');
-    expect(elementsSource).toContain('llmStatus.setAttribute("role", "status")');
-    expect(elementsSource).toContain('llmStatus.setAttribute("aria-live", "polite")');
-    expect(elementsSource).toContain('preview.setAttribute("aria-label"');
-    expect(elementsSource).toContain('button.type = "button"');
+    expect(dialogSource).toContain("<Dialog aria-label={modalCopy.title}");
+    expect(dialogSource).toContain('role="status"');
+    expect(dialogSource).toContain('aria-live="polite"');
+    expect(dialogSource).toContain('aria-label="安全化後プレビュー"');
+    expect(dialogSource).toContain('type="button"');
+    expect(dialogSource).toContain("<ModalOverlay");
+    expect(dialogSource).toContain("isDismissable");
+    expect(dialogSource).toContain("UNSAFE_PortalProvider");
+    expect(dialogSource).toContain('role="group"');
+    expect(dialogSource).toContain('aria-labelledby="hm-findings-heading"');
+    expect(dialogSource).toContain('aria-labelledby="hm-llm-heading"');
   });
 
   it("mediumリスクの貼り付けはpaste_guardではなく通常確認として扱う", () => {

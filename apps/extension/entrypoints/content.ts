@@ -14,8 +14,11 @@ import { installSendInterceptor, type SendReviewDecision } from "../src/content/
 import { DEFAULT_SETTINGS, loadSettings, normalizeSettings, SETTINGS_KEY, type AiMaeCheckSettings } from "../src/lib/settings";
 import { loadVerifiedRemoteRules } from "../src/lib/remoteRuleDelivery";
 import { targetMatches } from "../src/lib/sites";
-import { showPasteReviewModal } from "../src/lib/modal";
 import { showSendConfirmModal } from "../src/ui/confirmModal";
+import {
+  loadReviewModalRuntime,
+  REVIEW_MODAL_LOAD_FAILURE_MESSAGE
+} from "../src/ui/reviewModalRuntimeLoader";
 
 export default defineContentScript({
   matches: targetMatches,
@@ -80,6 +83,17 @@ async function launchPasteReview(
   request: PasteReviewRequest,
   settings: AiMaeCheckSettings
 ): Promise<PasteReviewDecision> {
+  let runtime;
+  try {
+    runtime = await loadReviewModalRuntime({
+      moduleUrl: chrome.runtime.getURL("review-modal-runtime.js")
+    });
+  } catch {
+    window.alert(REVIEW_MODAL_LOAD_FAILURE_MESSAGE);
+    return { type: "cancel" };
+  }
+
+  const { showPasteReviewModal } = runtime;
   return showPasteReviewModal({
     inputText: request.inputText,
     detection: request.detection,

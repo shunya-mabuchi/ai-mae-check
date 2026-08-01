@@ -2,7 +2,7 @@ import { createElement } from "./domElement";
 
 const BRAND_ICON_PATH = "icon/48.png";
 
-function getBrandIconUrl(): string {
+export function getBrandIconUrl(): string {
   try {
     return chrome.runtime.getURL(BRAND_ICON_PATH);
   } catch {

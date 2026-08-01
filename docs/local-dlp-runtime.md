@@ -230,7 +230,7 @@ WebLLMとローカル補助候補により、ルールだけでは拾いにく�
 
 現在の実装:
 
-- `apps/extension/src/lib/modal.ts`
+- `apps/extension/src/lib/modal.tsx`
 - `apps/extension/src/lib/reviewListRenderers.ts`
 - `apps/extension/entrypoints/options/OptionsApp.tsx`
 - `apps/site/src/components/*`

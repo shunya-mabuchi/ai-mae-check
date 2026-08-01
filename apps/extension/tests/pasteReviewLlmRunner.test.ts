@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ContextAnalysisResult } from "@ai-mae-check/llm";
-import { PASTE_REVIEW_LLM_DISABLED_MESSAGE } from "../src/lib/pasteReviewLlmState";
+import {
+  PASTE_REVIEW_LLM_DISABLED_MESSAGE,
+  PASTE_REVIEW_LLM_LOADING_MESSAGE
+} from "../src/lib/pasteReviewLlmState";
 import { runReviewLlm } from "../src/lib/reviewLlmRunner";
 import { asDomElement } from "./helpers/fakeDom";
 import { buildFinding } from "./testBuilders";
@@ -18,6 +21,49 @@ class FakeButton {
 }
 
 describe("runReviewLlm", () => {
+  it("画面を閉じた後に完了した結果で候補や表示を更新しない", async () => {
+    let resolveAnalysis: ((result: ContextAnalysisResult) => void) | undefined;
+    const analyze = vi.fn(
+      () =>
+        new Promise<ContextAnalysisResult>((resolve) => {
+          resolveAnalysis = resolve;
+        })
+    );
+    const llmStatus = { textContent: "" };
+    const llmButton = new FakeButton();
+    const setCandidates = vi.fn();
+    const render = vi.fn();
+    let active = true;
+
+    const execution = runReviewLlm({
+      enabled: true,
+      inputText: "候補者の山田花子さんを確認します。",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      existingFindings: [],
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(llmButton),
+      selectedCandidateIds: new Set(),
+      setCandidates,
+      render,
+      isActive: () => active,
+      analyze
+    });
+
+    active = false;
+    resolveAnalysis?.({
+      candidates: [],
+      summary: "追加候補はありません。",
+      rawText: "{}",
+      modelId: "test-model",
+      elapsedMs: 10
+    });
+    await execution;
+
+    expect(setCandidates).not.toHaveBeenCalled();
+    expect(render).not.toHaveBeenCalled();
+    expect(llmStatus.textContent).toBe(PASTE_REVIEW_LLM_LOADING_MESSAGE);
+  });
+
   it("AI文脈チェックが無効なら実行せず無効メッセージを表示する", async () => {
     const analyze = vi.fn();
     const llmStatus = { textContent: "" };

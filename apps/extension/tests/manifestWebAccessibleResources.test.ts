@@ -12,5 +12,6 @@ describe("web accessible resources", () => {
     expect(resourcesSection).toContain('"icon/48.png"');
     expect(resourcesSection).toContain('"icon/128.png"');
     expect(resourcesSection).toContain('"file-modal-runtime.js"');
+    expect(resourcesSection).toContain('"review-modal-runtime.js"');
   });
 });

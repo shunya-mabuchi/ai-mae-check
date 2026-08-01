@@ -19,6 +19,27 @@ ${createSharedModalCss({
   footerMaxHeight: "46vh",
   includeRiskPillLevels: true
 })}
+  .amc-react-root,
+  .amc-portal-root {
+    display: contents;
+  }
+  .hm-dialog-content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    max-height: inherit;
+    flex-direction: column;
+    outline: none;
+  }
+  .hm-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   .hm-critical,
   .hm-high {
     color: ${colors.dangerText};
