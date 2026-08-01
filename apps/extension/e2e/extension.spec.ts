@@ -1,95 +1,18 @@
-import { chromium, expect, test, type BrowserContext, type Locator, type Page } from "@playwright/test";
-import { existsSync } from "node:fs";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const here = fileURLToPath(new URL(".", import.meta.url));
-const extensionDir = resolve(here, "../.output-e2e/chrome-mv3");
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import {
+  closeExtensionContext,
+  dismissExtensionStartupPages,
+  launchExtensionContext
+} from "./extensionTestHarness";
 const sensitiveText = "田中太郎です。メールは taro@example.com、電話番号は 090-1234-5678 です。";
 const mediumRiskText = "来月の契約更新に向けて、月額80万円で進める予定です。";
 const expectedPasteActionLabel = "安全化して入力";
 const expectedSendActionLabel = "安全化して送信";
 
-interface ExtensionTestContext {
-  context: BrowserContext;
-  userDataDir: string;
-}
-
-async function launchExtensionContext(): Promise<ExtensionTestContext> {
-  if (!existsSync(extensionDir)) {
-    throw new Error("拡張E2E用buildが見つかりません。先に pnpm build:extension:e2e を実行してください。");
-  }
-
-  const userDataDir = await mkdtemp(join(tmpdir(), "ai-mae-check-extension-e2e-"));
-  const context = await chromium.launchPersistentContext(userDataDir, {
-    headless: process.env.EXTENSION_E2E_HEADLESS === "1",
-    args: [`--disable-extensions-except=${extensionDir}`, `--load-extension=${extensionDir}`]
-  });
-
-  return { context, userDataDir };
-}
-
-async function dismissExtensionStartupPages(context: BrowserContext, preservePage?: Page): Promise<void> {
-  await context.waitForEvent("page", { timeout: 800 }).catch(() => null);
-  await Promise.all(
-    context
-      .pages()
-      .filter((page) => page !== preservePage && page.url().startsWith("chrome://extensions/"))
-      .map((page) => page.close())
-  );
-}
-
-async function closeExtensionContext(target: ExtensionTestContext): Promise<void> {
-  await target.context.close().catch(() => undefined);
-  await removeUserDataDirWithRetry(target.userDataDir);
-}
-
-async function removeUserDataDirWithRetry(userDataDir: string): Promise<void> {
-  let lastError: unknown;
-
-  for (let attempt = 0; attempt < 12; attempt += 1) {
-    try {
-      await rm(userDataDir, { recursive: true, force: true, maxRetries: 2, retryDelay: 120 });
-      return;
-    } catch (error) {
-      lastError = error;
-      await new Promise((resolveDelay) => setTimeout(resolveDelay, 200));
-    }
-  }
-
-  throw lastError;
-}
-
 async function openMockComposer(page: Page): Promise<void> {
   await dismissExtensionStartupPages(page.context(), page);
   await page.goto("/mock-composer.html");
   await expect(page.getByRole("heading", { name: "textarea composer" })).toBeVisible();
-}
-
-async function resolveExtensionId(context: BrowserContext): Promise<string> {
-  const extensionPage = context.pages().find((page) => page.url().startsWith("chrome-extension://"));
-  if (extensionPage) {
-    return new URL(extensionPage.url()).host;
-  }
-
-  const serviceWorker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
-  return new URL(serviceWorker.url()).host;
-}
-
-async function openOptionsPage(context: BrowserContext): Promise<Page> {
-  const extensionId = await resolveExtensionId(context);
-  const optionsUrl = `chrome-extension://${extensionId}/options.html`;
-  const page = context.pages().find((candidate) => candidate.url() === optionsUrl) ?? (await context.newPage());
-
-  if (page.url() !== optionsUrl) {
-    await page.goto(optionsUrl);
-  }
-
-  await expect(page.getByRole("heading", { name: "設定", level: 1 })).toBeVisible();
-  await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
-  return page;
 }
 
 async function dispatchPaste(locator: Locator, text: string): Promise<void> {
@@ -170,62 +93,6 @@ async function fillEditor(editor: Locator, text: string): Promise<void> {
 }
 
 test.describe("AIまえチェック拡張E2E", () => {
-  test("Options PageのチェックボックスをSpaceで変更し、再読み込み後も保持する", async () => {
-    const target = await launchExtensionContext();
-    try {
-      const page = await openOptionsPage(target.context);
-      const checkbox = page.getByRole("checkbox", { name: "AIまえチェックを有効にする" });
-
-      await expect(checkbox).toBeChecked();
-      await checkbox.focus();
-      await page.keyboard.press("Space");
-      await expect(checkbox).not.toBeChecked();
-      await expect(page.getByText("保存しました。", { exact: true })).toBeVisible();
-
-      await page.reload();
-      await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
-      await expect(page.getByRole("checkbox", { name: "AIまえチェックを有効にする" })).not.toBeChecked();
-    } finally {
-      await closeExtensionContext(target);
-    }
-  });
-
-  test("Options Pageの実行方法を矢印キーで変更し、再読み込み後も保持する", async () => {
-    const target = await launchExtensionContext();
-    try {
-      const page = await openOptionsPage(target.context);
-      const manualRadio = page.getByRole("radio", { name: /手動ボタンだけで実行/ });
-      const autoRadio = page.getByRole("radio", { name: /準備済みなら自動実行/ });
-
-      await expect(manualRadio).toBeChecked();
-      await manualRadio.focus();
-      await page.keyboard.press("ArrowRight");
-      await expect(autoRadio).toBeChecked();
-      await expect(page.getByText("保存しました。", { exact: true })).toBeVisible();
-
-      await page.reload();
-      await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
-      await expect(page.getByRole("radio", { name: /準備済みなら自動実行/ })).toBeChecked();
-    } finally {
-      await closeExtensionContext(target);
-    }
-  });
-
-  test("Options PageのReact AriaボタンをEnterで実行できる", async () => {
-    const target = await launchExtensionContext();
-    try {
-      const page = await openOptionsPage(target.context);
-      const createButton = page.getByRole("button", { name: "診断情報を作成" });
-
-      await createButton.focus();
-      await page.keyboard.press("Enter");
-      await expect(page.getByRole("textbox", { name: "本文を含まない診断情報" })).toBeVisible();
-      await expect(page.getByText("本文を含まない診断情報を作成しました。内容を確認してからコピーできます。", { exact: true })).toBeVisible();
-    } finally {
-      await closeExtensionContext(target);
-    }
-  });
-
   test("textareaへのpasteを検知し、安全化して貼り付けられる", async () => {
     const target = await launchExtensionContext();
     try {
