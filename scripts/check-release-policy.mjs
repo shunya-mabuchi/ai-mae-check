@@ -13,6 +13,11 @@ const paths = {
   ruleDeliveryPlan: "docs/release-0.1.2-github-pages-plan.md",
   releaseDraft011: "docs/releases/v0.1.1.md",
   releaseDraft012: "docs/releases/v0.1.2.md",
+  releaseDraft020: "docs/releases/v0.2.0.md",
+  chromeStoreListing: "docs/chrome-web-store-listing.json",
+  chromeStoreAssets: "docs/chrome-web-store-assets.json",
+  chromeStoreSubmission: "docs/chrome-web-store-submission-copy.md",
+  publishedState: "docs/chrome-web-store-published.json",
   readme: "README.md"
 };
 
@@ -28,14 +33,31 @@ const chromeStoreRelease = qa.read(paths.chromeStoreRelease);
 const ruleDeliveryPlan = qa.read(paths.ruleDeliveryPlan);
 const releaseDraft011 = qa.read(paths.releaseDraft011);
 const releaseDraft012 = qa.read(paths.releaseDraft012);
+const releaseDraft020 = qa.read(paths.releaseDraft020);
+const chromeStoreListing = qa.readJson(paths.chromeStoreListing);
+const chromeStoreAssets = qa.readJson(paths.chromeStoreAssets);
+const chromeStoreSubmission = qa.read(paths.chromeStoreSubmission);
+const publishedState = qa.readJson(paths.publishedState);
 const readme = qa.read(paths.readme);
 
 if (rootPackage.version !== extensionPackage.version) {
   qa.fail(`root package version (${rootPackage.version}) must match extension version (${extensionPackage.version})`);
 }
 
-for (const text of [changelog, releaseProcess, ruleDeliveryPlan]) {
+for (const text of [changelog, releaseProcess, chromeStoreRelease, releaseDraft020, chromeStoreSubmission, readme]) {
   qa.assertIncludes(text, rootPackage.version, "release docs");
+}
+
+if (chromeStoreListing.releaseVersion !== rootPackage.version) {
+  qa.fail(`store listing releaseVersion (${chromeStoreListing.releaseVersion}) must match root version (${rootPackage.version})`);
+}
+
+if (chromeStoreAssets.releaseVersion !== rootPackage.version) {
+  qa.fail(`store assets releaseVersion (${chromeStoreAssets.releaseVersion}) must match root version (${rootPackage.version})`);
+}
+
+if (publishedState.version === rootPackage.version) {
+  qa.fail("submission candidate must not be recorded as published before Chrome Web Store publication is confirmed");
 }
 
 for (const command of [
@@ -65,6 +87,7 @@ for (const phrase of ["公開を確認", "GitHub Release", "Chrome Web Store"]) 
 }
 
 qa.assertIncludes(changelog, "## Unreleased", paths.changelog);
+qa.assertIncludes(changelog, "## 0.2.0 - 提出候補", paths.changelog);
 qa.assertIncludes(changelog, "0.1.2", paths.changelog);
 qa.assertIncludes(changelog, "## 0.1.1 - 2026-07-03", paths.changelog);
 qa.assertIncludes(changelog, "## 0.1.0 - 2026-06-20", paths.changelog);
@@ -73,6 +96,10 @@ qa.assertIncludes(ruleDeliveryPlan, "公開を確認", paths.ruleDeliveryPlan);
 qa.assertIncludes(readme, "CHANGELOG.md", paths.readme);
 qa.assertIncludes(releaseDraft012, "GitHub Pages", paths.releaseDraft012);
 qa.assertIncludes(releaseDraft012, "0.1.2", paths.releaseDraft012);
+qa.assertIncludes(releaseDraft020, "提出候補", paths.releaseDraft020);
+qa.assertIncludes(releaseDraft020, "ai-mae-checkextension-0.2.0-chrome.zip", paths.releaseDraft020);
+qa.assertIncludes(chromeStoreSubmission, "現在の一般公開版は0.1.2", paths.chromeStoreSubmission);
+qa.assertIncludes(ruleDeliveryPlan, "0.1.2", paths.ruleDeliveryPlan);
 
 for (const phrase of [
   "2026-06-27",

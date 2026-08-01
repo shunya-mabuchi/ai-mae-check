@@ -7,8 +7,17 @@
 - 0.1.2はChrome Web Storeで一般公開済みです。
 - 公開URL: <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc>
 - 0.1.2は2026-07-30に審査送信し、2026-08-01に公開を確認しました。
+- リポジトリでは0.2.0提出候補を準備中です。全自動QA、実サイト手動確認、最終ZIP生成を終えるまで審査送信しません。
 - 0.1.2では署名付き追加ルールをGitHub Actionsでビルド時に生成し、GitHub Pagesの静的JSONとして配信します。拡張は埋め込み公開鍵で署名を検証します。
 - 署名付きルール配信の鍵ローテーションとロールバック手順は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
+
+### 0.2.0提出候補ZIP
+
+- ファイル: `apps/extension/.output/ai-mae-checkextension-0.2.0-chrome.zip`
+- サイズ: 4,636,364 bytes
+- SHA-256: `3C8E98976A5A645D7881248265879B6797D76F7E02890BC8C671E4F9DC9E640B`
+- 公開状態: 未提出。現在の公開版0.1.2を維持
+- 公開後の記録: 0.2.0公開確認後に `docs/chrome-web-store-published.json`、Git tag、GitHub Releaseを更新
 
 ## 参照する公式ドキュメント
 
@@ -21,7 +30,7 @@
 
 ## manifest確認
 
-現在の公開前提:
+0.2.0提出候補の前提:
 
 - 拡張名: `AIまえチェック`
 - 説明: `AIに貼る前・送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認します。`
@@ -50,7 +59,7 @@ Developer Dashboardへ入力する掲載情報の原本は [chrome-web-store-lis
 
 ### `storage`
 
-拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデル設定など、ユーザーが選択した設定をブラウザ内に保存するために使用します。また、ルール配信が一時的に取得できない場合に備え、最後に検証済みの署名付きリモートルールJSON、keyId、version、有効期限だけを短時間キャッシュします。貼り付け本文、送信本文、検出結果、マスキング用のplaceholderMapは保存しません。
+拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデル設定など、ユーザーが選択した設定をブラウザ内に保存するために使用します。また、ルール配信が一時的に取得できない場合に備え、最後に検証済みの署名付きリモートルールJSON、keyId、version、有効期限だけを短時間キャッシュします。貼り付け本文、送信本文、添付前に読み取った対応ファイル本文、検出結果、マスキング用のplaceholderMapは保存しません。
 
 ### Host permissions
 
@@ -60,7 +69,7 @@ ChatGPT、Claude、Gemini、Perplexity上の入力欄で貼り付け操作や送
 
 ### Single purpose
 
-AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章を貼り付ける前・送信する前に、個人情報、秘密情報、APIキーなどの消し忘れをブラウザ内で確認し、安全化候補を提示するための拡張機能です。貼り付け本文や送信本文は永続保存せず、外部LLM APIや開発者のサーバーへ本文を送信しません。
+AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章を貼り付ける前・送信する前、または対応するテキスト系ファイルを添付する前に、個人情報、秘密情報、APIキーなどの消し忘れをブラウザ内で確認し、安全化候補を提示するための拡張機能です。検査した本文は永続保存せず、外部LLM APIや開発者のサーバーへ送信しません。
 
 ### Remote code
 
@@ -70,7 +79,7 @@ AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章�
 
 ### Data usage
 
-Chrome Web Storeのフォームでは、拡張機能が入力欄テキストをブラウザ内で検査するため、以下を開示します。
+Chrome Web Storeのフォームでは、拡張機能が入力欄テキストと添付前に読み取った対応ファイル本文をブラウザ内で検査するため、以下を開示します。
 
 チェックするカテゴリ:
 
@@ -237,6 +246,7 @@ Chrome Web Store審査向けのテスト手順ドラフトです。
 3. 通常の入力欄に、ダミーのメールアドレス、電話番号、APIキー風文字列を含む文章を貼り付けます。
 4. 貼り付け前または送信前の確認モーダルが表示されることを確認します。
 5. 「安全化して貼り付け」「安全化して送信」などのマスク系操作で、検出箇所が日本語ラベルのプレースホルダーに置き換わることを確認します。
-6. Options Pageを開き、対象サイトや検出ルールのON/OFF設定が保存されることを確認します。
+6. 対象サイトの添付UIが利用できる場合は、ダミー情報を含む対応テキストファイルを選び、添付前チェックが表示されることを確認します。
+7. Options Pageを開き、対象サイトや検出ルールのON/OFF設定が保存されることを確認します。
 
 テストデータには実在の個人情報や実APIキーを使わないでください。

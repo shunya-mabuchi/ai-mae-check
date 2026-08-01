@@ -4,11 +4,18 @@ AIまえチェックの変更履歴です。Chrome Web Storeへ提出する拡�
 
 ## Unreleased
 
-- 署名付き追加ルールの正規URLを静的配信であることが明確な `/rules/latest.json` へ変更し、公開中0.1.2向けに旧URLの互換コピーを維持
-- ChatGPT / Claude / Gemini / Perplexity adapterの実サイト継続QA
-- Chrome拡張E2EハーネスのCI安定化
-- ルールカタログと署名付きルール配信の継続運用
-- 拡張モーダルのプロダクトUI再設計、ローカルDLPランタイム再設計、PolicyDecision分離などは、IssueごとのPRで扱う
+- 次回リリースに向けた変更をここへ記録します。
+
+## 0.2.0 - 提出候補 (2026-08-02)
+
+- 公開サイトをVite MPAへ再構築し、静的HTMLを基本にReactミニデモだけを操作可能なアイランドとして実装
+- 公開サイト、Options Page、拡張モーダルへReact Aria Componentsと共通デザイントークンを導入
+- Tailwind CSS 4へ移行し、Biomeを段階導入してUI実装とコード品質の基準を統一
+- WebLLM実行系を明示操作まで遅延ロードし、ルールベース検出を先に表示する構成へ改善
+- PolicyDecision、サイトAdapter、ContextBuilder、ローカルDLP評価fixtureとQAを整理
+- 対応するテキスト系ファイルの添付前チェックと、対象外ファイルを安全判定済みにしない制御を追加
+- 署名付き追加ルールの正規URLを、静的配信であることが明確な `/rules/latest.json` に統一
+- ChatGPT / Claude / Gemini / Perplexity adapterのE2E、サイズ予算、公開文書、ストア提出物のQAを強化
 
 ## 0.1.2 - 2026-08-01
 

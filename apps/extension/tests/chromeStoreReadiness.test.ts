@@ -20,6 +20,7 @@ describe("Chrome Web Store readiness", () => {
     expect(existsSync(listingPath)).toBe(true);
 
     const listing = readJson<{
+      releaseVersion: string;
       name: string;
       shortDescription: string;
       detailedDescription: string;
@@ -39,6 +40,7 @@ describe("Chrome Web Store readiness", () => {
       testInstructions: string[];
     }>(listingPath);
 
+    expect(listing.releaseVersion).toBe("0.2.0");
     expect(listing.name).toBe("AIまえチェック");
     expect(listing.shortDescription.length).toBeLessThanOrEqual(132);
     expect(listing.category).toBe("ツール");
@@ -58,7 +60,8 @@ describe("Chrome Web Store readiness", () => {
     expect(listing.dataUsage.notCollectedDataTypes).toContain("ウェブ履歴");
     expect(listing.dataUsage.explanation).toContain("販売・第三者提供");
     expect(listing.dataUsage.explanation).toContain("chrome.storage.local");
-    expect(listing.testInstructions).toHaveLength(6);
+    expect(listing.testInstructions).toHaveLength(7);
+    expect(listing.testInstructions.join("\n")).toContain("対応テキストファイル");
   });
 
   it("avoids overclaim copy in the store listing", () => {
@@ -74,6 +77,8 @@ describe("Chrome Web Store readiness", () => {
     expect(existsSync(assetManifestPath)).toBe(true);
 
     const assetManifest = readJson<{
+      releaseVersion: string;
+      storeIcon: { sha256: string };
       screenshots: Array<{
         order: number;
         path: string;
@@ -81,11 +86,15 @@ describe("Chrome Web Store readiness", () => {
         primarySurface: "extension" | "demo" | "landing";
         sourceImage?: string;
         sourceKind?: "real_extension_capture" | "generated";
+        sha256: string;
       }>;
-      promotionalImages: Array<{ type: string; path: string; width: number; height: number }>;
+      promotionalImages: Array<{ type: string; path: string; width: number; height: number; sha256: string }>;
     }>(assetManifestPath);
 
+    expect(assetManifest.releaseVersion).toBe("0.2.0");
+    expect(assetManifest.storeIcon.sha256).toMatch(/^[0-9A-F]{64}$/);
     expect(assetManifest.screenshots).toHaveLength(3);
+    expect(assetManifest.screenshots.every((screenshot) => /^[0-9A-F]{64}$/.test(screenshot.sha256))).toBe(true);
     expect(assetManifest.screenshots.map((screenshot) => screenshot.order)).toEqual([1, 2, 3]);
     expect(assetManifest.screenshots[0]?.primarySurface).toBe("extension");
     expect(assetManifest.screenshots[0]?.path).toContain("screenshot-01-real-paste-modal.png");
@@ -103,6 +112,7 @@ describe("Chrome Web Store readiness", () => {
         expect.objectContaining({ type: "marquee", width: 1400, height: 560 })
       ])
     );
+    expect(assetManifest.promotionalImages.every((image) => /^[0-9A-F]{64}$/.test(image.sha256))).toBe(true);
   });
 
   it("wires the QA and packaging scripts from the root package", () => {

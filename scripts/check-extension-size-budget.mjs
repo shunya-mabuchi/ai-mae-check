@@ -1,9 +1,12 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { extname, join, relative, resolve } from "node:path";
 
 const rootDir = resolve(".");
 const outputDir = resolve(rootDir, "apps/extension/.output");
 const extensionDir = resolve(outputDir, "chrome-mv3");
+const extensionPackage = JSON.parse(readFileSync(resolve(rootDir, "apps/extension/package.json"), "utf8"));
+const releaseZipName = `ai-mae-checkextension-${extensionPackage.version}-chrome.zip`;
+const releaseZipPath = resolve(outputDir, releaseZipName);
 
 const budgets = {
   zipBytes: 20 * 1024 * 1024,
@@ -46,18 +49,13 @@ if (!existsSync(extensionDir)) {
   fail(`built extension directory is missing: ${relative(rootDir, extensionDir)}. Run pnpm package:extension first.`);
 }
 
-const zipFiles = readdirSync(outputDir)
-  .filter((file) => file.endsWith(".zip"))
-  .map((file) => ({ path: join(outputDir, file), size: statSync(join(outputDir, file)).size }));
-
-if (zipFiles.length === 0) {
-  fail("Chrome Web Store ZIP is missing. Run pnpm package:extension first.");
+if (!existsSync(releaseZipPath)) {
+  fail(`current release ZIP is missing: ${releaseZipName}. Run pnpm package:extension first.`);
 }
 
-for (const zip of zipFiles) {
-  if (zip.size > budgets.zipBytes) {
-    fail(`${relative(rootDir, zip.path)} is ${formatBytes(zip.size)} and exceeds ZIP budget ${formatBytes(budgets.zipBytes)}`);
-  }
+const releaseZipBytes = statSync(releaseZipPath).size;
+if (releaseZipBytes > budgets.zipBytes) {
+  fail(`${relative(rootDir, releaseZipPath)} is ${formatBytes(releaseZipBytes)} and exceeds ZIP budget ${formatBytes(budgets.zipBytes)}`);
 }
 
 const files = walkFiles(extensionDir);
@@ -88,4 +86,4 @@ const largestFiles = files
   .slice(0, 8)
   .map((file) => `${relative(rootDir, file.path).replaceAll("\\", "/")}=${formatBytes(file.size)}`);
 
-console.log(`extension size budget QA passed. zip=${formatBytes(Math.max(...zipFiles.map((file) => file.size)))} unpacked=${formatBytes(unpackedBytes)} largest=[${largestFiles.join(", ")}]`);
+console.log(`extension size budget QA passed. zip=${formatBytes(releaseZipBytes)} unpacked=${formatBytes(unpackedBytes)} largest=[${largestFiles.join(", ")}]`);
