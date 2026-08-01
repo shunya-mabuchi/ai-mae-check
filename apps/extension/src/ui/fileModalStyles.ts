@@ -5,6 +5,10 @@ export const filePreflightModalCss = `
     font-family: system-ui, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
     font-size: 14px;
   }
+  .amc-react-root,
+  .amc-portal-root {
+    display: contents;
+  }
   .amc-overlay {
     position: fixed;
     inset: 0;
@@ -13,6 +17,8 @@ export const filePreflightModalCss = `
     place-items: center;
     background: rgba(32, 33, 36, 0.42);
     padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
   }
   .amc-dialog {
     width: min(760px, 100%);
@@ -22,6 +28,9 @@ export const filePreflightModalCss = `
     border-radius: 8px;
     background: #fbfaf7;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+  }
+  .amc-dialog-content {
+    outline: none;
   }
   .amc-header,
   .amc-footer {
@@ -112,11 +121,18 @@ export const filePreflightModalCss = `
     background: #2f7d57;
     color: #fff;
   }
-  .amc-button:hover {
+  .amc-button:hover,
+  .amc-button[data-hovered] {
     background: #f5f5f4;
   }
-  .amc-primary:hover {
+  .amc-primary:hover,
+  .amc-primary[data-hovered] {
     background: #276848;
+  }
+  .amc-button:focus-visible,
+  .amc-button[data-focus-visible] {
+    outline: 3px solid rgba(47, 125, 87, 0.3);
+    outline-offset: 2px;
   }
   @media (max-width: 640px) {
     .amc-button {
