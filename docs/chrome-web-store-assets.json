@@ -10,7 +10,7 @@
       "order": 1,
       "path": "docs/assets/store/screenshot-01-real-paste-modal.png",
       "title": "貼り付け前の安全化モーダル",
-      "purpose": "ChatGPT上で貼り付け前確認が動くことを示す実機スクリーンショット。",
+      "purpose": "ビルド済みChrome拡張で貼り付け前確認が動くことを示すスクリーンショット。",
       "primarySurface": "extension",
       "sourceKind": "real_extension_capture",
       "sourceImage": "docs/assets/readme/extension-paste-modal.png",

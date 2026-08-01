@@ -8,7 +8,7 @@ AIまえチェックは、同梱ルールを必ず使える状態にしたうえ
 
 本番の正規URLは `https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json` です。リクエスト本文はありません。レスポンスは `schema`、`keyId`、`payload`、`signature` を持つ静的JSONです。
 
-公開中0.1.2は旧 `https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json` を参照しているため、GitHub Pagesのビルドでは正規URLと旧URLへ同一の署名済みJSONを配置します。新しいコードと文書では正規URLだけを使用し、旧URLは互換用途に限定します。
+公開URLは `https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json` に統一します。`/api/` 配下の互換URLは生成しません。
 
 ## 生成
 

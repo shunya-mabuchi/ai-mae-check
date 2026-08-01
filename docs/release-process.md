@@ -35,7 +35,7 @@ pnpm qa:webllm-compatibility
 pnpm qa:rule-catalog
 pnpm qa:extension:e2e-harness
 pnpm qa:dependency-policy
-pnpm qa:demo:seo
+pnpm qa:site:publication
 pnpm qa:github-pages
 pnpm qa:rules:production
 pnpm qa:portfolio-case-study

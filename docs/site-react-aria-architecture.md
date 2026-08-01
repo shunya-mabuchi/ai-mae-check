@@ -91,7 +91,7 @@ WebLLMの共有型・表示用ロジックは`@ai-mae-check/llm`から参照し�
 - サポート: `https://shunya-mabuchi.github.io/ai-mae-check/support/`
 - 署名付きルール: `https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json`
 
-公開中0.1.2が参照する`/api/rules/latest.json`には、互換用として正規URLと同一の署名済みJSONを配置します。正規URL、署名、`keyId`、公開鍵の検証契約は変更しません。
+追加ルールは`/rules/latest.json`から取得します。署名、`keyId`、公開鍵の検証契約は変更しません。
 
 ## React Ariaの採用範囲
 

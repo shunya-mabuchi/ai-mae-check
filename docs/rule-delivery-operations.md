@@ -42,7 +42,7 @@
 
 ## 旧URLの廃止
 
-公開中0.1.2との互換性を保つため、`/api/rules/latest.json` には正規URL `/rules/latest.json` と同一の署名済みJSONを一時配置します。旧URLへ異なるルールを配信してはいけません。
+配信先は `/rules/latest.json` に限定します。APIサーバーではなく、GitHub Pagesの静的成果物として扱います。
 
 旧URLは、次の条件をすべて満たしたPRで削除します。
 
