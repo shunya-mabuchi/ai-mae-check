@@ -230,11 +230,11 @@ pnpm exec playwright install chromium
 ```bash
 pnpm dev
 pnpm dev:extension
-pnpm dev:demo
+pnpm dev:site
 pnpm build
 pnpm build:extension
 pnpm build:extension:e2e
-pnpm build:demo
+pnpm build:site
 pnpm build:pages
 pnpm package:extension
 pnpm qa:public-repo
@@ -248,12 +248,13 @@ pnpm qa:extension:e2e-harness
 pnpm qa:dependency-policy
 pnpm qa:release-policy
 pnpm qa:issue-pr-workflow
-pnpm qa:demo:seo
+pnpm qa:site:publication
 pnpm qa:github-pages
 pnpm qa:portfolio-case-study
 pnpm qa:extension:size
 pnpm qa:extension:manifest
 pnpm qa:chrome-store
+pnpm assets:screenshots
 pnpm test
 pnpm test:core
 pnpm test:llm
@@ -295,7 +296,7 @@ Options Pageの設定グループ、保存対象、`settingsVersion`、設定マ
 
 `pnpm qa:issue-pr-workflow` は、Issue/PRテンプレート、ラベル・マイルストーン運用、実データを書かない注意が維持されているかを確認するQAです。運用は [docs/issue-pr-workflow.md](docs/issue-pr-workflow.md) にまとめています。
 
-`pnpm qa:demo:seo` は、公開LPのtitle、description、OGP、Twitter card、favicon、web manifest、robots、sitemap、カスタムドメイン方針が維持されているか確認するQAです。運用は [docs/lp-seo-publication.md](docs/lp-seo-publication.md) にまとめています。
+`pnpm qa:site:publication` は、公開サイトのtitle、description、OGP、favicon、web manifest、robots、sitemap、JavaScriptなしで読める公開文書、404、GitHub Pagesのサブパス配下にあるアセット参照を確認するQAです。運用は [docs/lp-seo-publication.md](docs/lp-seo-publication.md) にまとめています。
 
 `pnpm qa:portfolio-case-study` は、Chrome拡張が本体であること、ローカルDLPエンジン、WebLLM、署名付きルール配信、プライバシー設計の説明がケーススタディとして維持されているか確認するQAです。
 
@@ -333,7 +334,7 @@ Chrome Web Store提出時の説明文、権限理由、プライバシー方針�
 
 サポートFAQと既知の制限は [docs/support-faq.md](docs/support-faq.md) にまとめています。問い合わせ時は、貼り付け本文、実APIキー、実トークン、実個人情報、顧客名、案件名を送らず、ダミー情報で再現してください。
 
-追加ルール取得で送るのは、GitHub Pages上の署名付き静的JSON `GET /rules/latest.json` に対する本文なしリクエストだけです。貼り付け本文・送信本文・検出結果・placeholderMap は送信しません。外部LLM APIも使わず、WebLLMの推論もブラウザ内で完結します。公開中0.1.2との互換性を保つため、旧 `/api/rules/latest.json` にも同一JSONを一時配置します。
+追加ルール取得で送るのは、GitHub Pages上の署名付き静的JSON `GET /rules/latest.json` に対する本文なしリクエストだけです。貼り付け本文・送信本文・検出結果・placeholderMap は送信しません。外部LLM APIも使わず、WebLLMの推論もブラウザ内で完結します。
 
 公開ページは以下です。
 
@@ -347,13 +348,13 @@ Chrome Web Store提出時の説明文、権限理由、プライバシー方針�
 
 ChatGPT / Claude / Gemini / Perplexity上での実サイトQA手順は [docs/extension-site-qa.md](docs/extension-site-qa.md)、SiteAdapterの契約とサイト別E2E確認項目は [docs/site-adapter-contract.md](docs/site-adapter-contract.md) にまとめています。WebLLMの実機確認観点は [docs/webllm-real-device-check.md](docs/webllm-real-device-check.md)、端末別のWebLLM対応環境とモデル互換性の記録は [docs/webllm-compatibility-matrix.md](docs/webllm-compatibility-matrix.md) に分けています。
 
-## デモサイトの起動方法
+## 公開サイトの起動方法
 
 ```bash
-pnpm dev:demo
+pnpm dev:site
 ```
 
-起動後、表示されたローカルURLをブラウザで開きます。
+起動後、表示されたローカルURLをブラウザで開きます。紹介LP、静的なプライバシー・サポートページ、Reactで動くミニデモを同じ `apps/site` で確認できます。
 
 ## デモサイトの公開方針
 
@@ -512,7 +513,7 @@ WebLLMの初回利用時には、ローカル推論用のモデルファイル�
 
 ## スクリーンショット
 
-READMEでは、実機確認時のChrome拡張モーダルをトリミングした画像を先に掲載します。ブラウザ上部、サイドバー、アカウント表示は写らないように切り出しています。画像内のデータはすべて実在しないダミーです。
+READMEでは、ビルド済みChrome拡張をPlaywrightのE2E用composer上で実際に動かし、モーダルを切り出した画像を掲載します。画像内のデータはすべて実在しないダミーです。
 
 ![貼り付け前の安全化確認モーダル](docs/assets/readme/extension-paste-modal.png)
 
@@ -520,6 +521,8 @@ READMEでは、実機確認時のChrome拡張モーダルをトリミングし�
 
 ![ルール検出なし時のAI文脈チェック確認モーダル](docs/assets/readme/extension-context-modal.png)
 
-紹介LP、ミニデモ、Options Pageの掲載用画像案は [docs/store-assets.md](docs/store-assets.md) に分けて管理しています。READMEには、実際に拡張機能を動かした画面だけを掲載します。
+紹介LP、ミニデモ、Options Pageの掲載用画像案は [docs/store-assets.md](docs/store-assets.md) に分けて管理しています。READMEには、ビルド済み拡張を実際に動かした画面だけを掲載します。
 
 ポートフォリオ用LP兼ミニデモの1440px / 390px確認結果は [docs/portfolio-demo-qa.md](docs/portfolio-demo-qa.md) にまとめています。
+
+公開サイト、拡張モーダル、Chrome Web Store向けの掲載画像は `pnpm assets:screenshots` で、ダミー文を使って一括再生成できます。

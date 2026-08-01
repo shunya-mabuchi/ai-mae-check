@@ -81,8 +81,8 @@ jobs:
       - name: Issue and PR workflow QA
         run: pnpm qa:issue-pr-workflow
 
-      - name: Demo SEO QA
-        run: pnpm qa:demo:seo
+      - name: 公開サイトQA
+        run: pnpm qa:site:publication
 
       - name: GitHub Pages QA
         run: pnpm qa:github-pages

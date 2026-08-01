@@ -106,7 +106,7 @@ Chrome Web Storeのフォームでは、拡張機能が入力欄テキストを�
 - `docs/assets/store/promo-small-440x280.png`
 - `docs/assets/store/promo-marquee-1400x560.png`
 
-READMEでは、実機確認時の拡張モーダルをトリミングした `docs/assets/readme/` 配下の画像だけを掲載しています。Chrome Web Store提出時は、Developer Dashboardの画像サイズ要件に合わせた `docs/assets/store/` 配下の画像を使います。
+READMEでは、ビルド済み拡張をE2E用composer上で動かして撮影した `docs/assets/readme/` 配下の画像を掲載しています。Chrome Web Store提出時は、Developer Dashboardの画像サイズ要件に合わせた `docs/assets/store/` 配下の画像を使います。
 
 ## ビルドとZIP作成
 
@@ -123,7 +123,7 @@ pnpm qa:privacy-regression
 pnpm qa:webllm-model-policy
 pnpm qa:dependency-policy
 pnpm qa:release-policy
-pnpm qa:demo:seo
+pnpm qa:site:publication
 pnpm qa:portfolio-case-study
 pnpm qa:extension:size
 pnpm qa:extension:manifest
@@ -180,7 +180,7 @@ pnpm qa:chrome-store:published
 - [ ] ローカル環境で `pnpm test:extension:e2e` が通る、または実行できない理由をPR/Release本文に記録する
 - [ ] `pnpm qa:dependency-policy` が通る
 - [ ] `pnpm qa:release-policy` が通る
-- [ ] `pnpm qa:demo:seo` が通る
+- [ ] `pnpm qa:site:publication` が通る
 - [ ] `pnpm qa:portfolio-case-study` が通る
 - [ ] `pnpm qa:extension:size` が通る
 - [ ] `pnpm qa:extension:manifest` が通る

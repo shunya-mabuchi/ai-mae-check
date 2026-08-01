@@ -27,7 +27,7 @@ AIまえチェックの紹介LP、公開文書、署名付き追加ルールはG
 3. GitHub Pages artifactをアップロード
 4. `actions/deploy-pages` でデプロイ
 
-`pnpm build:pages` はViteビルド後、`/privacy/`、`/support/`、`404.html`、`.nojekyll` を準備し、署名付き静的JSON `rules/latest.json` を生成します。公開中0.1.2との互換用として、同じ内容を `api/rules/latest.json` にも一時配置します。
+`pnpm build:pages` はViteビルド後、`/privacy/`、`/support/`、`404.html`、`.nojekyll` を準備し、署名付き静的JSON `rules/latest.json` を生成します。
 
 ## Secret
 
@@ -58,6 +58,6 @@ pnpm qa:rules:production
 
 サイト全体に問題がある場合は、GitHub Pages workflowの直前の正常コミットをrevertします。秘密鍵を漏えいした可能性がある場合は、鍵ペアを再発行し、拡張側公開鍵を更新した新バージョンを公開します。
 
-## Cloudflare停止
+## 移行履歴
 
 2026-07-30にCloudflare Pagesプロジェクトを削除し、GitHub Pagesへ完全移行しました。併存期間は設けていません。旧0.1.1は旧URLからのリモートルール取得に失敗しても、検証済みキャッシュまたは同梱ルールでルールベース検出を継続できます。

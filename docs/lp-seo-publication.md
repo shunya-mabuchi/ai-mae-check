@@ -26,9 +26,9 @@ Chrome Web Store提出には必須ではありません。検索流入を継続�
 ## 確認コマンド
 
 ```bash
-pnpm qa:demo:seo
+pnpm qa:site:publication
 pnpm qa:github-pages
-pnpm build:demo
+pnpm build:site
 ```
 
 ## 手動確認

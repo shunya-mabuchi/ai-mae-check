@@ -298,9 +298,9 @@ try {
     browser,
     realExtensionScreenshot({
       title: "貼り付け前に、安全化を確認",
-      description: "ChatGPT上で表示した実機モーダルをベースに、検出項目と安全化後プレビューを見せます。",
+      description: "ビルド済みChrome拡張の確認モーダルで、検出項目と安全化後プレビューを見せます。",
       sourceFile: "extension-paste-modal.png",
-      badge: "実機画面ベース"
+      badge: "拡張画面ベース"
     }),
     1280,
     800,
@@ -312,7 +312,7 @@ try {
       title: "送信前に、高リスク情報を止める",
       description: "高リスクまたは秘密情報保護の対象は、安全化なしでは送信できないことを示します。",
       sourceFile: "extension-send-modal.png",
-      badge: "実機画面ベース"
+      badge: "拡張画面ベース"
     }),
     1280,
     800,
@@ -324,7 +324,7 @@ try {
       title: "ルール検出がなくても、AI文脈チェックへ",
       description: "文脈によって注意が必要な内容を、ユーザー操作でブラウザ内AIチェックできます。",
       sourceFile: "extension-context-modal.png",
-      badge: "実機画面ベース"
+      badge: "拡張画面ベース"
     }),
     1280,
     800,

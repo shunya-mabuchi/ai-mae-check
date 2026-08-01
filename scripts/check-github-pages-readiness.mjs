@@ -81,8 +81,7 @@ for (const phrase of [
   "RULE_KEY_ID",
   "RULE_SIGNING_PRIVATE_JWK",
   "signRemoteRuleBundle",
-  "apps/site/dist/rules/latest.json",
-  "apps/site/dist/api/rules/latest.json"
+  "apps/site/dist/rules/latest.json"
 ]) {
   assertIncludes(signer, phrase, paths.signer);
 }
@@ -118,6 +117,10 @@ for (const builtPath of [
   if (!existsSync(resolve(rootDir, builtPath))) {
     fail(`${builtPath} is missing. Run pnpm build:site first.`);
   }
+}
+
+if (existsSync(resolve(rootDir, "apps/site/dist/api/rules/latest.json"))) {
+  fail("旧 /api/rules/latest.json を生成しないでください");
 }
 
 for (const [route, expectedUrl] of Object.entries({
