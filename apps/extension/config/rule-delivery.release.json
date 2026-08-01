@@ -1,5 +1,5 @@
 {
-  "endpoint": "https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json",
+  "endpoint": "https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json",
   "keyId": "ai-mae-check-rules-2026-07-v3",
   "publicJwk": {
     "key_ops": ["verify"],

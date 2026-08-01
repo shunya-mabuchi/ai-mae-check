@@ -58,24 +58,28 @@ describe("GitHub Pages署名付きルール配信", () => {
 
   it("公開用署名スクリプトが実ファイルへ検証可能なJSONを出力する", async () => {
     const temporaryDirectory = await mkdtemp(join(tmpdir(), "ai-mae-check-pages-"));
-    const outputPath = resolve(temporaryDirectory, "api/rules/latest.json");
+    const outputPath = resolve(temporaryDirectory, "rules/latest.json");
+    const legacyOutputPath = resolve(temporaryDirectory, "api/rules/latest.json");
     const { privateJwk, publicJwk } = await createKeyPair();
 
     try {
       await signGithubPagesRules({
         sourcePath: resolve(rootDir, "rules/latest.json"),
         outputPath,
+        legacyOutputPath,
         keyId: "test-github-pages-script-key",
         privateJwkText: JSON.stringify(privateJwk)
       });
 
       const signed = JSON.parse(await readFile(outputPath, "utf8")) as unknown;
+      const legacySigned = JSON.parse(await readFile(legacyOutputPath, "utf8")) as unknown;
       const result = await verifySignedRemoteRuleBundle(signed, publicJwk, {
         expectedKeyId: "test-github-pages-script-key",
         now: () => Date.parse("2026-07-29T01:00:00.000Z")
       });
 
       expect(result.ok).toBe(true);
+      expect(legacySigned).toEqual(signed);
       if (result.ok) {
         expect(result.payload.version).toBe("2026.07.29.1");
       }
@@ -89,8 +93,9 @@ describe("GitHub Pages署名付きルール配信", () => {
     const serialized = JSON.stringify(releaseConfig);
 
     expect(releaseConfig.endpoint).toBe(
-      "https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json"
+      "https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json"
     );
+    expect(String(releaseConfig.endpoint)).not.toContain("/api/");
     expect(releaseConfig.keyId).toBe("ai-mae-check-rules-2026-07-v3");
     expect(serialized).not.toContain('"d"');
   });

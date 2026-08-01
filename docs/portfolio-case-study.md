@@ -34,7 +34,7 @@ WebLLMは、顧客名、会社名、案件名、契約・採用・給与・法�
 
 ### 4. 本文を保存しない
 
-貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は永続保存しません。`chrome.storage.local` に保存するのは、ユーザー設定と検証済みの署名付きリモートルールキャッシュだけです。ルール配信を使う場合も、拡張が送るのは署名付きルールJSONを取得する `GET /api/rules/latest.json` だけで、本文は送りません。
+貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は永続保存しません。`chrome.storage.local` に保存するのは、ユーザー設定と検証済みの署名付きリモートルールキャッシュだけです。ルール配信を使う場合も、拡張が送るのはGitHub Pagesの署名付き静的JSONを取得する `GET /rules/latest.json` だけで、本文は送りません。
 
 ### 5. 署名付きルール配信を運用基盤として実装する
 
@@ -85,7 +85,7 @@ sequenceDiagram
   Repo->>CI: ルール変更PR
   CI->>CI: schema / test / public safety QA
   CI->>Pages: main反映後に署名付きJSONを配信
-  Extension->>Pages: GET /api/rules/latest.json
+  Extension->>Pages: GET /rules/latest.json
   Pages-->>Extension: signed payload
   Extension->>Extension: 公開鍵とkeyIdを検証
   Extension->>Extension: 検証OKなら採用 / NGなら同梱ルールへfallback

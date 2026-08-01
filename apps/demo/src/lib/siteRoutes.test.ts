@@ -30,7 +30,7 @@ describe("githubPagesConfig", () => {
         home: "https://shunya-mabuchi.github.io/ai-mae-check/",
         privacy: "https://shunya-mabuchi.github.io/ai-mae-check/privacy/",
         support: "https://shunya-mabuchi.github.io/ai-mae-check/support/",
-        rules: "https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json"
+        rules: "https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json"
       }
     });
   });

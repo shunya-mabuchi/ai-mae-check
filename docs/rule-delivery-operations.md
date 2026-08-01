@@ -3,7 +3,7 @@
 ## 原則
 
 - 追加ルールは `rules/latest.json` でGit管理する。
-- 配信は静的な `GET /api/rules/latest.json` だけとし、ユーザー本文を受け取らない。
+- 配信はGitHub Pages上の署名付き静的JSON `GET /rules/latest.json` だけとし、ユーザー本文を受け取らない。
 - `privateJwk` はGitHub Environment Secretに保存し、Git、Issue、PR、CIログ、チャット、スクリーンショットへ残さない。
 - 拡張は署名を検証できないルールを採用せず、同梱ルールへフォールバックする。
 - `deliveryStatus: paused` を使って追加ルールだけを停止できるようにする。
@@ -39,6 +39,17 @@
 7. 移行完了後、古い公開鍵を次の拡張リリースで削除する。
 
 秘密鍵漏えいの疑いがある場合は、既存Secretを直ちに更新し、新鍵を信頼する拡張バージョンを公開します。秘密鍵自体は復元・共有しません。
+
+## 旧URLの廃止
+
+公開中0.1.2との互換性を保つため、`/api/rules/latest.json` には正規URL `/rules/latest.json` と同一の署名済みJSONを一時配置します。旧URLへ異なるルールを配信してはいけません。
+
+旧URLは、次の条件をすべて満たしたPRで削除します。
+
+1. `/rules/latest.json` を参照する拡張バージョンがChrome Web Storeで一般公開済みである。
+2. `rules/latest.json` の `minExtensionVersion` がその新しい拡張バージョン以上へ更新されている。
+3. 新URLの本番署名検証と、旧版が同梱ルールへ安全にフォールバックすることを確認している。
+4. README、プライバシー方針、公開QAから互換URLの説明を同じPRで削除する。
 
 ## 障害時の挙動
 

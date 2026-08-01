@@ -4,9 +4,11 @@ AIまえチェックは、同梱ルールを必ず使える状態にしたうえ
 
 ## エンドポイント
 
-### `GET /api/rules/latest.json`
+### `GET /rules/latest.json`
 
-本番URLは `https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json` です。リクエスト本文はありません。レスポンスは `schema`、`keyId`、`payload`、`signature` を持つ静的JSONです。
+本番の正規URLは `https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json` です。リクエスト本文はありません。レスポンスは `schema`、`keyId`、`payload`、`signature` を持つ静的JSONです。
+
+公開中0.1.2は旧 `https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json` を参照しているため、GitHub Pagesのビルドでは正規URLと旧URLへ同一の署名済みJSONを配置します。新しいコードと文書では正規URLだけを使用し、旧URLは互換用途に限定します。
 
 ## 生成
 
@@ -20,7 +22,7 @@ AIまえチェックは、同梱ルールを必ず使える状態にしたうえ
 
 ## 拡張側
 
-Content Script起動時に `GET /api/rules/latest.json` を実行し、次を満たす場合だけ採用します。
+Content Script起動時に `GET /rules/latest.json` を実行し、次を満たす場合だけ採用します。
 
 - `keyId` が許可された公開鍵に対応する
 - ECDSA P-256署名を検証できる

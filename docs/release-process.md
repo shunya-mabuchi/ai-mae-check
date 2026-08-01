@@ -75,7 +75,7 @@ Release本文には次を含めます。
 - Chrome Web Store公開URLが表示される
 - LPの主CTAが公開済みストアへ遷移する
 - `/privacy/`、`/support/` が開ける
-- `/api/rules/latest.json` が本番の `keyId` と署名付きpayloadを返し、`pnpm qa:rules:production` が通る
+- `/rules/latest.json` が本番の `keyId` と署名付きpayloadを返し、`pnpm qa:rules:production` が通る
 - GitHub Release本文がCHANGELOGと矛盾していない
 - READMEの公開ステータス、スクリーンショット、ストアURLが最新
 

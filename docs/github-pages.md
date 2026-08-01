@@ -7,7 +7,7 @@ AIまえチェックの紹介LP、公開文書、署名付き追加ルールはG
 - LP: <https://shunya-mabuchi.github.io/ai-mae-check/>
 - プライバシー方針: <https://shunya-mabuchi.github.io/ai-mae-check/privacy/>
 - サポート: <https://shunya-mabuchi.github.io/ai-mae-check/support/>
-- 署名付き追加ルール: <https://shunya-mabuchi.github.io/ai-mae-check/api/rules/latest.json>
+- 署名付き追加ルール: <https://shunya-mabuchi.github.io/ai-mae-check/rules/latest.json>
 
 ## 無料運用の前提
 
@@ -27,7 +27,7 @@ AIまえチェックの紹介LP、公開文書、署名付き追加ルールはG
 3. GitHub Pages artifactをアップロード
 4. `actions/deploy-pages` でデプロイ
 
-`pnpm build:pages` はViteビルド後、`/privacy/`、`/support/`、`404.html`、`.nojekyll` を準備し、署名付き `api/rules/latest.json` を生成します。
+`pnpm build:pages` はViteビルド後、`/privacy/`、`/support/`、`404.html`、`.nojekyll` を準備し、署名付き静的JSON `rules/latest.json` を生成します。公開中0.1.2との互換用として、同じ内容を `api/rules/latest.json` にも一時配置します。
 
 ## Secret
 

@@ -168,7 +168,7 @@ for (const phrase of [
   "chrome.storage.local",
   "検証済みの署名付きリモートルールキャッシュ",
   "console.log",
-  "GET /api/rules/latest.json",
+  "GET /rules/latest.json",
   "postMessage",
   "placeholderMap"
 ]) {

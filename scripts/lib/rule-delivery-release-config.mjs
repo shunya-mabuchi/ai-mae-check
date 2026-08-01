@@ -47,8 +47,8 @@ export function assertRuleDeliveryReleaseConfig(config) {
     failReleaseConfig("endpoint must use https");
   }
 
-  if (!endpointUrl.pathname.endsWith("/api/rules/latest.json")) {
-    failReleaseConfig("endpoint pathname must end with /api/rules/latest.json");
+  if (!endpointUrl.pathname.endsWith("/rules/latest.json") || endpointUrl.pathname.includes("/api/")) {
+    failReleaseConfig("endpoint pathname must end with /rules/latest.json and must not use /api/");
   }
 
   if (/(example\.(com|org|net|test)|replace_|changeme)/i.test(config.endpoint)) {
