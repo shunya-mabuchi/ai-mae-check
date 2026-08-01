@@ -4,28 +4,7 @@ import { detectorRules } from "@ai-mae-check/core";
 import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
 import { targetSites, type SiteId } from "../../src/lib/sites";
 import type { AiMaeCheckSettings, LlmRunMode, SettingsValidationResult } from "../../src/lib/settings";
-
-function Toggle({
-  checked,
-  onChange,
-  label,
-  description
-}: {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  label: string;
-  description?: string;
-}) {
-  return (
-    <label className="flex items-start justify-between gap-4 rounded-md border border-line bg-white p-4">
-      <span>
-        <span className="block font-semibold text-ink">{label}</span>
-        {description && <span className="mt-1 block text-sm leading-6 text-stone-600">{description}</span>}
-      </span>
-      <input type="checkbox" className="mt-1 h-5 w-5 accent-leaf" checked={checked} onChange={(event) => onChange(event.target.checked)} />
-    </label>
-  );
-}
+import { LlmModeRadioGroup, OptionsButton, OptionsCheckbox } from "./OptionsControls";
 
 function Section({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
   return (
@@ -107,8 +86,8 @@ export function OnboardingSection() {
 export function BasicSettingsSection({ enabled, onEnabledChange }: { enabled: boolean; onEnabledChange: (enabled: boolean) => void }) {
   return (
     <Section icon={<CheckCircle2 size={20} aria-hidden="true" />} title="基本設定">
-      <Toggle
-        checked={enabled}
+      <OptionsCheckbox
+        isSelected={enabled}
         onChange={onEnabledChange}
         label="AIまえチェックを有効にする"
         description="無効にすると、対象サイトでの確認を行いません。"
@@ -128,9 +107,9 @@ export function TargetSitesSection({
     <Section icon={<ShieldCheck size={20} aria-hidden="true" />} title="対象サイト">
       <div className="grid gap-3 sm:grid-cols-2">
         {targetSites.map((site) => (
-          <Toggle
+          <OptionsCheckbox
             key={site.id}
-            checked={settings.sites[site.id] !== false}
+            isSelected={settings.sites[site.id] !== false}
             onChange={(enabled) => onSiteChange(site.id, enabled)}
             label={site.label}
             description={site.matches.join(", ")}
@@ -152,9 +131,9 @@ export function DetectionRulesSection({
     <Section icon={<Database size={20} aria-hidden="true" />} title="検出ルール">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {detectorRules.map((rule) => (
-          <Toggle
+          <OptionsCheckbox
             key={rule.id}
-            checked={settings.rules[rule.id] !== false}
+            isSelected={settings.rules[rule.id] !== false}
             onChange={(enabled) => onRuleChange(rule.id, enabled)}
             label={rule.label}
             description={`危険度: ${rule.riskLevel === "high" ? "高" : rule.riskLevel === "medium" ? "中" : "低"}`}
@@ -176,8 +155,8 @@ export function WebLlmSettingsSection({
 }) {
   return (
     <Section icon={<Sparkles size={20} aria-hidden="true" />} title="WebLLMによるAI文脈チェック">
-      <Toggle
-        checked={settings.llm.enabled}
+      <OptionsCheckbox
+        isSelected={settings.llm.enabled}
         onChange={onEnabledChange}
         label="WebLLMによるAI文脈チェックを有効にする"
         description="メールやAPIキーなどの確定情報ではなく、顧客名・案件名・契約文脈などの候補確認に使います。"
@@ -191,18 +170,7 @@ export function WebLlmSettingsSection({
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="rounded-md border border-line bg-white p-4">
-          <input type="radio" className="mr-2 accent-leaf" checked={settings.llm.mode === "manual"} onChange={() => onModeChange("manual")} />
-          <span className="font-semibold">手動ボタンだけで実行</span>
-          <span className="mt-2 block text-sm leading-6 text-stone-600">モーダル内の「AI文脈チェックも実行」ボタンを押したときだけ実行します。</span>
-        </label>
-        <label className="rounded-md border border-line bg-white p-4">
-          <input type="radio" className="mr-2 accent-leaf" checked={settings.llm.mode === "auto"} onChange={() => onModeChange("auto")} />
-          <span className="font-semibold">準備済みなら自動実行</span>
-          <span className="mt-2 block text-sm leading-6 text-stone-600">ローカルAIモデルがすでに準備できている場合だけ、自動で文脈チェックを開始します。</span>
-        </label>
-      </div>
+      <LlmModeRadioGroup value={settings.llm.mode} onChange={onModeChange} />
 
       <div className="rounded-md border border-line bg-white p-4 text-sm leading-7 text-stone-700">
         <p>入力本文や送信本文は外部サーバーに送信されません。検出とAI文脈チェックはユーザーのブラウザ内で実行されます。</p>
@@ -235,20 +203,12 @@ export function DiagnosticsSection({
         </p>
         <p className="mt-3 font-semibold text-leaf">{diagnosticMessage}</p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={onCreateDiagnostic}
-            className="inline-flex min-h-11 items-center rounded-md border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-paper"
-          >
+          <OptionsButton onPress={onCreateDiagnostic}>
             診断情報を作成
-          </button>
-          <button
-            type="button"
-            onClick={onCopyDiagnostic}
-            className="inline-flex min-h-11 items-center rounded-md border border-ink bg-ink px-4 text-sm font-bold text-white hover:bg-[#343638]"
-          >
+          </OptionsButton>
+          <OptionsButton variant="primary" onPress={onCopyDiagnostic}>
             診断情報をコピー
-          </button>
+          </OptionsButton>
         </div>
         {diagnosticText.length > 0 && (
           <textarea
@@ -273,13 +233,9 @@ export function ResetSettingsSection({ onResetSettings }: { onResetSettings: () 
         <p className="mt-2">
           設定を初期化すると、保存済み設定とリモートルールキャッシュを削除し、画面表示を初期値に戻します。WebLLMのモデルキャッシュなどブラウザ管理下の保存領域はChrome側で管理されます。
         </p>
-        <button
-          type="button"
-          onClick={onResetSettings}
-          className="mt-4 inline-flex min-h-11 items-center rounded-md border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-paper"
-        >
+        <OptionsButton className="mt-4" onPress={onResetSettings}>
           設定を初期化
-        </button>
+        </OptionsButton>
       </div>
     </Section>
   );

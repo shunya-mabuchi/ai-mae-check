@@ -68,6 +68,30 @@ async function openMockComposer(page: Page): Promise<void> {
   await expect(page.getByRole("heading", { name: "textarea composer" })).toBeVisible();
 }
 
+async function resolveExtensionId(context: BrowserContext): Promise<string> {
+  const extensionPage = context.pages().find((page) => page.url().startsWith("chrome-extension://"));
+  if (extensionPage) {
+    return new URL(extensionPage.url()).host;
+  }
+
+  const serviceWorker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
+  return new URL(serviceWorker.url()).host;
+}
+
+async function openOptionsPage(context: BrowserContext): Promise<Page> {
+  const extensionId = await resolveExtensionId(context);
+  const optionsUrl = `chrome-extension://${extensionId}/options.html`;
+  const page = context.pages().find((candidate) => candidate.url() === optionsUrl) ?? (await context.newPage());
+
+  if (page.url() !== optionsUrl) {
+    await page.goto(optionsUrl);
+  }
+
+  await expect(page.getByRole("heading", { name: "設定", level: 1 })).toBeVisible();
+  await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
+  return page;
+}
+
 async function dispatchPaste(locator: Locator, text: string): Promise<void> {
   await locator.focus();
   await locator.evaluate((element, pastedText) => {
@@ -146,6 +170,62 @@ async function fillEditor(editor: Locator, text: string): Promise<void> {
 }
 
 test.describe("AIまえチェック拡張E2E", () => {
+  test("Options PageのチェックボックスをSpaceで変更し、再読み込み後も保持する", async () => {
+    const target = await launchExtensionContext();
+    try {
+      const page = await openOptionsPage(target.context);
+      const checkbox = page.getByRole("checkbox", { name: "AIまえチェックを有効にする" });
+
+      await expect(checkbox).toBeChecked();
+      await checkbox.focus();
+      await page.keyboard.press("Space");
+      await expect(checkbox).not.toBeChecked();
+      await expect(page.getByText("保存しました。", { exact: true })).toBeVisible();
+
+      await page.reload();
+      await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
+      await expect(page.getByRole("checkbox", { name: "AIまえチェックを有効にする" })).not.toBeChecked();
+    } finally {
+      await closeExtensionContext(target);
+    }
+  });
+
+  test("Options Pageの実行方法を矢印キーで変更し、再読み込み後も保持する", async () => {
+    const target = await launchExtensionContext();
+    try {
+      const page = await openOptionsPage(target.context);
+      const manualRadio = page.getByRole("radio", { name: /手動ボタンだけで実行/ });
+      const autoRadio = page.getByRole("radio", { name: /準備済みなら自動実行/ });
+
+      await expect(manualRadio).toBeChecked();
+      await manualRadio.focus();
+      await page.keyboard.press("ArrowRight");
+      await expect(autoRadio).toBeChecked();
+      await expect(page.getByText("保存しました。", { exact: true })).toBeVisible();
+
+      await page.reload();
+      await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
+      await expect(page.getByRole("radio", { name: /準備済みなら自動実行/ })).toBeChecked();
+    } finally {
+      await closeExtensionContext(target);
+    }
+  });
+
+  test("Options PageのReact AriaボタンをEnterで実行できる", async () => {
+    const target = await launchExtensionContext();
+    try {
+      const page = await openOptionsPage(target.context);
+      const createButton = page.getByRole("button", { name: "診断情報を作成" });
+
+      await createButton.focus();
+      await page.keyboard.press("Enter");
+      await expect(page.getByRole("textbox", { name: "本文を含まない診断情報" })).toBeVisible();
+      await expect(page.getByText("本文を含まない診断情報を作成しました。内容を確認してからコピーできます。", { exact: true })).toBeVisible();
+    } finally {
+      await closeExtensionContext(target);
+    }
+  });
+
   test("textareaへのpasteを検知し、安全化して貼り付けられる", async () => {
     const target = await launchExtensionContext();
     try {

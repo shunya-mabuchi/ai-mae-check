@@ -172,7 +172,7 @@ React Aria Componentsの低レベルhookは、Components APIで実現できな�
 - AI文脈チェック実行後にだけruntimeとWorkerを取得
 - 初期サイトJSはgzip 120 KiB以下を目標とする
 - content scriptはgzip 40 KiB以下を目標とする
-- optionsはgzip 80 KiB以下を目標とする
+- optionsはReact Ariaの操作部品を含めてgzip 100 KiB以下を目標とする
 - 未使用のWebLLM Worker複製を拡張成果物へ出力しない
 
 ## 拡張機能の段階移行
@@ -182,6 +182,8 @@ React Aria Componentsの低レベルhookは、Components APIで実現できな�
 3. ファイル確認モーダルでShadow DOM内Modalを実証
 4. 貼り付け確認モーダル
 5. 送信前確認モーダル
+
+Options PageのButton、Checkbox、RadioGroup、RadioはReact Aria Componentsへ移行済みです。設定値と`chrome.storage.local`の保存形式は変更せず、Space、矢印キー、Enterによる操作と再読み込み後の永続化を拡張E2Eで確認します。
 
 既存モーダルは命令型Promise APIです。React化する場合も、呼び出し側の決定値とDLPポリシーは変更しません。React rootのunmount時を含め、Promiseを一度だけ解決します。
 
