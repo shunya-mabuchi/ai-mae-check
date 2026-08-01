@@ -45,6 +45,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Tailwind CSS 4 QA
+        run: pnpm qa:tailwind4
+
       - name: Package extension
         run: pnpm package:extension
 

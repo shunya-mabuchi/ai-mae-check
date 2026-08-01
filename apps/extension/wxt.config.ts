@@ -76,6 +76,7 @@ export default defineConfig({
     name: "AIまえチェック",
     description: "AIに送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認します。",
     version: "0.1.2",
+    minimum_chrome_version: "111",
     permissions: ["storage"],
     host_permissions: manifestMatches,
     icons: {

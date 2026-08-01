@@ -1,8 +1,28 @@
 @import "@ai-mae-check/design-tokens/tokens.css";
+@import "tailwindcss" source(none);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@source "../index.html";
+@source "./";
+@source not "./**/*.test.ts";
+@source not "./**/*.test.tsx";
+
+@theme inline {
+  --font-sans:
+    Inter, ui-sans-serif, system-ui, "Hiragino Sans", "Yu Gothic", Meiryo,
+    sans-serif;
+  --color-ink: var(--amc-color-text);
+  --color-muted: var(--amc-color-text-muted);
+  --color-paper: var(--amc-color-background-subtle);
+  --color-surface: var(--amc-color-surface);
+  --color-cloud: var(--amc-color-surface-muted);
+  --color-line: var(--amc-color-border);
+  --color-leaf: var(--amc-color-primary);
+  --color-signal: var(--amc-color-risk-low);
+  --color-caution: var(--amc-color-risk-medium);
+  --radius-card: var(--amc-radius-surface);
+  --shadow-soft: var(--amc-shadow-soft);
+  --shadow-panel: var(--amc-shadow-product);
+}
 
 :root {
   color: var(--amc-color-text);

@@ -34,7 +34,7 @@ packages
 - React 19
 - React Aria Components
 - React Aria Componentsを包むローカルUIコンポーネント
-- Tailwind CSS
+- Tailwind CSS 4（CSS-first設定）
 - Vitest
 - Playwright
 - GitHub Pages

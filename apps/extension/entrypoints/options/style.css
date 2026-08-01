@@ -1,6 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+
+@source "../";
+@source "../../src";
+
+@theme {
+  --font-sans:
+    system-ui, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --color-ink: #202124;
+  --color-paper: #fbfaf7;
+  --color-line: #dfded8;
+  --color-leaf: #2f7d57;
+  --color-signal: #175cd3;
+}
 
 :root {
   color: #202124;

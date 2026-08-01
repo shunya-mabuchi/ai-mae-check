@@ -53,6 +53,7 @@ for (const command of [
   "pnpm qa:public-repo",
   "pnpm qa:public-docs",
   "pnpm qa:webllm-model-policy",
+  "pnpm qa:tailwind4",
   "pnpm qa:extension:size",
   "pnpm qa:extension:manifest",
   "pnpm qa:chrome-store"
@@ -60,7 +61,7 @@ for (const command of [
   assertIncludes(policy, command, paths.policy);
 }
 
-for (const term of ["@mlc-ai/web-llm", "WXT", "Vite", "React", "Playwright", "GitHub Actions", "pnpm-lock.yaml"]) {
+for (const term of ["@mlc-ai/web-llm", "WXT", "Vite", "React", "Tailwind CSS", "Playwright", "GitHub Actions", "pnpm-lock.yaml"]) {
   assertIncludes(policy, term, paths.policy);
 }
 
@@ -71,6 +72,7 @@ for (const licenseName of ["MIT", "Apache-2.0", "MPL-2.0", "CC-BY-4.0"]) {
 assertIncludes(licensePolicy, "第三者ライブラリ", paths.licensePolicy);
 assertIncludes(modelPolicy, "Llama 3.2 Community License", paths.modelPolicy);
 assertIncludes(workflow, "pnpm qa:public-repo", paths.workflow);
+assertIncludes(workflow, "pnpm qa:tailwind4", paths.workflow);
 assertIncludes(workflow, "pnpm qa:chrome-store", paths.workflow);
 
 console.log("dependency policy QA passed");

@@ -19,7 +19,7 @@ export function SelectionCheckbox({
   return (
     <AriaCheckbox
       {...props}
-      className={`group flex cursor-pointer items-start gap-3 rounded-card border border-line bg-white p-3 shadow-soft outline-none transition data-[hovered]:border-leaf/40 data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2 ${className}`}
+      className={`group flex cursor-pointer items-start gap-3 rounded-card border border-line bg-white p-3 shadow-soft outline-hidden transition data-[hovered]:border-leaf/40 data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2 ${className}`}
     >
       {({ isSelected }) => (
         <>

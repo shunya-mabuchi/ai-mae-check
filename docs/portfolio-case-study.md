@@ -63,7 +63,7 @@ flowchart LR
 - React
 - WXT
 - Vite
-- Tailwind CSS
+- Tailwind CSS 4
 - Vitest
 - Playwright
 - Chrome Extension Manifest V3

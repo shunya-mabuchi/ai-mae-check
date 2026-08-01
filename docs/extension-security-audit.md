@@ -115,6 +115,7 @@ pnpm qa:chrome-store
 
 ```bash
 pnpm qa:dependency-policy
+pnpm qa:tailwind4
 pnpm qa:extension:size
 pnpm build:extension
 ```
