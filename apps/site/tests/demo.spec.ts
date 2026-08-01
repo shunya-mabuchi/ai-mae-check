@@ -48,6 +48,28 @@ test("ミニデモをキーボードで操作し、フォーカス位置を確�
   await expect(page.locator("pre").filter({ hasText: "taro@example.com" })).toBeVisible();
 });
 
+test("WebLLM実行系はAI文脈チェック操作まで読み込まない", async ({ page }) => {
+  const runtimeRequests: string[] = [];
+  page.on("request", (request) => {
+    const url = request.url();
+    if (/llm\/src\/(runtime|analyzer|webllm)|webllmWorker/i.test(url)) {
+      runtimeRequests.push(url);
+    }
+  });
+
+  await page.goto("/ai-mae-check/");
+  await page.getByRole("button", { name: "ルール用サンプル" }).click();
+  await page.getByRole("button", { name: "検出する" }).click();
+
+  expect(runtimeRequests).toEqual([]);
+
+  await page.getByRole("button", { name: "AI文脈チェック" }).click();
+  await expect
+    .poll(() => runtimeRequests.some((url) => url.includes("/runtime.ts")))
+    .toBe(true);
+  expect(new Set(runtimeRequests).size).toBe(runtimeRequests.length);
+});
+
 test("プライバシーポリシーを公開URLとして直接開ける", async ({ page }) => {
   await page.goto("/ai-mae-check/privacy/");
 

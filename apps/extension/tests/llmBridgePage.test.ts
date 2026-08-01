@@ -17,7 +17,7 @@ const runtimeServiceFactoryMock = vi.fn(() => ({
 }));
 const createLocalLlmRuntimeServiceMock = vi.fn((...args: unknown[]) => runtimeServiceFactoryMock(...args));
 
-vi.mock("@ai-mae-check/llm", () => ({
+vi.mock("@ai-mae-check/llm/runtime", () => ({
   createLocalLlmRuntimeService: createLocalLlmRuntimeServiceMock
 }));
 

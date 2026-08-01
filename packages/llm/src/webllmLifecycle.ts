@@ -3,7 +3,8 @@
 import { MODEL_LOADING_MESSAGE } from "./constants";
 import { resolveModelId, type WebLlmModelListModule } from "./model";
 import type { LlmProgress } from "./types";
-import WebLlmWorker from "./webllmWorker?worker";
+
+declare const __AI_MAE_EXTERNAL_WEBLLM_WORKER_ONLY__: boolean;
 
 type WebLlmProgressReport = {
   progress?: number;
@@ -99,8 +100,20 @@ async function loadWebLlmModule(): Promise<WebLlmModule> {
   return module;
 }
 
-function createWorkerInstance(workerUrl?: string): Worker {
-  return workerUrl ? new Worker(workerUrl, { type: "module" }) : new WebLlmWorker();
+async function createWorkerInstance(workerUrl?: string): Promise<Worker> {
+  if (workerUrl) {
+    return new Worker(workerUrl, { type: "module" });
+  }
+
+  if (
+    typeof __AI_MAE_EXTERNAL_WEBLLM_WORKER_ONLY__ !== "undefined" &&
+    __AI_MAE_EXTERNAL_WEBLLM_WORKER_ONLY__
+  ) {
+    throw new Error("WebLLM WorkerのURLが指定されていません。");
+  }
+
+  const { default: WebLlmWorker } = await import("./webllmWorker?worker");
+  return new WebLlmWorker();
 }
 
 export function createWebLlmEngineLifecycle(options: CreateWebLlmEngineLifecycleOptions): WebLlmEngineLifecycle {
@@ -118,7 +131,7 @@ export function createWebLlmEngineLifecycle(options: CreateWebLlmEngineLifecycle
       message: `${MODEL_LOADING_MESSAGE} 使用モデル: ${modelId}`
     });
 
-    worker = createWorkerInstance(options.workerUrl);
+    worker = await createWorkerInstance(options.workerUrl);
 
     try {
       engine = await webllm.CreateWebWorkerMLCEngine(worker, modelId, {

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, type Dispatch } from "react";
 import { detectSensitiveText, type DetectionResult } from "@ai-mae-check/core";
 import {
   classifyLlmError,
-  createLocalLlmRuntimeService,
   isContextAnalysisExecutionError,
   type LocalLlmRuntimeService
 } from "@ai-mae-check/llm";
@@ -16,6 +15,7 @@ import {
 import { selectCandidateIdsByConfidence } from "../lib/demoMasking";
 import { resolveLlmSelectedFindingIds } from "../lib/demoSelection";
 import type { DemoWorkbenchAction } from "../lib/demoWorkbenchState";
+import { createDemoLlmRuntimeService } from "../lib/demoLlmRuntimeLoader";
 
 export interface RunDemoLlmDetectionOptions {
   text: string;
@@ -31,22 +31,43 @@ export interface DemoLlmAnalysisViewModel {
 
 export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
   const runtimeServiceRef = useRef<LocalLlmRuntimeService | null>(null);
+  const runtimeServicePromiseRef = useRef<Promise<LocalLlmRuntimeService> | null>(
+    null
+  );
 
   useEffect(() => {
     return () => {
-      void runtimeServiceRef.current?.dispose();
+      const currentService = runtimeServiceRef.current;
+      const pendingService = runtimeServicePromiseRef.current;
       runtimeServiceRef.current = null;
+      runtimeServicePromiseRef.current = null;
+      void (async () => {
+        const service = currentService ?? (await pendingService);
+        await service?.dispose();
+      })().catch(() => undefined);
     };
   }, []);
 
   const disposeRuntimeService = useCallback(async () => {
-    await runtimeServiceRef.current?.dispose();
+    const pendingService = runtimeServicePromiseRef.current;
+    runtimeServicePromiseRef.current = null;
+    const service = runtimeServiceRef.current ?? (await pendingService);
+    await service?.dispose();
     runtimeServiceRef.current = null;
   }, []);
 
-  const getRuntimeService = useCallback(() => {
-    runtimeServiceRef.current ??= createLocalLlmRuntimeService();
-    return runtimeServiceRef.current;
+  const getRuntimeService = useCallback(async () => {
+    if (runtimeServiceRef.current) {
+      return runtimeServiceRef.current;
+    }
+
+    runtimeServicePromiseRef.current ??= createDemoLlmRuntimeService();
+    try {
+      runtimeServiceRef.current = await runtimeServicePromiseRef.current;
+      return runtimeServiceRef.current;
+    } finally {
+      runtimeServicePromiseRef.current = null;
+    }
   }, []);
 
   const runLlmDetection = useCallback(
@@ -78,9 +99,8 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
         uiState: createLoadingLlmUiState()
       });
 
-      const runtimeService = getRuntimeService();
-
       try {
+        const runtimeService = await getRuntimeService();
         const result = await runtimeService.analyze({
           input: text,
           existingFindings: currentDetection.findings,

@@ -70,6 +70,8 @@ Radix UIは新規採用しません。既存の動作を一度に置き換えず
 
 Reactを読み込まない状態でも、LPの説明、導入導線、privacy、supportを読めることを必須とします。
 
+WebLLMの共有型・表示用ロジックは`@ai-mae-check/llm`から参照します。モデル実行系は`@ai-mae-check/llm/runtime`へ分離し、DemoWorkbenchでAI文脈チェックを明示操作した時だけdynamic importします。初期表示とルール検出ではruntimeおよびWorkerを取得しません。
+
 ## Vite MPA
 
 次のHTMLを明示的なビルドエントリーにします。

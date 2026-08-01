@@ -1,6 +1,7 @@
 import { defineConfig } from "wxt";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { removeUnusedWebLlmFallbackWorker } from "./src/build/removeUnusedWebLlmFallbackWorker";
 
 const targetMatches = [
   "https://chatgpt.com/*",
@@ -20,15 +21,52 @@ export default defineConfig({
   outDirTemplate: "chrome-mv{{manifestVersion}}",
   manifestVersion: 3,
   modules: ["@wxt-dev/module-react"],
+  hooks: {
+    "build:done": async (wxt, output) => {
+      // 拡張では公開llm-worker.jsを使うため、Viteが残す未参照fallbackだけを除去します。
+      const removedWorkers = new Set(
+        await removeUnusedWebLlmFallbackWorker(wxt.config.outDir)
+      );
+      for (const step of output.steps) {
+        for (let index = step.chunks.length - 1; index >= 0; index -= 1) {
+          const fileName = step.chunks[index]?.fileName.split("/").at(-1);
+          if (fileName && removedWorkers.has(fileName)) {
+            step.chunks.splice(index, 1);
+          }
+        }
+      }
+    }
+  },
   vite: () => ({
     define: {
-      __AI_MAE_EXTENSION_E2E__: JSON.stringify(isExtensionE2eBuild)
+      __AI_MAE_EXTENSION_E2E__: JSON.stringify(isExtensionE2eBuild),
+      __AI_MAE_EXTERNAL_WEBLLM_WORKER_ONLY__: "true"
     },
     resolve: {
-      alias: {
-        "@ai-mae-check/core": resolve(fileURLToPath(new URL(".", import.meta.url)), "../../packages/core/src/index.ts"),
-        "@ai-mae-check/llm": resolve(fileURLToPath(new URL(".", import.meta.url)), "../../packages/llm/src/index.ts")
-      }
+      alias: [
+        {
+          find: "@ai-mae-check/core",
+          replacement: resolve(fileURLToPath(new URL(".", import.meta.url)), "../../packages/core/src/index.ts")
+        },
+        {
+          find: "@ai-mae-check/llm/runtime",
+          replacement: resolve(
+            fileURLToPath(new URL(".", import.meta.url)),
+            "../../packages/llm/src/runtime.ts"
+          )
+        },
+        {
+          find: "@ai-mae-check/llm/worker",
+          replacement: resolve(
+            fileURLToPath(new URL(".", import.meta.url)),
+            "../../packages/llm/src/worker.ts"
+          )
+        },
+        {
+          find: /^@ai-mae-check\/llm$/,
+          replacement: resolve(fileURLToPath(new URL(".", import.meta.url)), "../../packages/llm/src/index.ts")
+        }
+      ]
     },
     worker: {
       format: "es"

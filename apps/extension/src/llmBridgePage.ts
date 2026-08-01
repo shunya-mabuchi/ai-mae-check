@@ -1,9 +1,9 @@
 import {
   type AnalyzeContextOptions,
-  createLocalLlmRuntimeService,
   type LocalLlmRuntimeService,
   type LlmProgress
 } from "@ai-mae-check/llm";
+import { createLocalLlmRuntimeService } from "@ai-mae-check/llm/runtime";
 import {
   getLlmBridgeExpectedNonce,
   getLlmBridgeRequestId,
