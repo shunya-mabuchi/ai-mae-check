@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f8f5f" />
+    <meta name="theme-color" content="#078754" />
     <meta
       name="description"
-      content="AIまえチェックは、ChatGPT・Claude・Geminiに送る前に個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認するChrome拡張です。外部LLM APIへ本文を送信しません。"
+      content="AIまえチェックは、ChatGPT・Claude・Gemini・Perplexityに送る前に個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認するChrome拡張です。外部LLM APIへ本文を送信しません。"
     />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="https://shunya-mabuchi.github.io/ai-mae-check/" />
@@ -14,19 +14,20 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="128x128" href="/icon-128.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href="/src/index.css" />
     <meta property="og:site_name" content="AIまえチェック" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://shunya-mabuchi.github.io/ai-mae-check/" />
-    <meta property="og:title" content="AIまえチェック | AIに送る前に、消し忘れを見つける。" />
+    <meta property="og:title" content="AIまえチェック | そのまま送らない。" />
     <meta
       property="og:description"
-      content="ChatGPT・Claude・Geminiに送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認するChrome拡張です。外部LLM APIへ本文を送信しません。"
+      content="ChatGPT・Claude・Gemini・Perplexityに送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認するChrome拡張です。"
     />
     <meta property="og:image" content="https://shunya-mabuchi.github.io/ai-mae-check/ogp.png" />
     <meta property="og:image:width" content="1400" />
     <meta property="og:image:height" content="560" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AIまえチェック | AIに送る前に、消し忘れを見つける。" />
+    <meta name="twitter:title" content="AIまえチェック | そのまま送らない。" />
     <meta
       name="twitter:description"
       content="個人情報・秘密情報・APIキーの消し忘れを、AIに送る前にブラウザ内で確認するChrome拡張です。"
@@ -35,7 +36,226 @@
     <title>AIまえチェック | AIに送る前に、消し忘れを見つける。</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div class="page-shell text-ink">
+      <header class="border-b border-line/80 bg-white">
+        <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4" aria-label="メインナビゲーション">
+          <a href="/ai-mae-check/" class="flex items-center gap-3 text-base font-black text-ink" aria-label="AIまえチェック トップ">
+            <img src="/icon-128.png" alt="" width="34" height="34" class="h-[34px] w-[34px] rounded-[6px]" />
+            AIまえチェック
+          </a>
+          <div class="hidden items-center gap-7 text-sm font-bold text-muted md:flex">
+            <a href="#features" class="transition hover:text-ink">機能</a>
+            <a href="#demo" class="transition hover:text-ink">デモ</a>
+            <a href="#how" class="transition hover:text-ink">仕組み</a>
+            <a href="#privacy" class="transition hover:text-ink">プライバシー</a>
+            <a href="/ai-mae-check/support/" class="transition hover:text-ink">サポート</a>
+          </div>
+          <details class="mobile-navigation relative md:hidden">
+            <summary class="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[6px] border border-line bg-white text-ink" aria-label="メニューを開く">
+              <span class="menu-icon" aria-hidden="true"></span>
+            </summary>
+            <div class="absolute right-0 top-12 z-20 grid min-w-48 gap-1 rounded-card border border-line bg-white p-2 text-sm font-bold text-muted shadow-panel">
+              <a href="#features" class="rounded-[6px] px-3 py-3 hover:bg-cloud hover:text-ink">機能</a>
+              <a href="#demo" class="rounded-[6px] px-3 py-3 hover:bg-cloud hover:text-ink">デモ</a>
+              <a href="#how" class="rounded-[6px] px-3 py-3 hover:bg-cloud hover:text-ink">仕組み</a>
+              <a href="#privacy" class="rounded-[6px] px-3 py-3 hover:bg-cloud hover:text-ink">プライバシー</a>
+              <a href="/ai-mae-check/support/" class="rounded-[6px] px-3 py-3 hover:bg-cloud hover:text-ink">サポート</a>
+            </div>
+          </details>
+        </nav>
+      </header>
+
+      <main>
+        <section class="overflow-hidden bg-white px-5 pb-14 pt-12 md:pb-20 md:pt-16">
+          <div class="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)] lg:gap-14">
+            <div class="max-w-xl">
+              <h1 class="text-5xl font-black leading-[1.08] text-ink md:text-7xl"><span class="block">そのまま</span><span class="block">送らない。</span></h1>
+              <p class="mt-6 text-lg leading-8 text-muted md:text-xl md:leading-9">
+                ChatGPTやClaude、Gemini、Perplexityへ送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認するChrome拡張です。
+              </p>
+              <div class="mt-8 grid gap-3 sm:flex sm:flex-wrap">
+                <a class="site-button site-button-primary" href="https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc">
+                  <img src="/icon-128.png" alt="" width="22" height="22" class="h-[22px] w-[22px] rounded-[4px]" />
+                  Chrome Web Storeで追加
+                </a>
+                <a class="site-button site-button-secondary" href="#demo">
+                  デモを試す
+                  <span aria-hidden="true">↓</span>
+                </a>
+              </div>
+              <p class="mt-6 flex items-start gap-2 text-sm font-semibold leading-6 text-muted">
+                <span class="mt-2 h-2 w-2 flex-none rounded-full bg-leaf" aria-hidden="true"></span>
+                貼り付け本文は保存しません。外部LLM APIへ送信しません。
+              </p>
+            </div>
+
+            <figure class="extension-frame min-w-0">
+              <div class="flex h-[42px] items-center justify-between border-b border-line bg-[#f5f7f9] px-4">
+                <div class="flex items-center gap-2" aria-hidden="true">
+                  <span class="h-2.5 w-2.5 rounded-full bg-[#ef4444]"></span>
+                  <span class="h-2.5 w-2.5 rounded-full bg-[#f59e0b]"></span>
+                  <span class="h-2.5 w-2.5 rounded-full bg-[#22c55e]"></span>
+                </div>
+                <figcaption class="text-xs font-bold text-muted">実際のChrome拡張画面</figcaption>
+              </div>
+              <img
+                src="/extension-paste-modal.png"
+                alt="ChatGPTで貼り付け前に表示されるAIまえチェックの確認画面"
+                width="922"
+                height="633"
+                fetchpriority="high"
+                class="extension-shot"
+              />
+            </figure>
+          </div>
+        </section>
+
+        <section id="features" class="border-y border-line bg-paper px-5 py-14 md:py-20" aria-labelledby="features-heading">
+          <div class="mx-auto max-w-7xl">
+            <div class="max-w-3xl">
+              <h2 id="features-heading" class="text-3xl font-black leading-tight text-ink md:text-4xl">うっかり送りがちな情報を、貼る前に確認。</h2>
+              <p class="mt-4 text-base leading-7 text-muted md:text-lg">明確な秘密情報はルールで素早く検出し、名前や案件情報など文脈が必要な内容はローカルAIが候補として補助します。</p>
+            </div>
+            <div class="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <article class="flex gap-4 rounded-card border border-line bg-white p-5">
+                <span class="target-mark" aria-hidden="true">@</span>
+                <div><h3 class="font-black text-ink">メールアドレス</h3><p class="mt-1 text-sm leading-6 text-muted">個人・社外の連絡先</p></div>
+              </article>
+              <article class="flex gap-4 rounded-card border border-line bg-white p-5">
+                <span class="target-mark" aria-hidden="true">TEL</span>
+                <div><h3 class="font-black text-ink">電話番号</h3><p class="mt-1 text-sm leading-6 text-muted">携帯番号・固定電話番号</p></div>
+              </article>
+              <article class="flex gap-4 rounded-card border border-line bg-white p-5">
+                <span class="target-mark" aria-hidden="true">KEY</span>
+                <div><h3 class="font-black text-ink">APIキー・秘密鍵</h3><p class="mt-1 text-sm leading-6 text-muted">トークン・認証情報・.env</p></div>
+              </article>
+              <article class="flex gap-4 rounded-card border border-line bg-white p-5">
+                <span class="target-mark" aria-hidden="true">社内</span>
+                <div><h3 class="font-black text-ink">社内情報</h3><p class="mt-1 text-sm leading-6 text-muted">内部URL・注意語・未公開情報</p></div>
+              </article>
+              <article class="flex gap-4 rounded-card border border-line bg-white p-5">
+                <span class="target-mark" aria-hidden="true">顧客</span>
+                <div><h3 class="font-black text-ink">顧客名・会社名</h3><p class="mt-1 text-sm leading-6 text-muted">提案・契約前の文脈候補</p></div>
+              </article>
+              <article class="flex gap-4 rounded-card border border-line bg-white p-5">
+                <span class="target-mark" aria-hidden="true">案件</span>
+                <div><h3 class="font-black text-ink">案件名</h3><p class="mt-1 text-sm leading-6 text-muted">プロジェクト名・社内呼称</p></div>
+              </article>
+              <article class="flex gap-4 rounded-card border border-line bg-white p-5">
+                <span class="target-mark" aria-hidden="true">￥</span>
+                <div><h3 class="font-black text-ink">契約・給与・金額</h3><p class="mt-1 text-sm leading-6 text-muted">見積・採用・財務の文脈</p></div>
+              </article>
+              <article class="flex gap-4 rounded-card border border-line bg-white p-5">
+                <span class="target-mark" aria-hidden="true">URL</span>
+                <div><h3 class="font-black text-ink">URL・IPアドレス</h3><p class="mt-1 text-sm leading-6 text-muted">認証付きURL・内部環境</p></div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <div id="demo-root"></div>
+        <noscript>
+          <p class="mx-auto max-w-7xl px-5 py-12 text-sm leading-7 text-muted">ミニデモの操作にはJavaScriptが必要です。プライバシー方針とサポートはJavaScriptなしでも閲覧できます。</p>
+        </noscript>
+
+        <section id="how" class="border-y border-line bg-paper px-5 py-16 md:py-24" aria-labelledby="how-heading">
+          <div class="mx-auto max-w-7xl">
+            <div class="max-w-3xl">
+              <h2 id="how-heading" class="text-3xl font-black leading-tight text-ink md:text-4xl">送る直前に、5つの流れで確認。</h2>
+              <p class="mt-4 text-base leading-7 text-muted md:text-lg">ルールベースを先に実行し、必要なときだけWebLLMを使います。AIの結果は断定ではなく、追加の注意候補として扱います。</p>
+            </div>
+            <ol class="step-rail mt-10 grid gap-6 md:grid-cols-5 md:gap-4">
+              <li class="relative flex gap-4 md:block">
+                <span class="relative z-10 flex h-12 w-12 flex-none items-center justify-center rounded-full border border-line bg-white text-sm font-black text-leaf">1</span>
+                <div class="pt-1 md:pt-5"><h3 class="font-black text-ink">貼り付けを検知</h3><p class="mt-2 text-sm leading-6 text-muted">対象サイトの入力欄でpasteを確認します。</p></div>
+              </li>
+              <li class="relative flex gap-4 md:block">
+                <span class="relative z-10 flex h-12 w-12 flex-none items-center justify-center rounded-full border border-line bg-white text-sm font-black text-leaf">2</span>
+                <div class="pt-1 md:pt-5"><h3 class="font-black text-ink">ルールで検出</h3><p class="mt-2 text-sm leading-6 text-muted">メールやAPIキーなどをブラウザ内で確認します。</p></div>
+              </li>
+              <li class="relative flex gap-4 md:block">
+                <span class="relative z-10 flex h-12 w-12 flex-none items-center justify-center rounded-full border border-line bg-white text-sm font-black text-leaf">3</span>
+                <div class="pt-1 md:pt-5"><h3 class="font-black text-ink">候補を選択</h3><p class="mt-2 text-sm leading-6 text-muted">安全化する項目を自分で選べます。</p></div>
+              </li>
+              <li class="relative flex gap-4 md:block">
+                <span class="relative z-10 flex h-12 w-12 flex-none items-center justify-center rounded-full border border-line bg-white text-sm font-black text-leaf">4</span>
+                <div class="pt-1 md:pt-5"><h3 class="font-black text-ink">必要ならAI補助</h3><p class="mt-2 text-sm leading-6 text-muted">顧客名や案件情報の候補をローカルで確認します。</p></div>
+              </li>
+              <li class="relative flex gap-4 md:block">
+                <span class="relative z-10 flex h-12 w-12 flex-none items-center justify-center rounded-full border border-line bg-white text-sm font-black text-leaf">5</span>
+                <div class="pt-1 md:pt-5"><h3 class="font-black text-ink">安全化して入力</h3><p class="mt-2 text-sm leading-6 text-muted">プレビューを確認し、ユーザーが最終判断します。</p></div>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="privacy" class="bg-white px-5 py-16 md:py-24" aria-labelledby="privacy-heading">
+          <div class="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
+            <div>
+              <h2 id="privacy-heading" class="text-3xl font-black leading-tight text-ink md:text-4xl">本文を保存しない設計。</h2>
+              <p class="mt-5 text-base leading-8 text-muted md:text-lg">検出とAI文脈チェックはユーザーのブラウザ内で実行されます。貼り付け本文や、安全化前後の対応表を永続保存しません。</p>
+              <a href="/ai-mae-check/privacy/" class="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-black text-leaf hover:text-[#066d45]">プライバシー方針を見る <span aria-hidden="true">→</span></a>
+            </div>
+            <dl class="grid gap-x-8 gap-y-0 sm:grid-cols-2">
+              <div class="border-t border-line py-5"><dt class="font-black text-ink">外部LLM APIへ本文を送らない</dt><dd class="mt-2 text-sm leading-6 text-muted">OpenAI API、Claude API、Gemini APIなどへ本文を送信しません。</dd></div>
+              <div class="border-t border-line py-5"><dt class="font-black text-ink">保存するのは設定だけ</dt><dd class="mt-2 text-sm leading-6 text-muted">有効状態やルール選択をchrome.storage.localへ保存します。</dd></div>
+              <div class="border-t border-line py-5"><dt class="font-black text-ink">本文ログを残さない</dt><dd class="mt-2 text-sm leading-6 text-muted">本文、検出結果、placeholderMapをログや永続領域へ残しません。</dd></div>
+              <div class="border-t border-line py-5"><dt class="font-black text-ink">モデル取得は明示する</dt><dd class="mt-2 text-sm leading-6 text-muted">WebLLM初回利用時は、ローカル推論用モデルを取得する場合があります。</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="border-y border-line bg-paper px-5 py-12" aria-labelledby="technology-heading">
+          <div class="mx-auto max-w-7xl">
+            <div class="grid gap-7 md:grid-cols-[260px_1fr] md:items-center">
+              <div><h2 id="technology-heading" class="text-2xl font-black text-ink">ブラウザ内で完結する技術構成</h2><p class="mt-2 text-sm leading-6 text-muted">外部LLM APIとバックエンドに本文を依存しない構成です。</p></div>
+              <ul class="grid grid-cols-2 border-l border-t border-line text-sm font-bold text-muted sm:grid-cols-3 lg:grid-cols-5">
+                <li class="border-b border-r border-line bg-white px-4 py-4">TypeScript</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">React</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">WXT / MV3</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">WebLLM</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">WebGPU</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">Web Worker</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">Vitest</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">Playwright</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">GitHub Pages</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">署名付きルール</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="install" class="bg-leaf px-5 py-14 text-white md:py-20" aria-labelledby="install-heading">
+          <div class="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
+            <div class="max-w-3xl">
+              <h2 id="install-heading" class="text-3xl font-black leading-tight md:text-4xl">AIへ送る前に、一度だけ立ち止まる。</h2>
+              <p class="mt-4 text-base leading-7 text-white/80 md:text-lg">AIまえチェックの本体はChrome拡張です。ChatGPT、Claude、Gemini、Perplexityの入力欄でお試しください。</p>
+            </div>
+            <div class="grid flex-none gap-3 sm:flex">
+              <a href="https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc" class="site-button border-white bg-white text-leaf hover:bg-[#f6f8f9]">Chrome Web Storeで追加</a>
+              <a href="https://github.com/shunya-mabuchi/ai-mae-check" class="site-button border-white/50 bg-transparent text-white hover:border-white hover:bg-white/10">GitHubで見る</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="border-t border-line bg-white px-5 py-10">
+        <div class="mx-auto grid max-w-7xl gap-7 text-sm md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <div class="flex items-center gap-3"><img src="/icon-128.png" alt="" width="30" height="30" class="h-[30px] w-[30px] rounded-[6px]" /><p class="font-black text-ink">AIまえチェック</p></div>
+            <p class="mt-3 max-w-xl leading-6 text-muted">AIに送る前に、消し忘れを見つける。Chrome拡張が本体の貼り付け前チェックツールです。</p>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-3 font-bold text-muted md:justify-end">
+            <a href="#features" class="hover:text-ink">機能</a>
+            <a href="#demo" class="hover:text-ink">ミニデモ</a>
+            <a href="https://github.com/shunya-mabuchi/ai-mae-check" class="hover:text-ink">GitHub</a>
+            <a href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/portfolio-case-study.md" class="hover:text-ink">ケーススタディ</a>
+            <a href="/ai-mae-check/privacy/" class="hover:text-ink">プライバシー</a>
+            <a href="/ai-mae-check/support/" class="hover:text-ink">サポート</a>
+          </div>
+        </div>
+      </footer>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

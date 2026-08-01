@@ -16,22 +16,22 @@ export default {
         ]
       },
       colors: {
-        ink: "#171a1f",
-        muted: "#616a73",
-        paper: "#f4f7f1",
-        surface: "#fffffb",
-        cloud: "#edf2ee",
-        line: "#d9ded8",
-        leaf: "#247a5b",
-        signal: "#2857a3",
-        caution: "#b45309"
+        ink: "var(--amc-color-text)",
+        muted: "var(--amc-color-text-muted)",
+        paper: "var(--amc-color-background-subtle)",
+        surface: "var(--amc-color-surface)",
+        cloud: "var(--amc-color-surface-muted)",
+        line: "var(--amc-color-border)",
+        leaf: "var(--amc-color-primary)",
+        signal: "var(--amc-color-risk-low)",
+        caution: "var(--amc-color-risk-medium)"
       },
       borderRadius: {
-        card: "8px"
+        card: "var(--amc-radius-surface)"
       },
       boxShadow: {
-        soft: "0 12px 34px rgba(23, 26, 31, 0.07)",
-        panel: "0 28px 80px rgba(23, 26, 31, 0.16)"
+        soft: "var(--amc-shadow-soft)",
+        panel: "var(--amc-shadow-product)"
       }
     }
   },

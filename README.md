@@ -193,10 +193,11 @@ flowchart LR
 repository-root/
   apps/
     extension/  Chrome拡張本体
-    demo/       紹介LP兼Webミニデモサイト
+    site/       静的LP、公開文書、Reactミニデモ
   packages/
     core/       ルールベース検出、署名検証、マスキング、型定義
     llm/        WebLLM文脈チェック、Worker、プロンプト、JSONパース
+    design-tokens/  サイトと拡張で共有するUI非依存トークン
   rules/        Git管理する追加ルール定義
   scripts/      GitHub Pages生成、ビルド時署名、公開QA
   docs/
@@ -206,6 +207,8 @@ repository-root/
   package.json
   pnpm-workspace.yaml
 ```
+
+公開サイトはVite MPAで構築し、LP・プライバシー・サポートは静的HTMLを基本にしています。Reactは操作が必要なミニデモだけへマウントし、説明ページではJavaScriptが無効でも本文と主要導線を読める構成です。
 
 ## セットアップ
 

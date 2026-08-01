@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@ai-mae-check/core": "workspace:*",
+    "@ai-mae-check/design-tokens": "workspace:*",
     "@ai-mae-check/llm": "workspace:*",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
