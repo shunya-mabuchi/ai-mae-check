@@ -50,6 +50,7 @@ for (const command of [
   "pnpm outdated",
   "pnpm licenses list --json",
   "pnpm audit",
+  "pnpm lint",
   "pnpm qa:public-repo",
   "pnpm qa:public-docs",
   "pnpm qa:webllm-model-policy",
@@ -61,7 +62,17 @@ for (const command of [
   assertIncludes(policy, command, paths.policy);
 }
 
-for (const term of ["@mlc-ai/web-llm", "WXT", "Vite", "React", "Tailwind CSS", "Playwright", "GitHub Actions", "pnpm-lock.yaml"]) {
+for (const term of [
+  "@mlc-ai/web-llm",
+  "WXT",
+  "Vite",
+  "React",
+  "Tailwind CSS",
+  "Biome",
+  "Playwright",
+  "GitHub Actions",
+  "pnpm-lock.yaml"
+]) {
   assertIncludes(policy, term, paths.policy);
 }
 
