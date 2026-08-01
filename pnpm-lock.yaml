@@ -78,6 +78,9 @@ importers:
       '@ai-mae-check/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@ai-mae-check/design-tokens':
+        specifier: workspace:*
+        version: link:../../packages/design-tokens
       '@ai-mae-check/llm':
         specifier: workspace:*
         version: link:../../packages/llm
@@ -99,6 +102,8 @@ importers:
         version: 19.2.3(@types/react@19.2.16)
 
   packages/core: {}
+
+  packages/design-tokens: {}
 
   packages/llm:
     dependencies:

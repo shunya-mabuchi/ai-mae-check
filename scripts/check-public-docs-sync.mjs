@@ -10,8 +10,7 @@ const paths = {
   releaseMemo: "docs/chrome-web-store-release.md",
   privacyPolicy: "docs/privacy-policy.md",
   readme: "README.md",
-  hero: "apps/site/src/components/Hero.tsx",
-  launchFlow: "apps/site/src/lib/productLaunchFlow.ts",
+  homePage: "apps/site/index.html",
   siteConfig: "apps/site/src/lib/siteConfig.ts",
   privacyPage: "apps/site/privacy/index.html",
   supportPage: "apps/site/support/index.html",
@@ -96,10 +95,9 @@ for (const requiredDoc of ["submissionCopy", "releaseMemo", "readme"]) {
 
 qa.assertIncludes(docs.readme, "Chrome Web Store", "README");
 qa.assertIncludes(docs.readme, listing.homepageUrl, "README");
-qa.assertIncludes(docs.launchFlow, "https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc", "productLaunchFlow");
-qa.assertIncludes(docs.launchFlow, "Chrome Web Store公開中", "productLaunchFlow");
-qa.assertIncludes(docs.hero, "Chrome拡張が本体", "Hero");
-qa.assertIncludes(docs.hero, "Chrome Web Store公開中", "Hero");
+qa.assertIncludes(docs.homePage, "https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc", "homePage");
+qa.assertIncludes(docs.homePage, "Chrome拡張が本体", "homePage");
+qa.assertIncludes(docs.homePage, "Chrome Web Storeで追加", "homePage");
 
 for (const [route, url] of Object.entries({
   home: listing.homepageUrl,
@@ -110,7 +108,7 @@ for (const [route, url] of Object.entries({
 }
 
 for (const site of supportedSites) {
-  for (const requiredDoc of ["listing", "submissionCopy", "releaseMemo", "readme", "launchFlow"]) {
+  for (const requiredDoc of ["listing", "submissionCopy", "releaseMemo", "readme", "homePage"]) {
     qa.assertIncludes(docs[requiredDoc], site, requiredDoc);
   }
 }

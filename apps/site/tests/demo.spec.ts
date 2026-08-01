@@ -6,7 +6,7 @@ test("サンプル文を挿入し、ルールベース検出とマスキング�
   await expect(page.getByRole("heading", { name: "貼り付け前チェックの動きを試す" })).toBeVisible();
   await expect(page.getByText("デモで確認できること")).toBeVisible();
 
-  await page.getByRole("navigation").getByRole("link", { name: "ミニデモ", exact: true }).click();
+  await page.getByRole("navigation").getByRole("link", { name: "デモ", exact: true }).click();
   await page.getByRole("button", { name: "ルール用サンプル" }).click();
   await expect(page.getByPlaceholder("ここにAIへ貼る前の文章を入力してください。")).toHaveValue(/taro@example\.com/);
 

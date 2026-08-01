@@ -6,7 +6,7 @@ const rootDir = resolve(".");
 const paths = {
   caseStudy: "docs/portfolio-case-study.md",
   readme: "README.md",
-  footer: "apps/site/src/components/Footer.tsx"
+  footer: "apps/site/index.html"
 };
 
 function fail(message) {
