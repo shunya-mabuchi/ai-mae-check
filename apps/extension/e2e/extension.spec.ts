@@ -48,9 +48,9 @@ async function dispatchEnter(locator: Locator, init: KeyboardEventInit = {}): Pr
 }
 
 async function clickPasteSafeInput(page: Page): Promise<void> {
-  await expect(page.locator(".hm-dialog")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "安全化してから貼り付けますか？" })).toBeVisible();
   expect(expectedPasteActionLabel).toBe("安全化して入力");
-  await page.locator(".hm-dialog .hm-primary").click();
+  await page.getByRole("button", { name: expectedPasteActionLabel }).click();
 }
 
 async function clickSendSafeSubmit(page: Page): Promise<void> {
@@ -165,10 +165,10 @@ test.describe("AIまえチェック拡張E2E", () => {
 
       const editor = page.getByTestId("textarea-editor");
       await dispatchPaste(editor, sensitiveText);
-      await expect(page.locator(".hm-dialog")).toBeVisible();
-      await page.locator(".hm-dialog .hm-ghost").click();
+      await expect(page.getByRole("dialog", { name: "安全化してから貼り付けますか？" })).toBeVisible();
+      await page.getByRole("button", { name: "キャンセル" }).click();
 
-      await expect(page.locator(".hm-dialog")).toHaveCount(0);
+      await expect(page.getByRole("dialog", { name: "安全化してから貼り付けますか？" })).toHaveCount(0);
       await expect(editor).toHaveValue("");
     } finally {
       await closeExtensionContext(target);

@@ -36,7 +36,12 @@ export interface RunReviewLlmOptions {
   setCandidates: (candidates: ContextRiskCandidate[]) => void;
   setEmptyCandidateMessageVisible?: (visible: boolean) => void;
   render: () => void;
+  isActive?: () => boolean;
   analyze?: AnalyzeReviewContext;
+}
+
+function isActive(options: RunReviewLlmOptions): boolean {
+  return options.isActive?.() ?? true;
 }
 
 function applyReviewLlmResult(
@@ -55,6 +60,10 @@ function applyReviewLlmResult(
 }
 
 export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> {
+  if (!isActive(options)) {
+    return;
+  }
+
   if (!options.enabled) {
     options.llmStatus.textContent = PASTE_REVIEW_LLM_DISABLED_MESSAGE;
     return;
@@ -73,9 +82,15 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
       modelId: options.modelId,
       existingFindings: options.existingFindings,
       onProgress: (progress: LlmProgress) => {
-        options.llmStatus.textContent = progress.message;
+        if (isActive(options)) {
+          options.llmStatus.textContent = progress.message;
+        }
       }
     });
+
+    if (!isActive(options)) {
+      return;
+    }
 
     if (isContextAnalysisExecutionError(result)) {
       options.llmStatus.textContent = formatPasteReviewLlmStatusMessage(
@@ -88,6 +103,9 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
     const resultState = applyReviewLlmResult(options, result);
     options.llmStatus.textContent = resultState.statusMessage;
   } catch (error: unknown) {
+    if (!isActive(options)) {
+      return;
+    }
     const detail = classifyLlmError(error);
     if (detail.kind === "json_parse") {
       const candidates = mergeResidualContextCandidates(options.inputText, []);
@@ -101,6 +119,8 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
     }
     options.llmStatus.textContent = formatPasteReviewLlmStatusMessage(detail.message, detail);
   } finally {
-    options.llmButton.removeAttribute("disabled");
+    if (isActive(options)) {
+      options.llmButton.removeAttribute("disabled");
+    }
   }
 }

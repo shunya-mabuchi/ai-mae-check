@@ -99,6 +99,7 @@ export default defineConfig({
           "llm-worker.js",
           "llm-bridge.html",
           "file-modal-runtime.js",
+          "review-modal-runtime.js",
           "icon/16.png",
           "icon/32.png",
           "icon/48.png",

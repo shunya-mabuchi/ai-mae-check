@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { detectSensitiveText } from "@ai-mae-check/core";
 import { DEFAULT_SETTINGS } from "../src/lib/settings";
+import type { PasteReviewDialogElements } from "../src/lib/pasteReviewModalTypes";
 
 interface Deferred<T> {
   promise: Promise<T>;
@@ -13,6 +14,7 @@ interface FakeElement {
   title: string;
   append: (...children: unknown[]) => void;
   addEventListener: (type: string, listener: (event: { target: unknown }) => void) => void;
+  removeEventListener: (type: string, listener: (event: { target: unknown }) => void) => void;
   click: () => void;
   setAttribute: (name: string, value: string) => void;
   removeAttribute: (name: string) => void;
@@ -20,8 +22,6 @@ interface FakeElement {
 }
 
 interface PasteElements {
-  overlay: FakeElement;
-  dialog: FakeElement;
   list: FakeElement;
   preview: FakeElement;
   llmStatus: FakeElement;
@@ -69,6 +69,9 @@ function createFakeElement(): FakeElement {
     addEventListener: (type, listener) => {
       listeners.set(type, [...(listeners.get(type) ?? []), listener]);
     },
+    removeEventListener: (type, listener) => {
+      listeners.set(type, (listeners.get(type) ?? []).filter((item) => item !== listener));
+    },
     click: () => {
       for (const listener of listeners.get("click") ?? []) {
         listener({ target: element });
@@ -96,8 +99,6 @@ function createFakeElement(): FakeElement {
 
 function createPasteElements(): PasteElements {
   return {
-    overlay: createFakeElement(),
-    dialog: createFakeElement(),
     list: createFakeElement(),
     preview: createFakeElement(),
     llmStatus: createFakeElement(),
@@ -129,6 +130,33 @@ function flushPromises(): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, 0);
   });
+}
+
+async function launchPasteController(
+  pasteElements: PasteElements,
+  inputText: string,
+  settings = DEFAULT_SETTINGS
+) {
+  const { initializePasteReviewModalController } = await import(
+    "../src/lib/pasteReviewModalController"
+  );
+  const decisions: unknown[] = [];
+  let closed = false;
+  let controller: { dispose: () => void } | undefined;
+  controller = initializePasteReviewModalController({
+    inputText,
+    detection: detectSensitiveText(inputText),
+    settings,
+    elements: pasteElements as unknown as PasteReviewDialogElements,
+    close: (decision) => {
+      decisions.push(decision);
+      closed = true;
+      controller?.dispose();
+    },
+    isClosed: () => closed
+  });
+
+  return { decisions };
 }
 
 function installModalMocks(readyPromise: Promise<boolean>) {
@@ -163,9 +191,6 @@ function installModalMocks(readyPromise: Promise<boolean>) {
     renderReviewCandidateList,
     renderReviewFindingList
   }));
-  vi.doMock("../src/lib/pasteReviewModalElements", () => ({
-    createPasteReviewModalElements: () => pasteElements
-  }));
   vi.doMock("../src/ui/confirmModalCandidateList", () => ({
     renderConfirmModalCandidateList
   }));
@@ -199,22 +224,17 @@ describe("モーダルのAI文脈チェック自動実行", () => {
   it("貼り付け確認を閉じた後にモデル準備済みになってもAI文脈チェックを開始しない", async () => {
     const ready = createDeferred<boolean>();
     const mocks = installModalMocks(ready.promise);
-    const { showPasteReviewModal } = await import("../src/lib/modal");
     const inputText = "メールは taro@example.com です。";
-    const decision = showPasteReviewModal({
-      inputText,
-      detection: detectSensitiveText(inputText),
-      settings: {
+    const controller = await launchPasteController(mocks.pasteElements, inputText, {
         ...DEFAULT_SETTINGS,
         llm: {
           ...DEFAULT_SETTINGS.llm,
           mode: "auto"
         }
-      }
     });
 
     mocks.pasteElements.cancelButton.click();
-    await expect(decision).resolves.toEqual({ type: "cancel" });
+    expect(controller.decisions).toEqual([{ type: "cancel" }]);
 
     ready.resolve(true);
     await flushPromises();
@@ -226,18 +246,13 @@ describe("モーダルのAI文脈チェック自動実行", () => {
   it("貼り付け確認で手動実行済みなら、遅れて返った自動実行は二重起動しない", async () => {
     const ready = createDeferred<boolean>();
     const mocks = installModalMocks(ready.promise);
-    const { showPasteReviewModal } = await import("../src/lib/modal");
     const inputText = "メールは taro@example.com です。";
-    const decision = showPasteReviewModal({
-      inputText,
-      detection: detectSensitiveText(inputText),
-      settings: {
+    await launchPasteController(mocks.pasteElements, inputText, {
         ...DEFAULT_SETTINGS,
         llm: {
           ...DEFAULT_SETTINGS.llm,
           mode: "auto"
         }
-      }
     });
 
     mocks.pasteElements.llmButton.click();
@@ -245,7 +260,6 @@ describe("モーダルのAI文脈チェック自動実行", () => {
     ready.resolve(true);
     await flushPromises();
     mocks.pasteElements.cancelButton.click();
-    await decision;
 
     expect(mocks.runReviewLlm).toHaveBeenCalledTimes(1);
   });
@@ -253,17 +267,11 @@ describe("モーダルのAI文脈チェック自動実行", () => {
   it("貼り付け確認の初期表示ではAI候補なしメッセージを出さない", async () => {
     const ready = createDeferred<boolean>();
     const mocks = installModalMocks(ready.promise);
-    const { showPasteReviewModal } = await import("../src/lib/modal");
     const inputText = "メールは taro@example.com です。";
-    const decision = showPasteReviewModal({
-      inputText,
-      detection: detectSensitiveText(inputText),
-      settings: DEFAULT_SETTINGS
-    });
+    await launchPasteController(mocks.pasteElements, inputText);
 
     await flushPromises();
     mocks.pasteElements.cancelButton.click();
-    await decision;
 
     expect(mocks.renderReviewCandidateList).toHaveBeenCalledWith(
       mocks.pasteElements.candidateList,
@@ -282,18 +290,12 @@ describe("モーダルのAI文脈チェック自動実行", () => {
       options.setEmptyCandidateMessageVisible?.(true);
       options.render();
     });
-    const { showPasteReviewModal } = await import("../src/lib/modal");
     const inputText = "メールは taro@example.com です。";
-    const decision = showPasteReviewModal({
-      inputText,
-      detection: detectSensitiveText(inputText),
-      settings: DEFAULT_SETTINGS
-    });
+    await launchPasteController(mocks.pasteElements, inputText);
 
     mocks.pasteElements.llmButton.click();
     await flushPromises();
     mocks.pasteElements.cancelButton.click();
-    await decision;
 
     expect(mocks.renderReviewCandidateList).toHaveBeenLastCalledWith(
       mocks.pasteElements.candidateList,
@@ -302,6 +304,28 @@ describe("モーダルのAI文脈チェック自動実行", () => {
       expect.any(Function),
       { showEmptyMessage: true }
     );
+  });
+
+  it("貼り付け確認を閉じた後に遅れて返ったAI候補を再描画しない", async () => {
+    const ready = createDeferred<boolean>();
+    const analysis = createDeferred<void>();
+    const mocks = installModalMocks(ready.promise);
+    mocks.runReviewLlm.mockImplementationOnce(async (options) => {
+      await analysis.promise;
+      options.setCandidates([]);
+      options.setEmptyCandidateMessageVisible?.(true);
+      options.render();
+    });
+    const inputText = "メールは taro@example.com です。";
+    await launchPasteController(mocks.pasteElements, inputText);
+    const renderCountBeforeExecution = mocks.renderReviewCandidateList.mock.calls.length;
+
+    mocks.pasteElements.llmButton.click();
+    mocks.pasteElements.cancelButton.click();
+    analysis.resolve();
+    await flushPromises();
+
+    expect(mocks.renderReviewCandidateList).toHaveBeenCalledTimes(renderCountBeforeExecution);
   });
 
   it("送信確認を閉じた後にモデル準備済みになってもAI文脈チェックを開始しない", async () => {
