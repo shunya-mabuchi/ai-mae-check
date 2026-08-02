@@ -109,7 +109,16 @@ function containsAny(message: string, patterns: string[]): boolean {
 }
 
 function isWebGpuRuntimeFailure(message: string): boolean {
-  return containsAny(message, ["gpubuffer", "mapasync", "unmapped before mapping", "device lost"]);
+  return containsAny(message, [
+    "gpubuffer",
+    "mapasync",
+    "unmapped before mapping",
+    "device lost",
+    "device_hung",
+    "dxgi_error_device_hung",
+    "getdeviceremovedreason",
+    "gpu constraints"
+  ]);
 }
 
 function isWebGpuAdapterUnavailable(message: string): boolean {
@@ -152,7 +161,14 @@ const rules: LlmErrorRule[] = [
   {
     id: "memory",
     match: (message) =>
-      containsAny(message, ["out of memory", "memory access out of bounds", "allocation", "vram", "gpu memory"]),
+      containsAny(message, [
+        "out of memory",
+        "insufficient memory",
+        "memory access out of bounds",
+        "allocation",
+        "vram",
+        "gpu memory"
+      ]),
     copy: () => errorCopies.memory
   },
   {
@@ -170,7 +186,11 @@ const rules: LlmErrorRule[] = [
         "no available adapters",
         "unable to find a compatible gpu",
         "browser supports webgpu",
-        "device lost"
+        "device lost",
+        "device_hung",
+        "dxgi_error_device_hung",
+        "getdeviceremovedreason",
+        "gpu constraints"
       ]),
     copy: (message) => {
       if (isWebGpuRuntimeFailure(message)) {

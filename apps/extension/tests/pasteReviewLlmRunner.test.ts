@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ContextAnalysisResult } from "@ai-mae-check/llm";
+import { LOW_VRAM_MODEL_ID, type ContextAnalysisResult } from "@ai-mae-check/llm";
 import {
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
   PASTE_REVIEW_LLM_LOADING_MESSAGE
 } from "../src/lib/pasteReviewLlmState";
-import { runReviewLlm } from "../src/lib/reviewLlmRunner";
+import {
+  LOCAL_CONTEXT_FALLBACK_MESSAGE,
+  runReviewLlm,
+  type RunReviewLlmOptions
+} from "../src/lib/reviewLlmRunner";
 import { asDomElement } from "./helpers/fakeDom";
 import { buildFinding } from "./testBuilders";
 
@@ -19,6 +23,8 @@ class FakeButton {
     this.attributes.delete(name);
   }
 }
+
+type AnalyzeReviewContextForTest = NonNullable<RunReviewLlmOptions["analyze"]>;
 
 describe("runReviewLlm", () => {
   it("画面を閉じた後に完了した結果で候補や表示を更新しない", async () => {
@@ -189,6 +195,166 @@ describe("runReviewLlm", () => {
     expect(llmStatus.textContent).toContain("AI文脈チェックを実行できませんでした。");
     expect(llmStatus.textContent).toContain("診断メモ: ページを再読み込みしてから再試行してください。");
     expect(render).not.toHaveBeenCalled();
+  });
+
+  it("GPUメモリ不足時は低VRAMモデルへ一度だけ切り替える", async () => {
+    const analyze = vi
+      .fn<AnalyzeReviewContextForTest>()
+      .mockResolvedValueOnce({
+        candidates: [],
+        summary: "GPU実行に失敗しました。",
+        rawText: "",
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        elapsedMs: 10,
+        error: "ローカルAIモデルの実行に必要なメモリを確保できませんでした。",
+        errorDetail: {
+          kind: "memory",
+          message: "ローカルAIモデルの実行に必要なメモリを確保できませんでした。",
+          hint: "低VRAM環境ではWebLLMが利用できない場合があります。",
+          technicalDetail: "Device was lost due to insufficient memory"
+        }
+      })
+      .mockResolvedValueOnce({
+        candidates: [
+          {
+            id: "candidate-person",
+            category: "person_name",
+            surface: "山田花子さん",
+            label: "人名候補",
+            reason: "採用文脈の候補です。",
+            riskLevel: "medium",
+            suggestedPlaceholder: "[PERSON_1]",
+            confidence: 0.86
+          }
+        ],
+        summary: "注意候補があります。",
+        rawText: "{}",
+        modelId: LOW_VRAM_MODEL_ID,
+        elapsedMs: 20
+      });
+    const llmStatus = { textContent: "" };
+    const llmButton = new FakeButton();
+    const setCandidates = vi.fn();
+    const render = vi.fn();
+
+    await runReviewLlm({
+      enabled: true,
+      inputText: "候補者の山田花子さんについて確認します。",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      existingFindings: [],
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(llmButton),
+      selectedCandidateIds: new Set(),
+      setCandidates,
+      render,
+      analyze
+    });
+
+    expect(analyze).toHaveBeenCalledTimes(2);
+    expect(analyze.mock.calls[0]?.[1].modelId).toBe("Llama-3.2-1B-Instruct-q4f32_1-MLC");
+    expect(analyze.mock.calls[1]?.[1].modelId).toBe(LOW_VRAM_MODEL_ID);
+    expect(setCandidates).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ surface: "山田花子さん" })]));
+    expect(llmStatus.textContent).toBe("AI文脈チェックで注意候補が見つかりました。");
+  });
+
+  it("WebGPUアダプタ未取得では低VRAMモデルへ再試行しない", async () => {
+    const analyze = vi.fn<AnalyzeReviewContextForTest>(async () => ({
+      candidates: [],
+      summary: "WebGPUアダプタを取得できませんでした。",
+      rawText: "",
+      modelId: "test-model",
+      elapsedMs: 10,
+      error: "WebGPUアダプタを取得できませんでした。",
+      errorDetail: {
+        kind: "webgpu",
+        message: "WebGPUアダプタを取得できませんでした。",
+        hint: "chrome://gpuを確認してください。",
+        technicalDetail: "No available WebGPU adapters"
+      }
+    }));
+    const llmStatus = { textContent: "" };
+
+    await runReviewLlm({
+      enabled: true,
+      inputText: "一般的な確認文です。",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      existingFindings: [],
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(new FakeButton()),
+      selectedCandidateIds: new Set(),
+      setCandidates: vi.fn(),
+      render: vi.fn(),
+      analyze
+    });
+
+    expect(analyze).toHaveBeenCalledTimes(1);
+    expect(llmStatus.textContent).toContain("WebGPUアダプタを取得できませんでした。");
+  });
+
+  it("低VRAM再試行も失敗した場合はブラウザ内の補助候補を表示する", async () => {
+    const analyze = vi
+      .fn<AnalyzeReviewContextForTest>()
+      .mockResolvedValueOnce({
+        candidates: [],
+        summary: "GPU実行に失敗しました。",
+        rawText: "",
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        elapsedMs: 10,
+        error: "ローカルAIモデルの実行に必要なメモリを確保できませんでした。",
+        errorDetail: {
+          kind: "memory",
+          message: "ローカルAIモデルの実行に必要なメモリを確保できませんでした。",
+          hint: "ほかのタブやアプリを閉じてください。"
+        }
+      })
+      .mockResolvedValueOnce({
+        candidates: [
+          {
+            id: "local-context-hr_info-1",
+            category: "hr_info",
+            surface: "給与条件",
+            label: "採用・人事情報候補",
+            reason: "採用や人事評価に関する文脈です。",
+            riskLevel: "medium",
+            suggestedPlaceholder: "[HR_INFO_1]",
+            confidence: 0.8
+          }
+        ],
+        summary: "GPU実行に失敗しました。",
+        rawText: "",
+        modelId: LOW_VRAM_MODEL_ID,
+        elapsedMs: 20,
+        error: "ローカルAIモデルのGPU実行が中断されました。",
+        errorDetail: {
+          kind: "webgpu",
+          message: "ローカルAIモデルのGPU実行が中断されました。",
+          hint: "Chromeを完全再起動してください。",
+          technicalDetail: "DXGI_ERROR_DEVICE_HUNG"
+        }
+      });
+    const llmStatus = { textContent: "" };
+    const selectedCandidateIds = new Set<string>();
+    const setCandidates = vi.fn();
+    const render = vi.fn();
+
+    await runReviewLlm({
+      enabled: true,
+      inputText: "候補者の給与条件を確認します。",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      existingFindings: [],
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(new FakeButton()),
+      selectedCandidateIds,
+      setCandidates,
+      render,
+      analyze
+    });
+
+    expect(setCandidates).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ surface: "給与条件" })]));
+    expect(Array.from(selectedCandidateIds)).toEqual(["local-context-hr_info-1"]);
+    expect(llmStatus.textContent).toContain(LOCAL_CONTEXT_FALLBACK_MESSAGE);
+    expect(llmStatus.textContent).toContain("DXGI_ERROR_DEVICE_HUNG");
+    expect(render).toHaveBeenCalledTimes(1);
   });
 
   it("実行開始時に前回の空候補メッセージを隠して再描画する", async () => {

@@ -53,6 +53,7 @@ fallback候補:
 | 2026-06-16 | Windows NT 10.0.26200.8457 | Chrome/148.0.7778.180 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Intel UHD Graphics 620、D3D11 backend blocklisted、D3D12はCPU adapterのみblocklisted | 失敗 | webgpu_unavailable | 継続可 | `No available WebGPU adapters` / `Unable to find a compatible GPU` |
 | 2026-06-16 | Windows 10/11 | Chrome詳細未記録 | シークレット | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | adapter有無は未記録 | 失敗 | storage_quota | 継続可 | `QuotaExceededError`。通常ウィンドウでの再確認を優先 |
 | 2026-06-16 | Windows 10/11 | Chrome詳細未記録 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC以前のprebuilt候補 | ^0.2.79 | 詳細未記録 | 成功報告あり | なし | 継続可 | ユーザー報告ベース。Dawn Infoを保存していないため参考扱い |
+| 2026-08-02 | Windows 10/11 | Chrome通常ウィンドウ | 通常 | 0.2.0候補 | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Intel UHD Graphics 620、WebGPU adapter取得後の推論中にD3Dデバイス喪失 | 失敗、修正後再確認待ち | gpu_runtime_error / memory | 継続可 | `DXGI_ERROR_DEVICE_HUNG` と `Device was lost due to insufficient memory or other GPU constraints`。低VRAMモデルへの1回再試行と補助候補維持をIssue #517で追加 |
 | 未確認 | macOS | 未確認 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Metal backend確認待ち | 未確認 | 未確認 | 未確認 | macOS実機を利用できるタイミングで初回ロードと再実行を確認する |
 | 未確認 | Linux | 未確認 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | Vulkan / Dawn Info確認待ち | 未確認 | 未確認 | 未確認 | Linux実機とGPUドライバ構成を記録できるタイミングで確認する |
 
@@ -72,7 +73,7 @@ macOSまたはLinux端末で確認できた場合は、この表へ成功/失敗
 | `storage_quota` | `QuotaExceededError` | ローカルAIモデルの保存領域を確保できませんでした。ブラウザのサイトデータや空き容量を確認してください。ルールベースの検出結果は引き続き利用できます。 | 通常ウィンドウで再試行、Application > Storageの削除、空き容量確認 |
 | `model_fetch_failed` | `TypeError: Failed to fetch` | ローカルAIモデルの取得に失敗しました。モデル配信元への接続がブロックされている可能性があります。ルールベースの検出結果は引き続き利用できます。 | Hugging Face、GitHub raw、プロキシ、広告ブロッカー、セキュリティソフト、社内ネットワーク制限を確認する |
 | `worker_disposed` | `Object has already been disposed` | AI文脈チェック用のWorkerを起動できませんでした。ページを再読み込みしてから再試行してください。ルールベースの検出結果は引き続き利用できます。 | ページ再読み込み、Chrome完全再起動、拡張の再読み込み |
-| `gpu_runtime_error` | `GPUBuffer.mapAsync` / buffer unmapped | AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。 | 再読み込み、Chrome完全再起動、GPUドライバ状態、WebGPU負荷を確認する |
+| `gpu_runtime_error` | `GPUBuffer.mapAsync` / buffer unmapped / `DXGI_ERROR_DEVICE_HUNG` / `Device was lost` | GPU負荷を抑えた互換モデルで1回だけ再試行する。再試行も失敗した場合は、AI文脈チェック未完了を明示してルール検出とローカル補助候補を維持する | 再読み込み、Chrome完全再起動、GPUドライバ状態、WebGPU負荷を確認する |
 | `invalid_llm_json` | JSONパース失敗 | AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。 | ルールベース検出は維持されるか、本文がログに出ていないかを確認する |
 
 ## OS別の確認観点
@@ -119,9 +120,10 @@ macOSまたはLinux端末で確認できた場合は、この表へ成功/失敗
 2. ダミー文だけを入力する
 3. ルールベース検出が動くことを確認する
 4. `AIチェック` または `AI文脈チェックも実行` を押す
-5. 成功、候補なし、またはエラー分類を記録する
-6. 失敗時も「ルールベースの検出は引き続き利用できます」と表示されるか確認する
-7. DevTools ConsoleやNetworkタブを確認する場合も、本文をIssueやPRへ貼らない
+5. GPU実行失敗時は低VRAMモデルへの再試行メッセージが表示されるか確認する
+6. 成功、候補なし、またはエラー分類を記録する
+7. 再試行も失敗した場合、ルールベース検出とローカル補助候補が維持されるか確認する
+8. DevTools ConsoleやNetworkタブを確認する場合も、本文をIssueやPRへ貼らない
 
 ## 記録テンプレート
 

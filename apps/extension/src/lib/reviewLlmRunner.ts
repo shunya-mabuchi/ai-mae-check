@@ -6,6 +6,7 @@ import {
   type ContextRiskCandidate,
   isContextAnalysisExecutionError,
   type LlmProgress,
+  LOW_VRAM_MODEL_ID,
   mergeResidualContextCandidates
 } from "@ai-mae-check/llm";
 import { analyzeContextWithBridge } from "./llmBridgeClient";
@@ -40,6 +41,47 @@ export interface RunReviewLlmOptions {
   analyze?: AnalyzeReviewContext;
 }
 
+export const LOW_VRAM_RETRY_MESSAGE =
+  "GPU負荷を抑えた互換モデルでAI文脈チェックを再試行しています。";
+export const LOCAL_CONTEXT_FALLBACK_MESSAGE =
+  "AI文脈チェックは完了できませんでしたが、ブラウザ内の補助検出で注意候補を表示しています。";
+
+function includesGpuRuntimeFailure(value: string | undefined): boolean {
+  const normalized = value?.toLowerCase() ?? "";
+  return [
+    "device lost",
+    "device_hung",
+    "dxgi_error_device_hung",
+    "getdeviceremovedreason",
+    "gpu execution",
+    "gpu実行が中断"
+  ].some((pattern) => normalized.includes(pattern));
+}
+
+export function shouldRetryWithLowVramModel(
+  result: Pick<ContextAnalysisResult, "error" | "errorDetail">,
+  requestedModelId: string
+): boolean {
+  if (requestedModelId === LOW_VRAM_MODEL_ID || !isContextAnalysisExecutionError(result)) {
+    return false;
+  }
+
+  if (result.errorDetail?.kind === "memory") {
+    return true;
+  }
+
+  if (result.errorDetail?.kind !== "webgpu") {
+    return false;
+  }
+
+  return [
+    result.error,
+    result.errorDetail.message,
+    result.errorDetail.hint,
+    result.errorDetail.technicalDetail
+  ].some(includesGpuRuntimeFailure);
+}
+
 function isActive(options: RunReviewLlmOptions): boolean {
   return options.isActive?.() ?? true;
 }
@@ -70,6 +112,16 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
   }
 
   const analyze = options.analyze ?? analyzeContextWithBridge;
+  const analyzeWithModel = (modelId: string) =>
+    analyze(options.inputText, {
+      modelId,
+      existingFindings: options.existingFindings,
+      onProgress: (progress: LlmProgress) => {
+        if (isActive(options)) {
+          options.llmStatus.textContent = progress.message;
+        }
+      }
+    });
   options.llmButton.setAttribute("disabled", "true");
   options.llmStatus.textContent = PASTE_REVIEW_LLM_LOADING_MESSAGE;
   if (options.setEmptyCandidateMessageVisible) {
@@ -78,21 +130,31 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
   }
 
   try {
-    const result = await analyze(options.inputText, {
-      modelId: options.modelId,
-      existingFindings: options.existingFindings,
-      onProgress: (progress: LlmProgress) => {
-        if (isActive(options)) {
-          options.llmStatus.textContent = progress.message;
-        }
-      }
-    });
+    let result = await analyzeWithModel(options.modelId);
 
     if (!isActive(options)) {
       return;
     }
 
+    if (shouldRetryWithLowVramModel(result, options.modelId)) {
+      options.llmStatus.textContent = LOW_VRAM_RETRY_MESSAGE;
+      result = await analyzeWithModel(LOW_VRAM_MODEL_ID);
+
+      if (!isActive(options)) {
+        return;
+      }
+    }
+
     if (isContextAnalysisExecutionError(result)) {
+      if (result.candidates.length > 0) {
+        applyReviewLlmResult(options, result);
+        options.llmStatus.textContent = `${LOCAL_CONTEXT_FALLBACK_MESSAGE}\n${formatPasteReviewLlmStatusMessage(
+          result.error ?? "AI文脈チェックを実行できませんでした。",
+          result.errorDetail
+        )}`;
+        return;
+      }
+
       options.llmStatus.textContent = formatPasteReviewLlmStatusMessage(
         result.error ?? "AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。",
         result.errorDetail
@@ -107,14 +169,20 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
       return;
     }
     const detail = classifyLlmError(error);
-    if (detail.kind === "json_parse") {
-      const candidates = mergeResidualContextCandidates(options.inputText, []);
+    const candidates = mergeResidualContextCandidates(options.inputText, []);
+    if (detail.kind === "json_parse" || candidates.length > 0) {
       const resultState = applyReviewLlmResult(options, {
         candidates,
-        summary: createJsonParseFallbackMessage(candidates.length),
+        summary:
+          detail.kind === "json_parse"
+            ? createJsonParseFallbackMessage(candidates.length)
+            : LOCAL_CONTEXT_FALLBACK_MESSAGE,
         errorDetail: detail
       });
-      options.llmStatus.textContent = resultState.statusMessage;
+      options.llmStatus.textContent =
+        detail.kind === "json_parse"
+          ? resultState.statusMessage
+          : `${LOCAL_CONTEXT_FALLBACK_MESSAGE}\n${formatPasteReviewLlmStatusMessage(detail.message, detail)}`;
       return;
     }
     options.llmStatus.textContent = formatPasteReviewLlmStatusMessage(detail.message, detail);

@@ -29,6 +29,22 @@ describe("errorSignals", () => {
     expect(runtimeSignal.hint).toContain("Chromeの完全再起動");
   });
 
+  it("D3Dデバイス喪失をGPU実行中断として分類する", () => {
+    const signal = classifyLlmErrorSignal(
+      "ID3D12Device::GetDeviceRemovedReason failed with DXGI_ERROR_DEVICE_HUNG. Device was lost."
+    );
+
+    expect(signal.kind).toBe("webgpu");
+    expect(signal.message).toContain("GPU実行が中断されました");
+  });
+
+  it("GPU制約によるメモリ不足をメモリエラーとして分類する", () => {
+    const signal = classifyLlmErrorSignal("Device was lost due to insufficient memory or other GPU constraints.");
+
+    expect(signal.kind).toBe("memory");
+    expect(signal.message).toContain("メモリを確保できませんでした");
+  });
+
   it("Worker寿命系とJSON読み取り失敗を分類する", () => {
     const workerSignal = classifyLlmErrorSignal("Object has already been disposed");
     const jsonSignal = classifyLlmErrorSignal("AI文脈チェックの結果を読み取れませんでした");
