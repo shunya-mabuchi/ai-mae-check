@@ -14,6 +14,7 @@ const generalizedPlaceholderByCategory: Record<DlpCategory, string> = {
   secret: "[秘密情報]",
   financial: "[金額情報]",
   medical: "[医療情報]",
+  hr: "[人事情報]",
   legal: "[法務情報]",
   date: "[日付]",
   url: "[URL]",

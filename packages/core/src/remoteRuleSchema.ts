@@ -45,6 +45,7 @@ const categories: DlpCategory[] = [
   "secret",
   "financial",
   "medical",
+  "hr",
   "legal",
   "date",
   "url",
