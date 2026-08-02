@@ -133,4 +133,89 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       );
     });
   });
+
+  it("古いruntimeのdispose完了を待って低負荷プロファイルへ切り替える", async () => {
+    let releaseDispose: (() => void) | null = null;
+    const firstAnalyze = vi.fn().mockResolvedValue({
+      candidates: [],
+      summary: "ok",
+      rawText: "",
+      modelId: "first-model",
+      elapsedMs: 1
+    });
+    const secondAnalyze = vi.fn().mockResolvedValue({
+      candidates: [],
+      summary: "ok",
+      rawText: "",
+      modelId: "second-model",
+      elapsedMs: 1
+    });
+    const firstDispose = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseDispose = resolve;
+        })
+    );
+
+    runtimeServiceFactoryMock
+      .mockImplementationOnce(() => ({
+        analyze: firstAnalyze,
+        status: statusMock,
+        prepare: vi.fn(),
+        dispose: firstDispose
+      }))
+      .mockImplementationOnce(() => ({
+        analyze: secondAnalyze,
+        status: statusMock,
+        prepare: vi.fn(),
+        dispose: vi.fn()
+      }));
+
+    const messageHandler = await loadBridgePage();
+    const port = new FakeMessagePort();
+    messageHandler({
+      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
+      ports: [port]
+    } as MessageEvent<unknown>);
+
+    port.dispatch({
+      type: "analyze",
+      requestId: "request-standard",
+      inputText: "本文です",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
+      options: {}
+    });
+    await vi.waitFor(() => expect(firstAnalyze).toHaveBeenCalled());
+
+    port.dispatch({
+      type: "analyze",
+      requestId: "request-low-resource",
+      inputText: "本文です",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "low_resource",
+      options: { maxCandidates: 12 }
+    });
+    await Promise.resolve();
+
+    expect(firstDispose).toHaveBeenCalled();
+    expect(runtimeServiceFactoryMock).toHaveBeenCalledTimes(1);
+    expect(secondAnalyze).not.toHaveBeenCalled();
+
+    releaseDispose?.();
+
+    await vi.waitFor(() => {
+      expect(runtimeServiceFactoryMock).toHaveBeenCalledTimes(2);
+      expect(secondAnalyze).toHaveBeenCalledWith(expect.objectContaining({ maxCandidates: 6 }));
+    });
+    expect(createLocalLlmRuntimeServiceMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        contextWindowSize: 2048,
+        maxInputChars: 800,
+        maxTokens: 256,
+        compactPrompt: true
+      })
+    );
+  });
 });
