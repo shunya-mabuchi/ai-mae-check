@@ -44,7 +44,16 @@ async function getRuntimeService(modelId: string): Promise<LocalLlmRuntimeServic
     return runtimeService;
   }
 
-  await runtimeService?.dispose();
+  const previousRuntimeService = runtimeService;
+  runtimeService = null;
+  runtimeModelId = null;
+
+  try {
+    await previousRuntimeService?.dispose();
+  } catch {
+    // GPUデバイス喪失後は破棄も失敗し得るため、新しいWorkerの起動を優先する。
+  }
+
   runtimeService = createLocalLlmRuntimeService({
     modelId,
     workerUrl: getExtensionResourceUrl("llm-worker.js")
