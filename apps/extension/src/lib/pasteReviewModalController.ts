@@ -23,6 +23,7 @@ import {
   renderReviewFindingList
 } from "./reviewListRenderers";
 import { runReviewLlm } from "./reviewLlmRunner";
+import { resolveLlmModelId } from "./settings";
 import {
   createPasteReviewInsertText,
   createPasteReviewPreviewText
@@ -62,6 +63,7 @@ export function initializePasteReviewModalController(
   let disposed = false;
   const selectedRuleFindingIds = createInitialSelectedFindingIds(options.detection.findings);
   const selectedCandidateIds = new Set<string>();
+  const llmModelId = resolveLlmModelId(options.settings.llm);
 
   llmStatus.textContent = PASTE_REVIEW_LLM_INITIAL_MESSAGE;
 
@@ -111,7 +113,7 @@ export function initializePasteReviewModalController(
       await runReviewLlm({
         enabled: options.settings.llm.enabled,
         inputText: options.inputText,
-        modelId: options.settings.llm.modelId,
+        modelId: llmModelId,
         existingFindings: options.detection.findings,
         llmStatus,
         llmButton,
@@ -156,7 +158,7 @@ export function initializePasteReviewModalController(
   render();
 
   if (mode === "default" && options.settings.llm.enabled && options.settings.llm.mode === "auto") {
-    void isLlmBridgeModelReady(options.settings.llm.modelId)
+    void isLlmBridgeModelReady(llmModelId)
       .then((modelReady) => {
         if (isActive() && shouldAutoRunPasteReviewLlm(mode, options.settings.llm, modelReady)) {
           void runLlm("auto");

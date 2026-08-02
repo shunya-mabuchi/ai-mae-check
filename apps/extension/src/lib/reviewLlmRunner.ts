@@ -45,6 +45,10 @@ export const LOW_VRAM_RETRY_MESSAGE =
   "GPU負荷を抑えた互換モデルでAI文脈チェックを再試行しています。";
 export const LOCAL_CONTEXT_FALLBACK_MESSAGE =
   "AI文脈チェックは完了できませんでしたが、ブラウザ内の補助検出で注意候補を表示しています。";
+export const STANDARD_AND_LOW_RESOURCE_FALLBACK_MESSAGE =
+  "標準モデルと低負荷モデルの実行を完了できなかったため、ブラウザ内の補助検出だけで注意候補を表示しています。";
+export const LOW_RESOURCE_FALLBACK_MESSAGE =
+  "低負荷モデルの実行を完了できなかったため、ブラウザ内の補助検出だけで注意候補を表示しています。";
 
 function includesGpuRuntimeFailure(value: string | undefined): boolean {
   const normalized = value?.toLowerCase() ?? "";
@@ -84,6 +88,16 @@ export function shouldRetryWithLowVramModel(
 
 function isActive(options: RunReviewLlmOptions): boolean {
   return options.isActive?.() ?? true;
+}
+
+function fallbackMessage(modelId: string, retriedWithLowVramModel: boolean): string {
+  if (retriedWithLowVramModel) {
+    return STANDARD_AND_LOW_RESOURCE_FALLBACK_MESSAGE;
+  }
+
+  return modelId === LOW_VRAM_MODEL_ID
+    ? LOW_RESOURCE_FALLBACK_MESSAGE
+    : LOCAL_CONTEXT_FALLBACK_MESSAGE;
 }
 
 function applyReviewLlmResult(
@@ -129,6 +143,8 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
     options.render();
   }
 
+  let retriedWithLowVramModel = false;
+
   try {
     let result = await analyzeWithModel(options.modelId);
 
@@ -137,6 +153,7 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
     }
 
     if (shouldRetryWithLowVramModel(result, options.modelId)) {
+      retriedWithLowVramModel = true;
       options.llmStatus.textContent = LOW_VRAM_RETRY_MESSAGE;
       result = await analyzeWithModel(LOW_VRAM_MODEL_ID);
 
@@ -148,17 +165,21 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
     if (isContextAnalysisExecutionError(result)) {
       if (result.candidates.length > 0) {
         applyReviewLlmResult(options, result);
-        options.llmStatus.textContent = `${LOCAL_CONTEXT_FALLBACK_MESSAGE}\n${formatPasteReviewLlmStatusMessage(
+        options.llmStatus.textContent = `${fallbackMessage(options.modelId, retriedWithLowVramModel)}\n${formatPasteReviewLlmStatusMessage(
           result.error ?? "AI文脈チェックを実行できませんでした。",
           result.errorDetail
         )}`;
         return;
       }
 
-      options.llmStatus.textContent = formatPasteReviewLlmStatusMessage(
+      const statusMessage = formatPasteReviewLlmStatusMessage(
         result.error ?? "AI文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。",
         result.errorDetail
       );
+      options.llmStatus.textContent =
+        retriedWithLowVramModel || options.modelId === LOW_VRAM_MODEL_ID
+          ? `${fallbackMessage(options.modelId, retriedWithLowVramModel)}\n${statusMessage}`
+          : statusMessage;
       return;
     }
 
@@ -182,7 +203,7 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
       options.llmStatus.textContent =
         detail.kind === "json_parse"
           ? resultState.statusMessage
-          : `${LOCAL_CONTEXT_FALLBACK_MESSAGE}\n${formatPasteReviewLlmStatusMessage(detail.message, detail)}`;
+          : `${fallbackMessage(options.modelId, retriedWithLowVramModel)}\n${formatPasteReviewLlmStatusMessage(detail.message, detail)}`;
       return;
     }
     options.llmStatus.textContent = formatPasteReviewLlmStatusMessage(detail.message, detail);

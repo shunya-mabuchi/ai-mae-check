@@ -1,10 +1,20 @@
 import type { ReactNode } from "react";
 import { CheckCircle2, ClipboardCopy, Database, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
-import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
+import { LOW_VRAM_MODEL_ID } from "@ai-mae-check/llm";
 import { targetSites, type SiteId } from "../../src/lib/sites";
-import type { AiMaeCheckSettings, LlmRunMode, SettingsValidationResult } from "../../src/lib/settings";
-import { LlmModeRadioGroup, OptionsButton, OptionsCheckbox } from "./OptionsControls";
+import type {
+  AiMaeCheckSettings,
+  LlmResourceMode,
+  LlmRunMode,
+  SettingsValidationResult
+} from "../../src/lib/settings";
+import {
+  LlmModeRadioGroup,
+  LlmResourceModeRadioGroup,
+  OptionsButton,
+  OptionsCheckbox
+} from "./OptionsControls";
 
 function Section({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
   return (
@@ -147,12 +157,16 @@ export function DetectionRulesSection({
 export function WebLlmSettingsSection({
   settings,
   onEnabledChange,
-  onModeChange
+  onModeChange,
+  onResourceModeChange
 }: {
   settings: AiMaeCheckSettings;
   onEnabledChange: (enabled: boolean) => void;
   onModeChange: (mode: LlmRunMode) => void;
+  onResourceModeChange: (mode: LlmResourceMode) => void;
 }) {
+  const activeModelId = settings.llm.resourceMode === "low_resource" ? LOW_VRAM_MODEL_ID : settings.llm.modelId;
+
   return (
     <Section icon={<Sparkles size={20} aria-hidden="true" />} title="WebLLMによるAI文脈チェック">
       <OptionsCheckbox
@@ -163,10 +177,19 @@ export function WebLlmSettingsSection({
       />
 
       <div className="rounded-md border border-line bg-white p-4">
-        <p className="text-sm font-semibold text-ink">WebLLMモデル</p>
-        <p className="mt-2 rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">{DEFAULT_MODEL_ID}</p>
+        <p className="text-sm font-semibold text-ink">実行負荷</p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          AIまえチェックでは、動作実績を優先してLlama 3.2 1B q4f32を標準にします。利用環境で標準モデルが見つからない場合は、WebLLMのprebuilt一覧から軽量なInstruct/Chatモデルへ切り替えます。
+          GPU実行が途中で停止する環境では「低負荷」を選ぶと、標準モデルを先に読み込まず軽量モデルから開始します。
+        </p>
+        <div className="mt-3">
+          <LlmResourceModeRadioGroup value={settings.llm.resourceMode} onChange={onResourceModeChange} />
+        </div>
+        <p className="mt-4 text-sm font-semibold text-ink">使用するモデル</p>
+        <p className="mt-2 break-all rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">
+          {activeModelId}
+        </p>
+        <p className="mt-2 text-sm leading-6 text-stone-600">
+          低負荷モデルでも、端末、GPUドライバー、WebGPU実装によっては実行できない場合があります。その場合もルールベース検出とブラウザ内の補助検出は利用できます。
         </p>
       </div>
 

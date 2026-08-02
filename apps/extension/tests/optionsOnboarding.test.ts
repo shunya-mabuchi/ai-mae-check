@@ -14,6 +14,8 @@ describe("Options Page onboarding", () => {
     expect(source).toContain("貼り付け前・送信前に確認モーダルを表示します");
     expect(source).toContain("WebLLMは手動実行が初期設定です");
     expect(source).toContain("初回利用時はローカル推論用モデルファイルの取得に時間がかかる場合があります");
+    expect(source).toContain("標準モデルを先に読み込まず軽量モデルから開始します");
+    expect(source).toContain("低負荷モデルでも、端末、GPUドライバー、WebGPU実装によっては実行できない場合があります");
     expect(source).toContain("貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は保存しません");
   });
 });

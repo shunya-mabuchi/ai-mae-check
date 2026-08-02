@@ -6,6 +6,7 @@ import {
   saveSettings,
   validateSettings,
   type AiMaeCheckSettings,
+  type LlmResourceMode,
   type LlmRunMode
 } from "../../src/lib/settings";
 import type { SiteId } from "../../src/lib/sites";
@@ -81,6 +82,16 @@ export function OptionsApp() {
     }));
   };
 
+  const updateLlmResourceMode = (resourceMode: LlmResourceMode) => {
+    updateSettings((current) => ({
+      ...current,
+      llm: {
+        ...current.llm,
+        resourceMode
+      }
+    }));
+  };
+
   const handleResetSettings = () => {
     const confirmed = window.confirm(
       "保存済み設定を初期化しますか？対象サイト、検出ルール、AI文脈チェックの設定が初期値に戻ります。貼り付け本文や検出結果は保存していないため、削除対象には含まれません。"
@@ -147,6 +158,7 @@ export function OptionsApp() {
               }))
             }
             onModeChange={updateLlmMode}
+            onResourceModeChange={updateLlmResourceMode}
           />
           <DiagnosticsSection
             diagnosticMessage={diagnosticMessage}

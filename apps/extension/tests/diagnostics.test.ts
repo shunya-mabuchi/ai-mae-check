@@ -27,6 +27,8 @@ describe("privacy safe diagnostics", () => {
     expect(report.environment.browser).toBe("Chrome 148.0.7778.180");
     expect(report.environment.os).toBe("Windows");
     expect(report.environment.webGpu.status).toBe("available");
+    expect(report.settings.llmResourceMode).toBe("standard");
+    expect(report.settings.llmModelId).toBe(DEFAULT_SETTINGS.llm.modelId);
     expect(report.privacy).toMatchObject({
       includesUserText: false,
       includesFindings: false,

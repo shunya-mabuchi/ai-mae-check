@@ -7,7 +7,7 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 - 基本設定: 拡張機能全体の有効/無効
 - 対象サイト: ChatGPT / Claude / Gemini / PerplexityごとのON/OFF
 - 検出ルール: ルールベース検出ごとのON/OFF
-- WebLLM: AI文脈チェックの有効/無効、モデルID、手動/自動実行
+- WebLLM: AI文脈チェックの有効/無効、標準/低負荷、モデルID、手動/自動実行
 - 設定の初期化: `chrome.storage.local` に保存された設定キーと検証済みリモートルールキャッシュの削除
 - 診断情報: 本文を含まない設定状態と環境情報のコピー
 
@@ -24,6 +24,7 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 - WebLLMの有効/無効
 - WebLLMモデルID
 - AI文脈チェックの実行モード
+- AI文脈チェックの実行負荷（標準/低負荷）
 
 ルール配信を有効にしている場合、最後に検証済みの署名付きリモートルールだけを `chrome.storage.local` の `ai-mae-check.remoteRules.v1` に短時間キャッシュします。このキャッシュには、署名付きルールJSON、`keyId`、`version`、`generatedAt`、`cachedAt`、`expiresAt` だけを含めます。
 
@@ -39,7 +40,7 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 
 ## スキーマとマイグレーション
 
-現在の設定スキーマは `SETTINGS_SCHEMA_VERSION = 1` です。
+現在の設定スキーマは `SETTINGS_SCHEMA_VERSION = 2` です。バージョン1以前の設定には `resourceMode: "standard"` を補完します。
 
 `normalizeSettings` / `migrateSettings` は、未設定、古い設定、壊れた設定を現在のスキーマへ補完します。
 

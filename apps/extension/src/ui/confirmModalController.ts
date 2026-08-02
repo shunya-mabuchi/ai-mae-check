@@ -3,6 +3,7 @@ import type { ContextRiskCandidate } from "@ai-mae-check/llm";
 import { isLlmBridgeModelReady } from "../lib/llmBridgeClient";
 import { runReviewLlm } from "../lib/reviewLlmRunner";
 import { resolveReviewFindings } from "../lib/reviewSelection";
+import { resolveLlmModelId } from "../lib/settings";
 import { renderConfirmModalCandidateList } from "./confirmModalCandidateList";
 import { renderConfirmModalCategoryList } from "./confirmModalCategoryList";
 import { applyConfirmModalFooterState } from "./confirmModalFooter";
@@ -41,6 +42,7 @@ export function initializeSendConfirmModalController(
   let llmRunning = false;
   let disposed = false;
   const mode: TransformMode = options.defaultMode ?? "generalize";
+  const llmModelId = resolveLlmModelId(options.llm);
 
   const isActive = () => !disposed && !options.isClosed();
 
@@ -126,7 +128,7 @@ export function initializeSendConfirmModalController(
       await runReviewLlm({
         enabled: options.llm?.enabled ?? false,
         inputText: options.inputText,
-        modelId: options.llm?.modelId ?? "",
+        modelId: llmModelId,
         existingFindings: options.detection.findings,
         llmStatus: options.elements.llmStatus,
         llmButton: options.elements.llmButton,
@@ -162,7 +164,7 @@ export function initializeSendConfirmModalController(
   renderPreview();
 
   if (options.llm?.enabled && options.llm.mode === "auto") {
-    void isLlmBridgeModelReady(options.llm.modelId)
+    void isLlmBridgeModelReady(llmModelId)
       .then((modelReady) => {
         if (isActive() && modelReady) {
           void runLlm("auto");
