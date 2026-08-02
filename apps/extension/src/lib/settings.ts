@@ -1,12 +1,13 @@
 import { detectorRules } from "@ai-mae-check/core";
-import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID, LOW_VRAM_MODEL_ID } from "@ai-mae-check/llm";
 import { REMOTE_RULE_CACHE_KEY } from "./remoteRuleCache";
 import { siteIdFromHostname, targetSites, type SiteId } from "./sites";
 
 export const SETTINGS_KEY = "ai-mae-check.settings.v1";
-export const SETTINGS_SCHEMA_VERSION = 1;
+export const SETTINGS_SCHEMA_VERSION = 2;
 
 export type LlmRunMode = "manual" | "auto";
+export type LlmResourceMode = "standard" | "low_resource";
 
 export interface AiMaeCheckSettings {
   settingsVersion: number;
@@ -17,6 +18,7 @@ export interface AiMaeCheckSettings {
     enabled: boolean;
     modelId: string;
     mode: LlmRunMode;
+    resourceMode: LlmResourceMode;
   };
 }
 
@@ -42,7 +44,8 @@ function createDefaultSettings(): AiMaeCheckSettings {
     llm: {
       enabled: true,
       modelId: DEFAULT_MODEL_ID,
-      mode: "manual"
+      mode: "manual",
+      resourceMode: "standard"
     }
   };
 }
@@ -85,6 +88,18 @@ function normalizeLlmMode(value: unknown): LlmRunMode {
   return value === "auto" ? "auto" : "manual";
 }
 
+function normalizeLlmResourceMode(value: unknown): LlmResourceMode {
+  return value === "low_resource" ? "low_resource" : "standard";
+}
+
+export function resolveLlmModelId(llm: AiMaeCheckSettings["llm"] | undefined): string {
+  if (llm?.resourceMode === "low_resource") {
+    return LOW_VRAM_MODEL_ID;
+  }
+
+  return normalizeModelId(llm?.modelId);
+}
+
 export function migrateSettings(value: unknown): AiMaeCheckSettings {
   if (!isRecord(value)) {
     return createDefaultSettings();
@@ -105,7 +120,8 @@ export function migrateSettings(value: unknown): AiMaeCheckSettings {
     llm: {
       enabled: readBoolean(llmValue.enabled, defaults.llm.enabled),
       modelId: normalizeModelId(llmValue.modelId),
-      mode: normalizeLlmMode(llmValue.mode)
+      mode: normalizeLlmMode(llmValue.mode),
+      resourceMode: normalizeLlmResourceMode(llmValue.resourceMode)
     }
   };
 }
@@ -140,6 +156,9 @@ export function validateSettings(settings: AiMaeCheckSettings): SettingsValidati
   }
   if (settings.llm.mode !== "manual" && settings.llm.mode !== "auto") {
     messages.push("AI文脈チェックの実行モードが不正です。手動実行または自動実行を選んでください。");
+  }
+  if (settings.llm.resourceMode !== "standard" && settings.llm.resourceMode !== "low_resource") {
+    messages.push("AI文脈チェックの負荷設定が不正です。標準または低負荷を選んでください。");
   }
 
   return {

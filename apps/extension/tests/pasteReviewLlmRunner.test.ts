@@ -5,8 +5,9 @@ import {
   PASTE_REVIEW_LLM_LOADING_MESSAGE
 } from "../src/lib/pasteReviewLlmState";
 import {
-  LOCAL_CONTEXT_FALLBACK_MESSAGE,
+  LOW_RESOURCE_FALLBACK_MESSAGE,
   runReviewLlm,
+  STANDARD_AND_LOW_RESOURCE_FALLBACK_MESSAGE,
   type RunReviewLlmOptions
 } from "../src/lib/reviewLlmRunner";
 import { asDomElement } from "./helpers/fakeDom";
@@ -257,6 +258,65 @@ describe("runReviewLlm", () => {
     expect(llmStatus.textContent).toBe("AI文脈チェックで注意候補が見つかりました。");
   });
 
+  it("低負荷設定ではLlamaを呼ばず低VRAMモデルから実行する", async () => {
+    const analyze = vi.fn<AnalyzeReviewContextForTest>(async () => ({
+      candidates: [],
+      summary: "追加候補はありません。",
+      rawText: "{}",
+      modelId: LOW_VRAM_MODEL_ID,
+      elapsedMs: 10
+    }));
+
+    await runReviewLlm({
+      enabled: true,
+      inputText: "一般的な確認文です。",
+      modelId: LOW_VRAM_MODEL_ID,
+      existingFindings: [],
+      llmStatus: asDomElement<HTMLElement>({ textContent: "" }),
+      llmButton: asDomElement<HTMLButtonElement>(new FakeButton()),
+      selectedCandidateIds: new Set(),
+      setCandidates: vi.fn(),
+      render: vi.fn(),
+      analyze
+    });
+
+    expect(analyze).toHaveBeenCalledTimes(1);
+    expect(analyze.mock.calls[0]?.[1].modelId).toBe(LOW_VRAM_MODEL_ID);
+  });
+
+  it("低負荷モデルだけが失敗した場合は低負荷実行未完了を明示する", async () => {
+    const llmStatus = { textContent: "" };
+    const analyze = vi.fn<AnalyzeReviewContextForTest>(async () => ({
+      candidates: [],
+      summary: "GPU実行に失敗しました。",
+      rawText: "",
+      modelId: LOW_VRAM_MODEL_ID,
+      elapsedMs: 10,
+      error: "ローカルAIモデルのGPU実行が中断されました。",
+      errorDetail: {
+        kind: "webgpu",
+        message: "ローカルAIモデルのGPU実行が中断されました。",
+        technicalDetail: "DXGI_ERROR_DEVICE_HUNG"
+      }
+    }));
+
+    await runReviewLlm({
+      enabled: true,
+      inputText: "一般的な確認文です。",
+      modelId: LOW_VRAM_MODEL_ID,
+      existingFindings: [],
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(new FakeButton()),
+      selectedCandidateIds: new Set(),
+      setCandidates: vi.fn(),
+      render: vi.fn(),
+      analyze
+    });
+
+    expect(llmStatus.textContent).toContain(LOW_RESOURCE_FALLBACK_MESSAGE);
+    expect(llmStatus.textContent).toContain("DXGI_ERROR_DEVICE_HUNG");
+  });
+
   it("WebGPUアダプタ未取得では低VRAMモデルへ再試行しない", async () => {
     const analyze = vi.fn<AnalyzeReviewContextForTest>(async () => ({
       candidates: [],
@@ -352,7 +412,7 @@ describe("runReviewLlm", () => {
 
     expect(setCandidates).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ surface: "給与条件" })]));
     expect(Array.from(selectedCandidateIds)).toEqual(["local-context-hr_info-1"]);
-    expect(llmStatus.textContent).toContain(LOCAL_CONTEXT_FALLBACK_MESSAGE);
+    expect(llmStatus.textContent).toContain(STANDARD_AND_LOW_RESOURCE_FALLBACK_MESSAGE);
     expect(llmStatus.textContent).toContain("DXGI_ERROR_DEVICE_HUNG");
     expect(render).toHaveBeenCalledTimes(1);
   });

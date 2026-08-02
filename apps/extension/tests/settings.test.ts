@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID, LOW_VRAM_MODEL_ID } from "@ai-mae-check/llm";
 import {
   DEFAULT_SETTINGS,
   loadSettings,
   migrateSettings,
   normalizeSettings,
   resetSettings,
+  resolveLlmModelId,
   saveSettings,
   SETTINGS_KEY,
   SETTINGS_SCHEMA_VERSION,
@@ -21,6 +22,7 @@ describe("settings", () => {
   it("初期設定にsettingsVersionと正式対応モデルを含める", () => {
     expect(DEFAULT_SETTINGS.settingsVersion).toBe(SETTINGS_SCHEMA_VERSION);
     expect(DEFAULT_SETTINGS.llm.modelId).toBe(DEFAULT_MODEL_ID);
+    expect(DEFAULT_SETTINGS.llm.resourceMode).toBe("standard");
   });
 
   it("古い設定を現在のスキーマへマイグレーションする", () => {
@@ -50,7 +52,23 @@ describe("settings", () => {
     expect(settings.rules.unknown_rule).toBeUndefined();
     expect(settings.llm.modelId).toBe("SmolLM2-360M-Instruct-q4f32_1-MLC");
     expect(settings.llm.mode).toBe("auto");
+    expect(settings.llm.resourceMode).toBe("standard");
     expect("pastedText" in settings).toBe(false);
+  });
+
+  it("低負荷設定では標準モデルを初期化せず低VRAMモデルを選ぶ", () => {
+    const settings = normalizeSettings({
+      llm: {
+        enabled: true,
+        modelId: DEFAULT_MODEL_ID,
+        mode: "manual",
+        resourceMode: "low_resource"
+      }
+    });
+
+    expect(settings.llm.resourceMode).toBe("low_resource");
+    expect(resolveLlmModelId(settings.llm)).toBe(LOW_VRAM_MODEL_ID);
+    expect(resolveLlmModelId(DEFAULT_SETTINGS.llm)).toBe(DEFAULT_MODEL_ID);
   });
 
   it("壊れた設定値は初期値へ戻す", () => {
@@ -162,7 +180,8 @@ describe("settings", () => {
       llm: {
         ...DEFAULT_SETTINGS.llm,
         modelId: "",
-        mode: "bad"
+        mode: "bad",
+        resourceMode: "bad"
       }
     });
 
@@ -173,7 +192,8 @@ describe("settings", () => {
         "対象サイト設定に不足があります。不足分は初期値で補完されます。",
         "検出ルール設定に不足があります。不足分は初期値で補完されます。",
         "WebLLMモデルIDが空です。初期モデルを利用してください。",
-        "AI文脈チェックの実行モードが不正です。手動実行または自動実行を選んでください。"
+        "AI文脈チェックの実行モードが不正です。手動実行または自動実行を選んでください。",
+        "AI文脈チェックの負荷設定が不正です。標準または低負荷を選んでください。"
       ])
     );
   });

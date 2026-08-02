@@ -41,11 +41,12 @@ fallback候補は `SmolLM2-360M-Instruct-q4f32_1-MLC` です。
 
 - 標準モデルがWebLLM prebuilt一覧にない環境での低VRAM fallback
 - 標準モデルがGPUメモリ不足またはGPUデバイス喪失で停止した場合に限る、1回だけの実行時fallback
+- Options Pageで「低負荷」を選んだ場合に、標準モデルを初期化せず最初から使うモデル
 - 元モデル `HuggingFaceTB/SmolLM2-360M-Instruct` はApache-2.0
 - 確認元: <https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct>
 - ただし、モデルカード上も主に英語理解・生成を中心とした軽量モデルとして説明されているため、日本語文脈チェックの精度を期待しすぎない
 
-WebGPUアダプタ自体を取得できない場合は、低VRAMモデルへ変更しても推論できないため再試行しません。実行時fallbackでも失敗した場合は、ルールベース検出とローカル補助候補を表示し、AI文脈チェックが完了していないことを明示します。
+WebGPUアダプタ自体を取得できない場合は、低VRAMモデルへ変更しても推論できないため再試行しません。実行時fallbackでも失敗した場合は、ルールベース検出とローカル補助候補を表示し、AI文脈チェックが完了していないことを明示します。低負荷設定は端末互換性を保証するものではなく、SmolLM2の日本語候補精度は標準モデルより下がる場合があります。
 
 ## WebLLM prebuilt確認
 

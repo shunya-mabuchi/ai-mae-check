@@ -69,6 +69,29 @@ test.describe("Options PageのReact Aria操作", () => {
     }
   });
 
+  test("実行負荷を低負荷へ変更し、軽量モデル選択を保持する", async () => {
+    const target = await launchExtensionContext();
+    try {
+      const page = await openOptionsPage(target.context);
+      const standardRadio = page.getByRole("radio", { name: /^標準/ });
+      const lowResourceRadio = page.getByRole("radio", { name: /^低負荷/ });
+
+      await expect(standardRadio).toBeChecked();
+      await standardRadio.focus();
+      await page.keyboard.press("ArrowRight");
+      await expect(lowResourceRadio).toBeChecked();
+      await expect(page.getByText("SmolLM2-360M-Instruct-q4f32_1-MLC", { exact: true })).toBeVisible();
+      await expect(page.getByText("保存しました。", { exact: true })).toBeVisible();
+
+      await page.reload();
+      await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
+      await expect(page.getByRole("radio", { name: /^低負荷/ })).toBeChecked();
+      await expect(page.getByText("SmolLM2-360M-Instruct-q4f32_1-MLC", { exact: true })).toBeVisible();
+    } finally {
+      await closeExtensionContext(target);
+    }
+  });
+
   test("React AriaボタンをEnterで実行できる", async () => {
     const target = await launchExtensionContext();
     try {

@@ -1,5 +1,5 @@
 import releaseConfig from "../../config/rule-delivery.release.json";
-import { SETTINGS_KEY, type AiMaeCheckSettings } from "./settings";
+import { resolveLlmModelId, SETTINGS_KEY, type AiMaeCheckSettings } from "./settings";
 import { targetSites, type SiteId } from "./sites";
 
 export type WebGpuDiagnosticStatus = "available" | "unavailable" | "error" | "unknown";
@@ -40,6 +40,7 @@ export interface PrivacySafeDiagnosticReport {
     disabledSites: SiteId[];
     llmEnabled: boolean;
     llmMode: AiMaeCheckSettings["llm"]["mode"];
+    llmResourceMode: AiMaeCheckSettings["llm"]["resourceMode"];
     llmModelId: string;
     enabledRuleCount: number;
     disabledRuleCount: number;
@@ -181,7 +182,8 @@ export async function createPrivacySafeDiagnosticReport(
       disabledSites: siteIdsByEnabledState(options.settings, false),
       llmEnabled: options.settings.llm.enabled,
       llmMode: options.settings.llm.mode,
-      llmModelId: options.settings.llm.modelId,
+      llmResourceMode: options.settings.llm.resourceMode,
+      llmModelId: resolveLlmModelId(options.settings.llm),
       enabledRuleCount: countRulesByEnabledState(options.settings, true),
       disabledRuleCount: countRulesByEnabledState(options.settings, false)
     },
