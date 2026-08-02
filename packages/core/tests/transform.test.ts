@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { detectSensitiveText, resolveTransformMode, TEXT_TRANSFORM_MODES, transformText } from "../src";
+import { detectSensitiveText, resolveTransformMode, TEXT_TRANSFORM_MODES, transformText, type Finding } from "../src";
 
 describe("transformText", () => {
   it("mask modeでは既存のplaceholderマスクを使う", () => {
@@ -38,6 +38,43 @@ describe("transformText", () => {
     expect(result.requiresLlm).toBe(false);
     expect(result.transformedText).toBe("[メールアドレス] から [URL] に共有します。");
     expect(result.placeholderMap.map((entry) => entry.placeholder)).toEqual(["[メールアドレス]", "[URL]"]);
+  });
+
+  it("人事情報と医療情報を異なる表現へ安全化する", () => {
+    const input = "給与条件と診療記録を確認します。";
+    const findings: Finding[] = [
+      {
+        id: "llm:hr_info:0:4:1",
+        ruleId: "llm:hr_info",
+        source: "llm",
+        label: "採用・人事情報候補",
+        riskLevel: "medium",
+        start: 0,
+        end: 4,
+        text: "給与条件",
+        placeholder: "[HR_INFO_1]",
+        message: "採用条件です。",
+        confidence: 0.8
+      },
+      {
+        id: "llm:medical_info:5:9:1",
+        ruleId: "llm:medical_info",
+        source: "llm",
+        label: "医療情報候補",
+        riskLevel: "medium",
+        category: "medical",
+        start: 5,
+        end: 9,
+        text: "診療記録",
+        placeholder: "[MEDICAL_INFO_1]",
+        message: "医療情報です。",
+        confidence: 0.8
+      }
+    ];
+
+    const result = transformText(input, findings, "generalize");
+
+    expect(result.transformedText).toBe("[人事情報]と[医療情報]を確認します。");
   });
 
   it("redact modeは値を再利用しにくい表現へ置換する", () => {

@@ -72,4 +72,14 @@ describe("scoreRisk", () => {
       date: 1
     });
   });
+
+  it("LLMの人事情報を医療情報とは別カテゴリで集計する", () => {
+    const result = scoreRisk([
+      finding({ id: "hr:1", ruleId: "llm:hr_info", label: "採用・人事情報候補" })
+    ]);
+
+    expect(result.score).toBe(20);
+    expect(result.categoryCounts).toEqual({ hr: 1 });
+    expect(result.categoryCounts.medical).toBeUndefined();
+  });
 });

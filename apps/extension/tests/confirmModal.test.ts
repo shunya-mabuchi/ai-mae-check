@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { detectSensitiveText, evaluateDlpPolicy } from "@ai-mae-check/core";
+import { detectSensitiveText, evaluateDlpPolicy, type Finding } from "@ai-mae-check/core";
 import {
   canSubmitSelection,
   createCategoryGroups,
@@ -74,6 +74,29 @@ describe("confirmModal helpers", () => {
 
     expect(groups.map((group) => group.category)).toContain("email");
     expect(groups.map((group) => group.category)).toContain("financial");
+  });
+
+  it("人事情報を医療情報と分けて表示し安全化する", () => {
+    const inputText = "給与条件を確認します。";
+    const finding: Finding = {
+      id: "llm:hr_info:0:4:1",
+      ruleId: "llm:hr_info",
+      source: "llm",
+      label: "採用・人事情報候補",
+      riskLevel: "medium",
+      start: 0,
+      end: 4,
+      text: "給与条件",
+      placeholder: "[HR_INFO_1]",
+      message: "採用条件です。",
+      confidence: 0.8
+    };
+    const policy = evaluateDlpPolicy([finding]);
+    const groups = createCategoryGroups([finding], policy);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toMatchObject({ category: "hr", label: "採用・人事情報" });
+    expect(createConfirmedText(inputText, [finding], new Set([finding.id]))).toBe("[人事情報]を確認します。");
   });
 
   it("locks all categories when sanitization is required", () => {
