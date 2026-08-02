@@ -6,7 +6,21 @@ export interface LlmAnalyzerOptions {
   maxTokens?: number;
   maxInputChars?: number;
   confidenceThreshold?: number;
+  contextWindowSize?: number;
+  compactPrompt?: boolean;
   workerUrl?: string;
+}
+
+export type LlmExecutionProfileId = "standard" | "low_resource";
+
+export interface LlmExecutionProfile {
+  readonly id: LlmExecutionProfileId;
+  readonly modelId: string;
+  readonly contextWindowSize: number;
+  readonly maxInputChars: number;
+  readonly maxTokens: number;
+  readonly maxCandidates: number;
+  readonly compactPrompt: boolean;
 }
 
 export interface LlmProgress {
@@ -142,6 +156,7 @@ export interface ConvertCandidatesOptions {
 export interface ContextPromptOptions {
   existingFindings?: Finding[];
   maxCandidates?: number;
+  compact?: boolean;
 }
 
 export interface ChatMessage {

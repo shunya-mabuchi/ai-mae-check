@@ -33,20 +33,20 @@ JSONを読み取れない場合やGPU実行を完了できない場合も、ア�
 
 このリポジトリのMIT Licenseは、第三者モデルのライセンスを上書きしません。
 
-## fallbackモデル
+## 単一モデルと実行プロファイル
 
-fallback候補は `SmolLM2-360M-Instruct-q4f32_1-MLC` です。
+ユーザーが選ぶモデルは増やさず、標準・低負荷のどちらも `Llama-3.2-1B-Instruct-q4f32_1-MLC` を使います。モデルごとの日本語候補精度の差、追加ダウンロード、設定の複雑さを避けるためです。
 
-位置づけ:
+実行条件は次の2プロファイルです。
 
-- 標準モデルがWebLLM prebuilt一覧にない環境での低VRAM fallback
-- 標準モデルがGPUメモリ不足またはGPUデバイス喪失で停止した場合に限る、1回だけの実行時fallback
-- Options Pageで「低負荷」を選んだ場合に、標準モデルを初期化せず最初から使うモデル
-- 元モデル `HuggingFaceTB/SmolLM2-360M-Instruct` はApache-2.0
-- 確認元: <https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct>
-- ただし、モデルカード上も主に英語理解・生成を中心とした軽量モデルとして説明されているため、日本語文脈チェックの精度を期待しすぎない
+| プロファイル | context window | 入力上限 | 出力上限 | 候補上限 | プロンプト |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 標準 | 4096 | 6000文字 | 900 tokens | 12件 | 通常 |
+| 低負荷 | 2048 | 800文字 | 256 tokens | 6件 | 短縮版 |
 
-WebGPUアダプタ自体を取得できない場合は、低VRAMモデルへ変更しても推論できないため再試行しません。実行時fallbackでも失敗した場合は、ルールベース検出とローカル補助候補を表示し、AI文脈チェックが完了していないことを明示します。低負荷設定は端末互換性を保証するものではなく、SmolLM2の日本語候補精度は標準モデルより下がる場合があります。
+低負荷は同じモデルのGPUメモリ使用量と推論量を抑えるための設定です。モデル自体の必要メモリ、端末、GPUドライバー、WebGPU実装によっては低負荷でも実行できません。
+
+GPUデバイス喪失やメモリ不足が起きた後は、同じページ内で別モデルを無条件に即時起動しません。ルールベース検出とローカル補助候補を維持し、低負荷へ切り替えた場合は対象ページを再読み込みしてから再実行します。
 
 ## WebLLM prebuilt確認
 
@@ -57,13 +57,7 @@ WebLLMは通常のHugging Faceモデルをそのまま任意に読み込む仕�
 - WebLLM README: <https://github.com/mlc-ai/web-llm>
 - WebLLMのbuilt-in models説明では、利用可能モデルは `prebuiltAppConfig.model_list` から確認できると案内されています。
 
-実装では、`packages/llm/src/model.ts` の `resolveModelId` が、実行時にWebLLMのprebuilt一覧を見て次の順に選びます。
-
-1. ユーザー設定のモデルID
-2. 標準モデル `Llama-3.2-1B-Instruct-q4f32_1-MLC`
-3. 互換軽量モデル `Llama-3.2-1B-Instruct-q4f32_1-MLC`
-4. 低VRAM fallback `SmolLM2-360M-Instruct-q4f32_1-MLC`
-5. prebuilt一覧中で最もVRAM要求が低いInstruct/Chat系モデル
+実装では、`packages/llm/src/model.ts` の `resolveModelId` が `prebuiltAppConfig.model_list` に単一モデルがあることを確認します。古い保存値や過去の `q4f16_1` 指定は現在のモデルへ正規化します。単一モデルが一覧にない場合は、説明していない別モデルを暗黙に読み込まずエラーとして扱います。
 
 ## モデル変更時のチェックリスト
 
@@ -86,4 +80,4 @@ WebLLMは通常のHugging Faceモデルをそのまま任意に読み込む仕�
 - Chrome拡張上で初回ロードとGPUメモリが許容範囲に収まる
 - 商用利用や再配布条件を説明できる
 
-そのため、国産モデルは今後の検証対象にできますが、0.1.xの標準モデルは動作実績とWebLLM prebuilt互換性を優先します。
+そのため、国産モデルは今後の検証対象にできますが、現行版は動作実績とWebLLM prebuilt互換性を優先してLlama単一モデルを採用します。

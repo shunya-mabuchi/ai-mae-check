@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_MODEL_ID, LOW_VRAM_MODEL_ID } from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
 import {
   DEFAULT_SETTINGS,
   loadSettings,
@@ -38,7 +38,7 @@ describe("settings", () => {
       },
       llm: {
         enabled: true,
-        modelId: "SmolLM2-360M-Instruct-q4f32_1-MLC",
+        modelId: "legacy-model-id",
         mode: "auto"
       },
       pastedText: "保存してはいけない本文"
@@ -50,13 +50,13 @@ describe("settings", () => {
     expect(settings.sites.claude).toBe(true);
     expect(settings.rules.email).toBe(false);
     expect(settings.rules.unknown_rule).toBeUndefined();
-    expect(settings.llm.modelId).toBe("SmolLM2-360M-Instruct-q4f32_1-MLC");
+    expect(settings.llm.modelId).toBe(DEFAULT_MODEL_ID);
     expect(settings.llm.mode).toBe("auto");
     expect(settings.llm.resourceMode).toBe("standard");
     expect("pastedText" in settings).toBe(false);
   });
 
-  it("低負荷設定では標準モデルを初期化せず低VRAMモデルを選ぶ", () => {
+  it("低負荷設定でも同じLlamaモデルを選ぶ", () => {
     const settings = normalizeSettings({
       llm: {
         enabled: true,
@@ -67,7 +67,7 @@ describe("settings", () => {
     });
 
     expect(settings.llm.resourceMode).toBe("low_resource");
-    expect(resolveLlmModelId(settings.llm)).toBe(LOW_VRAM_MODEL_ID);
+    expect(resolveLlmModelId(settings.llm)).toBe(DEFAULT_MODEL_ID);
     expect(resolveLlmModelId(DEFAULT_SETTINGS.llm)).toBe(DEFAULT_MODEL_ID);
   });
 

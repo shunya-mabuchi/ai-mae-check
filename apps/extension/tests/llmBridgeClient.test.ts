@@ -10,6 +10,7 @@ describe("createBridgeErrorFallbackResult", () => {
         inputText:
           "佐藤様向けに Project Blue Bridge の提案メモを作ります。候補者の山田花子さんについても確認します。",
         modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        profileId: "standard",
         options: {
           maxCandidates: 12
         }
@@ -33,6 +34,7 @@ describe("createBridgeErrorFallbackResult", () => {
         requestId: "request-output-format",
         inputText: "佐藤様向けに Project Blue Bridge の提案メモを作ります。",
         modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        profileId: "standard",
         options: {}
       },
       startedAt: performance.now(),
@@ -53,6 +55,7 @@ describe("createBridgeErrorFallbackResult", () => {
         requestId: "request-2",
         inputText: "テスト",
         modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        profileId: "standard",
         options: {}
       },
       startedAt: performance.now(),

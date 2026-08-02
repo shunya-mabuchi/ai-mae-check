@@ -1,13 +1,13 @@
 import { detectorRules } from "@ai-mae-check/core";
-import { DEFAULT_MODEL_ID, LOW_VRAM_MODEL_ID } from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID, type LlmExecutionProfileId } from "@ai-mae-check/llm";
 import { REMOTE_RULE_CACHE_KEY } from "./remoteRuleCache";
 import { siteIdFromHostname, targetSites, type SiteId } from "./sites";
 
 export const SETTINGS_KEY = "ai-mae-check.settings.v1";
-export const SETTINGS_SCHEMA_VERSION = 2;
+export const SETTINGS_SCHEMA_VERSION = 3;
 
 export type LlmRunMode = "manual" | "auto";
-export type LlmResourceMode = "standard" | "low_resource";
+export type LlmResourceMode = LlmExecutionProfileId;
 
 export interface AiMaeCheckSettings {
   settingsVersion: number;
@@ -80,10 +80,6 @@ function normalizeRuleSettings(value: unknown, defaults: Record<string, boolean>
   ) as Record<string, boolean>;
 }
 
-function normalizeModelId(value: unknown): string {
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : DEFAULT_SETTINGS.llm.modelId;
-}
-
 function normalizeLlmMode(value: unknown): LlmRunMode {
   return value === "auto" ? "auto" : "manual";
 }
@@ -92,12 +88,8 @@ function normalizeLlmResourceMode(value: unknown): LlmResourceMode {
   return value === "low_resource" ? "low_resource" : "standard";
 }
 
-export function resolveLlmModelId(llm: AiMaeCheckSettings["llm"] | undefined): string {
-  if (llm?.resourceMode === "low_resource") {
-    return LOW_VRAM_MODEL_ID;
-  }
-
-  return normalizeModelId(llm?.modelId);
+export function resolveLlmModelId(_llm: AiMaeCheckSettings["llm"] | undefined): string {
+  return DEFAULT_MODEL_ID;
 }
 
 export function migrateSettings(value: unknown): AiMaeCheckSettings {
@@ -119,7 +111,7 @@ export function migrateSettings(value: unknown): AiMaeCheckSettings {
     rules: normalizeRuleSettings(value.rules, defaults.rules),
     llm: {
       enabled: readBoolean(llmValue.enabled, defaults.llm.enabled),
-      modelId: normalizeModelId(llmValue.modelId),
+      modelId: DEFAULT_MODEL_ID,
       mode: normalizeLlmMode(llmValue.mode),
       resourceMode: normalizeLlmResourceMode(llmValue.resourceMode)
     }

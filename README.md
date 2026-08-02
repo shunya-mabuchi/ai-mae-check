@@ -134,17 +134,17 @@ WebLLMによる依頼文の自動生成は、現時点では精度と安定性�
 - 文章全体の要約を主目的にすること
 - 外部LLM APIへ本文を送ること
 
-## WebLLMモデル選択
+## WebLLMモデルと実行負荷
 
 AIまえチェックでは、WebLLMの標準モデルを `Llama-3.2-1B-Instruct-q4f32_1-MLC` に戻しています。
 
 理由は、これまでの動作確認で最も安定して扱えていたWebLLM prebuiltモデルを標準にするためです。AIまえチェックは会話AIではなく、貼り付け前の「消し忘れ候補」を見つける補助ツールなので、ルールベース検出とローカル補助候補を主軸にし、WebLLMは文脈候補の確認に限定します。
 
-古い `Llama-3.2-1B-Instruct-q4f16_1-MLC` 指定が残っている場合は、f16系の実行条件に依存しにくい `q4f32_1` 版へ正規化します。また、利用中のWebLLM prebuilt一覧に標準モデルが見つからない場合や、GPUメモリ不足・GPUデバイス喪失で標準モデルの実行を継続できない場合は、`SmolLM2-360M-Instruct-q4f32_1-MLC` などの低VRAMなInstruct/Chatモデルへ1回だけfallbackします。WebGPUアダプタ自体を取得できない場合は、モデルを変えても実行できないため再試行しません。
+過去の保存済みモデルIDは、`Llama-3.2-1B-Instruct-q4f32_1-MLC` へ正規化します。説明していない別モデルへ暗黙に切り替えず、prebuilt一覧に単一モデルがない場合はAI文脈チェックをエラーとして扱います。WebGPUアダプタ自体を取得できない場合も、モデルを変えて解消する問題ではないため再試行しません。
 
-Options Pageの「実行負荷」では `標準` と `低負荷` を選べます。`低負荷` は、標準モデルの初期化でGPUデバイスが失われる環境向けに、Llamaを先に読み込まず `SmolLM2-360M-Instruct-q4f32_1-MLC` から開始します。保存するのはこの設定だけで、本文や検出結果は保存しません。低負荷モデルは日本語候補の精度が下がる場合があり、すべてのWebGPU環境での動作を保証するものではありません。
+Options Pageの「実行負荷」では `標準` と `低負荷` を選べます。どちらも同じLlamaモデルを使い、`低負荷` はcontext windowを2048、入力上限を800文字、出力上限を256 tokens、候補上限を6件へ抑え、短縮プロンプトで実行します。保存するのはこの設定だけで、本文や検出結果は保存しません。低負荷でも、すべてのWebGPU環境での動作を保証するものではありません。
 
-日本語の人名・会社名・案件名の抽出精度はモデルだけに依存させません。WebLLMが候補を返さない場合や実行を完了できない場合でも、入力文に実在する敬称つき人名や `Project ...` 形式の案件名、採用・契約・未公開などの定型文脈は、ローカル補助候補として確認UIに出します。これにより、軽量モデルへのfallbackも失敗した場合でも、ルールベース検出と補助候補を組み合わせて使える設計にしています。
+日本語の人名・会社名・案件名の抽出精度はモデルだけに依存させません。WebLLMが候補を返さない場合や実行を完了できない場合でも、入力文に実在する敬称つき人名や `Project ...` 形式の案件名、採用・契約・未公開などの定型文脈は、ローカル補助候補として確認UIに出します。これにより、GPU実行を完了できない場合でも、ルールベース検出と補助候補を組み合わせて使える設計にしています。
 
 WebLLMは通常のHugging Faceモデルをそのまま読み込む仕組みではありません。モデルを増やす場合は、WebLLM prebuilt対応、ブラウザ内実行時の安定性、ライセンス、モデル配信元、複数端末でのロード検証を確認したうえで扱います。
 
@@ -290,7 +290,7 @@ pnpm typecheck
 
 Options Pageの設定グループ、保存対象、`settingsVersion`、設定マイグレーション、初期化、設定バリデーションの考え方は [docs/options-settings.md](docs/options-settings.md) にまとめています。
 
-`pnpm qa:webllm-model-policy` は、WebLLMの標準モデルID、fallbackモデルID、モデルライセンス確認文書が実装とずれていないかを確認するQAです。モデル選定方針は [docs/webllm-model-policy.md](docs/webllm-model-policy.md) にまとめています。
+`pnpm qa:webllm-model-policy` は、WebLLMの単一モデルID、実行プロファイル、モデルライセンス確認文書が実装とずれていないかを確認するQAです。モデル選定方針は [docs/webllm-model-policy.md](docs/webllm-model-policy.md) にまとめています。
 
 `pnpm qa:webllm-compatibility` は、WebLLM対応環境、WebGPU非対応、保存領域不足、モデル取得失敗、本文を記録しない運用の記録フォーマットが維持されているか確認するQAです。実機確認の記録形式は [docs/webllm-compatibility-matrix.md](docs/webllm-compatibility-matrix.md) にまとめています。WebLLMの失敗理由、ユーザー向け復旧メッセージ、本文を含めない診断メモの扱いは [docs/webllm-error-recovery.md](docs/webllm-error-recovery.md) にまとめています。
 
@@ -471,9 +471,9 @@ WebLLMの初回利用時には、ローカル推論用のモデルファイル�
 - WebLLMの出力形式が崩れた場合やGPU実行を完了できない場合でも、敬称つき人名、`Project ...` 形式の案件名、採用・契約・未公開などの定型文脈はブラウザ内の補助候補として表示します。ただし、網羅性を保証するものではありません
 - WebLLMの実モデルロードはテストの必須条件にしません
 - LLM候補は確定扱いせず、ユーザーが確認する候補として扱います
-- WebLLMの標準モデルは `Llama-3.2-1B-Instruct-q4f32_1-MLC` です。古い `q4f16_1` 指定は `q4f32_1` へ正規化し、標準モデルがprebuilt一覧にない場合やGPUメモリ不足・GPUデバイス喪失時は低VRAMモデルへ1回だけfallbackします。標準モデルの初期化自体でGPUが不安定になる環境では、Options Pageの「低負荷」からSmolLM2を先に実行できます
+- WebLLMは `Llama-3.2-1B-Instruct-q4f32_1-MLC` の単一モデルです。古いモデル指定はこのIDへ正規化し、別モデルへ暗黙に切り替えません。Options Pageの「低負荷」はモデル変更ではなく、context window、入力長、出力長、候補数を削減する実行プロファイルです
 - 拡張側では、iframe側のWebGPU事前チェックだけで停止せず、WebLLM Worker本体の初期化を試します。それでも `No available WebGPU adapters` が出る場合、Worker側でもChromeがWebGPUの実行先アダプタを返せていません。この状態はモデル変更では解消しにくいため、`chrome://gpu` のDawn InfoでD3D12 backendが利用可能か、WebGPU StatusがBlocklistedではないかを確認してください
-- WebGPU推論中に `GPUBuffer.mapAsync`、`DXGI_ERROR_DEVICE_HUNG`、`Device was lost` などの実行時エラーが出る場合があります。この場合は低VRAMモデルへ1回だけ再試行し、それでも失敗した場合はルールベース検出とローカル補助候補を維持します。Chromeの完全再起動、対象タブの再読み込み、通常ウィンドウでの再試行も確認してください
+- WebGPU推論中に `GPUBuffer.mapAsync`、`DXGI_ERROR_DEVICE_HUNG`、`Device was lost` などの実行時エラーが出る場合があります。この場合は同じページ内で無条件に即時再試行せず、ルールベース検出とローカル補助候補を維持します。低負荷へ切り替えた後、Chromeの完全再起動、対象タブの再読み込み、通常ウィンドウでの再試行を確認してください
 - 開発中にChrome拡張を再読み込みした場合、既に開いているChatGPT / Claude / Gemini / Perplexity側のタブも再読み込みしてください。古いContent Scriptが残ると、AI文脈チェック用の拡張ページやWorkerを起動できない場合があります
 - 同じsurfaceが複数回出る場合、初期実装では出現箇所ごとにFinding化します
 - WebLLMによる依頼文生成は、精度が足りないため削除しました。WebLLMは文脈リスク候補の提示に限定します

@@ -1,4 +1,4 @@
-import type { AnalyzeContextOptions } from "@ai-mae-check/llm";
+import type { AnalyzeContextOptions, LlmExecutionProfileId } from "@ai-mae-check/llm";
 import type { LlmBridgeRequest } from "./llmBridgeMessages";
 
 export interface CreateLlmBridgeAnalyzeRequestOptions
@@ -6,6 +6,7 @@ export interface CreateLlmBridgeAnalyzeRequestOptions
   requestId: string;
   inputText: string;
   modelId: string;
+  profileId: LlmExecutionProfileId;
 }
 
 export type LlmBridgeAnalyzeRequest = Extract<LlmBridgeRequest, { type: "analyze" }>;
@@ -17,6 +18,7 @@ export function createLlmBridgeAnalyzeRequest(options: CreateLlmBridgeAnalyzeReq
     requestId: options.requestId,
     inputText: options.inputText,
     modelId: options.modelId,
+    profileId: options.profileId,
     options: {
       ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
       ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
@@ -24,11 +26,16 @@ export function createLlmBridgeAnalyzeRequest(options: CreateLlmBridgeAnalyzeReq
   };
 }
 
-export function createLlmBridgeModelStateRequest(requestId: string, modelId: string): LlmBridgeModelStateRequest {
+export function createLlmBridgeModelStateRequest(
+  requestId: string,
+  modelId: string,
+  profileId: LlmExecutionProfileId
+): LlmBridgeModelStateRequest {
   return {
     type: "model-state",
     requestId,
     modelId,
+    profileId,
     options: {}
   };
 }

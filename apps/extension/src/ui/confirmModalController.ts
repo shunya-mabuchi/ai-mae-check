@@ -129,6 +129,7 @@ export function initializeSendConfirmModalController(
         enabled: options.llm?.enabled ?? false,
         inputText: options.inputText,
         modelId: llmModelId,
+        profileId: options.llm?.resourceMode ?? "standard",
         existingFindings: options.detection.findings,
         llmStatus: options.elements.llmStatus,
         llmButton: options.elements.llmButton,
@@ -164,7 +165,7 @@ export function initializeSendConfirmModalController(
   renderPreview();
 
   if (options.llm?.enabled && options.llm.mode === "auto") {
-    void isLlmBridgeModelReady(llmModelId)
+    void isLlmBridgeModelReady(llmModelId, options.llm.resourceMode)
       .then((modelReady) => {
         if (isActive() && modelReady) {
           void runLlm("auto");

@@ -3,6 +3,7 @@
 import {
   ANALYZING_MESSAGE,
   DEFAULT_CONFIDENCE_THRESHOLD,
+  DEFAULT_CONTEXT_WINDOW_SIZE,
   DEFAULT_MAX_INPUT_CHARS,
   DEFAULT_MODEL_ID
 } from "./constants";
@@ -62,7 +63,8 @@ function createAnalysisRequest(
     inputForModel,
     messages: buildContextRiskPrompt(inputForModel, {
       existingFindings: plan.existingFindings,
-      maxCandidates: plan.maxCandidates
+      maxCandidates: plan.maxCandidates,
+      compact: analyzerOptions.compactPrompt
     }),
     maxCandidates: plan.maxCandidates
   };
@@ -134,6 +136,7 @@ class WorkerLlmContextAnalyzer implements LlmContextAnalyzer {
   constructor(private readonly options: NormalizedLlmAnalyzerOptions) {
     this.lifecycle = createWebLlmEngineLifecycle({
       modelId: options.modelId,
+      contextWindowSize: options.contextWindowSize,
       ...(options.workerUrl ? { workerUrl: options.workerUrl } : {})
     });
   }
@@ -199,7 +202,9 @@ function normalizeOptions(options: LlmAnalyzerOptions = {}): NormalizedLlmAnalyz
     temperature: options.temperature ?? 0.1,
     maxTokens: options.maxTokens ?? 900,
     maxInputChars: options.maxInputChars ?? DEFAULT_MAX_INPUT_CHARS,
-    confidenceThreshold: options.confidenceThreshold ?? DEFAULT_CONFIDENCE_THRESHOLD
+    confidenceThreshold: options.confidenceThreshold ?? DEFAULT_CONFIDENCE_THRESHOLD,
+    contextWindowSize: options.contextWindowSize ?? DEFAULT_CONTEXT_WINDOW_SIZE,
+    compactPrompt: options.compactPrompt ?? false
   };
 
   if (options.workerUrl) {

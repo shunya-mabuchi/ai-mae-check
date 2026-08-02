@@ -8,6 +8,7 @@ describe("createLlmBridgeAnalyzeRequest", () => {
       requestId: "request-1",
       inputText: "A社向けの提案です。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "low_resource",
       existingFindings: [buildFinding()],
       maxCandidates: 8
     });
@@ -17,6 +18,7 @@ describe("createLlmBridgeAnalyzeRequest", () => {
       requestId: "request-1",
       inputText: "A社向けの提案です。",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "low_resource",
       options: {
         existingFindings: [buildFinding()],
         maxCandidates: 8
@@ -28,7 +30,8 @@ describe("createLlmBridgeAnalyzeRequest", () => {
     const request = createLlmBridgeAnalyzeRequest({
       requestId: "request-2",
       inputText: "通常の議事録です。",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC"
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard"
     });
 
     expect(request.options).toEqual({});
@@ -37,10 +40,11 @@ describe("createLlmBridgeAnalyzeRequest", () => {
   });
 
   it("WebLLMモデル準備状態のrequestを作る", () => {
-    expect(createLlmBridgeModelStateRequest("state-1", "Llama-3.2-1B-Instruct-q4f32_1-MLC")).toEqual({
+    expect(createLlmBridgeModelStateRequest("state-1", "Llama-3.2-1B-Instruct-q4f32_1-MLC", "standard")).toEqual({
       type: "model-state",
       requestId: "state-1",
       modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
   });

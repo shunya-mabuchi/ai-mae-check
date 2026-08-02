@@ -87,8 +87,36 @@ describe("WebGPU事前チェック", () => {
     expect(requestAdapter).toHaveBeenCalled();
     expect(result.errorDetail).toBeUndefined();
     expect(result.error).toBeUndefined();
-    expect(createEngineMock).toHaveBeenCalledWith(expect.any(TestWorker), DEFAULT_MODEL_ID, expect.any(Object));
+    expect(createEngineMock).toHaveBeenCalledWith(
+      expect.any(TestWorker),
+      DEFAULT_MODEL_ID,
+      expect.any(Object),
+      { context_window_size: 4096 }
+    );
     expect(result.summary).toBe("追加候補はありません。");
+  });
+
+  it("指定したcontext windowをWebLLM初期化へ渡す", async () => {
+    vi.stubGlobal("navigator", { gpu: { requestAdapter: vi.fn(async () => ({})) } });
+    vi.stubGlobal("Worker", TestWorker);
+
+    const analyzer = createLlmContextAnalyzer({
+      workerUrl: "/llm-worker.js",
+      contextWindowSize: 2048,
+      maxInputChars: 800,
+      maxTokens: 256,
+      compactPrompt: true
+    });
+    await analyzer.analyze("A社向けの提案です。");
+
+    expect(createEngineMock).toHaveBeenCalledWith(
+      expect.any(TestWorker),
+      DEFAULT_MODEL_ID,
+      expect.any(Object),
+      { context_window_size: 2048 }
+    );
+    const completionRequest = completionCreateMock.mock.calls[0]?.[0] as { max_tokens: number };
+    expect(completionRequest.max_tokens).toBe(256);
   });
 
   it("WebLLMのJSONを読み取れない場合でもローカル補助候補があれば結果として返す", async () => {

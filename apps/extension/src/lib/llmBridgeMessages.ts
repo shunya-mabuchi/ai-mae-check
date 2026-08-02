@@ -1,6 +1,7 @@
 import type {
   AnalyzeContextOptions,
   ContextAnalysisResult,
+  LlmExecutionProfileId,
   LlmProgress
 } from "@ai-mae-check/llm";
 
@@ -19,12 +20,14 @@ export type LlmBridgeRequest =
       requestId: string;
       inputText: string;
       modelId: string;
+      profileId: LlmExecutionProfileId;
       options: Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates">;
     }
   | {
       type: "model-state";
       requestId: string;
       modelId: string;
+      profileId: LlmExecutionProfileId;
       options: Record<string, never>;
     };
 
@@ -117,7 +120,12 @@ export function isLlmBridgeRequest(value: unknown): value is LlmBridgeRequest {
     return false;
   }
 
-  if (typeof value.requestId !== "string" || typeof value.modelId !== "string" || !isObjectRecord(value.options)) {
+  if (
+    typeof value.requestId !== "string" ||
+    typeof value.modelId !== "string" ||
+    (value.profileId !== "standard" && value.profileId !== "low_resource") ||
+    !isObjectRecord(value.options)
+  ) {
     return false;
   }
 

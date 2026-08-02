@@ -1,12 +1,10 @@
 export {
   ANALYZING_MESSAGE,
-  COMPATIBLE_LIGHTWEIGHT_MODEL_ID,
+  DEFAULT_CONTEXT_WINDOW_SIZE,
   DEFAULT_CONFIDENCE_THRESHOLD,
   DEFAULT_MAX_CANDIDATES,
   DEFAULT_MAX_INPUT_CHARS,
   DEFAULT_MODEL_ID,
-  LEGACY_LIGHTWEIGHT_MODEL_ID,
-  LOW_VRAM_MODEL_ID,
   MODEL_LOADING_MESSAGE,
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
@@ -26,6 +24,7 @@ export {
 } from "./errors";
 export { getLlmErrorSignalCopy } from "./errorSignals";
 export { getAvailableModelIds, resolveModelId } from "./model";
+export { getLlmExecutionProfile } from "./profiles";
 export { parseContextAnalysisJson } from "./parser";
 export {
   CONTEXT_ANALYSIS_EMPTY_MESSAGE,
@@ -61,6 +60,8 @@ export type {
   LlmContextAnalyzer,
   LlmErrorDetail,
   LlmErrorKind,
+  LlmExecutionProfile,
+  LlmExecutionProfileId,
   LlmProgress,
   LlmRuntimePhase,
   LlmRuntimeStatus,

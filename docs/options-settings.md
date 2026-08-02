@@ -40,7 +40,7 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 
 ## スキーマとマイグレーション
 
-現在の設定スキーマは `SETTINGS_SCHEMA_VERSION = 2` です。バージョン1以前の設定には `resourceMode: "standard"` を補完します。
+現在の設定スキーマは `SETTINGS_SCHEMA_VERSION = 3` です。バージョン1以前の設定には `resourceMode: "standard"` を補完し、過去のモデルIDは現在の単一モデル `Llama-3.2-1B-Instruct-q4f32_1-MLC` へ正規化します。
 
 `normalizeSettings` / `migrateSettings` は、未設定、古い設定、壊れた設定を現在のスキーマへ補完します。
 
