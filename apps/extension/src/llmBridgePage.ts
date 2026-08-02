@@ -1,6 +1,8 @@
 import {
   type AnalyzeContextOptions,
+  getLlmExecutionProfile,
   type LocalLlmRuntimeService,
+  type LlmExecutionProfileId,
   type LlmProgress
 } from "@ai-mae-check/llm";
 import { createLocalLlmRuntimeService } from "@ai-mae-check/llm/runtime";
@@ -24,6 +26,7 @@ let bridgePort: MessagePort | null = null;
 let bridgeConnected = false;
 let runtimeService: LocalLlmRuntimeService | null = null;
 let runtimeModelId: string | null = null;
+let runtimeProfileId: LlmExecutionProfileId | null = null;
 
 function post(message: LlmBridgeResponse): void {
   bridgePort?.postMessage(message);
@@ -39,14 +42,16 @@ function postProgress(requestId: string): (progress: LlmProgress) => void {
   };
 }
 
-async function getRuntimeService(modelId: string): Promise<LocalLlmRuntimeService> {
-  if (runtimeService && runtimeModelId === modelId) {
+async function getRuntimeService(profileId: LlmExecutionProfileId): Promise<LocalLlmRuntimeService> {
+  const profile = getLlmExecutionProfile(profileId);
+  if (runtimeService && runtimeModelId === profile.modelId && runtimeProfileId === profile.id) {
     return runtimeService;
   }
 
   const previousRuntimeService = runtimeService;
   runtimeService = null;
   runtimeModelId = null;
+  runtimeProfileId = null;
 
   try {
     await previousRuntimeService?.dispose();
@@ -55,20 +60,30 @@ async function getRuntimeService(modelId: string): Promise<LocalLlmRuntimeServic
   }
 
   runtimeService = createLocalLlmRuntimeService({
-    modelId,
+    modelId: profile.modelId,
+    contextWindowSize: profile.contextWindowSize,
+    maxInputChars: profile.maxInputChars,
+    maxTokens: profile.maxTokens,
+    compactPrompt: profile.compactPrompt,
     workerUrl: getExtensionResourceUrl("llm-worker.js")
   });
-  runtimeModelId = modelId;
+  runtimeModelId = profile.modelId;
+  runtimeProfileId = profile.id;
   return runtimeService;
 }
 
-function isModelReady(modelId: string): boolean {
-  return runtimeModelId === modelId && runtimeService?.status().ready === true;
+function isModelReady(modelId: string, profileId: LlmExecutionProfileId): boolean {
+  return runtimeModelId === modelId && runtimeProfileId === profileId && runtimeService?.status().ready === true;
 }
 
 async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze" }>): Promise<void> {
   const startedAt = performance.now();
-  const currentRuntimeService = await getRuntimeService(request.modelId);
+  const profile = getLlmExecutionProfile(request.profileId);
+  const currentRuntimeService = await getRuntimeService(request.profileId);
+  const maxCandidates = Math.min(
+    request.options.maxCandidates ?? profile.maxCandidates,
+    profile.maxCandidates
+  );
   try {
     const options: AnalyzeContextOptions = {
       onProgress: postProgress(request.requestId)
@@ -76,9 +91,7 @@ async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze
     if (request.options.existingFindings) {
       options.existingFindings = request.options.existingFindings;
     }
-    if (typeof request.options.maxCandidates === "number") {
-      options.maxCandidates = request.options.maxCandidates;
-    }
+    options.maxCandidates = maxCandidates;
 
     const result = await currentRuntimeService.analyze({
       input: request.inputText,
@@ -93,10 +106,10 @@ async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze
   } catch (error) {
     const fallback = createJsonParseBridgeFallbackResult({
       inputText: request.inputText,
-      modelId: request.modelId,
+      modelId: profile.modelId,
       startedAt,
       error,
-      ...(typeof request.options.maxCandidates === "number" ? { maxCandidates: request.options.maxCandidates } : {})
+      maxCandidates
     });
 
     if (fallback) {
@@ -116,7 +129,7 @@ function handleModelState(request: Extract<LlmBridgeRequest, { type: "model-stat
   post({
     type: "model-state-result",
     requestId: request.requestId,
-    ready: isModelReady(request.modelId)
+    ready: isModelReady(request.modelId, request.profileId)
   });
 }
 
@@ -176,4 +189,18 @@ window.addEventListener("message", (event: MessageEvent<unknown>) => {
   };
   bridgePort.start();
   post({ type: LLM_BRIDGE_READY });
+});
+
+window.addEventListener("pagehide", () => {
+  const currentRuntimeService = runtimeService;
+  runtimeService = null;
+  runtimeModelId = null;
+  runtimeProfileId = null;
+  if (currentRuntimeService) {
+    void Promise.resolve()
+      .then(() => currentRuntimeService.dispose())
+      .catch(() => {
+        // ページ破棄時は、既に失われたGPUデバイスの解放失敗を画面へ伝える必要はない。
+      });
+  }
 });

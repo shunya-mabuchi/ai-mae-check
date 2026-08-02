@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { CheckCircle2, ClipboardCopy, Database, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
-import { LOW_VRAM_MODEL_ID } from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
 import { targetSites, type SiteId } from "../../src/lib/sites";
 import type {
   AiMaeCheckSettings,
@@ -165,8 +165,6 @@ export function WebLlmSettingsSection({
   onModeChange: (mode: LlmRunMode) => void;
   onResourceModeChange: (mode: LlmResourceMode) => void;
 }) {
-  const activeModelId = settings.llm.resourceMode === "low_resource" ? LOW_VRAM_MODEL_ID : settings.llm.modelId;
-
   return (
     <Section icon={<Sparkles size={20} aria-hidden="true" />} title="WebLLMによるAI文脈チェック">
       <OptionsCheckbox
@@ -179,17 +177,17 @@ export function WebLlmSettingsSection({
       <div className="rounded-md border border-line bg-white p-4">
         <p className="text-sm font-semibold text-ink">実行負荷</p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          GPU実行が途中で停止する環境では「低負荷」を選ぶと、標準モデルを先に読み込まず軽量モデルから開始します。
+          どちらも同じLlamaモデルを使います。「低負荷」は入力長、出力長、候補数、context windowを抑えてGPU負荷を下げます。
         </p>
         <div className="mt-3">
           <LlmResourceModeRadioGroup value={settings.llm.resourceMode} onChange={onResourceModeChange} />
         </div>
         <p className="mt-4 text-sm font-semibold text-ink">使用するモデル</p>
         <p className="mt-2 break-all rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">
-          {activeModelId}
+          {DEFAULT_MODEL_ID}
         </p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          低負荷モデルでも、端末、GPUドライバー、WebGPU実装によっては実行できない場合があります。その場合もルールベース検出とブラウザ内の補助検出は利用できます。
+          低負荷でも、端末、GPUドライバー、WebGPU実装によっては実行できない場合があります。その場合もルールベース検出とブラウザ内の補助検出は利用できます。
         </p>
       </div>
 

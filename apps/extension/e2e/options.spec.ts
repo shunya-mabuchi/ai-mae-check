@@ -80,13 +80,13 @@ test.describe("Options PageのReact Aria操作", () => {
       await standardRadio.focus();
       await page.keyboard.press("ArrowRight");
       await expect(lowResourceRadio).toBeChecked();
-      await expect(page.getByText("SmolLM2-360M-Instruct-q4f32_1-MLC", { exact: true })).toBeVisible();
+      await expect(page.getByText("Llama-3.2-1B-Instruct-q4f32_1-MLC", { exact: true })).toBeVisible();
       await expect(page.getByText("保存しました。", { exact: true })).toBeVisible();
 
       await page.reload();
       await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
       await expect(page.getByRole("radio", { name: /^低負荷/ })).toBeChecked();
-      await expect(page.getByText("SmolLM2-360M-Instruct-q4f32_1-MLC", { exact: true })).toBeVisible();
+      await expect(page.getByText("Llama-3.2-1B-Instruct-q4f32_1-MLC", { exact: true })).toBeVisible();
     } finally {
       await closeExtensionContext(target);
     }

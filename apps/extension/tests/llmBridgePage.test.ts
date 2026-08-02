@@ -51,6 +51,7 @@ async function loadBridgePage(options?: { expectedNonce?: string | null }) {
   vi.resetModules();
 
   let messageHandler: ((event: MessageEvent<unknown>) => void) | null = null;
+  let pagehideHandler: (() => void) | null = null;
   const href =
     options?.expectedNonce === null
       ? "chrome-extension://test/llm-bridge.html"
@@ -61,6 +62,8 @@ async function loadBridgePage(options?: { expectedNonce?: string | null }) {
     addEventListener: vi.fn((type: string, listener: (event: MessageEvent<unknown>) => void) => {
       if (type === "message") {
         messageHandler = listener;
+      } else if (type === "pagehide") {
+        pagehideHandler = listener as () => void;
       }
     })
   });
@@ -71,7 +74,7 @@ async function loadBridgePage(options?: { expectedNonce?: string | null }) {
     throw new Error("message handler was not registered");
   }
 
-  return { messageHandler };
+  return { messageHandler, pagehideHandler };
 }
 
 describe("llmBridgePage", () => {
@@ -121,7 +124,8 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "test-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
 
@@ -133,6 +137,15 @@ describe("llmBridgePage", () => {
         })
       );
     });
+    expect(createLocalLlmRuntimeServiceMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        contextWindowSize: 4096,
+        maxInputChars: 6000,
+        maxTokens: 900,
+        compactPrompt: false
+      })
+    );
     expect(port.postedMessages).toContainEqual(
       expect.objectContaining({
         type: "analyze-result",
@@ -142,12 +155,41 @@ describe("llmBridgePage", () => {
     expect(disposeMock).not.toHaveBeenCalled();
   });
 
+  it("pagehide時にruntimeを破棄する", async () => {
+    analyzeMock.mockResolvedValue({
+      candidates: [],
+      summary: "ok",
+      rawText: "",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      elapsedMs: 5
+    });
+    const { messageHandler, pagehideHandler } = await loadBridgePage();
+    const port = new FakeMessagePort();
+    messageHandler({
+      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
+      ports: [port]
+    } as MessageEvent<unknown>);
+    port.dispatch({
+      type: "analyze",
+      requestId: "request-pagehide",
+      inputText: "本文です",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
+      options: {}
+    });
+    await vi.waitFor(() => expect(analyzeMock).toHaveBeenCalled());
+
+    pagehideHandler?.();
+
+    await vi.waitFor(() => expect(disposeMock).toHaveBeenCalledTimes(1));
+  });
+
   it("モデル準備状態を返す", async () => {
     analyzeMock.mockResolvedValue({
       candidates: [],
       summary: "ok",
       rawText: "",
-      modelId: "test-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       elapsedMs: 5
     });
     const { messageHandler } = await loadBridgePage();
@@ -161,7 +203,8 @@ describe("llmBridgePage", () => {
     port.dispatch({
       type: "model-state",
       requestId: "state-1",
-      modelId: "test-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
 
@@ -177,7 +220,8 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "test-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
 
@@ -187,14 +231,15 @@ describe("llmBridgePage", () => {
     statusMock.mockReturnValue({
       phase: "ready",
       ready: true,
-      modelId: "test-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
       message: "AI文脈チェックを実行できます。"
     });
 
     port.dispatch({
       type: "model-state",
       requestId: "state-2",
-      modelId: "test-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
 
@@ -207,7 +252,7 @@ describe("llmBridgePage", () => {
     });
   });
 
-  it("モデル切り替え時は古いruntimeのdispose完了を待ってから次のruntimeを作る", async () => {
+  it("推論プロファイル切り替え時は古いruntimeのdispose完了を待ってから次のruntimeを作る", async () => {
     let releaseDispose: (() => void) | null = null;
     const firstAnalyze = vi.fn().mockResolvedValue({
       candidates: [],
@@ -257,7 +302,8 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "first-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
 
@@ -269,8 +315,9 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-2",
       inputText: "本文です",
-      modelId: "second-model",
-      options: {}
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "low_resource",
+      options: { maxCandidates: 12 }
     });
     await Promise.resolve();
 
@@ -282,8 +329,19 @@ describe("llmBridgePage", () => {
 
     await vi.waitFor(() => {
       expect(runtimeServiceFactoryMock).toHaveBeenCalledTimes(2);
-      expect(secondAnalyze).toHaveBeenCalled();
+      expect(secondAnalyze).toHaveBeenCalledWith(
+        expect.objectContaining({ maxCandidates: 6 })
+      );
     });
+    expect(createLocalLlmRuntimeServiceMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        contextWindowSize: 2048,
+        maxInputChars: 800,
+        maxTokens: 256,
+        compactPrompt: true
+      })
+    );
   });
 
   it.each([
@@ -319,6 +377,7 @@ describe("llmBridgePage", () => {
       requestId: "request-ignored",
       inputText: "秘密本文",
       modelId: "test-model",
+      profileId: "standard",
       options: {}
     });
 
@@ -357,7 +416,8 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-after-connect",
       inputText: "再接続拒否後も正常処理",
-      modelId: "test-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
 
@@ -380,6 +440,7 @@ describe("llmBridgePage", () => {
       requestId: "bad-request",
       inputText: "秘密本文",
       modelId: 123,
+      profileId: "standard",
       options: {}
     });
 
@@ -408,7 +469,8 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-error",
       inputText: "秘密本文",
-      modelId: "test-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
 

@@ -35,7 +35,6 @@ const readme = read(readmePath);
 const licensePolicy = read(licensePolicyPath);
 
 const defaultModelId = extractConst(constants, "DEFAULT_MODEL_ID");
-const lowVramModelId = extractConst(constants, "LOW_VRAM_MODEL_ID");
 
 for (const doc of [
   ["docs/webllm-model-policy.md", policy],
@@ -44,14 +43,13 @@ for (const doc of [
   assertIncludes(doc[1], defaultModelId, doc[0]);
 }
 
-assertIncludes(policy, lowVramModelId, "docs/webllm-model-policy.md");
 assertIncludes(policy, "Llama 3.2 Community License", "docs/webllm-model-policy.md");
-assertIncludes(policy, "Apache-2.0", "docs/webllm-model-policy.md");
+assertIncludes(policy, "単一モデル", "docs/webllm-model-policy.md");
+assertIncludes(policy, "context window", "docs/webllm-model-policy.md");
 assertIncludes(policy, "prebuiltAppConfig.model_list", "docs/webllm-model-policy.md");
 assertIncludes(policy, "外部LLM API", "docs/webllm-model-policy.md");
 assertIncludes(policy, "ユーザー本文", "docs/webllm-model-policy.md");
 assertIncludes(policy, "https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct", "docs/webllm-model-policy.md");
-assertIncludes(policy, "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct", "docs/webllm-model-policy.md");
 assertIncludes(policy, "https://github.com/mlc-ai/web-llm", "docs/webllm-model-policy.md");
 
 assertIncludes(licensePolicy, "第三者モデル", "docs/license-policy.md");

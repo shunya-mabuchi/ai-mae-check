@@ -1,6 +1,7 @@
 import type {
   AnalyzeContextOptions,
   ContextAnalysisResult,
+  LlmExecutionProfileId,
   LlmProgress
 } from "@ai-mae-check/llm";
 import {
@@ -40,6 +41,7 @@ interface BridgeErrorFallbackOptions {
 
 interface BridgeAnalyzeOptions extends Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates" | "onProgress"> {
   modelId: string;
+  profileId: LlmExecutionProfileId;
 }
 
 const BRIDGE_PAGE = "llm-bridge.html";
@@ -185,6 +187,7 @@ export function analyzeContextWithBridge(inputText: string, options: BridgeAnaly
     requestId: nextRequestId(),
     inputText,
     modelId: options.modelId,
+    profileId: options.profileId,
     ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
     ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
   });
@@ -192,8 +195,11 @@ export function analyzeContextWithBridge(inputText: string, options: BridgeAnaly
   return sendBridgeRequest(request, options.onProgress);
 }
 
-export async function isLlmBridgeModelReady(modelId: string): Promise<boolean> {
-  const request = createLlmBridgeModelStateRequest(nextRequestId(), modelId);
+export async function isLlmBridgeModelReady(
+  modelId: string,
+  profileId: LlmExecutionProfileId
+): Promise<boolean> {
+  const request = createLlmBridgeModelStateRequest(nextRequestId(), modelId, profileId);
   const bridge = await getBridgeConnection();
 
   return new Promise<boolean>((resolve, reject) => {

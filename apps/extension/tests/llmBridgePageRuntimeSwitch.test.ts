@@ -59,7 +59,7 @@ async function loadBridgePage() {
   return messageHandler;
 }
 
-describe("llmBridgePageのGPU障害後モデル切り替え", () => {
+describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
   afterEach(() => {
     vi.resetModules();
     vi.unstubAllGlobals();
@@ -110,7 +110,8 @@ describe("llmBridgePageのGPU障害後モデル切り替え", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "first-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "standard",
       options: {}
     });
     await vi.waitFor(() => expect(firstAnalyze).toHaveBeenCalled());
@@ -119,7 +120,8 @@ describe("llmBridgePageのGPU障害後モデル切り替え", () => {
       type: "analyze",
       requestId: "request-2",
       inputText: "本文です",
-      modelId: "second-model",
+      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      profileId: "low_resource",
       options: {}
     });
 

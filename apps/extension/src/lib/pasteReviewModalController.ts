@@ -114,6 +114,7 @@ export function initializePasteReviewModalController(
         enabled: options.settings.llm.enabled,
         inputText: options.inputText,
         modelId: llmModelId,
+        profileId: options.settings.llm.resourceMode,
         existingFindings: options.detection.findings,
         llmStatus,
         llmButton,
@@ -158,7 +159,7 @@ export function initializePasteReviewModalController(
   render();
 
   if (mode === "default" && options.settings.llm.enabled && options.settings.llm.mode === "auto") {
-    void isLlmBridgeModelReady(llmModelId)
+    void isLlmBridgeModelReady(llmModelId, options.settings.llm.resourceMode)
       .then((modelReady) => {
         if (isActive() && shouldAutoRunPasteReviewLlm(mode, options.settings.llm, modelReady)) {
           void runLlm("auto");

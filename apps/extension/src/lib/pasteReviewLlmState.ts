@@ -59,7 +59,7 @@ export function formatPasteReviewLlmStatusMessage(message: string, detail?: LlmE
   }
 
   const technical = detail.technicalDetail ? `\n詳細: ${detail.technicalDetail}` : "";
-  return `${message}\n診断メモ: ${detail.hint}${technical}`;
+  return `${message}\nエラー分類: ${detail.kind}\n診断メモ: ${detail.hint}${technical}`;
 }
 
 export function shouldAutoRunPasteReviewLlm(

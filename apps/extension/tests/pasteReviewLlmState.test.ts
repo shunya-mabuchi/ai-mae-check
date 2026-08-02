@@ -144,7 +144,7 @@ describe("pasteReviewLlmState", () => {
     };
 
     expect(formatPasteReviewLlmStatusMessage(detail.message, detail)).toBe(
-      "AI文脈チェックを実行できませんでした。\n診断メモ: ページを再読み込みしてから再試行してください。\n詳細: Worker disposed"
+      "AI文脈チェックを実行できませんでした。\nエラー分類: worker\n診断メモ: ページを再読み込みしてから再試行してください。\n詳細: Worker disposed"
     );
   });
 

@@ -54,7 +54,7 @@ assertIncludes(matrix, `@mlc-ai/web-llm@${webLlmVersion}`, paths.matrix);
 
 for (const phrase of [
   "Llama-3.2-1B-Instruct-q4f32_1-MLC",
-  "SmolLM2-360M-Instruct-q4f32_1-MLC",
+  "低負荷プロファイル",
   "Windows NT 10.0.26200.8457",
   "Chrome/148.0.7778.180",
   "Intel UHD Graphics 620",
@@ -107,7 +107,7 @@ for (const phrase of [
 }
 
 assertIncludes(modelPolicy, "Llama-3.2-1B-Instruct-q4f32_1-MLC", paths.modelPolicy);
-assertIncludes(modelPolicy, "SmolLM2-360M-Instruct-q4f32_1-MLC", paths.modelPolicy);
+assertIncludes(modelPolicy, "単一モデル", paths.modelPolicy);
 assertIncludes(supportPage, "WebLLM確認項目を見る", paths.supportPage);
 assertIncludes(supportPage, "本文は記録しません", paths.supportPage);
 

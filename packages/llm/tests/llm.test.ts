@@ -45,6 +45,20 @@ describe("buildContextRiskPrompt", () => {
     expect(joined).toContain("最終面談評価");
     expect(joined).toContain("外には出さない");
   });
+
+  it("低負荷用の短縮プロンプトでもJSON形式と主要カテゴリを維持する", () => {
+    const input = "佐藤様向けの契約更新案です。";
+    const standard = buildContextRiskPrompt(input).map((message) => message.content).join("\n");
+    const compact = buildContextRiskPrompt(input, { compact: true, maxCandidates: 6 })
+      .map((message) => message.content)
+      .join("\n");
+
+    expect(compact.length).toBeLessThan(standard.length);
+    expect(compact).toContain("JSON以外は返さない");
+    expect(compact).toContain("person_name");
+    expect(compact).toContain("候補は最大6件");
+    expect(compact).toContain(input);
+  });
 });
 
 describe("public API", () => {

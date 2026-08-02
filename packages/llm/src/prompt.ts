@@ -16,6 +16,10 @@ function summarizeExistingFindings(options: ContextPromptOptions): string {
 
 export function buildContextRiskPrompt(input: string, options: ContextPromptOptions = {}): ChatMessage[] {
   const maxCandidates = options.maxCandidates ?? DEFAULT_MAX_CANDIDATES;
+  if (options.compact) {
+    return buildCompactContextRiskPrompt(input, options, maxCandidates);
+  }
+
   const system = [
     "あなたは、外部AIや外部フォームに文章を送る前の確認を補助する文脈リスク検出器です。",
     "目的は、入力文からマスクした方がよい候補を見つけることです。",
@@ -69,6 +73,33 @@ export function buildContextRiskPrompt(input: string, options: ContextPromptOpti
     "",
     summarizeExistingFindings(options),
     "",
+    "入力文:",
+    input
+  ].join("\n");
+
+  return [
+    { role: "system", content: system },
+    { role: "user", content: user }
+  ];
+}
+
+function buildCompactContextRiskPrompt(
+  input: string,
+  options: ContextPromptOptions,
+  maxCandidates: number
+): ChatMessage[] {
+  const system = [
+    "外部AIへ送る前の文脈リスク検出器です。",
+    "入力中に実在し、安全化を検討すべき短い文字列だけをJSONで返してください。",
+    "安全を断言せず、確信が低い候補は出さないでください。"
+  ].join("\n");
+  const user = [
+    "JSON以外は返さない。APIキー、メール、電話番号は既存ルールを優先する。",
+    `候補は最大${maxCandidates}件。surfaceは入力中の文字列と完全一致させる。reasonは短い日本語にする。`,
+    "対象: 人名、顧客名、会社名、案件名、契約、見積、給与、採用、法務、社内限定、未公開情報。",
+    "カテゴリ: person_name, company_name, customer_name, project_name, contract_info, hr_info, legal_info, financial_info, internal_info, confidential_context, other",
+    '形式: {"candidates":[{"category":"person_name","surface":"佐藤様","label":"人名候補","reason":"個人名の可能性があります。","riskLevel":"medium","suggestedPlaceholder":"[PERSON_1]","confidence":0.8}],"summary":"注意候補があります。"}',
+    summarizeExistingFindings(options),
     "入力文:",
     input
   ].join("\n");

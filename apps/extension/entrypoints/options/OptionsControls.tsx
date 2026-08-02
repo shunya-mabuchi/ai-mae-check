@@ -153,12 +153,12 @@ const llmResourceModes: Array<{ value: LlmResourceMode; label: string; descripti
   {
     value: "standard",
     label: "標準",
-    description: "日本語の候補検出を優先してLlama 3.2 1Bを使い、GPU実行に失敗した場合だけ低負荷モデルへ切り替えます。"
+    description: "Llama 3.2 1Bを通常の入力長と候補数で実行します。"
   },
   {
     value: "low_resource",
     label: "低負荷",
-    description: "内蔵GPUなどでの安定性を優先し、SmolLM2 360Mから開始します。候補の精度は標準より下がる場合があります。"
+    description: "同じLlama 3.2 1Bの入力長、出力長、候補数、context windowを抑えて実行します。"
   }
 ];
 

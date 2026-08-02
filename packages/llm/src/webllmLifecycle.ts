@@ -43,12 +43,16 @@ type WebLlmModule = WebLlmModelListModule & {
     modelId: string,
     options?: {
       initProgressCallback?: (report: WebLlmProgressReport) => void;
+    },
+    chatOptions?: {
+      context_window_size?: number;
     }
   ): Promise<WebLlmEngine>;
 };
 
 interface CreateWebLlmEngineLifecycleOptions {
   modelId: string;
+  contextWindowSize?: number;
   workerUrl?: string;
 }
 
@@ -134,20 +138,27 @@ export function createWebLlmEngineLifecycle(options: CreateWebLlmEngineLifecycle
     worker = await createWorkerInstance(options.workerUrl);
 
     try {
-      engine = await webllm.CreateWebWorkerMLCEngine(worker, modelId, {
-        initProgressCallback: (report) => {
-          const progress: LlmProgress = {
-            phase: "loading",
-            message: report.text && report.text.length > 0 ? report.text : MODEL_LOADING_MESSAGE
-          };
+      engine = await webllm.CreateWebWorkerMLCEngine(
+        worker,
+        modelId,
+        {
+          initProgressCallback: (report) => {
+            const progress: LlmProgress = {
+              phase: "loading",
+              message: report.text && report.text.length > 0 ? report.text : MODEL_LOADING_MESSAGE
+            };
 
-          if (typeof report.progress === "number") {
-            progress.progress = report.progress;
+            if (typeof report.progress === "number") {
+              progress.progress = report.progress;
+            }
+
+            onProgress?.(progress);
           }
-
-          onProgress?.(progress);
-        }
-      });
+        },
+        typeof options.contextWindowSize === "number"
+          ? { context_window_size: options.contextWindowSize }
+          : undefined
+      );
       loadedModelId = modelId;
       return { engine, modelId };
     } catch (error) {
