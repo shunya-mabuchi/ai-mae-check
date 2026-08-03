@@ -11,9 +11,9 @@ import {
 import { buildLlmErrorDetail } from "./testBuilders";
 
 describe("formatLlmErrorMessage", () => {
-  it("デフォルトモデルは動作実績を優先してLlama 3.2 1B q4f32にする", () => {
-    expect(DEFAULT_MODEL_ID).toContain("q4f32_1");
-    expect(DEFAULT_MODEL_ID).toBe("Llama-3.2-1B-Instruct-q4f32_1-MLC");
+  it("デフォルトモデルはGemma 3 1B q4f16にする", () => {
+    expect(DEFAULT_MODEL_ID).toContain("q4f16_1");
+    expect(DEFAULT_MODEL_ID).toBe("gemma3-1b-it-q4f16_1-MLC");
   });
 
   it("モデル取得のネットワーク失敗を日本語で説明する", () => {

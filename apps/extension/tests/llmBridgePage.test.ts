@@ -124,7 +124,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -139,7 +139,7 @@ describe("llmBridgePage", () => {
     });
     expect(createLocalLlmRuntimeServiceMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        modelId: "gemma3-1b-it-q4f16_1-MLC",
         contextWindowSize: 4096,
         maxInputChars: 6000,
         maxTokens: 900,
@@ -160,7 +160,7 @@ describe("llmBridgePage", () => {
       candidates: [],
       summary: "ok",
       rawText: "",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       elapsedMs: 5
     });
     const { messageHandler, pagehideHandler } = await loadBridgePage();
@@ -173,7 +173,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-pagehide",
       inputText: "本文です",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -189,7 +189,7 @@ describe("llmBridgePage", () => {
       candidates: [],
       summary: "ok",
       rawText: "",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       elapsedMs: 5
     });
     const { messageHandler } = await loadBridgePage();
@@ -203,7 +203,7 @@ describe("llmBridgePage", () => {
     port.dispatch({
       type: "model-state",
       requestId: "state-1",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -220,7 +220,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -231,14 +231,14 @@ describe("llmBridgePage", () => {
     statusMock.mockReturnValue({
       phase: "ready",
       ready: true,
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       message: "AI文脈チェックを実行できます。"
     });
 
     port.dispatch({
       type: "model-state",
       requestId: "state-2",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -324,7 +324,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-after-connect",
       inputText: "再接続拒否後も正常処理",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -377,7 +377,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-error",
       inputText: "秘密本文",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });

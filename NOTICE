@@ -1,0 +1,21 @@
+AIまえチェック 第三者モデルに関する告知
+
+AIまえチェックのソースコードは、特に別記がない限りMIT Licenseで提供されます。
+このライセンスは、WebLLMが取得する第三者モデルの利用条件を上書きしません。
+
+Gemma 3
+
+- 元モデル: google/gemma-3-1b-it
+- WebLLMモデル: gemma3-1b-it-q4f16_1-MLC
+- 提供元: Google LLC / Google DeepMind
+- 利用条件: Gemma Terms of Use
+- 利用条件URL: https://ai.google.dev/gemma/terms
+- 禁止用途ポリシー: https://ai.google.dev/gemma/prohibited_use_policy
+- 量子化モデル配信元: https://huggingface.co/mlc-ai/gemma3-1b-it-q4f16_1-MLC
+
+Gemma is provided under and subject to the Gemma Terms of Use found at
+ai.google.dev/gemma/terms.
+
+AIまえチェックはGemmaモデルの重みをChrome拡張ZIPへ同梱しません。
+AI文脈チェックの初回利用時に、WebLLMがブラウザ内推論用モデルファイルを
+第三者のモデル配信元から取得する場合があります。
