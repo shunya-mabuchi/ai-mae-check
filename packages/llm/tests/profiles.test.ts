@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_MODEL_ID, getLlmExecutionProfile } from "../src";
 
 describe("getLlmExecutionProfile", () => {
-  it("標準と低負荷で同じLlamaモデルを使う", () => {
+  it("標準と低負荷で同じGemmaモデルを使う", () => {
     expect(getLlmExecutionProfile("standard").modelId).toBe(DEFAULT_MODEL_ID);
     expect(getLlmExecutionProfile("low_resource").modelId).toBe(DEFAULT_MODEL_ID);
   });

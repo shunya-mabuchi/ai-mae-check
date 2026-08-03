@@ -211,7 +211,7 @@ function optionsScreenshot() {
         <div class="card" style="padding:26px;">
           <h2 class="h2" style="font-size:34px;">AI文脈チェック</h2>
           <div class="finding"><div class="check">✓</div><div><b>手動実行</b><div class="mini">初期設定では自動実行しません</div></div></div>
-          <div class="finding"><div class="check">✓</div><div><b>標準モデル</b><div class="mini">Llama 3.2 1B q4f32</div></div></div>
+          <div class="finding"><div class="check">✓</div><div><b>標準モデル</b><div class="mini">Gemma 3 1B q4f16</div></div></div>
           <div class="preview">貼り付け本文は永続保存しません。設定と検証済みルールキャッシュだけをChromeのローカル保存領域に保存します。WebLLMの初回利用時にはモデルファイルを取得する場合があります。</div>
         </div>
       </div>

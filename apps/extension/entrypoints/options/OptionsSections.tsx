@@ -177,7 +177,7 @@ export function WebLlmSettingsSection({
       <div className="rounded-md border border-line bg-white p-4">
         <p className="text-sm font-semibold text-ink">実行負荷</p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          どちらも同じLlamaモデルを使います。「低負荷」は入力長、出力長、候補数、context windowを抑えてGPU負荷を下げます。
+          どちらも同じGemma 3 1Bモデルを使います。「低負荷」は入力長、出力長、候補数、context windowを抑えてGPU負荷を下げます。
         </p>
         <div className="mt-3">
           <LlmResourceModeRadioGroup value={settings.llm.resourceMode} onChange={onResourceModeChange} />
@@ -185,6 +185,18 @@ export function WebLlmSettingsSection({
         <p className="mt-4 text-sm font-semibold text-ink">使用するモデル</p>
         <p className="mt-2 break-all rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">
           {DEFAULT_MODEL_ID}
+        </p>
+        <p className="mt-2 text-sm leading-6 text-stone-600">
+          Gemma 3は
+          <a
+            className="font-semibold text-brand underline decoration-brand/40 underline-offset-2 hover:decoration-brand"
+            href="https://ai.google.dev/gemma/terms"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Gemma Terms of Use
+          </a>
+          の対象です。
         </p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
           低負荷でも、端末、GPUドライバー、WebGPU実装によっては実行できない場合があります。その場合もルールベース検出とブラウザ内の補助検出は利用できます。

@@ -4,13 +4,14 @@ AIまえチェックでは、WebLLMを「文脈上の注意候補を補助的に
 
 ## 現在の標準モデル
 
-標準モデルは `Llama-3.2-1B-Instruct-q4f32_1-MLC` です。
+標準モデルは `gemma3-1b-it-q4f16_1-MLC` です。
 
 選定理由:
 
-- WebLLMのprebuiltモデルとして扱える前提で実装しやすい
-- 1B級で、ブラウザ内実行と文脈候補抽出のバランスを取りやすい
-- `q4f32_1` は、過去に使っていた `q4f16_1` より環境差分の影響を受けにくい想定で扱う
+- `@mlc-ai/web-llm` 0.2.84のprebuiltモデルとして提供されている
+- 1B級かつ多言語対応で、日本語を含む文脈候補抽出とブラウザ内実行のバランスを取りやすい
+- prebuilt設定の必要VRAM目安は約711MBで、従来のLlama 3.2 1B q4f32の約1129MBより小さい
+- `q4f16_1` を採用し、Intel UHD Graphics 620で確認したGPUデバイス喪失の発生可能性を下げる
 - AIまえチェックは会話品質より「顧客名候補、案件名候補、契約・採用・給与・法務などの注意候補」を出す用途なので、軽量モデルを優先する
 - WebLLMが失敗してもルールベース検出を継続できる設計と相性がよい
 
@@ -24,18 +25,21 @@ JSONを読み取れない場合やGPU実行を完了できない場合も、ア�
 
 ## ライセンス確認
 
-`Llama-3.2-1B-Instruct-q4f32_1-MLC` はMLC形式の量子化モデルIDです。元モデルのライセンス確認では、少なくとも以下を確認します。
+`gemma3-1b-it-q4f16_1-MLC` はMLC形式の量子化モデルIDです。元モデルと利用条件について、少なくとも以下を確認します。
 
-- 元モデル: `meta-llama/Llama-3.2-1B-Instruct`
-- ライセンス: Llama 3.2 Community License
-- 確認元: <https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct>
-- 注意: Apache-2.0やMITではありません。商用利用を検討する場合も、MetaのLlama 3.2 Community LicenseとAcceptable Use Policy、再配布条件、表示義務、月間アクティブユーザー条件を確認します。
+- 元モデル: `google/gemma-3-1b-it`
+- 量子化モデル配信元: <https://huggingface.co/mlc-ai/gemma3-1b-it-q4f16_1-MLC>
+- 元モデル確認元: <https://huggingface.co/google/gemma-3-1b-it>
+- 利用条件: Gemma Terms of Use
+- 利用条件確認元: <https://ai.google.dev/gemma/terms>
+- 禁止用途ポリシー: <https://ai.google.dev/gemma/prohibited_use_policy>
+- 注意: Apache-2.0やMITではありません。利用、複製、変更、配布を行う場合はGemma Terms of Useに従います。モデルまたは派生物を配布する場合に備え、利用条件への案内と告知を `NOTICE` に記載します。
 
 このリポジトリのMIT Licenseは、第三者モデルのライセンスを上書きしません。
 
 ## 単一モデルと実行プロファイル
 
-ユーザーが選ぶモデルは増やさず、標準・低負荷のどちらも `Llama-3.2-1B-Instruct-q4f32_1-MLC` を使います。モデルごとの日本語候補精度の差、追加ダウンロード、設定の複雑さを避けるためです。
+ユーザーが選ぶモデルは増やさず、標準・低負荷のどちらも `gemma3-1b-it-q4f16_1-MLC` を使います。モデルごとの日本語候補精度の差、追加ダウンロード、設定の複雑さを避けるためです。
 
 実行条件は次の2プロファイルです。
 
@@ -57,7 +61,7 @@ WebLLMは通常のHugging Faceモデルをそのまま任意に読み込む仕�
 - WebLLM README: <https://github.com/mlc-ai/web-llm>
 - WebLLMのbuilt-in models説明では、利用可能モデルは `prebuiltAppConfig.model_list` から確認できると案内されています。
 
-実装では、`packages/llm/src/model.ts` の `resolveModelId` が `prebuiltAppConfig.model_list` に単一モデルがあることを確認します。古い保存値や過去の `q4f16_1` 指定は現在のモデルへ正規化します。単一モデルが一覧にない場合は、説明していない別モデルを暗黙に読み込まずエラーとして扱います。
+実装では、`packages/llm/src/model.ts` の `resolveModelId` が `prebuiltAppConfig.model_list` に単一モデルがあることを確認します。古い保存値や過去のLlama指定は現在のGemmaモデルへ正規化します。単一モデルが一覧にない場合は、説明していない別モデルを暗黙に読み込まずエラーとして扱います。
 
 ## モデル変更時のチェックリスト
 
@@ -80,4 +84,4 @@ WebLLMは通常のHugging Faceモデルをそのまま任意に読み込む仕�
 - Chrome拡張上で初回ロードとGPUメモリが許容範囲に収まる
 - 商用利用や再配布条件を説明できる
 
-そのため、国産モデルは今後の検証対象にできますが、現行版は動作実績とWebLLM prebuilt互換性を優先してLlama単一モデルを採用します。
+そのため、国産モデルは今後の検証対象にできますが、現行版は低VRAM環境での実行可能性、多言語対応、WebLLM prebuilt互換性を優先してGemma 3 1B単一モデルを採用します。

@@ -40,6 +40,8 @@ READMEと `docs/` 配下の文章は、特に別記がない限りMIT Licenseで
 
 モデルや依存関係を追加・変更する場合は、ライセンス、商用利用可否、配布元、WebLLM prebuilt対応、ブラウザ内実行の安定性を確認します。WebLLMモデルの選定理由と確認手順は [webllm-model-policy.md](webllm-model-policy.md) にまとめています。
 
+現在のWebLLMモデルは `google/gemma-3-1b-it` をMLC形式へ量子化した `gemma3-1b-it-q4f16_1-MLC` です。Gemma 3は [Gemma Terms of Use](https://ai.google.dev/gemma/terms) の対象であり、このリポジトリのMIT LicenseはGemmaの利用条件を上書きしません。第三者モデルに関する告知はリポジトリルートの [NOTICE](../NOTICE) に記載します。
+
 依存関係アップデート時の確認コマンド、`pnpm licenses list --json` の使い方、PRチェックリストは [dependency-maintenance.md](dependency-maintenance.md) にまとめています。
 
 ## 免責

@@ -110,7 +110,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -120,7 +120,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-2",
       inputText: "本文です",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "low_resource",
       options: {}
     });
@@ -182,7 +182,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-standard",
       inputText: "本文です",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -192,7 +192,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-low-resource",
       inputText: "本文です",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "low_resource",
       options: { maxCandidates: 12 }
     });
@@ -210,7 +210,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
     });
     expect(createLocalLlmRuntimeServiceMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        modelId: "gemma3-1b-it-q4f16_1-MLC",
         contextWindowSize: 2048,
         maxInputChars: 800,
         maxTokens: 256,

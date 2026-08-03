@@ -44,7 +44,7 @@ describe("runReviewLlm", () => {
     const execution = runReviewLlm({
       enabled: true,
       inputText: "候補者の山田花子さんを確認します。",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -79,7 +79,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: false,
       inputText: "テスト",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -137,7 +137,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "候補者の山田花子さんについて確認します。",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [buildFinding()],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -151,7 +151,7 @@ describe("runReviewLlm", () => {
     expect(analyze).toHaveBeenCalledWith(
       "候補者の山田花子さんについて確認します。",
       expect.objectContaining({
-        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        modelId: "gemma3-1b-it-q4f16_1-MLC",
         profileId: "standard",
         existingFindings: [buildFinding()],
         onProgress: expect.any(Function)
@@ -186,7 +186,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "テスト",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -218,7 +218,7 @@ describe("runReviewLlm", () => {
       ],
       summary: "GPU実行に失敗しました。",
       rawText: "",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       elapsedMs: 10,
       error: "ローカルAIモデルの実行に必要なメモリを確保できませんでした。",
       errorDetail: {
@@ -236,7 +236,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "候補者の給与条件を確認します。",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -248,24 +248,24 @@ describe("runReviewLlm", () => {
     });
 
     expect(analyze).toHaveBeenCalledTimes(1);
-    expect(analyze.mock.calls[0]?.[1].modelId).toBe("Llama-3.2-1B-Instruct-q4f32_1-MLC");
+    expect(analyze.mock.calls[0]?.[1].modelId).toBe("gemma3-1b-it-q4f16_1-MLC");
     expect(setCandidates).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ surface: "給与条件" })]));
     expect(llmStatus.textContent).toContain(LOCAL_CONTEXT_FALLBACK_MESSAGE);
   });
 
-  it("低負荷設定でもLlamaを低負荷プロファイルで1回だけ実行する", async () => {
+  it("低負荷設定でもGemmaを低負荷プロファイルで1回だけ実行する", async () => {
     const analyze = vi.fn<AnalyzeReviewContextForTest>(async () => ({
       candidates: [],
       summary: "追加候補はありません。",
       rawText: "{}",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       elapsedMs: 10
     }));
 
     await runReviewLlm({
       enabled: true,
       inputText: "一般的な確認文です。",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "low_resource",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>({ textContent: "" }),
@@ -279,7 +279,7 @@ describe("runReviewLlm", () => {
     expect(analyze).toHaveBeenCalledTimes(1);
     expect(analyze.mock.calls[0]?.[1]).toEqual(
       expect.objectContaining({
-        modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+        modelId: "gemma3-1b-it-q4f16_1-MLC",
         profileId: "low_resource"
       })
     );
@@ -305,7 +305,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "一般的な確認文です。",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -336,7 +336,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "テスト",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -387,7 +387,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "候補者の山田花子さんについて確認します。",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -420,7 +420,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "佐藤様向けに Project Blue Bridge の提案メモを作ります。",
-      modelId: "Llama-3.2-1B-Instruct-q4f32_1-MLC",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
