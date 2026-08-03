@@ -32,6 +32,18 @@ describe("formatLlmErrorMessage", () => {
     expect(detail.technicalDetail).toContain("Failed to fetch");
   });
 
+  it("context windowとsliding windowの競合をモデル設定エラーとして分類する", () => {
+    const detail = classifyLlmError(
+      new Error(
+        "WindowSizeConfigurationError: Only one of context_window_size and sliding_window_size can be positive."
+      )
+    );
+
+    expect(detail.kind).toBe("model_configuration");
+    expect(detail.message).toContain("実行設定に互換性がありません");
+    expect(detail.hint).toContain("拡張機能を最新版へ更新");
+  });
+
   it("ブラウザ保存領域の失敗を分類する", () => {
     const detail = classifyLlmError(new Error("QuotaExceededError: IndexedDB storage quota exceeded"));
 

@@ -91,7 +91,10 @@ describe("WebGPU事前チェック", () => {
       expect.any(TestWorker),
       DEFAULT_MODEL_ID,
       expect.any(Object),
-      { context_window_size: 4096 }
+      {
+        context_window_size: 4096,
+        sliding_window_size: -1
+      }
     );
     expect(result.summary).toBe("追加候補はありません。");
   });
@@ -113,7 +116,10 @@ describe("WebGPU事前チェック", () => {
       expect.any(TestWorker),
       DEFAULT_MODEL_ID,
       expect.any(Object),
-      { context_window_size: 2048 }
+      {
+        context_window_size: 2048,
+        sliding_window_size: -1
+      }
     );
     const completionRequest = completionCreateMock.mock.calls[0]?.[0] as { max_tokens: number };
     expect(completionRequest.max_tokens).toBe(256);
