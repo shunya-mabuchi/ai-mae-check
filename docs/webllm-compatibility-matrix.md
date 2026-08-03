@@ -53,6 +53,7 @@ AIまえチェックのAI文脈チェックは、WebLLMとWebGPUに依存しま�
 | 2026-06-16 | Windows 10/11 | Chrome詳細未記録 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC以前のprebuilt候補 | ^0.2.79 | 詳細未記録 | 成功報告あり | なし | 継続可 | ユーザー報告ベース。Dawn Infoを保存していないため参考扱い |
 | 2026-08-02 | Windows 10/11 | Chrome通常ウィンドウ | 通常 | 0.2.0候補 | Llama-3.2-1B-Instruct-q4f32_1-MLC（標準・低負荷） | ^0.2.79 | Intel UHD Graphics 620、WebGPU adapter取得後の推論中にD3Dデバイス喪失 | 推論は失敗、ローカル補助候補を表示 | gpu_runtime_error / memory | 継続可 | 両プロファイルで `DXGI_ERROR_DEVICE_HUNG` と `Device was lost due to insufficient memory or other GPU constraints` を確認 |
 | 2026-08-03 | Windows 10/11 | Chrome通常ウィンドウ | 通常 | 0.2.0候補 | gemma3-1b-it-q4f16_1-MLC | 0.2.84 | Intel UHD Graphics 620、WebGPU adapter取得済み | 初期化失敗、修正版で再確認待ち | model_configuration | 継続可 | モデル設定の `sliding_window_size: 512` と実行プロファイルの `context_window_size: 2048` が競合。context指定時にslidingを無効化する修正を追加 |
+| 2026-08-03 | Windows 10/11 | Chrome通常ウィンドウ | 通常 | 0.2.0候補 | gemma3-1b-it-q4f16_1-MLC | 0.2.84 | Intel UHD Graphics 620、WebGPU adapter取得済み | 失敗、修正版で再確認待ち | worker | 継続可 | `Object has already been disposed` を確認。推論失敗後のunloadエラーが元エラーを上書きしていたため、cleanupをbest effortへ変更 |
 | 未確認 | macOS | 未確認 | 通常 | 0.2.x | gemma3-1b-it-q4f16_1-MLC | 0.2.84 | Metal backend確認待ち | 未確認 | 未確認 | 未確認 | macOS実機を利用できるタイミングで初回ロードと再実行を確認する |
 | 未確認 | Linux | 未確認 | 通常 | 0.2.x | gemma3-1b-it-q4f16_1-MLC | 0.2.84 | Vulkan / Dawn Info確認待ち | 未確認 | 未確認 | 未確認 | Linux実機とGPUドライバ構成を記録できるタイミングで確認する |
 

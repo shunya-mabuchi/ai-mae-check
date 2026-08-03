@@ -207,6 +207,8 @@ export function createWebLlmEngineLifecycle(options: CreateWebLlmEngineLifecycle
 
       try {
         await engineToUnload?.unload?.();
+      } catch {
+        // 破棄済みGPUオブジェクトの解放失敗で、元の推論エラーを上書きしない。
       } finally {
         workerToTerminate?.terminate();
       }

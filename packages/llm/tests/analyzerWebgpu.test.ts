@@ -125,6 +125,32 @@ describe("WebGPU事前チェック", () => {
     expect(completionRequest.max_tokens).toBe(256);
   });
 
+  it("推論失敗後のunload失敗で元エラーを上書きせず次回は新しいengineを作る", async () => {
+    const firstUnload = vi.fn().mockRejectedValue(new Error("Object has already been disposed"));
+    createEngineMock.mockImplementationOnce(async () => ({
+      chat: {
+        completions: {
+          create: completionCreateMock
+        }
+      },
+      unload: firstUnload
+    }));
+    completionCreateMock.mockRejectedValueOnce(new Error("Device was lost due to GPU constraints"));
+    vi.stubGlobal("navigator", { gpu: { requestAdapter: vi.fn(async () => ({})) } });
+    vi.stubGlobal("Worker", TestWorker);
+
+    const analyzer = createLlmContextAnalyzer({ workerUrl: "/llm-worker.js" });
+    const failedResult = await analyzer.analyze("A社向けの提案です。");
+    const retriedResult = await analyzer.analyze("再試行用のダミー文です。");
+
+    expect(firstUnload).toHaveBeenCalledOnce();
+    expect(failedResult.errorDetail?.kind).toBe("webgpu");
+    expect(failedResult.errorDetail?.technicalDetail).toContain("Device was lost");
+    expect(failedResult.errorDetail?.technicalDetail).not.toContain("already been disposed");
+    expect(retriedResult.error).toBeUndefined();
+    expect(createEngineMock).toHaveBeenCalledTimes(2);
+  });
+
   it("WebLLMのJSONを読み取れない場合でもローカル補助候補があれば結果として返す", async () => {
     completionText = "候補としては山田花子さんに注意してください。";
     vi.stubGlobal("navigator", { gpu: { requestAdapter: vi.fn(async () => ({})) } });
