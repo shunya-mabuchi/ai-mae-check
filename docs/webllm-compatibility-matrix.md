@@ -52,7 +52,7 @@ AIまえチェックのAI文脈チェックは、WebLLMとWebGPUに依存しま�
 | 2026-06-16 | Windows 10/11 | Chrome詳細未記録 | シークレット | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC | ^0.2.79 | adapter有無は未記録 | 失敗 | storage_quota | 継続可 | `QuotaExceededError`。通常ウィンドウでの再確認を優先 |
 | 2026-06-16 | Windows 10/11 | Chrome詳細未記録 | 通常 | 0.1.x | Llama-3.2-1B-Instruct-q4f32_1-MLC以前のprebuilt候補 | ^0.2.79 | 詳細未記録 | 成功報告あり | なし | 継続可 | ユーザー報告ベース。Dawn Infoを保存していないため参考扱い |
 | 2026-08-02 | Windows 10/11 | Chrome通常ウィンドウ | 通常 | 0.2.0候補 | Llama-3.2-1B-Instruct-q4f32_1-MLC（標準・低負荷） | ^0.2.79 | Intel UHD Graphics 620、WebGPU adapter取得後の推論中にD3Dデバイス喪失 | 推論は失敗、ローカル補助候補を表示 | gpu_runtime_error / memory | 継続可 | 両プロファイルで `DXGI_ERROR_DEVICE_HUNG` と `Device was lost due to insufficient memory or other GPU constraints` を確認 |
-| 2026-08-03 | Windows 10/11 | Chrome通常ウィンドウ | 通常 | 0.2.0候補 | gemma3-1b-it-q4f16_1-MLC | 0.2.84 | Intel UHD Graphics 620 | 実機確認待ち | 未確認 | 継続可 | Llama q4f32より必要VRAM目安が小さいprebuiltモデルへ切り替え。標準・低負荷を順に確認する |
+| 2026-08-03 | Windows 10/11 | Chrome通常ウィンドウ | 通常 | 0.2.0候補 | gemma3-1b-it-q4f16_1-MLC | 0.2.84 | Intel UHD Graphics 620、WebGPU adapter取得済み | 初期化失敗、修正版で再確認待ち | model_configuration | 継続可 | モデル設定の `sliding_window_size: 512` と実行プロファイルの `context_window_size: 2048` が競合。context指定時にslidingを無効化する修正を追加 |
 | 未確認 | macOS | 未確認 | 通常 | 0.2.x | gemma3-1b-it-q4f16_1-MLC | 0.2.84 | Metal backend確認待ち | 未確認 | 未確認 | 未確認 | macOS実機を利用できるタイミングで初回ロードと再実行を確認する |
 | 未確認 | Linux | 未確認 | 通常 | 0.2.x | gemma3-1b-it-q4f16_1-MLC | 0.2.84 | Vulkan / Dawn Info確認待ち | 未確認 | 未確認 | 未確認 | Linux実機とGPUドライバ構成を記録できるタイミングで確認する |
 
@@ -73,6 +73,7 @@ macOSまたはLinux端末で確認できた場合は、この表へ成功/失敗
 | `model_fetch_failed` | `TypeError: Failed to fetch` | ローカルAIモデルの取得に失敗しました。モデル配信元への接続がブロックされている可能性があります。ルールベースの検出結果は引き続き利用できます。 | Hugging Face、GitHub raw、プロキシ、広告ブロッカー、セキュリティソフト、社内ネットワーク制限を確認する |
 | `worker_disposed` | `Object has already been disposed` | AI文脈チェック用のWorkerを起動できませんでした。ページを再読み込みしてから再試行してください。ルールベースの検出結果は引き続き利用できます。 | ページ再読み込み、Chrome完全再起動、拡張の再読み込み |
 | `gpu_runtime_error` | `GPUBuffer.mapAsync` / buffer unmapped / `DXGI_ERROR_DEVICE_HUNG` / `Device was lost` | 同じページ内で無条件に即時再試行せず、AI文脈チェック未完了を明示してルール検出とローカル補助候補を維持する | 低負荷プロファイルへ切り替え、再読み込み、Chrome完全再起動、GPUドライバ状態、WebGPU負荷を確認する |
+| `model_configuration` | `WindowSizeConfigurationError` | ルールベース検出とローカル補助候補を維持する | `context_window_size` と `sliding_window_size` の片方だけが正値になっているか確認する |
 | `invalid_llm_json` | JSONパース失敗 | AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。 | ルールベース検出は維持されるか、本文がログに出ていないかを確認する |
 
 ## OS別の確認観点

@@ -8,6 +8,8 @@ const GENERIC_LLM_ERROR_MESSAGE = `AI文脈チェックを実行できません�
 
 const MODEL_FETCH_ERROR_MESSAGE = `ローカルAIモデルの取得に失敗しました。モデル配信元への接続がブロックされている可能性があります。${RULE_BASED_CONTINUES}`;
 
+const MODEL_CONFIGURATION_ERROR_MESSAGE = `ローカルAIモデルの実行設定に互換性がありません。${RULE_BASED_CONTINUES}`;
+
 const JSON_PARSE_ERROR_MESSAGE = `AI文脈チェックの結果を読み取れませんでした。${RULE_BASED_CONTINUES}`;
 const JSON_PARSE_RULE_BASED_FALLBACK_MESSAGE =
   "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。";
@@ -51,6 +53,11 @@ function signal(kind: LlmErrorDetail["kind"], message: string, hint: string, var
 }
 
 const errorCopies = {
+  model_configuration: signal(
+    "model_configuration",
+    MODEL_CONFIGURATION_ERROR_MESSAGE,
+    "拡張機能を最新版へ更新し、対象タブを再読み込みしてから再試行してください。"
+  ),
   model_fetch: signal(
     "model_fetch",
     MODEL_FETCH_ERROR_MESSAGE,
@@ -136,6 +143,15 @@ function isWebGpuAdapterUnavailable(message: string): boolean {
 }
 
 const rules: LlmErrorRule[] = [
+  {
+    id: "model_configuration",
+    match: (message) =>
+      containsAny(message, [
+        "windowsizeconfigurationerror",
+        "only one of context_window_size and sliding_window_size can be positive"
+      ]),
+    copy: () => errorCopies.model_configuration
+  },
   {
     id: "model_fetch",
     match: (message) =>

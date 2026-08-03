@@ -31,6 +31,7 @@ export interface LlmProgress {
 
 export type LlmErrorKind =
   | "model_fetch"
+  | "model_configuration"
   | "webgpu"
   | "storage"
   | "memory"

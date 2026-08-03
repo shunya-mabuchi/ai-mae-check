@@ -46,6 +46,7 @@ type WebLlmModule = WebLlmModelListModule & {
     },
     chatOptions?: {
       context_window_size?: number;
+      sliding_window_size?: number;
     }
   ): Promise<WebLlmEngine>;
 };
@@ -156,7 +157,10 @@ export function createWebLlmEngineLifecycle(options: CreateWebLlmEngineLifecycle
           }
         },
         typeof options.contextWindowSize === "number"
-          ? { context_window_size: options.contextWindowSize }
+          ? {
+              context_window_size: options.contextWindowSize,
+              sliding_window_size: -1
+            }
           : undefined
       );
       loadedModelId = modelId;
