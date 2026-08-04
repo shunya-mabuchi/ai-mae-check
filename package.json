@@ -27,7 +27,7 @@
     "lint:report": "biome lint .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "typecheck": "pnpm -r --sort typecheck",
+    "typecheck": "pnpm --filter @ai-mae-check/core build && pnpm --filter @ai-mae-check/llm build && pnpm -r --sort typecheck",
     "assets:brand": "node scripts/generate-brand-assets.mjs",
     "assets:screenshots": "node scripts/capture-public-screenshots.mjs",
     "rules:keygen": "node scripts/generate-rule-keypair.mjs",
