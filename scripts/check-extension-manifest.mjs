@@ -7,6 +7,11 @@ const extensionPackagePath = resolve("apps/extension/package.json");
 const forbiddenRemoteRuntimePrefixes = [
   "https://cdn.jsdelivr.net/npm/@huggingface/transformers@"
 ];
+const forbiddenRuntimeReferences = ["ort-wasm-simd-threaded.jsep"];
+const requiredLocalRuntimeFiles = [
+  "ort-wasm-simd-threaded.mjs",
+  "ort-wasm-simd-threaded.wasm"
+];
 
 const expectedTargetMatches = [
   "https://chatgpt.com/*",
@@ -58,6 +63,19 @@ function assertNoRemoteRuntimeFallbacks() {
       if (source.includes(prefix)) {
         fail(`remote runtime URL must not be bundled: ${prefix}`);
       }
+    }
+    for (const reference of forbiddenRuntimeReferences) {
+      if (source.includes(reference)) {
+        fail(`GPU-enabled ONNX runtime must not be bundled in the CPU fallback: ${reference}`);
+      }
+    }
+  }
+}
+
+function assertLocalRuntimeFilesExist() {
+  for (const fileName of requiredLocalRuntimeFiles) {
+    if (!existsSync(resolve(extensionOutputPath, fileName))) {
+      fail(`local ONNX runtime file is missing: ${fileName}`);
     }
   }
 }
@@ -145,5 +163,6 @@ for (const required of ["'wasm-unsafe-eval'", "worker-src 'self'", "https://hugg
 }
 
 assertNoRemoteRuntimeFallbacks();
+assertLocalRuntimeFilesExist();
 
 console.log("manifest QA passed");
