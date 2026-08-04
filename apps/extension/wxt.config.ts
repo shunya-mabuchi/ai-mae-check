@@ -2,7 +2,7 @@ import { defineConfig } from "wxt";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { removeUnusedWebLlmFallbackWorker } from "./src/build/removeUnusedWebLlmFallbackWorker";
-import { copyWasmRuntime, ONNX_WASM_FILE } from "./src/build/copyWasmRuntime";
+import { copyWasmRuntime } from "./src/build/copyWasmRuntime";
 import { removeTransformersRemoteWasmFallback } from "./src/build/removeTransformersRemoteWasmFallback";
 
 const extensionDirectory = fileURLToPath(new URL(".", import.meta.url));
@@ -54,6 +54,10 @@ export default defineConfig({
     },
     resolve: {
       alias: [
+        {
+          find: /^onnxruntime-web$/,
+          replacement: resolve(onnxWasmSourceDirectory, "ort.wasm.min.mjs")
+        },
         {
           find: "@ai-mae-check/core",
           replacement: resolve(fileURLToPath(new URL(".", import.meta.url)), "../../packages/core/src/index.ts")
