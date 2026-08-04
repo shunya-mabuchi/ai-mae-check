@@ -6,7 +6,7 @@ describe("createJsonParseBridgeFallbackResult", () => {
     const result = createJsonParseBridgeFallbackResult({
       inputText:
         "佐藤様向けに Project Blue Bridge の提案メモを作ります。候補者の山田花子さんについても確認します。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       startedAt: performance.now(),
       error: new Error("AI文脈チェックの結果を読み取れませんでした")
     });
@@ -22,7 +22,7 @@ describe("createJsonParseBridgeFallbackResult", () => {
   it("補助候補がないJSON読み取り失敗も実行エラーではなく非致命メッセージにする", () => {
     const result = createJsonParseBridgeFallbackResult({
       inputText: "検出しづらい短い文章です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       startedAt: performance.now(),
       error: new Error("AI文脈チェックの結果を読み取れませんでした")
     });
@@ -37,7 +37,7 @@ describe("createJsonParseBridgeFallbackResult", () => {
   it("JSON読み取り失敗以外はbridge側fallbackにしない", () => {
     const result = createJsonParseBridgeFallbackResult({
       inputText: "テスト",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       startedAt: performance.now(),
       error: new Error("No available WebGPU adapters")
     });

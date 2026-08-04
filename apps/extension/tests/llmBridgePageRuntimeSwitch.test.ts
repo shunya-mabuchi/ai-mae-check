@@ -110,7 +110,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -120,7 +120,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-2",
       inputText: "本文です",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "low_resource",
       options: {}
     });
@@ -182,7 +182,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-standard",
       inputText: "本文です",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -192,7 +192,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-low-resource",
       inputText: "本文です",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "low_resource",
       options: { maxCandidates: 12 }
     });
@@ -210,7 +210,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
     });
     expect(createLocalLlmRuntimeServiceMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         contextWindowSize: 1536,
         maxInputChars: 800,
         maxTokens: 256,
@@ -224,7 +224,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       candidates: [],
       summary: "GPU実行が中断されました。",
       rawText: "",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 1,
       error: "GPU実行が中断されました。",
       errorDetail: {
@@ -238,7 +238,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       candidates: [],
       summary: "ok",
       rawText: "{}",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 1
     });
     const firstDispose = vi.fn().mockResolvedValue(undefined);
@@ -249,7 +249,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
         status: vi.fn(() => ({
           phase: "error",
           ready: false,
-          modelId: "gemma3-1b-it-q4f16_1-MLC",
+          modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
           message: "GPU実行が中断されました。"
         })),
         prepare: vi.fn(),
@@ -260,7 +260,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
         status: vi.fn(() => ({
           phase: "idle",
           ready: false,
-          modelId: "gemma3-1b-it-q4f16_1-MLC",
+          modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
           message: "未準備です。"
         })),
         prepare: vi.fn(),
@@ -278,7 +278,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-error",
       inputText: "本文です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -288,7 +288,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-retry",
       inputText: "本文です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -311,7 +311,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
               candidates: [],
               summary: "first",
               rawText: "{}",
-              modelId: "gemma3-1b-it-q4f16_1-MLC",
+              modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
               elapsedMs: 1
             });
           })
@@ -320,7 +320,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
         candidates: [],
         summary: "second",
         rawText: "{}",
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         elapsedMs: 1
       });
 
@@ -329,7 +329,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       status: vi.fn(() => ({
         phase: "ready",
         ready: true,
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         message: "準備済みです。"
       })),
       prepare: vi.fn(),
@@ -347,7 +347,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-first",
       inputText: "一つ目の本文です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -355,7 +355,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
       type: "analyze",
       requestId: "request-second",
       inputText: "二つ目の本文です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -363,7 +363,7 @@ describe("llmBridgePageのGPU障害後プロファイル切り替え", () => {
     port.dispatch({
       type: "model-state",
       requestId: "state-during-analysis",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });

@@ -81,7 +81,9 @@ for (const licenseName of ["MIT", "Apache-2.0", "MPL-2.0", "CC-BY-4.0"]) {
 }
 
 assertIncludes(licensePolicy, "第三者ライブラリ", paths.licensePolicy);
-assertIncludes(modelPolicy, "Gemma Terms of Use", paths.modelPolicy);
+assertIncludes(modelPolicy, "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", paths.modelPolicy);
+assertIncludes(modelPolicy, "Xenova/multilingual-e5-small", paths.modelPolicy);
+assertIncludes(modelPolicy, "ONNX Runtime Web", paths.modelPolicy);
 assertIncludes(workflow, "pnpm qa:public-repo", paths.workflow);
 assertIncludes(workflow, "pnpm qa:tailwind4", paths.workflow);
 assertIncludes(workflow, "pnpm qa:chrome-store", paths.workflow);

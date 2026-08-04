@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_MODEL_ID, getLlmExecutionProfile } from "../src";
 
 describe("getLlmExecutionProfile", () => {
-  it("標準と低負荷で同じGemmaモデルを使う", () => {
+  it("標準と低負荷で同じQwenモデルを使う", () => {
     expect(getLlmExecutionProfile("standard").modelId).toBe(DEFAULT_MODEL_ID);
     expect(getLlmExecutionProfile("low_resource").modelId).toBe(DEFAULT_MODEL_ID);
   });
@@ -18,7 +18,7 @@ describe("getLlmExecutionProfile", () => {
     expect(lowResource.compactPrompt).toBe(true);
   });
 
-  it("標準設定もGemma 3 1Bを一般的な内蔵GPUで扱いやすい上限に抑える", () => {
+  it("標準設定もQwen2.5 0.5Bを文脈チェック向けの上限に抑える", () => {
     const standard = getLlmExecutionProfile("standard");
 
     expect(standard.contextWindowSize).toBe(2048);

@@ -17,6 +17,10 @@ import {
 } from "./lib/llmBridgeMessages";
 import { getExtensionResourceUrl } from "./lib/extensionRuntime";
 import { createJsonParseBridgeFallbackResult } from "./lib/llmBridgeFallback";
+import {
+  analyzeContextWithWasmWorker,
+  disposeWasmContextWorker
+} from "./lib/wasmContextWorkerClient";
 
 const BRIDGE_EXECUTION_ERROR_MESSAGE = "AI文脈チェックを実行できませんでした。";
 const BRIDGE_REQUEST_ERROR_MESSAGE = "AI文脈チェック用のリクエスト形式が正しくありません。";
@@ -133,6 +137,22 @@ async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze
   }
 }
 
+async function handleWasmAnalyze(
+  request: Extract<LlmBridgeRequest, { type: "analyze-wasm" }>
+): Promise<void> {
+  const result = await analyzeContextWithWasmWorker(request.inputText, {
+    ...(typeof request.options.maxCandidates === "number"
+      ? { maxCandidates: request.options.maxCandidates }
+      : {}),
+    onProgress: postProgress(request.requestId)
+  });
+  post({
+    type: "analyze-result",
+    requestId: request.requestId,
+    result
+  });
+}
+
 function handleModelState(request: Extract<LlmBridgeRequest, { type: "model-state" }>): void {
   post({
     type: "model-state-result",
@@ -145,6 +165,11 @@ async function handleRequest(request: LlmBridgeRequest): Promise<void> {
   try {
     if (request.type === "model-state") {
       handleModelState(request);
+      return;
+    }
+
+    if (request.type === "analyze-wasm") {
+      await handleWasmAnalyze(request);
       return;
     }
 
@@ -212,6 +237,7 @@ window.addEventListener("message", (event: MessageEvent<unknown>) => {
 });
 
 window.addEventListener("pagehide", () => {
+  disposeWasmContextWorker();
   const currentRuntimeService = runtimeService;
   runtimeService = null;
   runtimeModelId = null;

@@ -37,27 +37,34 @@ const licensePolicy = read(licensePolicyPath);
 const notice = read(noticePath);
 
 const defaultModelId = extractConst(constants, "DEFAULT_MODEL_ID");
+const wasmModelId = extractConst(constants, "WASM_CONTEXT_MODEL_ID");
 
 for (const doc of [
   ["docs/webllm-model-policy.md", policy],
   ["README.md", readme]
 ]) {
   assertIncludes(doc[1], defaultModelId, doc[0]);
+  assertIncludes(doc[1], wasmModelId, doc[0]);
 }
 
-assertIncludes(policy, "Gemma Terms of Use", "docs/webllm-model-policy.md");
-assertIncludes(policy, "単一モデル", "docs/webllm-model-policy.md");
+assertIncludes(policy, "Apache License 2.0", "docs/webllm-model-policy.md");
+assertIncludes(policy, "MIT License", "docs/webllm-model-policy.md");
+assertIncludes(policy, "CPUフォールバック", "docs/webllm-model-policy.md");
+assertIncludes(policy, "ONNX Runtime Web", "docs/webllm-model-policy.md");
 assertIncludes(policy, "context window", "docs/webllm-model-policy.md");
 assertIncludes(policy, "prebuiltAppConfig.model_list", "docs/webllm-model-policy.md");
 assertIncludes(policy, "外部LLM API", "docs/webllm-model-policy.md");
 assertIncludes(policy, "ユーザー本文", "docs/webllm-model-policy.md");
-assertIncludes(policy, "https://huggingface.co/google/gemma-3-1b-it", "docs/webllm-model-policy.md");
-assertIncludes(policy, "https://ai.google.dev/gemma/terms", "docs/webllm-model-policy.md");
-assertIncludes(policy, "https://github.com/mlc-ai/web-llm", "docs/webllm-model-policy.md");
+assertIncludes(policy, "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct", "docs/webllm-model-policy.md");
+assertIncludes(policy, "https://huggingface.co/Xenova/multilingual-e5-small", "docs/webllm-model-policy.md");
+assertIncludes(policy, "https://onnxruntime.ai/docs/tutorials/web/", "docs/webllm-model-policy.md");
 
 assertIncludes(licensePolicy, "第三者モデル", "docs/license-policy.md");
 assertIncludes(licensePolicy, "ライセンス", "docs/license-policy.md");
-assertIncludes(notice, "Gemma Terms of Use", "NOTICE");
+assertIncludes(notice, "Apache License 2.0", "NOTICE");
+assertIncludes(notice, "MIT License", "NOTICE");
+assertIncludes(notice, "ONNX Runtime Web", "NOTICE");
 assertIncludes(notice, defaultModelId, "NOTICE");
+assertIncludes(notice, wasmModelId, "NOTICE");
 
 console.log("WebLLM model policy QA passed");

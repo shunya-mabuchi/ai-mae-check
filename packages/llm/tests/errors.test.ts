@@ -11,9 +11,9 @@ import {
 import { buildLlmErrorDetail } from "./testBuilders";
 
 describe("formatLlmErrorMessage", () => {
-  it("デフォルトモデルはGemma 3 1B q4f16にする", () => {
+  it("デフォルトモデルはQwen2.5 0.5B q4f16にする", () => {
     expect(DEFAULT_MODEL_ID).toContain("q4f16_1");
-    expect(DEFAULT_MODEL_ID).toBe("gemma3-1b-it-q4f16_1-MLC");
+    expect(DEFAULT_MODEL_ID).toBe("Qwen2.5-0.5B-Instruct-q4f16_1-MLC");
   });
 
   it("モデル取得のネットワーク失敗を日本語で説明する", () => {

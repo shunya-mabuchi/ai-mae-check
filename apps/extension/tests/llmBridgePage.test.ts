@@ -9,6 +9,8 @@ const statusMock = vi.fn(() => ({
   message: "AI文脈チェックは未準備です。"
 }));
 const disposeMock = vi.fn();
+const analyzeWasmMock = vi.fn();
+const disposeWasmMock = vi.fn();
 const runtimeServiceFactoryMock = vi.fn(() => ({
   analyze: analyzeMock,
   status: statusMock,
@@ -27,6 +29,11 @@ vi.mock("../src/lib/extensionRuntime", () => ({
 
 vi.mock("../src/lib/llmBridgeFallback", () => ({
   createJsonParseBridgeFallbackResult: vi.fn(() => null)
+}));
+
+vi.mock("../src/lib/wasmContextWorkerClient", () => ({
+  analyzeContextWithWasmWorker: analyzeWasmMock,
+  disposeWasmContextWorker: disposeWasmMock
 }));
 
 class FakeMessagePort {
@@ -90,6 +97,8 @@ describe("llmBridgePage", () => {
       message: "AI文脈チェックは未準備です。"
     });
     disposeMock.mockReset();
+    analyzeWasmMock.mockReset();
+    disposeWasmMock.mockReset();
     runtimeServiceFactoryMock.mockReset();
     runtimeServiceFactoryMock.mockImplementation(() => ({
       analyze: analyzeMock,
@@ -98,6 +107,39 @@ describe("llmBridgePage", () => {
       dispose: disposeMock
     }));
     createLocalLlmRuntimeServiceMock.mockClear();
+  });
+
+  it("CPU文脈チェック要求を専用Workerへ渡す", async () => {
+    analyzeWasmMock.mockResolvedValue({
+      candidates: [],
+      summary: "CPU文脈チェック完了",
+      rawText: "",
+      modelId: "Xenova/multilingual-e5-small",
+      elapsedMs: 5
+    });
+    const { messageHandler } = await loadBridgePage();
+    const port = new FakeMessagePort();
+    messageHandler({
+      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
+      ports: [port]
+    } as MessageEvent<unknown>);
+
+    port.dispatch({
+      type: "analyze-wasm",
+      requestId: "wasm-request",
+      inputText: "候補者の面談評価を社内だけで確認します。",
+      options: { maxCandidates: 4 }
+    });
+
+    await vi.waitFor(() => {
+      expect(analyzeWasmMock).toHaveBeenCalledWith(
+        "候補者の面談評価を社内だけで確認します。",
+        expect.objectContaining({ maxCandidates: 4, onProgress: expect.any(Function) })
+      );
+    });
+    expect(port.postedMessages).toContainEqual(
+      expect.objectContaining({ type: "analyze-result", requestId: "wasm-request" })
+    );
   });
 
   it("nonceが一致した接続だけreadyにして既存のanalyzeフローを維持する", async () => {
@@ -124,7 +166,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -139,7 +181,7 @@ describe("llmBridgePage", () => {
     });
     expect(createLocalLlmRuntimeServiceMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         contextWindowSize: 2048,
         maxInputChars: 1200,
         maxTokens: 384,
@@ -160,7 +202,7 @@ describe("llmBridgePage", () => {
       candidates: [],
       summary: "ok",
       rawText: "",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 5
     });
     const { messageHandler, pagehideHandler } = await loadBridgePage();
@@ -173,7 +215,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-pagehide",
       inputText: "本文です",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -189,7 +231,7 @@ describe("llmBridgePage", () => {
       candidates: [],
       summary: "ok",
       rawText: "",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 5
     });
     const { messageHandler } = await loadBridgePage();
@@ -203,7 +245,7 @@ describe("llmBridgePage", () => {
     port.dispatch({
       type: "model-state",
       requestId: "state-1",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -220,7 +262,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "本文です",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -231,14 +273,14 @@ describe("llmBridgePage", () => {
     statusMock.mockReturnValue({
       phase: "ready",
       ready: true,
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       message: "AI文脈チェックを実行できます。"
     });
 
     port.dispatch({
       type: "model-state",
       requestId: "state-2",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -324,7 +366,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-after-connect",
       inputText: "再接続拒否後も正常処理",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });
@@ -377,7 +419,7 @@ describe("llmBridgePage", () => {
       type: "analyze",
       requestId: "request-error",
       inputText: "秘密本文",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
     });

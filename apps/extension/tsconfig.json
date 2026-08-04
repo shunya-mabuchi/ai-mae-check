@@ -9,6 +9,7 @@
       "@ai-mae-check/core": ["../../packages/core/src/index.ts"],
       "@ai-mae-check/llm/runtime": ["../../packages/llm/src/runtime.ts"],
       "@ai-mae-check/llm/worker": ["../../packages/llm/src/worker.ts"],
+      "@ai-mae-check/llm/wasm-worker": ["../../packages/llm/src/wasm-worker.ts"],
       "@ai-mae-check/llm": ["../../packages/llm/src/index.ts"]
     }
   },

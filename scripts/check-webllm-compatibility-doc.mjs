@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 const rootDir = resolve(".");
 
 const paths = {
+  constants: "packages/llm/src/constants.ts",
   matrix: "docs/webllm-compatibility-matrix.md",
   realDevice: "docs/webllm-real-device-check.md",
   modelPolicy: "docs/webllm-model-policy.md",
@@ -44,6 +45,7 @@ const modelPolicy = read(paths.modelPolicy);
 const readme = read(paths.readme);
 const supportPage = read(paths.supportPage);
 const llmPackage = JSON.parse(read(paths.llmPackage));
+const constants = read(paths.constants);
 
 const webLlmVersion = llmPackage.dependencies?.["@mlc-ai/web-llm"];
 if (!webLlmVersion) {
@@ -51,6 +53,9 @@ if (!webLlmVersion) {
 }
 
 assertIncludes(matrix, `@mlc-ai/web-llm@${webLlmVersion}`, paths.matrix);
+assertIncludes(matrix, "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", paths.matrix);
+assertIncludes(matrix, "Xenova/multilingual-e5-small", paths.matrix);
+assertIncludes(matrix, "CPUフォールバック", paths.matrix);
 
 for (const phrase of [
   "gemma3-1b-it-q4f16_1-MLC",
@@ -106,8 +111,14 @@ for (const phrase of [
   assertIncludes(readme, phrase, paths.readme);
 }
 
-assertIncludes(modelPolicy, "gemma3-1b-it-q4f16_1-MLC", paths.modelPolicy);
-assertIncludes(modelPolicy, "単一モデル", paths.modelPolicy);
+for (const modelId of [
+  "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+  "Xenova/multilingual-e5-small"
+]) {
+  assertIncludes(constants, modelId, paths.constants);
+  assertIncludes(modelPolicy, modelId, paths.modelPolicy);
+}
+assertIncludes(modelPolicy, "CPUフォールバック", paths.modelPolicy);
 assertIncludes(supportPage, "WebLLM確認項目を見る", paths.supportPage);
 assertIncludes(supportPage, "本文は記録しません", paths.supportPage);
 

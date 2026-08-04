@@ -2,6 +2,14 @@ import { defineConfig } from "wxt";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { removeUnusedWebLlmFallbackWorker } from "./src/build/removeUnusedWebLlmFallbackWorker";
+import { copyWasmRuntime, ONNX_WASM_FILE } from "./src/build/copyWasmRuntime";
+import { removeTransformersRemoteWasmFallback } from "./src/build/removeTransformersRemoteWasmFallback";
+
+const extensionDirectory = fileURLToPath(new URL(".", import.meta.url));
+const onnxWasmSourceDirectory = resolve(
+  extensionDirectory,
+  "../../packages/llm/node_modules/onnxruntime-web/dist"
+);
 
 const targetMatches = [
   "https://chatgpt.com/*",
@@ -35,6 +43,8 @@ export default defineConfig({
           }
         }
       }
+      await removeTransformersRemoteWasmFallback(wxt.config.outDir);
+      await copyWasmRuntime(wxt.config.outDir, onnxWasmSourceDirectory);
     }
   },
   vite: () => ({
@@ -60,6 +70,13 @@ export default defineConfig({
           replacement: resolve(
             fileURLToPath(new URL(".", import.meta.url)),
             "../../packages/llm/src/worker.ts"
+          )
+        },
+        {
+          find: "@ai-mae-check/llm/wasm-worker",
+          replacement: resolve(
+            extensionDirectory,
+            "../../packages/llm/src/wasm-worker.ts"
           )
         },
         {

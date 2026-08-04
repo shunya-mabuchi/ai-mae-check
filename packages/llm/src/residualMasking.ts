@@ -206,6 +206,10 @@ function normalizeSurface(surface: string): string {
 }
 
 function isDuplicateCandidate(candidate: ContextRiskCandidate, term: ResidualContextTerm): boolean {
+  if (candidate.category !== term.category) {
+    return false;
+  }
+
   const candidateSurface = normalizeSurface(candidate.surface);
   const termSurface = normalizeSurface(term.surface);
 

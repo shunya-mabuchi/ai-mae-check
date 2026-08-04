@@ -13,5 +13,7 @@ describe("web accessible resources", () => {
     expect(resourcesSection).toContain('"icon/128.png"');
     expect(resourcesSection).toContain('"file-modal-runtime.js"');
     expect(resourcesSection).toContain('"review-modal-runtime.js"');
+    expect(resourcesSection).not.toContain('"wasm-context-worker.js"');
+    expect(resourcesSection).not.toContain('"ort-wasm-simd-threaded.wasm"');
   });
 });

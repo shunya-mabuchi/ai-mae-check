@@ -56,7 +56,7 @@ describe("settings", () => {
     expect("pastedText" in settings).toBe(false);
   });
 
-  it("低負荷設定でも同じGemmaモデルを選ぶ", () => {
+  it("低負荷設定でも同じQwenモデルを選ぶ", () => {
     const settings = normalizeSettings({
       llm: {
         enabled: true,

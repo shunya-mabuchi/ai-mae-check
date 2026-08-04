@@ -162,7 +162,7 @@
           <div class="mx-auto max-w-7xl">
             <div class="max-w-3xl">
               <h2 id="how-heading" class="text-3xl font-black leading-tight text-ink md:text-4xl">送る直前に、5つの流れで確認。</h2>
-              <p class="mt-4 text-base leading-7 text-muted md:text-lg">ルールベースを先に実行し、必要なときだけWebLLMを使います。AIの結果は断定ではなく、追加の注意候補として扱います。</p>
+              <p class="mt-4 text-base leading-7 text-muted md:text-lg">ルールベースを先に実行し、必要なときだけブラウザ内AIを使います。WebLLMが使えない環境ではCPU文脈チェックへ切り替え、結果は断定ではなく追加の注意候補として扱います。</p>
             </div>
             <ol class="step-rail mt-10 grid gap-6 md:grid-cols-5 md:gap-4">
               <li class="relative flex gap-4 md:block">
@@ -200,7 +200,7 @@
               <div class="border-t border-line py-5"><dt class="font-black text-ink">外部LLM APIへ本文を送らない</dt><dd class="mt-2 text-sm leading-6 text-muted">OpenAI API、Claude API、Gemini APIなどへ本文を送信しません。</dd></div>
               <div class="border-t border-line py-5"><dt class="font-black text-ink">保存対象を限定</dt><dd class="mt-2 text-sm leading-6 text-muted">設定と検証済み追加ルールだけをchrome.storage.localへ保存します。</dd></div>
               <div class="border-t border-line py-5"><dt class="font-black text-ink">本文ログを残さない</dt><dd class="mt-2 text-sm leading-6 text-muted">本文、検出結果、placeholderMapをログや永続領域へ残しません。</dd></div>
-              <div class="border-t border-line py-5"><dt class="font-black text-ink">モデル取得は明示する</dt><dd class="mt-2 text-sm leading-6 text-muted">WebLLM初回利用時は、ローカル推論用モデルを取得する場合があります。</dd></div>
+              <div class="border-t border-line py-5"><dt class="font-black text-ink">モデル取得は明示する</dt><dd class="mt-2 text-sm leading-6 text-muted">WebLLMまたはCPU文脈チェックの初回利用時は、ローカル推論用モデルを取得する場合があります。</dd></div>
             </dl>
           </div>
         </section>
@@ -215,6 +215,8 @@
                 <li class="border-b border-r border-line bg-white px-4 py-4">WXT / MV3</li>
                 <li class="border-b border-r border-line bg-white px-4 py-4">WebLLM</li>
                 <li class="border-b border-r border-line bg-white px-4 py-4">WebGPU</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">ONNX Runtime Web</li>
+                <li class="border-b border-r border-line bg-white px-4 py-4">WebAssembly</li>
                 <li class="border-b border-r border-line bg-white px-4 py-4">Web Worker</li>
                 <li class="border-b border-r border-line bg-white px-4 py-4">Vitest</li>
                 <li class="border-b border-r border-line bg-white px-4 py-4">Playwright</li>

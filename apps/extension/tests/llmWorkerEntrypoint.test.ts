@@ -10,4 +10,12 @@ describe("llm-worker entrypoint", () => {
     expect(source).not.toContain("packages/llm/src/worker");
     expect(source).not.toContain("@mlc-ai/web-llm");
   });
+
+  it("CPU文脈チェックを専用Workerへ分離する", () => {
+    const source = readFileSync(resolve(process.cwd(), "entrypoints/wasm-context-worker.ts"), "utf8");
+
+    expect(source).toContain('from "@ai-mae-check/llm/wasm-worker"');
+    expect(source).toContain("startWasmContextWorker");
+    expect(source).not.toContain("@mlc-ai/web-llm");
+  });
 });
