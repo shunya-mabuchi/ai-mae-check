@@ -179,6 +179,9 @@ export function WebLlmSettingsSection({
         <p className="mt-2 text-sm leading-6 text-stone-600">
           どちらも同じGemma 3 1Bモデルを使います。「低負荷」は入力長、出力長、候補数、context windowを抑えてGPU負荷を下げます。
         </p>
+        <p className="mt-2 text-sm leading-6 text-stone-600">
+          標準でGPU実行が中断された場合は、同じモデルを低負荷で1回だけ再実行します。
+        </p>
         <div className="mt-3">
           <LlmResourceModeRadioGroup value={settings.llm.resourceMode} onChange={onResourceModeChange} />
         </div>

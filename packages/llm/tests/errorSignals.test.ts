@@ -45,12 +45,12 @@ describe("errorSignals", () => {
     expect(signal.message).toContain("メモリを確保できませんでした");
   });
 
-  it("Worker寿命系とJSON読み取り失敗を分類する", () => {
-    const workerSignal = classifyLlmErrorSignal("Object has already been disposed");
+  it("GPU破棄系とJSON読み取り失敗を分類する", () => {
+    const gpuSignal = classifyLlmErrorSignal("Object has already been disposed");
     const jsonSignal = classifyLlmErrorSignal("AI文脈チェックの結果を読み取れませんでした");
 
-    expect(workerSignal.kind).toBe("worker");
-    expect(workerSignal.hint).toContain("タブも再読み込み");
+    expect(gpuSignal.kind).toBe("webgpu");
+    expect(gpuSignal.message).toContain("GPU実行が中断されました");
     expect(jsonSignal.kind).toBe("json_parse");
     expect(isJsonParseLlmErrorMessage("JSON parse failed while reading WebLLM output")).toBe(true);
   });

@@ -45,9 +45,44 @@ export interface RunReviewLlmOptions {
 
 export const LOCAL_CONTEXT_FALLBACK_MESSAGE =
   "AI文脈チェックは完了できませんでしたが、ブラウザ内の補助検出で注意候補を表示しています。";
+export const LOW_RESOURCE_RETRY_MESSAGE = "GPU負荷を抑えてAI文脈チェックを再実行しています。";
 
 function isActive(options: RunReviewLlmOptions): boolean {
   return options.isActive?.() ?? true;
+}
+
+function shouldRetryWithLowResource(result: ContextAnalysisResult, profileId: LlmExecutionProfileId): boolean {
+  if (profileId === "low_resource" || !isContextAnalysisExecutionError(result)) {
+    return false;
+  }
+
+  const detail = result.errorDetail;
+  if (!detail) {
+    return false;
+  }
+
+  if (detail.kind === "memory") {
+    return true;
+  }
+
+  const technicalDetail = detail.technicalDetail?.toLowerCase() ?? "";
+  if (detail.kind === "worker") {
+    return technicalDetail.includes("already been disposed") || technicalDetail.includes("disposed object");
+  }
+
+  return (
+    detail.kind === "webgpu" &&
+    [
+      "gpubuffer",
+      "mapasync",
+      "device lost",
+      "device_hung",
+      "dxgi_error_device_hung",
+      "gpu constraints",
+      "already been disposed",
+      "disposed object"
+    ].some((signal) => technicalDetail.includes(signal))
+  );
 }
 
 function applyReviewLlmResult(
@@ -76,10 +111,10 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
   }
 
   const analyze = options.analyze ?? analyzeContextWithBridge;
-  const analyzeWithProfile = () =>
+  const analyzeWithProfile = (profileId: LlmExecutionProfileId) =>
     analyze(options.inputText, {
       modelId: options.modelId,
-      profileId: options.profileId,
+      profileId,
       existingFindings: options.existingFindings,
       onProgress: (progress: LlmProgress) => {
         if (isActive(options)) {
@@ -95,7 +130,12 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
   }
 
   try {
-    const result = await analyzeWithProfile();
+    let result = await analyzeWithProfile(options.profileId);
+
+    if (shouldRetryWithLowResource(result, options.profileId) && isActive(options)) {
+      options.llmStatus.textContent = LOW_RESOURCE_RETRY_MESSAGE;
+      result = await analyzeWithProfile("low_resource");
+    }
 
     if (!isActive(options)) {
       return;

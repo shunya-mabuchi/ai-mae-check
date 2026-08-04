@@ -200,7 +200,7 @@ function normalizeOptions(options: LlmAnalyzerOptions = {}): NormalizedLlmAnalyz
   const normalized: NormalizedLlmAnalyzerOptions = {
     modelId: options.modelId ?? DEFAULT_MODEL_ID,
     temperature: options.temperature ?? 0.1,
-    maxTokens: options.maxTokens ?? 900,
+    maxTokens: options.maxTokens ?? 384,
     maxInputChars: options.maxInputChars ?? DEFAULT_MAX_INPUT_CHARS,
     confidenceThreshold: options.confidenceThreshold ?? DEFAULT_CONFIDENCE_THRESHOLD,
     contextWindowSize: options.contextWindowSize ?? DEFAULT_CONTEXT_WINDOW_SIZE,

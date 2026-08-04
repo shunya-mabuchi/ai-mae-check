@@ -202,7 +202,7 @@ describe("runReviewLlm", () => {
     expect(render).not.toHaveBeenCalled();
   });
 
-  it("GPUメモリ不足時は同じページ内で即時再試行せず補助候補を維持する", async () => {
+  it("GPUメモリ不足時は同じGemmaモデルを低負荷プロファイルで一度だけ再試行する", async () => {
     const analyze = vi.fn<AnalyzeReviewContextForTest>().mockResolvedValueOnce({
       candidates: [
         {
@@ -227,6 +227,23 @@ describe("runReviewLlm", () => {
         hint: "低負荷へ切り替え、ページを再読み込みしてから再試行してください。",
         technicalDetail: "Device was lost due to insufficient memory"
       }
+    }).mockResolvedValueOnce({
+      candidates: [
+        {
+          id: "llm-context-hr_info-1",
+          category: "hr_info",
+          surface: "給与条件",
+          label: "採用・人事情報候補",
+          reason: "採用や人事評価に関する文脈です。",
+          riskLevel: "medium",
+          suggestedPlaceholder: "[HR_INFO_1]",
+          confidence: 0.82
+        }
+      ],
+      summary: "低負荷で確認しました。",
+      rawText: "{}",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      elapsedMs: 20
     });
     const llmStatus = { textContent: "" };
     const llmButton = new FakeButton();
@@ -247,9 +264,63 @@ describe("runReviewLlm", () => {
       analyze
     });
 
-    expect(analyze).toHaveBeenCalledTimes(1);
+    expect(analyze).toHaveBeenCalledTimes(2);
     expect(analyze.mock.calls[0]?.[1].modelId).toBe("gemma3-1b-it-q4f16_1-MLC");
-    expect(setCandidates).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ surface: "給与条件" })]));
+    expect(analyze.mock.calls[0]?.[1].profileId).toBe("standard");
+    expect(analyze.mock.calls[1]?.[1].profileId).toBe("low_resource");
+    expect(setCandidates).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ surface: "給与条件" })])
+    );
+    expect(llmStatus.textContent).toBe("AI文脈チェックで注意候補が見つかりました。");
+  });
+
+  it("低負荷での再試行も失敗した場合は二度で終了して補助候補を維持する", async () => {
+    const failedResult: ContextAnalysisResult = {
+      candidates: [
+        {
+          id: "local-context-project_name-1",
+          category: "project_name",
+          surface: "Project Blue Bridge",
+          label: "案件名・プロジェクト名候補",
+          reason: "案件名らしい表現です。",
+          riskLevel: "medium",
+          suggestedPlaceholder: "[PROJECT_1]",
+          confidence: 0.82
+        }
+      ],
+      summary: "GPU実行が中断されました。",
+      rawText: "",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      elapsedMs: 10,
+      error: "GPU実行が中断されました。",
+      errorDetail: {
+        kind: "webgpu",
+        message: "GPU実行が中断されました。",
+        hint: "低負荷で再試行してください。",
+        technicalDetail: "Object has already been disposed"
+      }
+    };
+    const analyze = vi.fn<AnalyzeReviewContextForTest>().mockResolvedValue(failedResult);
+    const llmStatus = { textContent: "" };
+    const setCandidates = vi.fn();
+
+    await runReviewLlm({
+      enabled: true,
+      inputText: "Project Blue Bridge の提案です。",
+      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      profileId: "standard",
+      existingFindings: [],
+      llmStatus: asDomElement<HTMLElement>(llmStatus),
+      llmButton: asDomElement<HTMLButtonElement>(new FakeButton()),
+      selectedCandidateIds: new Set(),
+      setCandidates,
+      render: vi.fn(),
+      analyze
+    });
+
+    expect(analyze).toHaveBeenCalledTimes(2);
+    expect(analyze.mock.calls[1]?.[1].profileId).toBe("low_resource");
+    expect(setCandidates).toHaveBeenCalledWith(failedResult.candidates);
     expect(llmStatus.textContent).toContain(LOCAL_CONTEXT_FALLBACK_MESSAGE);
   });
 
