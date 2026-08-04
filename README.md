@@ -134,19 +134,19 @@ WebLLMによる依頼文の自動生成は、現時点では精度と安定性�
 - 文章全体の要約を主目的にすること
 - 外部LLM APIへ本文を送ること
 
-## WebLLMモデルと実行負荷
+## AI文脈チェックのモデルと実行負荷
 
-AIまえチェックでは、WebLLMの標準モデルを `gemma3-1b-it-q4f16_1-MLC` にしています。
+AIまえチェックでは、WebGPUで動くWebLLMモデルを `Qwen2.5-0.5B-Instruct-q4f16_1-MLC` にしています。WebLLM 0.2.84のprebuilt設定に含まれ、日本語を含む多言語とJSONなどの構造化出力を重視した0.5B級モデルであること、元モデルがApache License 2.0であることを選定理由にしています。
 
-現在の `Llama-3.2-1B-Instruct-q4f32_1-MLC` は、Intel UHD Graphics 620環境でGPUデバイス喪失が発生しました。Gemma 3 1B q4f16はWebLLM 0.2.84のprebuilt設定で必要VRAMの目安が約711MBとされ、Llama 3.2 1B q4f32の約1129MBより小さいため、低VRAM環境での実行可能性を優先して切り替えています。AIまえチェックは会話AIではなく、貼り付け前の「消し忘れ候補」を見つける補助ツールなので、ルールベース検出とローカル補助候補を主軸にし、WebLLMは文脈候補の確認に限定します。
+ただし、prebuilt設定の必要VRAM目安は約945MBで、すべての内蔵GPUで動くわけではありません。標準プロファイルでGPU負荷系の失敗が起きた場合は、同じQwenモデルを低負荷プロファイルで1回だけ再実行します。それでも完了できない場合は、`Xenova/multilingual-e5-small` のq8版をONNX Runtime Web / WebAssemblyでCPU実行する文脈分類へ自動で切り替えます。
 
-過去の保存済みモデルIDは、`gemma3-1b-it-q4f16_1-MLC` へ正規化します。説明していない別モデルへ暗黙に切り替えず、prebuilt一覧に単一モデルがない場合はAI文脈チェックをエラーとして扱います。WebGPUアダプタ自体を取得できない場合も、モデルを変えて解消する問題ではないため再試行しません。
+CPUフォールバックは文章を生成せず、短い文の埋め込みと固定の業務文脈を比較し、契約、人事、法務、財務、社内情報、未公開情報の候補を補います。WebGPUを使わないため、今回確認したIntel UHD Graphics 620 / D3D11環境でも動作できる可能性がありますが、CPU命令、端末メモリ、保存領域、モデル取得状況によっては完了できない場合があります。
 
-Options Pageの「実行負荷」では `標準` と `低負荷` を選べます。どちらも同じGemma 3 1Bモデルを使います。標準も文脈チェック用途に合わせてcontext windowを2048、入力上限を1200文字、出力上限を384 tokens、候補上限を8件へ抑えています。`低負荷` はさらにcontext windowを1536、入力上限を800文字、出力上限を256 tokens、候補上限を6件へ抑えます。保存するのはこの設定だけで、本文や検出結果は保存しません。低負荷でも、すべてのWebGPU環境での動作を保証するものではありません。
+Options Pageの「実行負荷」では `標準` と `低負荷` を選べます。どちらも同じQwen2.5 0.5Bモデルを使います。標準はcontext windowを2048、入力上限を1200文字、出力上限を384 tokens、候補上限を8件、低負荷はcontext windowを1536、入力上限を800文字、出力上限を256 tokens、候補上限を6件に抑えます。CPUフォールバックは互換性を保つため実装側で固定し、設定として保存しません。
 
-日本語の人名・会社名・案件名の抽出精度はモデルだけに依存させません。WebLLMが候補を返さない場合や実行を完了できない場合でも、入力文に実在する敬称つき人名や `Project ...` 形式の案件名、採用・契約・未公開などの定型文脈は、ローカル補助候補として確認UIに出します。これにより、GPU実行を完了できない場合でも、ルールベース検出と補助候補を組み合わせて使える設計にしています。
+日本語の人名・会社名・案件名の抽出精度はモデルだけに依存させません。入力文に実在する敬称つき人名や `Project ...` 形式の案件名、採用・契約・未公開などの定型文脈は、軽量なローカル補助候補として統合します。WebLLMとCPU分類の両方が失敗しても、ルールベース検出とこの補助候補は維持します。
 
-WebLLMは通常のHugging Faceモデルをそのまま読み込む仕組みではありません。モデルを増やす場合は、WebLLM prebuilt対応、ブラウザ内実行時の安定性、ライセンス、モデル配信元、複数端末でのロード検証を確認したうえで扱います。
+WebLLMまたはCPU文脈チェックの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。実行用のJavaScriptとONNX Runtime WebのWASMは拡張ZIPへ同梱し、外部LLM APIや外部の実行コードは利用しません。詳しい選定根拠とライセンスは [AI文脈チェックのモデル選定](docs/webllm-model-policy.md) と [NOTICE](NOTICE) に記載しています。
 
 ## 技術スタック
 
@@ -161,8 +161,11 @@ WebLLMは通常のHugging Faceモデルをそのまま読み込む仕組みで�
 - Playwright
 - Chrome Extension Manifest V3
 - `@mlc-ai/web-llm`
+- `@huggingface/transformers`
+- ONNX Runtime Web
 - Web Worker
 - WebGPU
+- WebAssembly
 - `chrome.storage.local`
 - GitHub Pages / GitHub Actionsによる署名付き静的ルール配信
 
@@ -183,7 +186,9 @@ flowchart LR
   Modal --> Transform["日本語ラベルへ安全化"]
   Block --> Transform
   Modal --> Llm["packages/llm\nWebLLM文脈候補"]
+  Llm -->|GPU失敗| Cpu["packages/llm\nCPU / WASM文脈分類"]
   Llm --> Transform
+  Cpu --> Transform
   Transform --> Rescan["変換後テキストを再スキャン"]
   Rescan --> Adapter
   Adapter --> Submit
@@ -201,7 +206,7 @@ repository-root/
     site/       静的LP、公開文書、Reactミニデモ
   packages/
     core/       ルールベース検出、署名検証、マスキング、型定義
-    llm/        WebLLM文脈チェック、Worker、プロンプト、JSONパース
+    llm/        WebLLM、CPU / WASM文脈分類、Worker、プロンプト、JSONパース
     design-tokens/  サイトと拡張で共有するUI非依存トークン
   rules/        Git管理する追加ルール定義
   scripts/      GitHub Pages生成、ビルド時署名、公開QA
@@ -453,7 +458,7 @@ WebLLMの初回利用時には、ローカル推論用のモデルファイル�
 - 検出漏れや誤検出が発生する可能性があります
 - 最終的に送信するかどうかはユーザーが判断してください
 - WebLLMによる判定は補助的な候補提示です
-- WebGPU非対応環境ではAI文脈チェックを利用できない場合があります
+- WebGPU非対応環境ではCPU文脈チェックへ切り替えますが、端末条件によってはAI文脈チェックを完了できない場合があります
 - モデルロードには時間がかかる場合があります
 - 対象サイトのDOM変更によりadapterが動かなくなる可能性があります
 - 通常入力欄を使う設計のため、送信前に対象ページ側のJavaScriptや他の拡張機能が入力欄の文字列へアクセスできる可能性は残ります
@@ -469,11 +474,11 @@ WebLLMの初回利用時には、ローカル推論用のモデルファイル�
 - `high` / `critical` と秘密情報保護の対象は、安全化なしでは送信不可にします
 - WebLLMが失敗しても、ルールベース検出は引き続き利用できます
 - WebLLMの出力形式が崩れた場合やGPU実行を完了できない場合でも、敬称つき人名、`Project ...` 形式の案件名、採用・契約・未公開などの定型文脈はブラウザ内の補助候補として表示します。ただし、網羅性を保証するものではありません
-- WebLLMの実モデルロードはテストの必須条件にしません
+- WebLLMとCPU分類モデルの実モデルロードはテストの必須条件にせず、CIではモデル出力をモックします
 - LLM候補は確定扱いせず、ユーザーが確認する候補として扱います
-- WebLLMは `gemma3-1b-it-q4f16_1-MLC` の単一モデルです。古いモデル指定はこのIDへ正規化し、別モデルへ暗黙に切り替えません。Options Pageの「低負荷」はモデル変更ではなく、context window、入力長、出力長、候補数を削減する実行プロファイルです
-- 拡張側では、iframe側のWebGPU事前チェックだけで停止せず、WebLLM Worker本体の初期化を試します。それでも `No available WebGPU adapters` が出る場合、Worker側でもChromeがWebGPUの実行先アダプタを返せていません。この状態はモデル変更では解消しにくいため、`chrome://gpu` のDawn InfoでD3D12 backendが利用可能か、WebGPU StatusがBlocklistedではないかを確認してください
-- WebGPU推論中に `GPUBuffer.mapAsync`、`DXGI_ERROR_DEVICE_HUNG`、`Device was lost`、`Object has already been disposed` などの実行時エラーが出る場合があります。標準プロファイルでGPU負荷系の失敗を検出した場合は、同じGemmaモデルを低負荷プロファイルで1回だけ再実行します。低負荷でも失敗した場合は再試行を繰り返さず、ルールベース検出とローカル補助候補を維持します。必要に応じてChromeの完全再起動、対象タブの再読み込み、通常ウィンドウでの再試行を確認してください
+- WebLLMは `Qwen2.5-0.5B-Instruct-q4f16_1-MLC` の単一モデルです。古いモデル指定はこのIDへ正規化し、別モデルへ暗黙に切り替えません。Options Pageの「低負荷」はモデル変更ではなく、context window、入力長、出力長、候補数を削減する実行プロファイルです
+- 拡張側では、iframe側のWebGPU事前チェックだけで停止せず、WebLLM Worker本体の初期化を試します。それでも `No available WebGPU adapters` が出る場合、WebLLMの再試行は行わずCPU / WebAssembly分類へ切り替えます。GPU経路を診断する場合は、`chrome://gpu` のDawn InfoでD3D12 backendが利用可能か、WebGPU StatusがBlocklistedではないかを確認してください
+- WebGPU推論中に `GPUBuffer.mapAsync`、`DXGI_ERROR_DEVICE_HUNG`、`Device was lost`、`Object has already been disposed` などの実行時エラーが出る場合があります。標準プロファイルでGPU負荷系の失敗を検出した場合は、同じQwenモデルを低負荷プロファイルで1回だけ再実行します。低負荷でも失敗した場合は `Xenova/multilingual-e5-small` のCPU / WebAssembly分類へ切り替え、それも失敗した場合はルールベース検出と軽量な補助候補を維持します
 - 開発中にChrome拡張を再読み込みした場合、既に開いているChatGPT / Claude / Gemini / Perplexity側のタブも再読み込みしてください。古いContent Scriptが残ると、AI文脈チェック用の拡張ページやWorkerを起動できない場合があります
 - 同じsurfaceが複数回出る場合、初期実装では出現箇所ごとにFinding化します
 - WebLLMによる依頼文生成は、精度が足りないため削除しました。WebLLMは文脈リスク候補の提示に限定します
@@ -481,8 +486,8 @@ WebLLMの初回利用時には、ローカル推論用のモデルファイル�
 - ファイル添付前チェックは `input[type=file]` 経由の添付を対象にします。対象サイト独自のドラッグ&ドロップ添付やクリップボード経由のファイル添付は、サイト実装に依存するため動作保証の対象外です
 - ファイル本文は読み取り後のメモリ上でのみ扱い、永続保存やログ出力はしません
 - 0.1.1では署名付きルール配信の本番APIを有効化済みです。署名検証失敗時やネットワークエラー時は同梱ルールへフォールバックします
-- 商用利用を意識した構成ですが、利用するWebLLMモデルごとのライセンスや配信条件は個別確認が必要です
-- Gemma 3はGemma Terms of Useの対象です。モデル利用時は [Gemma Terms of Use](https://ai.google.dev/gemma/terms) と禁止用途ポリシーに従い、第三者モデルに関する告知は [NOTICE](NOTICE) に記載します
+- 商用利用を意識した構成ですが、利用するWebLLMモデル、CPU分類モデル、推論ランタイムごとのライセンスや配信条件は個別確認が必要です
+- Qwen2.5 0.5BはApache License 2.0、multilingual-e5-smallとONNX RuntimeはMIT Licenseです。第三者モデルと推論ランタイムに関する告知は [NOTICE](NOTICE) に記載します
 - 自前サーバーや外部API利用料は発生しない設計ですが、第三者のモデル配信元やブラウザ機能には依存します
 
 ## GitHubでの開発運用

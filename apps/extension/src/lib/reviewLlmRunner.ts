@@ -4,12 +4,13 @@ import {
   createJsonParseFallbackMessage,
   type ContextAnalysisResult,
   type ContextRiskCandidate,
+  getLlmExecutionProfile,
   isContextAnalysisExecutionError,
   type LlmExecutionProfileId,
   type LlmProgress,
   mergeResidualContextCandidates
 } from "@ai-mae-check/llm";
-import { analyzeContextWithBridge } from "./llmBridgeClient";
+import { analyzeContextWithBridge, analyzeContextWithWasmBridge } from "./llmBridgeClient";
 import {
   createPasteReviewLlmResultState,
   formatPasteReviewLlmStatusMessage,
@@ -23,6 +24,14 @@ type AnalyzeReviewContext = (
     modelId: string;
     profileId: LlmExecutionProfileId;
     existingFindings: Finding[];
+    onProgress: (progress: LlmProgress) => void;
+  }
+) => Promise<ContextAnalysisResult>;
+
+type AnalyzeWasmReviewContext = (
+  inputText: string,
+  options: {
+    maxCandidates: number;
     onProgress: (progress: LlmProgress) => void;
   }
 ) => Promise<ContextAnalysisResult>;
@@ -41,11 +50,18 @@ export interface RunReviewLlmOptions {
   render: () => void;
   isActive?: () => boolean;
   analyze?: AnalyzeReviewContext;
+  analyzeWasm?: AnalyzeWasmReviewContext;
 }
 
 export const LOCAL_CONTEXT_FALLBACK_MESSAGE =
   "AI文脈チェックは完了できませんでしたが、ブラウザ内の補助検出で注意候補を表示しています。";
 export const LOW_RESOURCE_RETRY_MESSAGE = "GPU負荷を抑えてAI文脈チェックを再実行しています。";
+export const WASM_CONTEXT_FALLBACK_START_MESSAGE =
+  "WebLLMを利用できないため、WebGPUを使わないCPU文脈チェックへ切り替えています。";
+export const WASM_CONTEXT_FALLBACK_FOUND_MESSAGE =
+  "WebLLMは利用できませんでしたが、CPUによる文脈チェックで注意候補が見つかりました。";
+export const WASM_CONTEXT_FALLBACK_EMPTY_MESSAGE =
+  "WebLLMは利用できませんでしたが、CPUによる文脈チェックでは追加候補は見つかりませんでした。ただし、安全を保証するものではありません。";
 
 function isActive(options: RunReviewLlmOptions): boolean {
   return options.isActive?.() ?? true;
@@ -85,6 +101,16 @@ function shouldRetryWithLowResource(result: ContextAnalysisResult, profileId: Ll
   );
 }
 
+function shouldUseWasmFallback(result: ContextAnalysisResult): boolean {
+  if (!isContextAnalysisExecutionError(result)) {
+    return false;
+  }
+
+  return ["webgpu", "memory", "worker", "model_configuration"].includes(
+    result.errorDetail?.kind ?? "unknown"
+  );
+}
+
 function applyReviewLlmResult(
   options: Pick<RunReviewLlmOptions, "selectedCandidateIds" | "setCandidates" | "setEmptyCandidateMessageVisible" | "render">,
   result: Pick<ContextAnalysisResult, "candidates" | "summary" | "errorDetail">
@@ -111,6 +137,7 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
   }
 
   const analyze = options.analyze ?? analyzeContextWithBridge;
+  const analyzeWasm = options.analyzeWasm ?? analyzeContextWithWasmBridge;
   const analyzeWithProfile = (profileId: LlmExecutionProfileId) =>
     analyze(options.inputText, {
       modelId: options.modelId,
@@ -135,6 +162,45 @@ export async function runReviewLlm(options: RunReviewLlmOptions): Promise<void> 
     if (shouldRetryWithLowResource(result, options.profileId) && isActive(options)) {
       options.llmStatus.textContent = LOW_RESOURCE_RETRY_MESSAGE;
       result = await analyzeWithProfile("low_resource");
+    }
+
+    if (shouldUseWasmFallback(result) && isActive(options)) {
+      const webLlmResult = result;
+      options.llmStatus.textContent = WASM_CONTEXT_FALLBACK_START_MESSAGE;
+      const profile = getLlmExecutionProfile("low_resource");
+      const wasmResult = await analyzeWasm(options.inputText, {
+        maxCandidates: profile.maxCandidates,
+        onProgress: (progress) => {
+          if (isActive(options)) {
+            options.llmStatus.textContent = progress.message;
+          }
+        }
+      });
+
+      if (!isActive(options)) {
+        return;
+      }
+
+      if (!isContextAnalysisExecutionError(wasmResult)) {
+        applyReviewLlmResult(options, wasmResult);
+        options.llmStatus.textContent =
+          wasmResult.candidates.length > 0
+            ? WASM_CONTEXT_FALLBACK_FOUND_MESSAGE
+            : WASM_CONTEXT_FALLBACK_EMPTY_MESSAGE;
+        return;
+      }
+
+      if (wasmResult.candidates.length > 0) {
+        applyReviewLlmResult(options, wasmResult);
+      }
+      options.llmStatus.textContent = `${LOCAL_CONTEXT_FALLBACK_MESSAGE}\n${formatPasteReviewLlmStatusMessage(
+        webLlmResult.error ?? "WebLLMによるAI文脈チェックを実行できませんでした。",
+        webLlmResult.errorDetail
+      )}\n${formatPasteReviewLlmStatusMessage(
+        wasmResult.error ?? "CPUによる文脈チェックを実行できませんでした。",
+        wasmResult.errorDetail
+      )}`;
+      return;
     }
 
     if (!isActive(options)) {

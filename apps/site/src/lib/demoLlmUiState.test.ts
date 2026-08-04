@@ -90,7 +90,7 @@ describe("demoLlmUiState", () => {
       candidates: [],
       summary: "AI文脈チェックの結果を読み取れませんでした。",
       rawText: "",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 10,
       error: "AI文脈チェックの結果を読み取れませんでした。",
       errorDetail: {

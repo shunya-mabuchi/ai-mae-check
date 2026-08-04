@@ -10,6 +10,7 @@ export interface CreateLlmBridgeAnalyzeRequestOptions
 }
 
 export type LlmBridgeAnalyzeRequest = Extract<LlmBridgeRequest, { type: "analyze" }>;
+export type LlmBridgeWasmAnalyzeRequest = Extract<LlmBridgeRequest, { type: "analyze-wasm" }>;
 export type LlmBridgeModelStateRequest = Extract<LlmBridgeRequest, { type: "model-state" }>;
 
 export function createLlmBridgeAnalyzeRequest(options: CreateLlmBridgeAnalyzeRequestOptions): LlmBridgeAnalyzeRequest {
@@ -22,6 +23,23 @@ export function createLlmBridgeAnalyzeRequest(options: CreateLlmBridgeAnalyzeReq
     options: {
       ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
       ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
+    }
+  };
+}
+
+export function createLlmBridgeWasmAnalyzeRequest(options: {
+  requestId: string;
+  inputText: string;
+  maxCandidates?: number;
+}): LlmBridgeWasmAnalyzeRequest {
+  return {
+    type: "analyze-wasm",
+    requestId: options.requestId,
+    inputText: options.inputText,
+    options: {
+      ...(typeof options.maxCandidates === "number"
+        ? { maxCandidates: options.maxCandidates }
+        : {})
     }
   };
 }

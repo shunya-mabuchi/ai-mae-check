@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createLlmBridgeAnalyzeRequest, createLlmBridgeModelStateRequest } from "../src/lib/llmBridgeRequest";
+import {
+  createLlmBridgeAnalyzeRequest,
+  createLlmBridgeModelStateRequest,
+  createLlmBridgeWasmAnalyzeRequest
+} from "../src/lib/llmBridgeRequest";
 import { buildFinding } from "./testBuilders";
 
 describe("createLlmBridgeAnalyzeRequest", () => {
@@ -7,7 +11,7 @@ describe("createLlmBridgeAnalyzeRequest", () => {
     const request = createLlmBridgeAnalyzeRequest({
       requestId: "request-1",
       inputText: "A社向けの提案です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "low_resource",
       existingFindings: [buildFinding()],
       maxCandidates: 8
@@ -17,7 +21,7 @@ describe("createLlmBridgeAnalyzeRequest", () => {
       type: "analyze",
       requestId: "request-1",
       inputText: "A社向けの提案です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "low_resource",
       options: {
         existingFindings: [buildFinding()],
@@ -30,7 +34,7 @@ describe("createLlmBridgeAnalyzeRequest", () => {
     const request = createLlmBridgeAnalyzeRequest({
       requestId: "request-2",
       inputText: "通常の議事録です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard"
     });
 
@@ -40,12 +44,27 @@ describe("createLlmBridgeAnalyzeRequest", () => {
   });
 
   it("WebLLMモデル準備状態のrequestを作る", () => {
-    expect(createLlmBridgeModelStateRequest("state-1", "gemma3-1b-it-q4f16_1-MLC", "standard")).toEqual({
+    expect(createLlmBridgeModelStateRequest("state-1", "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", "standard")).toEqual({
       type: "model-state",
       requestId: "state-1",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       options: {}
+    });
+  });
+
+  it("CPU文脈チェック用のrequestをモデルIDなしで作る", () => {
+    expect(
+      createLlmBridgeWasmAnalyzeRequest({
+        requestId: "wasm-1",
+        inputText: "候補者の評価を確認します。",
+        maxCandidates: 6
+      })
+    ).toEqual({
+      type: "analyze-wasm",
+      requestId: "wasm-1",
+      inputText: "候補者の評価を確認します。",
+      options: { maxCandidates: 6 }
     });
   });
 });

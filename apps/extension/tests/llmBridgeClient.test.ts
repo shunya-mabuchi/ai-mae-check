@@ -9,7 +9,7 @@ describe("createBridgeErrorFallbackResult", () => {
         requestId: "request-1",
         inputText:
           "佐藤様向けに Project Blue Bridge の提案メモを作ります。候補者の山田花子さんについても確認します。",
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         profileId: "standard",
         options: {
           maxCandidates: 12
@@ -33,7 +33,7 @@ describe("createBridgeErrorFallbackResult", () => {
         type: "analyze",
         requestId: "request-output-format",
         inputText: "佐藤様向けに Project Blue Bridge の提案メモを作ります。",
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         profileId: "standard",
         options: {}
       },
@@ -54,7 +54,7 @@ describe("createBridgeErrorFallbackResult", () => {
         type: "analyze",
         requestId: "request-2",
         inputText: "テスト",
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         profileId: "standard",
         options: {}
       },

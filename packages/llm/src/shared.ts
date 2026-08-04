@@ -6,6 +6,9 @@ export {
   DEFAULT_MAX_INPUT_CHARS,
   DEFAULT_MODEL_ID,
   MODEL_LOADING_MESSAGE,
+  WASM_CONTEXT_MODEL_DTYPE,
+  WASM_CONTEXT_MODEL_ID,
+  WASM_CONTEXT_MODEL_REVISION,
   WEBGPU_UNAVAILABLE_MESSAGE
 } from "./constants";
 export { convertContextCandidatesToFindings } from "./convert";
@@ -41,6 +44,16 @@ export {
   extractResidualContextTerms,
   mergeResidualContextCandidates
 } from "./residualMasking";
+export {
+  createWasmContextCandidates,
+  getWasmContextPrototypeTexts,
+  splitWasmContextSegments,
+  WASM_CONTEXT_ANALYZING_MESSAGE,
+  WASM_CONTEXT_LOADING_MESSAGE,
+  type WasmContextAnalyzerOptions,
+  type WasmContextEmbeddingRuntime,
+  type WasmContextSegment
+} from "./wasmClassifier";
 export { buildContextRiskPrompt } from "./prompt";
 export type {
   AnalyzeContextOptions,

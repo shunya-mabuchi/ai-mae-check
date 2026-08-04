@@ -153,12 +153,12 @@ const llmResourceModes: Array<{ value: LlmResourceMode; label: string; descripti
   {
     value: "standard",
     label: "標準",
-    description: "Gemma 3 1Bを通常の入力長と候補数で実行します。"
+    description: "Qwen2.5 0.5Bを通常の入力長と候補数で実行します。"
   },
   {
     value: "low_resource",
     label: "低負荷",
-    description: "同じGemma 3 1Bの入力長、出力長、候補数、context windowを抑えて実行します。"
+    description: "同じQwen2.5 0.5Bの入力長、出力長、候補数、context windowを抑えて実行します。"
   }
 ];
 

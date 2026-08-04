@@ -44,7 +44,7 @@ describe("pasteReviewLlmState", () => {
       candidates: [],
       summary: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
       rawText: "",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 10,
       error: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
       errorDetail: buildLlmErrorDetail({
@@ -186,7 +186,7 @@ describe("pasteReviewLlmState", () => {
   it("通常モードかつモデル準備済みのときだけAI文脈チェックの自動実行を許可する", () => {
     const autoLlm = {
       enabled: true,
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       mode: "auto" as const
     };
 
@@ -202,7 +202,7 @@ describe("pasteReviewLlmState", () => {
         "default",
         {
           enabled: false,
-          modelId: "gemma3-1b-it-q4f16_1-MLC",
+          modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
           mode: "auto"
         },
         true
@@ -213,7 +213,7 @@ describe("pasteReviewLlmState", () => {
         "default",
         {
           enabled: true,
-          modelId: "gemma3-1b-it-q4f16_1-MLC",
+          modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
           mode: "manual"
         },
         true

@@ -24,6 +24,12 @@ export type LlmBridgeRequest =
       options: Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates">;
     }
   | {
+      type: "analyze-wasm";
+      requestId: string;
+      inputText: string;
+      options: Pick<AnalyzeContextOptions, "maxCandidates">;
+    }
+  | {
       type: "model-state";
       requestId: string;
       modelId: string;
@@ -116,15 +122,27 @@ export function isLlmBridgeRequest(value: unknown): value is LlmBridgeRequest {
     return false;
   }
 
-  if (value.type !== "analyze" && value.type !== "model-state") {
+  if (value.type !== "analyze" && value.type !== "analyze-wasm" && value.type !== "model-state") {
     return false;
   }
 
   if (
     typeof value.requestId !== "string" ||
-    typeof value.modelId !== "string" ||
-    (value.profileId !== "standard" && value.profileId !== "low_resource") ||
     !isObjectRecord(value.options)
+  ) {
+    return false;
+  }
+
+  if (value.type === "analyze-wasm") {
+    return (
+      typeof value.inputText === "string" &&
+      (value.options.maxCandidates === undefined || typeof value.options.maxCandidates === "number")
+    );
+  }
+
+  if (
+    typeof value.modelId !== "string" ||
+    (value.profileId !== "standard" && value.profileId !== "low_resource")
   ) {
     return false;
   }

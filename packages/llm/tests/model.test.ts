@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_MODEL_ID, resolveModelId } from "../src";
 
 describe("resolveModelId", () => {
-  it("過去のLlama指定を現在のGemma単一モデルへ正規化する", () => {
+  it("過去のLlama指定を現在のQwen単一モデルへ正規化する", () => {
     const modelId = resolveModelId(
       {
         prebuiltAppConfig: {
@@ -15,7 +15,7 @@ describe("resolveModelId", () => {
     expect(modelId).toBe(DEFAULT_MODEL_ID);
   });
 
-  it("別モデルを指定されてもGemma単一モデルへ正規化する", () => {
+  it("別モデルを指定されてもQwen単一モデルへ正規化する", () => {
     const modelId = resolveModelId(
       {
         prebuiltAppConfig: {
@@ -28,7 +28,7 @@ describe("resolveModelId", () => {
     expect(modelId).toBe(DEFAULT_MODEL_ID);
   });
 
-  it("prebuilt一覧にGemma単一モデルがない場合は暗黙に別モデルへ切り替えない", () => {
+  it("prebuilt一覧にQwen単一モデルがない場合は暗黙に別モデルへ切り替えない", () => {
     expect(() =>
       resolveModelId(
         {

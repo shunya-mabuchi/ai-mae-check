@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { CheckCircle2, ClipboardCopy, Database, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
-import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
+import { DEFAULT_MODEL_ID, WASM_CONTEXT_MODEL_ID } from "@ai-mae-check/llm";
 import { targetSites, type SiteId } from "../../src/lib/sites";
 import type {
   AiMaeCheckSettings,
@@ -166,43 +166,50 @@ export function WebLlmSettingsSection({
   onResourceModeChange: (mode: LlmResourceMode) => void;
 }) {
   return (
-    <Section icon={<Sparkles size={20} aria-hidden="true" />} title="WebLLMによるAI文脈チェック">
+    <Section icon={<Sparkles size={20} aria-hidden="true" />} title="AI文脈チェック">
       <OptionsCheckbox
         isSelected={settings.llm.enabled}
         onChange={onEnabledChange}
-        label="WebLLMによるAI文脈チェックを有効にする"
-        description="メールやAPIキーなどの確定情報ではなく、顧客名・案件名・契約文脈などの候補確認に使います。"
+        label="AI文脈チェックを有効にする"
+        description="メールやAPIキーなどの確定情報ではなく、顧客名・案件名・契約文脈などの候補確認に使います。WebLLMが使えない場合はCPU用モデルへ切り替えます。"
       />
 
       <div className="rounded-md border border-line bg-white p-4">
         <p className="text-sm font-semibold text-ink">実行負荷</p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          どちらも同じGemma 3 1Bモデルを使います。「低負荷」は入力長、出力長、候補数、context windowを抑えてGPU負荷を下げます。
+          どちらも同じQwen2.5 0.5Bモデルを使います。「低負荷」は入力長、出力長、候補数、context windowを抑えてGPU負荷を下げます。
         </p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          標準でGPU実行が中断された場合は、同じモデルを低負荷で1回だけ再実行します。
+          標準でGPU実行が中断された場合は、同じモデルを低負荷で1回だけ再実行し、失敗が続く場合はCPU文脈チェックへ切り替えます。
         </p>
         <div className="mt-3">
           <LlmResourceModeRadioGroup value={settings.llm.resourceMode} onChange={onResourceModeChange} />
         </div>
-        <p className="mt-4 text-sm font-semibold text-ink">使用するモデル</p>
+        <p className="mt-4 text-sm font-semibold text-ink">WebLLMモデル</p>
         <p className="mt-2 break-all rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">
           {DEFAULT_MODEL_ID}
         </p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          Gemma 3は
+          Qwen2.5 0.5B Instructは
           <a
             className="font-semibold text-brand underline decoration-brand/40 underline-offset-2 hover:decoration-brand"
-            href="https://ai.google.dev/gemma/terms"
+            href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/main/LICENSE"
             target="_blank"
             rel="noreferrer"
           >
-            Gemma Terms of Use
+            Apache License 2.0
           </a>
-          の対象です。
+          で提供されています。
+        </p>
+        <p className="mt-4 text-sm font-semibold text-ink">CPUフォールバックモデル</p>
+        <p className="mt-2 break-all rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">
+          {WASM_CONTEXT_MODEL_ID}
         </p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          低負荷でも、端末、GPUドライバー、WebGPU実装によっては実行できない場合があります。その場合もルールベース検出とブラウザ内の補助検出は利用できます。
+          WebGPUを利用できない場合やGPU実行が失敗した場合に、WebAssembly上の小型モデルで文脈候補を補助します。初回は別途モデルファイルを取得する場合があります。
+        </p>
+        <p className="mt-2 text-sm leading-6 text-stone-600">
+          CPU文脈チェックも端末メモリ、保存領域、モデル取得先への接続状況によっては実行できない場合があります。その場合もルールベース検出と軽量な補助検出は利用できます。
         </p>
       </div>
 
@@ -210,7 +217,7 @@ export function WebLlmSettingsSection({
 
       <div className="rounded-md border border-line bg-white p-4 text-sm leading-7 text-stone-700">
         <p>入力本文や送信本文は外部サーバーに送信されません。検出とAI文脈チェックはユーザーのブラウザ内で実行されます。</p>
-        <p className="mt-2">WebLLMの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。</p>
+        <p className="mt-2">WebLLMまたはCPU文脈チェックの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。</p>
         <p className="mt-2">あなた自身の推論サーバーや外部LLM APIは利用しません。</p>
       </div>
     </Section>

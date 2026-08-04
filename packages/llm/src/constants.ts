@@ -1,4 +1,7 @@
-export const DEFAULT_MODEL_ID = "gemma3-1b-it-q4f16_1-MLC";
+export const DEFAULT_MODEL_ID = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
+export const WASM_CONTEXT_MODEL_ID = "Xenova/multilingual-e5-small";
+export const WASM_CONTEXT_MODEL_REVISION = "761b726dd34fb83930e26aab4e9ac3899aa1fa78";
+export const WASM_CONTEXT_MODEL_DTYPE = "q8";
 export const DEFAULT_MAX_INPUT_CHARS = 1200;
 export const DEFAULT_MAX_CANDIDATES = 12;
 export const DEFAULT_CONFIDENCE_THRESHOLD = 0.6;

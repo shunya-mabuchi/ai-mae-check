@@ -7,7 +7,8 @@ import {
 import {
   LOCAL_CONTEXT_FALLBACK_MESSAGE,
   runReviewLlm,
-  type RunReviewLlmOptions
+  type RunReviewLlmOptions,
+  WASM_CONTEXT_FALLBACK_EMPTY_MESSAGE
 } from "../src/lib/reviewLlmRunner";
 import { asDomElement } from "./helpers/fakeDom";
 import { buildFinding } from "./testBuilders";
@@ -25,6 +26,7 @@ class FakeButton {
 }
 
 type AnalyzeReviewContextForTest = NonNullable<RunReviewLlmOptions["analyze"]>;
+type AnalyzeWasmReviewContextForTest = NonNullable<RunReviewLlmOptions["analyzeWasm"]>;
 
 describe("runReviewLlm", () => {
   it("画面を閉じた後に完了した結果で候補や表示を更新しない", async () => {
@@ -44,7 +46,7 @@ describe("runReviewLlm", () => {
     const execution = runReviewLlm({
       enabled: true,
       inputText: "候補者の山田花子さんを確認します。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -79,7 +81,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: false,
       inputText: "テスト",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -137,7 +139,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "候補者の山田花子さんについて確認します。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [buildFinding()],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -151,7 +153,7 @@ describe("runReviewLlm", () => {
     expect(analyze).toHaveBeenCalledWith(
       "候補者の山田花子さんについて確認します。",
       expect.objectContaining({
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         profileId: "standard",
         existingFindings: [buildFinding()],
         onProgress: expect.any(Function)
@@ -179,6 +181,19 @@ describe("runReviewLlm", () => {
         technicalDetail: "Worker disposed"
       }
     }));
+    const analyzeWasm = vi.fn<AnalyzeWasmReviewContextForTest>(async () => ({
+      candidates: [],
+      summary: "CPU文脈チェックを実行できませんでした。",
+      rawText: "",
+      modelId: "test-wasm-model",
+      elapsedMs: 5,
+      error: "CPU文脈チェックを実行できませんでした。",
+      errorDetail: {
+        kind: "wasm",
+        message: "CPU文脈チェックを実行できませんでした。",
+        hint: "保存領域を確認してください。"
+      }
+    }));
     const llmStatus = { textContent: "" };
     const llmButton = new FakeButton();
     const render = vi.fn();
@@ -186,7 +201,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "テスト",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -194,15 +209,17 @@ describe("runReviewLlm", () => {
       selectedCandidateIds: new Set(),
       setCandidates: vi.fn(),
       render,
-      analyze
+      analyze,
+      analyzeWasm
     });
 
     expect(llmStatus.textContent).toContain("AI文脈チェックを実行できませんでした。");
     expect(llmStatus.textContent).toContain("診断メモ: ページを再読み込みしてから再試行してください。");
+    expect(analyzeWasm).toHaveBeenCalledTimes(1);
     expect(render).not.toHaveBeenCalled();
   });
 
-  it("GPUメモリ不足時は同じGemmaモデルを低負荷プロファイルで一度だけ再試行する", async () => {
+  it("GPUメモリ不足時は同じQwenモデルを低負荷プロファイルで一度だけ再試行する", async () => {
     const analyze = vi.fn<AnalyzeReviewContextForTest>().mockResolvedValueOnce({
       candidates: [
         {
@@ -218,7 +235,7 @@ describe("runReviewLlm", () => {
       ],
       summary: "GPU実行に失敗しました。",
       rawText: "",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 10,
       error: "ローカルAIモデルの実行に必要なメモリを確保できませんでした。",
       errorDetail: {
@@ -242,7 +259,7 @@ describe("runReviewLlm", () => {
       ],
       summary: "低負荷で確認しました。",
       rawText: "{}",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 20
     });
     const llmStatus = { textContent: "" };
@@ -253,7 +270,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "候補者の給与条件を確認します。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -265,7 +282,7 @@ describe("runReviewLlm", () => {
     });
 
     expect(analyze).toHaveBeenCalledTimes(2);
-    expect(analyze.mock.calls[0]?.[1].modelId).toBe("gemma3-1b-it-q4f16_1-MLC");
+    expect(analyze.mock.calls[0]?.[1].modelId).toBe("Qwen2.5-0.5B-Instruct-q4f16_1-MLC");
     expect(analyze.mock.calls[0]?.[1].profileId).toBe("standard");
     expect(analyze.mock.calls[1]?.[1].profileId).toBe("low_resource");
     expect(setCandidates).toHaveBeenCalledWith(
@@ -290,7 +307,7 @@ describe("runReviewLlm", () => {
       ],
       summary: "GPU実行が中断されました。",
       rawText: "",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 10,
       error: "GPU実行が中断されました。",
       errorDetail: {
@@ -301,13 +318,14 @@ describe("runReviewLlm", () => {
       }
     };
     const analyze = vi.fn<AnalyzeReviewContextForTest>().mockResolvedValue(failedResult);
+    const analyzeWasm = vi.fn<AnalyzeWasmReviewContextForTest>().mockResolvedValue(failedResult);
     const llmStatus = { textContent: "" };
     const setCandidates = vi.fn();
 
     await runReviewLlm({
       enabled: true,
       inputText: "Project Blue Bridge の提案です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -315,28 +333,30 @@ describe("runReviewLlm", () => {
       selectedCandidateIds: new Set(),
       setCandidates,
       render: vi.fn(),
-      analyze
+      analyze,
+      analyzeWasm
     });
 
     expect(analyze).toHaveBeenCalledTimes(2);
     expect(analyze.mock.calls[1]?.[1].profileId).toBe("low_resource");
+    expect(analyzeWasm).toHaveBeenCalledTimes(1);
     expect(setCandidates).toHaveBeenCalledWith(failedResult.candidates);
     expect(llmStatus.textContent).toContain(LOCAL_CONTEXT_FALLBACK_MESSAGE);
   });
 
-  it("低負荷設定でもGemmaを低負荷プロファイルで1回だけ実行する", async () => {
+  it("低負荷設定でもQwenを低負荷プロファイルで1回だけ実行する", async () => {
     const analyze = vi.fn<AnalyzeReviewContextForTest>(async () => ({
       candidates: [],
       summary: "追加候補はありません。",
       rawText: "{}",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       elapsedMs: 10
     }));
 
     await runReviewLlm({
       enabled: true,
       inputText: "一般的な確認文です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "low_resource",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>({ textContent: "" }),
@@ -350,13 +370,13 @@ describe("runReviewLlm", () => {
     expect(analyze).toHaveBeenCalledTimes(1);
     expect(analyze.mock.calls[0]?.[1]).toEqual(
       expect.objectContaining({
-        modelId: "gemma3-1b-it-q4f16_1-MLC",
+        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
         profileId: "low_resource"
       })
     );
   });
 
-  it("WebGPUアダプタ未取得では同じページ内で再試行しない", async () => {
+  it("WebGPUアダプタ未取得ではWebLLMを再試行せずCPU文脈チェックへ切り替える", async () => {
     const analyze = vi.fn<AnalyzeReviewContextForTest>(async () => ({
       candidates: [],
       summary: "WebGPUアダプタを取得できませんでした。",
@@ -371,12 +391,19 @@ describe("runReviewLlm", () => {
         technicalDetail: "No available WebGPU adapters"
       }
     }));
+    const analyzeWasm = vi.fn<AnalyzeWasmReviewContextForTest>(async () => ({
+      candidates: [],
+      summary: "追加候補はありません。",
+      rawText: "",
+      modelId: "test-wasm-model",
+      elapsedMs: 8
+    }));
     const llmStatus = { textContent: "" };
 
     await runReviewLlm({
       enabled: true,
       inputText: "一般的な確認文です。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -384,11 +411,13 @@ describe("runReviewLlm", () => {
       selectedCandidateIds: new Set(),
       setCandidates: vi.fn(),
       render: vi.fn(),
-      analyze
+      analyze,
+      analyzeWasm
     });
 
     expect(analyze).toHaveBeenCalledTimes(1);
-    expect(llmStatus.textContent).toContain("WebGPUアダプタを取得できませんでした。");
+    expect(analyzeWasm).toHaveBeenCalledTimes(1);
+    expect(llmStatus.textContent).toBe(WASM_CONTEXT_FALLBACK_EMPTY_MESSAGE);
   });
 
   it("実行開始時に前回の空候補メッセージを隠して再描画する", async () => {
@@ -407,7 +436,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "テスト",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -458,7 +487,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "候補者の山田花子さんについて確認します。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),
@@ -491,7 +520,7 @@ describe("runReviewLlm", () => {
     await runReviewLlm({
       enabled: true,
       inputText: "佐藤様向けに Project Blue Bridge の提案メモを作ります。",
-      modelId: "gemma3-1b-it-q4f16_1-MLC",
+      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
       profileId: "standard",
       existingFindings: [],
       llmStatus: asDomElement<HTMLElement>(llmStatus),

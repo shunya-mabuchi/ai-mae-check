@@ -19,7 +19,11 @@ import {
   createLlmBridgeIframe,
   waitForLlmBridgeIframeLoad
 } from "./llmBridgeFrame";
-import { createLlmBridgeAnalyzeRequest, createLlmBridgeModelStateRequest } from "./llmBridgeRequest";
+import {
+  createLlmBridgeAnalyzeRequest,
+  createLlmBridgeModelStateRequest,
+  createLlmBridgeWasmAnalyzeRequest
+} from "./llmBridgeRequest";
 
 interface BridgeConnection {
   port: MessagePort;
@@ -190,6 +194,21 @@ export function analyzeContextWithBridge(inputText: string, options: BridgeAnaly
     profileId: options.profileId,
     ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
     ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
+  });
+
+  return sendBridgeRequest(request, options.onProgress);
+}
+
+export function analyzeContextWithWasmBridge(
+  inputText: string,
+  options: Pick<AnalyzeContextOptions, "maxCandidates" | "onProgress"> = {}
+): Promise<ContextAnalysisResult> {
+  const request = createLlmBridgeWasmAnalyzeRequest({
+    requestId: nextRequestId(),
+    inputText,
+    ...(typeof options.maxCandidates === "number"
+      ? { maxCandidates: options.maxCandidates }
+      : {})
   });
 
   return sendBridgeRequest(request, options.onProgress);

@@ -1,8 +1,12 @@
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { extname, join, resolve } from "node:path";
 
 const manifestPath = resolve("apps/extension/.output/chrome-mv3/manifest.json");
+const extensionOutputPath = resolve("apps/extension/.output/chrome-mv3");
 const extensionPackagePath = resolve("apps/extension/package.json");
+const forbiddenRemoteRuntimePrefixes = [
+  "https://cdn.jsdelivr.net/npm/@huggingface/transformers@"
+];
 
 const expectedTargetMatches = [
   "https://chatgpt.com/*",
@@ -33,6 +37,28 @@ function assertNoUnexpectedHosts(hosts) {
 
   if (hosts.some((host) => host.includes("shunya-mabuchi.github.io"))) {
     fail("GitHub Pages must be accessed by CORS GET without adding a required host permission");
+  }
+}
+
+function collectTextAssets(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      return collectTextAssets(path);
+    }
+
+    return [".html", ".js", ".mjs"].includes(extname(entry.name)) ? [path] : [];
+  });
+}
+
+function assertNoRemoteRuntimeFallbacks() {
+  for (const assetPath of collectTextAssets(extensionOutputPath)) {
+    const source = readFileSync(assetPath, "utf8");
+    for (const prefix of forbiddenRemoteRuntimePrefixes) {
+      if (source.includes(prefix)) {
+        fail(`remote runtime URL must not be bundled: ${prefix}`);
+      }
+    }
   }
 }
 
@@ -117,5 +143,7 @@ for (const required of ["'wasm-unsafe-eval'", "worker-src 'self'", "https://hugg
     fail(`extension_pages CSP must include ${required}`);
   }
 }
+
+assertNoRemoteRuntimeFallbacks();
 
 console.log("manifest QA passed");

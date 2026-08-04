@@ -7,7 +7,7 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 - 基本設定: 拡張機能全体の有効/無効
 - 対象サイト: ChatGPT / Claude / Gemini / PerplexityごとのON/OFF
 - 検出ルール: ルールベース検出ごとのON/OFF
-- WebLLM: AI文脈チェックの有効/無効、標準/低負荷、モデルID、手動/自動実行
+- AI文脈チェック: 有効/無効、WebLLMの標準/低負荷、モデルID、手動/自動実行。WebLLM失敗時のCPUフォールバックは自動で切り替える
 - 設定の初期化: `chrome.storage.local` に保存された設定キーと検証済みリモートルールキャッシュの削除
 - 診断情報: 本文を含まない設定状態と環境情報のコピー
 
@@ -40,7 +40,7 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 
 ## スキーマとマイグレーション
 
-現在の設定スキーマは `SETTINGS_SCHEMA_VERSION = 3` です。バージョン1以前の設定には `resourceMode: "standard"` を補完し、過去のモデルIDは現在の単一モデル `gemma3-1b-it-q4f16_1-MLC` へ正規化します。
+現在の設定スキーマは `SETTINGS_SCHEMA_VERSION = 3` です。バージョン1以前の設定には `resourceMode: "standard"` を補完し、過去のモデルIDは現在の単一WebLLMモデル `Qwen2.5-0.5B-Instruct-q4f16_1-MLC` へ正規化します。CPUフォールバックモデルは互換性を保つため実装側で固定し、設定として保存しません。
 
 `normalizeSettings` / `migrateSettings` は、未設定、古い設定、壊れた設定を現在のスキーマへ補完します。
 
@@ -56,7 +56,7 @@ AIまえチェックのOptions Pageは、Chrome拡張の動作をユーザーが
 
 「設定を初期化」を押すと、`chrome.storage.local.remove([SETTINGS_KEY, REMOTE_RULE_CACHE_KEY])` で保存済み設定と検証済みリモートルールキャッシュを削除し、画面を初期設定へ戻します。
 
-本文や検出結果はそもそも保存していないため、初期化で削除する対象には含まれません。WebLLMのモデルキャッシュはChromeやWebLLMランタイムが管理する保存領域であり、この設定初期化の対象外です。
+本文や検出結果はそもそも保存していないため、初期化で削除する対象には含まれません。WebLLMとCPUフォールバックのモデルキャッシュはChromeや各推論ランタイムが管理する保存領域であり、この設定初期化の対象外です。
 
 ## 関連ファイル
 
