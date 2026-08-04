@@ -124,7 +124,9 @@ function isWebGpuRuntimeFailure(message: string): boolean {
     "device_hung",
     "dxgi_error_device_hung",
     "getdeviceremovedreason",
-    "gpu constraints"
+    "gpu constraints",
+    "object has already been disposed",
+    "disposed object"
   ]);
 }
 
@@ -206,7 +208,9 @@ const rules: LlmErrorRule[] = [
         "device_hung",
         "dxgi_error_device_hung",
         "getdeviceremovedreason",
-        "gpu constraints"
+        "gpu constraints",
+        "object has already been disposed",
+        "disposed object"
       ]),
     copy: (message) => {
       if (isWebGpuRuntimeFailure(message)) {
@@ -227,9 +231,7 @@ const rules: LlmErrorRule[] = [
         "worker",
         "module script",
         "failed to construct",
-        "imported module",
-        "already been disposed",
-        "disposed object"
+        "imported module"
       ]),
     copy: () => errorCopies.worker
   },

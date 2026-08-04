@@ -103,11 +103,11 @@ describe("formatLlmErrorMessage", () => {
     expect(detail.message).toContain("Workerを起動できませんでした");
   });
 
-  it("破棄済みオブジェクトのエラーをWorker寿命系として分類する", () => {
+  it("破棄済みTVMオブジェクトのエラーをWebGPU実行中断として分類する", () => {
     const detail = classifyLlmError(new Error("Object has already been disposed"));
 
-    expect(detail.kind).toBe("worker");
-    expect(detail.hint).toContain("タブも再読み込み");
+    expect(detail.kind).toBe("webgpu");
+    expect(detail.message).toContain("GPU実行が中断されました");
     expect(detail.technicalDetail).toContain("Object has already been disposed");
   });
 

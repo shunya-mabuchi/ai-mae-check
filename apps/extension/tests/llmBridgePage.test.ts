@@ -140,10 +140,10 @@ describe("llmBridgePage", () => {
     expect(createLocalLlmRuntimeServiceMock).toHaveBeenCalledWith(
       expect.objectContaining({
         modelId: "gemma3-1b-it-q4f16_1-MLC",
-        contextWindowSize: 4096,
-        maxInputChars: 6000,
-        maxTokens: 900,
-        compactPrompt: false
+        contextWindowSize: 2048,
+        maxInputChars: 1200,
+        maxTokens: 384,
+        compactPrompt: true
       })
     );
     expect(port.postedMessages).toContainEqual(

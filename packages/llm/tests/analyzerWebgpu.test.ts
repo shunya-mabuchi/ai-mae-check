@@ -92,7 +92,7 @@ describe("WebGPU事前チェック", () => {
       DEFAULT_MODEL_ID,
       expect.any(Object),
       {
-        context_window_size: 4096,
+        context_window_size: 2048,
         sliding_window_size: -1
       }
     );

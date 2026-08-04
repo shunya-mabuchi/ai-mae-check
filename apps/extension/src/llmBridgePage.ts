@@ -27,6 +27,7 @@ let bridgeConnected = false;
 let runtimeService: LocalLlmRuntimeService | null = null;
 let runtimeModelId: string | null = null;
 let runtimeProfileId: LlmExecutionProfileId | null = null;
+let analyzeQueue: Promise<void> = Promise.resolve();
 
 function post(message: LlmBridgeResponse): void {
   bridgePort?.postMessage(message);
@@ -44,7 +45,14 @@ function postProgress(requestId: string): (progress: LlmProgress) => void {
 
 async function getRuntimeService(profileId: LlmExecutionProfileId): Promise<LocalLlmRuntimeService> {
   const profile = getLlmExecutionProfile(profileId);
-  if (runtimeService && runtimeModelId === profile.modelId && runtimeProfileId === profile.id) {
+  const runtimePhase = runtimeService?.status().phase;
+  if (
+    runtimeService &&
+    runtimeModelId === profile.modelId &&
+    runtimeProfileId === profile.id &&
+    runtimePhase !== "error" &&
+    runtimePhase !== "disposed"
+  ) {
     return runtimeService;
   }
 
@@ -166,6 +174,18 @@ async function handlePortMessage(message: unknown): Promise<void> {
   await handleRequest(message);
 }
 
+function enqueuePortMessage(message: unknown): void {
+  if (isLlmBridgeRequest(message) && message.type === "model-state") {
+    void handlePortMessage(message);
+    return;
+  }
+
+  analyzeQueue = analyzeQueue.then(
+    () => handlePortMessage(message),
+    () => handlePortMessage(message)
+  );
+}
+
 window.addEventListener("message", (event: MessageEvent<unknown>) => {
   if (
     !shouldAcceptLlmBridgeConnection({
@@ -185,7 +205,7 @@ window.addEventListener("message", (event: MessageEvent<unknown>) => {
   bridgeConnected = true;
 
   bridgePort.onmessage = (portEvent: MessageEvent<unknown>) => {
-    void handlePortMessage(portEvent.data);
+    enqueuePortMessage(portEvent.data);
   };
   bridgePort.start();
   post({ type: LLM_BRIDGE_READY });

@@ -1,6 +1,5 @@
 import {
   DEFAULT_CONTEXT_WINDOW_SIZE,
-  DEFAULT_MAX_CANDIDATES,
   DEFAULT_MAX_INPUT_CHARS,
   DEFAULT_MODEL_ID
 } from "./constants";
@@ -11,15 +10,15 @@ const STANDARD_PROFILE: LlmExecutionProfile = {
   modelId: DEFAULT_MODEL_ID,
   contextWindowSize: DEFAULT_CONTEXT_WINDOW_SIZE,
   maxInputChars: DEFAULT_MAX_INPUT_CHARS,
-  maxTokens: 900,
-  maxCandidates: DEFAULT_MAX_CANDIDATES,
-  compactPrompt: false
+  maxTokens: 384,
+  maxCandidates: 8,
+  compactPrompt: true
 };
 
 const LOW_RESOURCE_PROFILE: LlmExecutionProfile = {
   id: "low_resource",
   modelId: DEFAULT_MODEL_ID,
-  contextWindowSize: 2048,
+  contextWindowSize: 1536,
   maxInputChars: 800,
   maxTokens: 256,
   maxCandidates: 6,

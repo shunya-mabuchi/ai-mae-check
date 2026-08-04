@@ -17,4 +17,14 @@ describe("getLlmExecutionProfile", () => {
     expect(lowResource.maxCandidates).toBeLessThan(standard.maxCandidates);
     expect(lowResource.compactPrompt).toBe(true);
   });
+
+  it("標準設定もGemma 3 1Bを一般的な内蔵GPUで扱いやすい上限に抑える", () => {
+    const standard = getLlmExecutionProfile("standard");
+
+    expect(standard.contextWindowSize).toBe(2048);
+    expect(standard.maxInputChars).toBe(1200);
+    expect(standard.maxTokens).toBe(384);
+    expect(standard.maxCandidates).toBe(8);
+    expect(standard.compactPrompt).toBe(true);
+  });
 });
