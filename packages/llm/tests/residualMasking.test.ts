@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mergeResidualContextCandidates } from "../src";
 
 describe("mergeResidualContextCandidates", () => {
-  it("WebLLMが返さなかった敬称付き人名と案件名をローカル補助候補として追加する", () => {
+  it("モデルが返さなかった敬称付き人名と案件名をローカル補助候補として追加する", () => {
     const input =
       "A社の佐藤様向けに、Project Blue Bridge の提案メモを作成します。\n候補者の山田花子さんについて、最終面談後の評価メモも含めます。";
     const candidates = mergeResidualContextCandidates(input, []);

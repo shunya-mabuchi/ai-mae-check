@@ -131,7 +131,7 @@ AIまえチェックでは、次の境界を意識します。
 - confidenceが低い候補や長すぎる候補を除外する
 - ローカルAIが失敗しても、ルールベース検出と安全化は継続する
 - エラー表示や診断メモに本文を含めない
-- 実機互換性と復旧手順を [webllm-compatibility-matrix.md](./webllm-compatibility-matrix.md) と [webllm-error-recovery.md](./webllm-error-recovery.md) に分けて管理する
+- 実機互換性と復旧手順を [local-ai-compatibility-matrix.md](./local-ai-compatibility-matrix.md) と [local-ai-error-recovery.md](./local-ai-error-recovery.md) に分けて管理する
 
 現実的な失敗シナリオ:
 
@@ -245,6 +245,6 @@ ChatGPT / Claude / Gemini / Perplexity は、入力欄、送信ボタン、DOM�
 - [ルール配信Worker 運用メモ](./rule-delivery-operations.md)
 - [Chrome拡張 権限・CSP・依存関係監査チェックリスト](./extension-security-audit.md)
 - [Options Pageと設定保存方針](./options-settings.md)
-- [ローカルAIエラー分類と復旧手順](./webllm-error-recovery.md)
-- [ローカルAI対応環境とモデル互換性マトリクス](./webllm-compatibility-matrix.md)
+- [ローカルAIエラー分類と復旧手順](./local-ai-error-recovery.md)
+- [ローカルAI対応環境とモデル互換性マトリクス](./local-ai-compatibility-matrix.md)
 - [検出ルール作成ガイド](./detection-rule-authoring.md)

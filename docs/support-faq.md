@@ -25,8 +25,8 @@
 
 ## 関連資料
 
-- [ローカルAIモデル選定](webllm-model-policy.md)
-- [ローカルAI互換性マトリクス](webllm-compatibility-matrix.md)
-- [ローカルAI実機確認](webllm-real-device-check.md)
-- [ローカルAIエラー復旧](webllm-error-recovery.md)
+- [ローカルAIモデル選定](local-ai-model-policy.md)
+- [ローカルAI互換性マトリクス](local-ai-compatibility-matrix.md)
+- [ローカルAI実機確認](local-ai-real-device-check.md)
+- [ローカルAIエラー復旧](local-ai-error-recovery.md)
 - [プライバシーポリシー](privacy-policy.md)

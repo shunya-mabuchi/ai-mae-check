@@ -175,8 +175,8 @@ flowchart TD
 - `apps/extension/src/lib/reviewLlmRunner.ts`
 - `apps/extension/src/lib/llmBridgeClient.ts`
 - `apps/extension/src/llmBridgePage.ts`
-- `docs/webllm-model-policy.md`
-- `docs/webllm-error-recovery.md`
+- `docs/local-ai-model-policy.md`
+- `docs/local-ai-error-recovery.md`
 
 実装済みの分離:
 
@@ -305,4 +305,4 @@ flowchart TD
 - [検出ルール作成ガイド](./detection-rule-authoring.md)
 - [DLP評価fixture](./dlp-evaluation.md)
 - [DLP評価fixtureとルールカタログ追加基準](./dlp-rule-quality-process.md)
-- [ローカルAIモデル選定とライセンス確認](./webllm-model-policy.md)
+- [ローカルAIモデル選定とライセンス確認](./local-ai-model-policy.md)

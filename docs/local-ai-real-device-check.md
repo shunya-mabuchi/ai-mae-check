@@ -1,6 +1,6 @@
 # ローカルAI実機確認メモ
 
-このファイル名は過去のWebLLM検証記録との互換性のために残しています。現行のAI文脈チェックは、Transformers.js + ONNX Runtime WebのCPU/WASM経路です。
+現行のAI文脈チェックは、Transformers.js + ONNX Runtime WebのCPU/WASM経路です。
 
 使用モデルは `jiting/xlm-roberta-ner-japanese_onnx` q8 と `sirasagi62/ruri-v3-30m-ONNX` q8 です。
 
@@ -30,3 +30,11 @@ NERまたはRuriの片方だけが利用できない場合、UIは部分成功�
 記録してはいけない情報は、貼り付け本文、検出文字列、placeholderMap、Cookie、トークン、アカウント識別子です。
 
 エラー分類は `model_fetch`、`storage`、`memory`、`worker`、`wasm`、`timeout`、`unknown` から選びます。
+
+## 実機確認記録
+
+| 日付 | 環境 | NER | Ruri | 結果 | 備考 |
+| --- | --- | --- | --- | --- | --- |
+| 2026-08-05 | Windows / Chromium、通常ウィンドウ | 成功 | 成功 | 成功 | ローカル公開サイトのミニデモでダミー文章のみを使用。人名・組織名・案件名・未公開・採用文脈の候補表示とルールベース継続を確認 |
+
+この記録には入力本文、検出文字列、placeholderMapを含めていません。Chrome拡張としてのChatGPT / Claude / Gemini / Perplexity実サイト確認は、同一コミットから最終ZIPを生成した後にダミーデータで行います。

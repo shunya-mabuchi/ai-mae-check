@@ -1,28 +1,5 @@
 import type { Finding, RiskLevel } from "@ai-mae-check/core";
 
-export interface LlmAnalyzerOptions {
-  modelId?: string;
-  temperature?: number;
-  maxTokens?: number;
-  maxInputChars?: number;
-  confidenceThreshold?: number;
-  contextWindowSize?: number;
-  compactPrompt?: boolean;
-  workerUrl?: string;
-}
-
-export type LlmExecutionProfileId = "standard" | "low_resource";
-
-export interface LlmExecutionProfile {
-  readonly id: LlmExecutionProfileId;
-  readonly modelId: string;
-  readonly contextWindowSize: number;
-  readonly maxInputChars: number;
-  readonly maxTokens: number;
-  readonly maxCandidates: number;
-  readonly compactPrompt: boolean;
-}
-
 export interface LlmProgress {
   phase: "loading" | "analyzing" | "done" | "error";
   message: string;
@@ -32,12 +9,10 @@ export interface LlmProgress {
 export type LlmErrorKind =
   | "model_fetch"
   | "model_configuration"
-  | "webgpu"
   | "storage"
   | "memory"
   | "worker"
   | "wasm"
-  | "json_parse"
   | "timeout"
   | "unknown";
 
@@ -91,6 +66,10 @@ export type ContextRiskCategory =
   | "person_name"
   | "company_name"
   | "customer_name"
+  | "location_name"
+  | "facility_name"
+  | "product_name"
+  | "event_name"
   | "project_name"
   | "contract_info"
   | "hr_info"
@@ -109,6 +88,8 @@ export interface ContextRiskCandidate {
   riskLevel: RiskLevel;
   suggestedPlaceholder: string;
   confidence: number;
+  start?: number;
+  end?: number;
 }
 
 export interface ContextAnalysisResult {
@@ -116,9 +97,11 @@ export interface ContextAnalysisResult {
   summary: string;
   rawText: string;
   modelId: string;
+  modelIds?: string[];
   elapsedMs: number;
   error?: string;
   errorDetail?: LlmErrorDetail;
+  warnings?: LlmErrorDetail[];
 }
 
 export interface LlmContextAnalyzer {
@@ -128,39 +111,7 @@ export interface LlmContextAnalyzer {
   dispose(): Promise<void>;
 }
 
-export type LlmRuntimePhase = "idle" | "preparing" | "ready" | "analyzing" | "error" | "disposed";
-
-export interface LlmRuntimeStatus {
-  phase: LlmRuntimePhase;
-  ready: boolean;
-  modelId: string;
-  message: string;
-  errorDetail?: LlmErrorDetail;
-}
-
-export type ContextAnalyzeRequest = AnalyzeContextOptions & {
-  input: string;
-};
-
-export interface LocalLlmRuntimeService {
-  status(): LlmRuntimeStatus;
-  prepare(plan?: ContextCheckPlan): Promise<void>;
-  analyze(request: ContextAnalyzeRequest): Promise<ContextAnalysisResult>;
-  dispose(): Promise<void>;
-}
-
 export interface ConvertCandidatesOptions {
   confidenceThreshold?: number;
   includeAllOccurrences?: boolean;
-}
-
-export interface ContextPromptOptions {
-  existingFindings?: Finding[];
-  maxCandidates?: number;
-  compact?: boolean;
-}
-
-export interface ChatMessage {
-  role: "system" | "user";
-  content: string;
 }

@@ -7,7 +7,7 @@ const paths = {
   lockfile: "pnpm-lock.yaml",
   policy: "docs/dependency-maintenance.md",
   licensePolicy: "docs/license-policy.md",
-  modelPolicy: "docs/webllm-model-policy.md",
+  modelPolicy: "docs/local-ai-model-policy.md",
   workflow: ".github/workflows/ci.yml"
 };
 

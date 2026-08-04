@@ -1,6 +1,6 @@
 # ローカルAIモデル選定とライセンス
 
-このファイル名は過去のWebLLM実装との互換性のために残しています。現行機能はWebLLMではなく、Transformers.js + ONNX Runtime WebによるCPU/WASM実行です。
+現行機能は、Transformers.js + ONNX Runtime WebによるCPU/WASM実行です。
 
 ## 現行モデル
 

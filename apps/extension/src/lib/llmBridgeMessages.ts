@@ -1,7 +1,6 @@
 import type {
   AnalyzeContextOptions,
   ContextAnalysisResult,
-  LlmExecutionProfileId,
   LlmProgress
 } from "@ai-mae-check/llm";
 
@@ -14,28 +13,12 @@ export interface LlmBridgeConnectMessage {
   nonce: string;
 }
 
-export type LlmBridgeRequest =
-  | {
-      type: "analyze";
-      requestId: string;
-      inputText: string;
-      modelId: string;
-      profileId: LlmExecutionProfileId;
-      options: Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates">;
-    }
-  | {
-      type: "analyze-wasm";
-      requestId: string;
-      inputText: string;
-      options: Pick<AnalyzeContextOptions, "maxCandidates">;
-    }
-  | {
-      type: "model-state";
-      requestId: string;
-      modelId: string;
-      profileId: LlmExecutionProfileId;
-      options: Record<string, never>;
-    };
+export interface LlmBridgeRequest {
+  type: "analyze-context";
+  requestId: string;
+  inputText: string;
+  options: Pick<AnalyzeContextOptions, "maxCandidates">;
+}
 
 export type LlmBridgeResponse =
   | {
@@ -50,11 +33,6 @@ export type LlmBridgeResponse =
       type: "analyze-result";
       requestId: string;
       result: ContextAnalysisResult;
-    }
-  | {
-      type: "model-state-result";
-      requestId: string;
-      ready: boolean;
     }
   | {
       type: "error";
@@ -122,7 +100,7 @@ export function isLlmBridgeRequest(value: unknown): value is LlmBridgeRequest {
     return false;
   }
 
-  if (value.type !== "analyze" && value.type !== "analyze-wasm" && value.type !== "model-state") {
+  if (value.type !== "analyze-context") {
     return false;
   }
 
@@ -133,33 +111,8 @@ export function isLlmBridgeRequest(value: unknown): value is LlmBridgeRequest {
     return false;
   }
 
-  if (value.type === "analyze-wasm") {
-    return (
-      typeof value.inputText === "string" &&
-      (value.options.maxCandidates === undefined || typeof value.options.maxCandidates === "number")
-    );
-  }
-
-  if (
-    typeof value.modelId !== "string" ||
-    (value.profileId !== "standard" && value.profileId !== "low_resource")
-  ) {
-    return false;
-  }
-
-  if (value.type === "model-state") {
-    return true;
-  }
-
-  if (typeof value.inputText !== "string") {
-    return false;
-  }
-
-  const existingFindings = value.options.existingFindings;
-  const maxCandidates = value.options.maxCandidates;
-
   return (
-    (existingFindings === undefined || Array.isArray(existingFindings)) &&
-    (maxCandidates === undefined || typeof maxCandidates === "number")
+    typeof value.inputText === "string" &&
+    (value.options.maxCandidates === undefined || typeof value.options.maxCandidates === "number")
   );
 }

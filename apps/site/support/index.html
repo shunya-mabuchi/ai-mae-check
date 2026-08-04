@@ -49,9 +49,9 @@
               <h2 class="text-lg font-black text-ink">よくある質問</h2>
               <div class="mt-4 divide-y divide-line rounded-card border border-line bg-white/80">
                 <details class="px-5 py-4"><summary class="cursor-pointer text-sm font-black text-ink">本文は保存されますか？</summary><p class="mt-3 text-sm leading-7 text-muted">保存しません。貼り付け本文、送信本文、検出結果、placeholderMap、送信履歴は永続保存しません。</p></details>
-                <details class="px-5 py-4"><summary class="cursor-pointer text-sm font-black text-ink">本文は開発者のサーバーへ送信されますか？</summary><p class="mt-3 text-sm leading-7 text-muted">送信しません。ルール検出、WebLLM、CPU / WebAssembly文脈チェックは、ユーザーのブラウザ内で実行します。</p></details>
-                <details class="px-5 py-4"><summary class="cursor-pointer text-sm font-black text-ink">WebLLMが動かないのはなぜですか？</summary><p class="mt-3 text-sm leading-7 text-muted">WebGPU非対応、GPUドライバの制限、保存容量不足などが考えられます。拡張機能はCPU文脈チェックへ切り替え、CPU側も失敗した場合でもルール検出を維持します。</p></details>
-                <details class="px-5 py-4"><summary class="cursor-pointer text-sm font-black text-ink">初回ロードが長いのはなぜですか？</summary><p class="mt-3 text-sm leading-7 text-muted">ブラウザ内推論のため、WebLLMまたはCPU文脈チェックの初回利用時にローカル推論用モデルファイルを取得する場合があります。</p></details>
+                <details class="px-5 py-4"><summary class="cursor-pointer text-sm font-black text-ink">本文は開発者のサーバーへ送信されますか？</summary><p class="mt-3 text-sm leading-7 text-muted">送信しません。ルール検出とCPU / WebAssembly上のAI文脈チェックは、ユーザーのブラウザ内で実行します。</p></details>
+                <details class="px-5 py-4"><summary class="cursor-pointer text-sm font-black text-ink">AI文脈チェックが動かないのはなぜですか？</summary><p class="mt-3 text-sm leading-7 text-muted">モデル配信元への接続制限、保存容量不足、端末メモリ、WebAssembly実行環境などが考えられます。AI文脈チェックが失敗した場合でも、ルールベース検出は維持します。</p></details>
+                <details class="px-5 py-4"><summary class="cursor-pointer text-sm font-black text-ink">初回ロードが長いのはなぜですか？</summary><p class="mt-3 text-sm leading-7 text-muted">ブラウザ内推論のため、初回利用時に日本語NERとRuriのモデル関連ファイルを取得します。合計320MBを超える場合があり、取得後はブラウザキャッシュを利用します。</p></details>
                 <details class="px-5 py-4"><summary class="cursor-pointer text-sm font-black text-ink">対応サイトはどこですか？</summary><p class="mt-3 text-sm leading-7 text-muted">ChatGPT、Claude、Gemini、Perplexityです。対象サイトに限定して動作します。</p></details>
               </div>
               <a href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/support-faq.md" class="mt-4 inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud">詳細FAQを見る</a>
@@ -59,14 +59,14 @@
             <section>
               <h2 class="text-lg font-black text-ink">確認している制限</h2>
               <ul class="mt-3 flex list-disc flex-col gap-2 pl-5 text-sm leading-7 text-muted">
-                <li>WebGPU非対応時はCPU文脈チェックへ切り替えますが、端末条件によっては完了できない場合があります。</li>
-                <li>初回利用時はモデルファイルの取得に時間がかかる場合があります。</li>
+                <li>AI文脈チェックはCPU / WebAssemblyで実行しますが、端末条件によっては完了できない場合があります。</li>
+                <li>初回利用時は合計320MBを超えるモデル関連ファイルの取得に時間がかかる場合があります。</li>
                 <li>ファイル添付前チェックはテキスト系ファイルだけが対象です。</li>
                 <li>PDF、docx、xlsx、画像や画像OCRが必要なファイルは安全判定済みとは扱いません。</li>
                 <li>画像OCRは端末負荷と日本語精度を考慮し、現時点では実装しない判断です。</li>
               </ul>
-              <p class="mt-4 text-sm leading-7 text-muted">WebLLMの実機確認では、OS、Chromeバージョン、WebGPU状態、エラー分類だけを記録し、本文は記録しません。</p>
-              <a href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/webllm-compatibility-matrix.md" class="mt-4 inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud">WebLLM確認項目を見る</a>
+              <p class="mt-4 text-sm leading-7 text-muted">ローカルAIの実機確認では、OS、Chromeバージョン、モデルの準備結果、エラー分類だけを記録し、本文は記録しません。</p>
+              <a href="https://github.com/shunya-mabuchi/ai-mae-check/blob/main/docs/local-ai-compatibility-matrix.md" class="mt-4 inline-flex min-h-11 items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud">ローカルAI確認項目を見る</a>
             </section>
             <a href="/ai-mae-check/" class="inline-flex min-h-11 w-fit items-center rounded-card border border-line bg-white px-4 text-sm font-bold text-ink hover:bg-cloud">トップへ戻る</a>
           </div>

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { LOCAL_CONTEXT_MODEL_ID, LOCAL_NER_MODEL_ID } from "@ai-mae-check/llm";
 import { DEFAULT_SETTINGS } from "../src/lib/settings";
 import { createPrivacySafeDiagnosticReport, formatPrivacySafeDiagnosticReport } from "../src/lib/diagnostics";
 
@@ -16,9 +17,7 @@ describe("privacy safe diagnostics", () => {
       navigatorLike: {
         userAgent:
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.180 Safari/537.36",
-        gpu: {
-          requestAdapter: async () => ({})
-        }
+        hardwareConcurrency: 8
       }
     });
     const text = formatPrivacySafeDiagnosticReport(report);
@@ -26,9 +25,10 @@ describe("privacy safe diagnostics", () => {
     expect(report.product.extensionVersion).toBe("0.1.1");
     expect(report.environment.browser).toBe("Chrome 148.0.7778.180");
     expect(report.environment.os).toBe("Windows");
-    expect(report.environment.webGpu.status).toBe("available");
-    expect(report.settings.llmResourceMode).toBe("standard");
-    expect(report.settings.llmModelId).toBe(DEFAULT_SETTINGS.llm.modelId);
+    expect(report.environment.wasmAvailable).toBe(true);
+    expect(report.environment.hardwareConcurrency).toBe(8);
+    expect(report.settings.contextModelId).toBe(LOCAL_CONTEXT_MODEL_ID);
+    expect(report.settings.nerModelId).toBe(LOCAL_NER_MODEL_ID);
     expect(report.privacy).toMatchObject({
       includesUserText: false,
       includesFindings: false,
@@ -40,7 +40,7 @@ describe("privacy safe diagnostics", () => {
     expect(text).not.toContain("taro@example.com");
   });
 
-  it("WebGPUがない環境を本文なしで表現する", async () => {
+  it("GPU情報を収集せずOSとWASM可否だけを表現する", async () => {
     const report = await createPrivacySafeDiagnosticReport({
       settings: DEFAULT_SETTINGS,
       navigatorLike: {
@@ -49,10 +49,9 @@ describe("privacy safe diagnostics", () => {
     });
 
     expect(report.environment.os).toBe("macOS");
-    expect(report.environment.webGpu).toEqual({
-      status: "unavailable",
-      reason: "navigator.gpu is not available"
-    });
+    expect(report.environment.wasmAvailable).toBe(true);
+    expect(report.environment.hardwareConcurrency).toBeNull();
+    expect("webGpu" in report.environment).toBe(false);
   });
 
   it("無効化されたサイトとルールはIDと件数だけを含める", async () => {

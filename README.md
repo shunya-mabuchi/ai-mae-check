@@ -2,7 +2,13 @@
 
 > AIに送る前に、消し忘れを見つける。
 
-AIまえチェックは、ChatGPT、Claude、Geminiなどへ文章を貼り付ける前・送信する前に、個人情報、秘密情報、APIキー、社外秘らしい内容に気づくためのChrome拡張です。Perplexityなどの追加サイトはadapterの後続対応として扱います。プロダクト本体は拡張機能であり、公開サイトのデモは導入前に動きを確認するための補助アプリです。
+AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityへ文章を貼り付ける前・送信する前に、個人情報、秘密情報、APIキー、社外秘らしい内容に気づくためのChrome拡張です。プロダクト本体は拡張機能であり、公開サイトのデモは導入前に動きを確認するための補助アプリです。
+
+## 作った理由
+
+生成AIへ相談する内容が業務に近づくほど、入力欄には連絡先、顧客名、案件名、契約条件、採用評価などが混ざりやすくなります。一方、送信後に気づいても取り消せない場合があります。そこで、AIサービス自体を置き換えるのではなく、既存の入力体験へ「送る直前の確認」を加える拡張機能として作りました。
+
+本文を開発者サーバーへ集めないため、検出・安全化・補助的なAI判定をブラウザ内へ寄せています。バックエンド推論費用を持たずに運用できますが、第三者のモデル配信元とユーザー端末の保存容量・CPU性能には依存します。
 
 ## 解決したい課題
 
@@ -48,7 +54,7 @@ AI文脈チェックは、ルールだけでは拾いにくい候補を補いま
 
 AI文脈チェックの初回利用時には、第三者のモデル配信元からモデルファイルを取得する場合があります。取得後はブラウザキャッシュや管理下の保存領域を利用します。モデルファイルは合計で大きくなる場合があり、保存容量、端末メモリ、CPU、ネットワーク制限によって利用できないことがあります。NERまたはRuriの片方だけが失敗した場合は部分結果を表示し、両方が失敗してもルールベース検出を維持します。
 
-モデルの選定理由とライセンスは [docs/webllm-model-policy.md](docs/webllm-model-policy.md) と [NOTICE](NOTICE) に記載しています。ファイル名は過去のWebLLM実装との互換性のために残していますが、WebLLMとWebGPUは現行機能ではありません。
+モデルの選定理由とライセンスは [ローカルAIモデル選定](docs/local-ai-model-policy.md) と [NOTICE](NOTICE) に記載しています。WebLLMとWebGPUは現行機能ではありません。
 
 ## プライバシー設計
 
@@ -100,7 +106,16 @@ pnpm dev:extension
 pnpm dev:site
 ```
 
-拡張機能は `pnpm build:extension` でビルドし、生成されたChrome用成果物を `chrome://extensions` の「パッケージ化されていない拡張機能を読み込む」から読み込みます。公開サイトはGitHub Pagesで配信します。
+### Chrome拡張の読み込み
+
+1. `pnpm build:extension` を実行する。
+2. Chromeで `chrome://extensions` を開き、デベロッパーモードを有効にする。
+3. 「パッケージ化されていない拡張機能を読み込む」から `apps/extension/.output/chrome-mv3` を選ぶ。
+4. 対象サイトのタブを再読み込みする。
+
+### デモサイトの起動
+
+`pnpm dev:site` を実行し、表示されたローカルURLを開きます。公開版はGitHub Pagesで配信します。ミニデモは拡張と同じ `packages/core` と `packages/llm` を使いますが、Chrome拡張そのものの代替ではありません。
 
 ## 開発コマンド
 
@@ -113,13 +128,26 @@ pnpm qa:local-ai-model-policy
 pnpm qa:local-ai-compatibility
 ```
 
-CPU/WASMモデルの実ロードは通常のCIテストに必須とせず、Workerと推論結果をモックしたテストを実行します。実モデルは [ローカルAI実機確認メモ](docs/webllm-real-device-check.md) に沿って手動確認します。
+CPU/WASMモデルの実ロードは通常のCIテストに必須とせず、Workerと推論結果をモックしたテストを実行します。実モデルは [ローカルAI実機確認メモ](docs/local-ai-real-device-check.md) に沿って手動確認します。
 
 ## 検出対象と制限
 
 確定情報はルールベースで検出します。AIは人名、組織名、場所、施設、製品、イベント、契約、人事、法務、財務、社内、未公開などの候補を補助します。検出漏れ・誤検出、固有名詞の取りこぼし、住所の部分検出があり得ます。PDF、docx、xlsx、画像OCRなどのファイル内容は安全判定済みとして扱いません。対応していないファイルは安全判定済みとは扱いません。外部OCR APIを使わない方針のため、画像OCRは現時点では実装しない判断です。
 
 本ツールは情報漏洩を完全に防ぐものではありません。最終的に送信するかどうかはユーザーが判断してください。
+
+## 実装上の前提・制限
+
+- 対象サイトのDOM変更により、入力欄や送信操作を検知できなくなる可能性がある
+- AI候補は誤検出・検出漏れがあり、送信可否の確定判定には使わない
+- Ruriは文単位の意味分類、NERは固有表現候補、ルールは確定情報という役割に分ける
+- 同じ文字列が複数回現れるAI候補は、入力中で確認できた各範囲を候補化する
+- AI候補の上位カテゴリ差が小さい場合は、曖昧な分類として表示しない
+- 初回モデル取得は合計320MBを超える場合があり、完了まで時間がかかる
+- Chromeのシークレットウィンドウや保存容量の少ない環境ではモデルキャッシュを確保できない場合がある
+- モデル取得やAI判定が失敗しても、ルールベース検出は継続する
+- 添付ファイルは対応形式と読み取れたテキストだけを対象とし、画像OCRは行わない
+- 検出結果、安全化対応表、本文、送信履歴は永続保存しない
 
 ## ルール配信
 
@@ -130,13 +158,17 @@ CPU/WASMモデルの実ロードは通常のCIテストに必須とせず、Work
 - 公開サイト: https://shunya-mabuchi.github.io/ai-mae-check/
 - サポート: https://shunya-mabuchi.github.io/ai-mae-check/support/
 - プライバシー: https://shunya-mabuchi.github.io/ai-mae-check/privacy/
-- [ローカルAIモデル選定](docs/webllm-model-policy.md)
-- [ローカルAI互換性マトリクス](docs/webllm-compatibility-matrix.md)
-- [ローカルAI実機確認](docs/webllm-real-device-check.md)
-- [ローカルAIエラー復旧](docs/webllm-error-recovery.md)
+- [ローカルAIモデル選定](docs/local-ai-model-policy.md)
+- [ローカルAI互換性マトリクス](docs/local-ai-compatibility-matrix.md)
+- [ローカルAI実機確認](docs/local-ai-real-device-check.md)
+- [ローカルAIエラー復旧](docs/local-ai-error-recovery.md)
+- [性能基準](docs/performance-budget.md)
+- [Chrome拡張E2Eハーネス](docs/extension-e2e-harness.md)
+- [ポートフォリオ・ケーススタディ](docs/portfolio-case-study.md)
 - [プライバシーポリシー](docs/privacy-policy.md)
 - [脅威モデル](docs/threat-model.md)
 - [サイトadapter契約](docs/site-adapter-contract.md)
+- [検出ルール作成ガイド](docs/detection-rule-authoring.md)
 - [第三者ライセンス告知](NOTICE)
 - [変更履歴](CHANGELOG.md)
 
@@ -148,6 +180,24 @@ Chrome Web Storeの公開版は `0.1.2` です。次の提出候補は `0.2.0` �
 
 Chrome Web Storeで公開するChrome拡張を本体に、ルールベースDLP、ポリシー判定、CPU/WASMローカルAI、署名付きルール配信、プライバシー設計、実サイトQA、CIを組み合わせています。バックエンドやユーザー本文のデータベースを持たず、必要な処理をブラウザ内で完結させる設計判断も含めて公開しています。
 
+## 今後追加したい機能
+
+- 対象サイトadapterの継続的なDOM互換性検証
+- 日本語NERとRuri分類のfixture拡充、閾値評価、誤検出率の可視化
+- 署名付きルールの更新・ロールバック運用の自動化
+- 対応可能なテキストファイル形式の拡充
+- モデル配信元障害時の説明と復旧導線の改善
+
 ## スクリーンショット
 
-最新のChrome拡張モーダル画面は `docs/assets/store/` とREADME掲載用画像で管理します。公開サイトの画像だけでなく、拡張機能本体の貼り付け前確認、安全化確認、AI文脈チェックの3画面を掲載します。
+### 貼り付け前確認
+
+![貼り付け前の検出結果と安全化プレビュー](docs/assets/readme/extension-paste-modal.png)
+
+### 送信前確認
+
+![送信前のポリシー判定と安全化内容](docs/assets/readme/extension-send-modal.png)
+
+### AI文脈チェック
+
+![ブラウザ内AIによる追加候補](docs/assets/readme/extension-context-modal.png)

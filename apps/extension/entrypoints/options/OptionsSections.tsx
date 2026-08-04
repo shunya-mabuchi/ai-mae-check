@@ -1,17 +1,15 @@
 import type { ReactNode } from "react";
 import { CheckCircle2, ClipboardCopy, Database, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
 import { detectorRules } from "@ai-mae-check/core";
-import { DEFAULT_MODEL_ID, WASM_CONTEXT_MODEL_ID } from "@ai-mae-check/llm";
+import { LOCAL_CONTEXT_MODEL_ID, LOCAL_NER_MODEL_ID } from "@ai-mae-check/llm";
 import { targetSites, type SiteId } from "../../src/lib/sites";
 import type {
   AiMaeCheckSettings,
-  LlmResourceMode,
   LlmRunMode,
   SettingsValidationResult
 } from "../../src/lib/settings";
 import {
   LlmModeRadioGroup,
-  LlmResourceModeRadioGroup,
   OptionsButton,
   OptionsCheckbox
 } from "./OptionsControls";
@@ -87,7 +85,7 @@ export function OnboardingSection() {
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <OnboardingStep title="1. 対象サイトを確認" body="ChatGPT、Claude、Gemini、Perplexityが対象です。必要に応じて下の対象サイト設定でON/OFFできます。" />
         <OnboardingStep title="2. いつチェックされるか" body="対象サイトの入力欄へ貼り付けるとき、または送信しようとしたときに、必要な場合だけ確認モーダルが開きます。" />
-        <OnboardingStep title="3. AI文脈チェック" body="WebLLMは手動実行が初期設定です。初回利用時はローカル推論用モデルファイルの取得に時間がかかる場合があります。" />
+        <OnboardingStep title="3. AI文脈チェック" body="CPU文脈チェックは手動実行が初期設定です。初回利用時はローカル推論用モデルファイルの取得に時間がかかる場合があります。" />
       </div>
     </section>
   );
@@ -154,16 +152,14 @@ export function DetectionRulesSection({
   );
 }
 
-export function WebLlmSettingsSection({
+export function AiContextSettingsSection({
   settings,
   onEnabledChange,
-  onModeChange,
-  onResourceModeChange
+  onModeChange
 }: {
   settings: AiMaeCheckSettings;
   onEnabledChange: (enabled: boolean) => void;
   onModeChange: (mode: LlmRunMode) => void;
-  onResourceModeChange: (mode: LlmResourceMode) => void;
 }) {
   return (
     <Section icon={<Sparkles size={20} aria-hidden="true" />} title="AI文脈チェック">
@@ -171,45 +167,25 @@ export function WebLlmSettingsSection({
         isSelected={settings.llm.enabled}
         onChange={onEnabledChange}
         label="AI文脈チェックを有効にする"
-        description="メールやAPIキーなどの確定情報ではなく、顧客名・案件名・契約文脈などの候補確認に使います。WebLLMが使えない場合はCPU用モデルへ切り替えます。"
+        description="メールやAPIキーなどの確定情報ではなく、顧客名・案件名・契約文脈などの候補確認に使います。CPU / WebAssemblyでブラウザ内実行します。"
       />
 
       <div className="rounded-md border border-line bg-white p-4">
-        <p className="text-sm font-semibold text-ink">実行負荷</p>
-        <p className="mt-2 text-sm leading-6 text-stone-600">
-          どちらも同じQwen2.5 0.5Bモデルを使います。「低負荷」は入力長、出力長、候補数、context windowを抑えてGPU負荷を下げます。
-        </p>
-        <p className="mt-2 text-sm leading-6 text-stone-600">
-          標準でGPU実行が中断された場合は、同じモデルを低負荷で1回だけ再実行し、失敗が続く場合はCPU文脈チェックへ切り替えます。
-        </p>
-        <div className="mt-3">
-          <LlmResourceModeRadioGroup value={settings.llm.resourceMode} onChange={onResourceModeChange} />
-        </div>
-        <p className="mt-4 text-sm font-semibold text-ink">WebLLMモデル</p>
+        <p className="text-sm font-semibold text-ink">ブラウザ内AIモデル</p>
         <p className="mt-2 break-all rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">
-          {DEFAULT_MODEL_ID}
+          文脈分類: {LOCAL_CONTEXT_MODEL_ID}
         </p>
-        <p className="mt-2 text-sm leading-6 text-stone-600">
-          Qwen2.5 0.5B Instructは
-          <a
-            className="font-semibold text-brand underline decoration-brand/40 underline-offset-2 hover:decoration-brand"
-            href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/main/LICENSE"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Apache License 2.0
-          </a>
-          で提供されています。
-        </p>
-        <p className="mt-4 text-sm font-semibold text-ink">CPUフォールバックモデル</p>
         <p className="mt-2 break-all rounded-md border border-line bg-paper px-3 py-2 font-mono text-sm text-ink">
-          {WASM_CONTEXT_MODEL_ID}
+          固有表現抽出: {LOCAL_NER_MODEL_ID}
         </p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          WebGPUを利用できない場合やGPU実行が失敗した場合に、WebAssembly上の小型モデルで文脈候補を補助します。初回は別途モデルファイルを取得する場合があります。
+          Ruri-v3-30mで契約・採用・法務などの文脈を分類し、日本語NERモデルで人名・組織名・地名・施設名などを抽出します。どちらもCPU / WebAssembly上で動作し、結果は注意候補として扱います。
         </p>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          CPU文脈チェックも端末メモリ、保存領域、モデル取得先への接続状況によっては実行できない場合があります。その場合もルールベース検出と軽量な補助検出は利用できます。
+          初回は合計320MBを超えるモデル関連ファイルを取得する場合があります。取得量は配信元の構成変更により前後します。
+        </p>
+        <p className="mt-2 text-sm leading-6 text-stone-600">
+          端末メモリ、保存領域、モデル取得先への接続状況によっては実行できない場合があります。その場合もルールベース検出と軽量な補助検出は利用できます。
         </p>
       </div>
 
@@ -217,7 +193,7 @@ export function WebLlmSettingsSection({
 
       <div className="rounded-md border border-line bg-white p-4 text-sm leading-7 text-stone-700">
         <p>入力本文や送信本文は外部サーバーに送信されません。検出とAI文脈チェックはユーザーのブラウザ内で実行されます。</p>
-        <p className="mt-2">WebLLMまたはCPU文脈チェックの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。</p>
+        <p className="mt-2">CPU文脈チェックの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。</p>
         <p className="mt-2">あなた自身の推論サーバーや外部LLM APIは利用しません。</p>
       </div>
     </Section>
@@ -242,7 +218,7 @@ export function DiagnosticsSection({
           不具合報告時に使える、本文を含まない診断情報を作成できます。貼り付け本文、送信本文、検出文字列、placeholderMap、現在のページURLは含めません。
         </p>
         <p className="mt-2">
-          含まれるのは、拡張バージョン、Chrome/OS概要、WebGPU可否、設定スキーマ、対象サイト設定、WebLLMモデルID、ルール配信keyIdなどです。
+          含まれるのは、拡張バージョン、Chrome/OS概要、設定スキーマ、対象サイト設定、ブラウザ内AIモデルID、ルール配信keyIdなどです。
         </p>
         <p className="mt-3 font-semibold text-leaf">{diagnosticMessage}</p>
         <div className="mt-4 flex flex-wrap gap-3">
@@ -274,7 +250,7 @@ export function ResetSettingsSection({ onResetSettings }: { onResetSettings: () 
           AIまえチェックが保存するのは、拡張機能の有効/無効、対象サイト、検出ルール、AI文脈チェックに関する設定と、検証済みの署名付きリモートルールキャッシュだけです。貼り付け本文、送信本文、検出結果、placeholderMapは保存していません。
         </p>
         <p className="mt-2">
-          設定を初期化すると、保存済み設定とリモートルールキャッシュを削除し、画面表示を初期値に戻します。WebLLMのモデルキャッシュなどブラウザ管理下の保存領域はChrome側で管理されます。
+          設定を初期化すると、保存済み設定とリモートルールキャッシュを削除し、画面表示を初期値に戻します。CPU文脈チェックのモデルキャッシュはChrome側で管理されます。
         </p>
         <OptionsButton className="mt-4" onPress={onResetSettings}>
           設定を初期化

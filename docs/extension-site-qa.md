@@ -40,7 +40,7 @@ Chromeで次を行います。
 - host permissionsがChatGPT / Claude / Gemini / Perplexityに限定されている
 - `<all_urls>` を要求していない
 - Content Scriptのmatchesが対象サイトに限定されている
-- ローカルAI bridge用の `llm-worker.js` と `llm-bridge.html` がweb accessible resourcesに含まれている
+- 対象ページから開く `llm-bridge.html` だけがweb accessible resourcesに含まれ、CPU/WASM Workerは拡張内部に留まっている
 - 拡張アイコンがmanifestに設定されている
 - 拡張アイコンをクリックするとOptions Pageを開ける
 
@@ -209,8 +209,8 @@ CPU/WASM実行環境の初期化失敗:
 
 Worker / bridge失敗:
 
-- [ ] `llm-bridge.html` と `llm-worker.js` が `.output/chrome-mv3` に存在する
-- [ ] `manifest.json` の `web_accessible_resources` に `llm-worker.js` と `llm-bridge.html` が含まれる
+- [ ] `llm-bridge.html` と `wasm-context-worker.js` が `.output/chrome-mv3` に存在する
+- [ ] `manifest.json` の `web_accessible_resources` には `llm-bridge.html` だけが含まれ、`wasm-context-worker.js` は含まれない
 - [ ] 対象ページを再読み込みして再試行する
 
 ## 失敗時の診断メモ

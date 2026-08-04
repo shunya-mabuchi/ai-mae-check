@@ -4,8 +4,8 @@ import { mergeResidualContextCandidates } from "./residualMasking";
 import type { ContextRiskCandidate, ContextRiskCategory, LlmProgress } from "./types";
 
 export const WASM_CONTEXT_LOADING_MESSAGE =
-  "CPU用の文脈モデルを準備しています。初回のみ時間がかかる場合があります。";
-export const WASM_CONTEXT_ANALYZING_MESSAGE = "WebGPUを使わず、CPUで文脈リスクを確認しています。";
+  "ブラウザ内の日本語モデルを準備しています。初回のみ時間がかかる場合があります。";
+export const WASM_CONTEXT_ANALYZING_MESSAGE = "ブラウザ内のCPUで文脈リスクを確認しています。";
 
 export interface WasmContextSegment {
   surface: string;
@@ -25,7 +25,15 @@ export interface WasmContextAnalyzerOptions {
 }
 
 interface SemanticRiskDefinition {
-  category: Exclude<ContextRiskCategory, "person_name" | "company_name" | "customer_name" | "project_name" | "other">;
+  category: Extract<
+    ContextRiskCategory,
+    | "contract_info"
+    | "hr_info"
+    | "legal_info"
+    | "financial_info"
+    | "internal_info"
+    | "confidential_context"
+  >;
   label: string;
   reason: string;
   riskLevel: RiskLevel;
@@ -84,6 +92,8 @@ const semanticRiskDefinitions: readonly SemanticRiskDefinition[] = [
   }
 ] as const;
 
+const MIN_CATEGORY_SIMILARITY_MARGIN = 0.015;
+
 const segmentPattern = /[^\n。！？]+(?:[。！？]|$)/gu;
 
 function normalizeVector(vector: readonly number[]): number[] {
@@ -134,7 +144,7 @@ export function splitWasmContextSegments(
 }
 
 export function getWasmContextPrototypeTexts(): string[] {
-  return semanticRiskDefinitions.map((definition) => `query: ${definition.prototype}`);
+  return semanticRiskDefinitions.map((definition) => `トピック: ${definition.prototype}`);
 }
 
 export function createWasmContextCandidates(options: {
@@ -144,6 +154,7 @@ export function createWasmContextCandidates(options: {
   prototypeEmbeddings: number[][];
   confidenceThreshold?: number;
   maxCandidates?: number;
+  includeResidualCandidates?: boolean;
 }): ContextRiskCandidate[] {
   const threshold = options.confidenceThreshold ?? 0.82;
   const maxCandidates = options.maxCandidates ?? DEFAULT_MAX_CANDIDATES;
@@ -158,6 +169,7 @@ export function createWasmContextCandidates(options: {
 
     let bestDefinition: SemanticRiskDefinition | undefined;
     let bestSimilarity = -1;
+    let secondBestSimilarity = -1;
     for (const [definitionIndex, definition] of semanticRiskDefinitions.entries()) {
       const prototypeEmbedding = options.prototypeEmbeddings[definitionIndex];
       if (!prototypeEmbedding) {
@@ -165,12 +177,19 @@ export function createWasmContextCandidates(options: {
       }
       const similarity = cosineSimilarity(segmentEmbedding, prototypeEmbedding);
       if (similarity > bestSimilarity) {
+        secondBestSimilarity = bestSimilarity;
         bestSimilarity = similarity;
         bestDefinition = definition;
+      } else if (similarity > secondBestSimilarity) {
+        secondBestSimilarity = similarity;
       }
     }
 
-    if (!bestDefinition || bestSimilarity < threshold) {
+    if (
+      !bestDefinition ||
+      bestSimilarity < threshold ||
+      bestSimilarity - secondBestSimilarity < MIN_CATEGORY_SIMILARITY_MARGIN
+    ) {
       continue;
     }
 
@@ -181,12 +200,14 @@ export function createWasmContextCandidates(options: {
       category: bestDefinition.category,
       surface: segment.surface,
       label: bestDefinition.label,
-      reason: `${bestDefinition.reason} CPU上の小型モデルによる補助候補です。`,
+      reason: `${bestDefinition.reason} ブラウザ内の小型日本語モデルによる補助候補です。`,
       riskLevel: bestDefinition.riskLevel,
       suggestedPlaceholder: `[${bestDefinition.placeholderPrefix}_${count}]`,
       confidence: confidenceFromSimilarity(bestSimilarity, threshold)
     });
   }
 
-  return mergeResidualContextCandidates(options.input, semanticCandidates, { maxCandidates });
+  return options.includeResidualCandidates === false
+    ? semanticCandidates.slice(0, maxCandidates)
+    : mergeResidualContextCandidates(options.input, semanticCandidates, { maxCandidates });
 }

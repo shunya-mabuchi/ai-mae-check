@@ -228,31 +228,8 @@ describe("モーダルのAI文脈チェック自動実行", () => {
     vi.resetModules();
   });
 
-  it("貼り付け確認を閉じた後にモデル準備済みになってもAI文脈チェックを開始しない", async () => {
-    const ready = createDeferred<boolean>();
-    const mocks = installModalMocks(ready.promise);
-    const inputText = "メールは taro@example.com です。";
-    const controller = await launchPasteController(mocks.pasteElements, inputText, {
-        ...DEFAULT_SETTINGS,
-        llm: {
-          ...DEFAULT_SETTINGS.llm,
-          mode: "auto"
-        }
-    });
-
-    mocks.pasteElements.cancelButton.click();
-    expect(controller.decisions).toEqual([{ type: "cancel" }]);
-
-    ready.resolve(true);
-    await flushPromises();
-
-    expect(mocks.isLlmBridgeModelReady).toHaveBeenCalledTimes(1);
-    expect(mocks.runReviewLlm).not.toHaveBeenCalled();
-  });
-
-  it("貼り付け確認で手動実行済みなら、遅れて返った自動実行は二重起動しない", async () => {
-    const ready = createDeferred<boolean>();
-    const mocks = installModalMocks(ready.promise);
+  it("貼り付け確認の自動モードではモデル準備を含めて直ちにAI文脈チェックを開始する", async () => {
+    const mocks = installModalMocks(Promise.resolve(false));
     const inputText = "メールは taro@example.com です。";
     await launchPasteController(mocks.pasteElements, inputText, {
         ...DEFAULT_SETTINGS,
@@ -262,9 +239,6 @@ describe("モーダルのAI文脈チェック自動実行", () => {
         }
     });
 
-    mocks.pasteElements.llmButton.click();
-    await flushPromises();
-    ready.resolve(true);
     await flushPromises();
     mocks.pasteElements.cancelButton.click();
 
@@ -335,37 +309,14 @@ describe("モーダルのAI文脈チェック自動実行", () => {
     expect(mocks.renderReviewCandidateList).toHaveBeenCalledTimes(renderCountBeforeExecution);
   });
 
-  it("送信確認を閉じた後にモデル準備済みになってもAI文脈チェックを開始しない", async () => {
-    const ready = createDeferred<boolean>();
-    const mocks = installModalMocks(ready.promise);
-    const inputText = "メールは taro@example.com です。";
-    const controller = await launchSendController(mocks.confirmElements, inputText, {
-        ...DEFAULT_SETTINGS.llm,
-        mode: "auto"
-    });
-
-    mocks.confirmElements.cancelButton.click();
-    expect(controller.decisions).toEqual([{ type: "cancel" }]);
-
-    ready.resolve(true);
-    await flushPromises();
-
-    expect(mocks.isLlmBridgeModelReady).toHaveBeenCalledTimes(1);
-    expect(mocks.runReviewLlm).not.toHaveBeenCalled();
-  });
-
-  it("送信確認で手動実行済みなら、遅れて返った自動実行は二重起動しない", async () => {
-    const ready = createDeferred<boolean>();
-    const mocks = installModalMocks(ready.promise);
+  it("送信確認の自動モードではモデル準備を含めて直ちにAI文脈チェックを開始する", async () => {
+    const mocks = installModalMocks(Promise.resolve(false));
     const inputText = "メールは taro@example.com です。";
     await launchSendController(mocks.confirmElements, inputText, {
         ...DEFAULT_SETTINGS.llm,
         mode: "auto"
     });
 
-    mocks.confirmElements.llmButton.click();
-    await flushPromises();
-    ready.resolve(true);
     await flushPromises();
     mocks.confirmElements.cancelButton.click();
 

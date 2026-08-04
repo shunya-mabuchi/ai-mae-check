@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 const rootDir = resolve(".");
 const constantsPath = resolve(rootDir, "packages/llm/src/constants.ts");
-const policyPath = resolve(rootDir, "docs/webllm-model-policy.md");
+const policyPath = resolve(rootDir, "docs/local-ai-model-policy.md");
 const readmePath = resolve(rootDir, "README.md");
 const noticePath = resolve(rootDir, "NOTICE");
 

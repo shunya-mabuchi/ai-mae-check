@@ -14,8 +14,8 @@
 ### 0.2.0提出候補ZIP
 
 - ファイル: `apps/extension/.output/ai-mae-checkextension-0.2.0-chrome.zip`
-- サイズ: 4,638,552 bytes
-- SHA-256: `E7414D2AF22E2C762FDD21BD906BCB9A62C952731DAA788F08B58C32F5787F6C`
+- サイズ: 3,306,033 bytes
+- SHA-256: `F60B2350365D28A6B98A9B71E85BC75324FB8F2B67CD049424E6F7D0EC505C8D`
 - 公開状態: 未提出。現在の公開版0.1.2を維持
 - 公開後の記録: 0.2.0公開確認後に `docs/chrome-web-store-published.json`、Git tag、GitHub Releaseを更新
 
@@ -217,7 +217,7 @@ pnpm qa:chrome-store:published
 - [ ] mediumが詳細確認から許可可能であることを確認する
 - [ ] ローカルAIが使えない環境でもルールベース検出が使えることを確認する
 - [ ] モデル取得失敗時の日本語メッセージを確認する
-- [ ] [ローカルAI対応環境とモデル互換性マトリクス](webllm-compatibility-matrix.md) に、OS、Chrome、CPU/WASM状態、エラー分類を本文なしで記録する
+- [ ] [ローカルAI対応環境とモデル互換性マトリクス](local-ai-compatibility-matrix.md) に、OS、Chrome、CPU/WASM状態、エラー分類を本文なしで記録する
 - [ ] 拡張E2Eハーネス方針 [extension-e2e-harness.md](extension-e2e-harness.md) に従い、リリース用manifestへE2E専用host permissionが混入していないことを確認する
 
 ## 公開後の対応

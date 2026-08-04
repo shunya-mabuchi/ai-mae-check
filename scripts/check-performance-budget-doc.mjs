@@ -47,9 +47,9 @@ for (const phrase of [
   "ルールベース検出",
   "100ms以内",
   "250ms以内",
-  "モーダル表示はWebLLMのモデルロードや推論完了を待たない",
-  "WebLLMは追加の文脈候補を出す補助機能",
-  "最大6,000文字",
+  "モーダル表示はローカルAIのモデルロードや推論完了を待たない",
+  "ローカルAIは追加の文脈候補を出す補助機能",
+  "最大1,200文字",
   "最大12件",
   "最大80文字",
   "ContextBuilder",
@@ -63,12 +63,12 @@ for (const phrase of [
   assertIncludes(docs, phrase, paths.docs);
 }
 
-for (const phrase of ["今後 `WebLLM準備済み時だけ自動実行する`", "将来の `ContextBuilder`"]) {
+for (const phrase of ["準備済みなら自動実行", "将来の `ContextBuilder`"]) {
   assertNotIncludes(docs, phrase, paths.docs);
 }
 
 for (const phrase of [
-  "DEFAULT_MAX_INPUT_CHARS = 6000",
+  "DEFAULT_MAX_INPUT_CHARS = 1200",
   "DEFAULT_MAX_CANDIDATES = 12",
   "MAX_CONTEXT_SURFACE_CHARS = 80"
 ]) {

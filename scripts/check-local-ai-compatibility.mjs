@@ -4,10 +4,10 @@ import { resolve } from "node:path";
 const rootDir = resolve(".");
 const paths = {
   constants: "packages/llm/src/constants.ts",
-  matrix: "docs/webllm-compatibility-matrix.md",
-  realDevice: "docs/webllm-real-device-check.md",
-  recovery: "docs/webllm-error-recovery.md",
-  modelPolicy: "docs/webllm-model-policy.md",
+  matrix: "docs/local-ai-compatibility-matrix.md",
+  realDevice: "docs/local-ai-real-device-check.md",
+  recovery: "docs/local-ai-error-recovery.md",
+  modelPolicy: "docs/local-ai-model-policy.md",
   readme: "README.md",
   llmPackage: "packages/llm/package.json"
 };

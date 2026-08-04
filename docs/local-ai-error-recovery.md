@@ -1,6 +1,6 @@
 # ローカルAIエラー分類と復旧
 
-ファイル名は過去のWebLLM実装との互換性のために残しています。現行のAI経路ではWebGPUや生成モデルを使いません。
+現行のAI経路ではWebGPUや生成モデルを使いません。
 
 対象モデルは `jiting/xlm-roberta-ner-japanese_onnx` q8 と `sirasagi62/ruri-v3-30m-ONNX` q8 です。
 実行にはTransformers.jsとONNX Runtime Webを使用します。
@@ -29,4 +29,4 @@ AI文脈チェックの失敗は、ルールベース検出の失敗を意味し
 
 ## 実機確認
 
-WebGPU、Dawn Info、D3D11/D3D12を必須条件にしません。CPU/WASM経路の成功、部分成功、失敗を [ローカルAI互換性マトリクス](webllm-compatibility-matrix.md) に本文なしで記録します。
+WebGPU、Dawn Info、D3D11/D3D12を必須条件にしません。CPU/WASM経路の成功、部分成功、失敗を [ローカルAI互換性マトリクス](local-ai-compatibility-matrix.md) に本文なしで記録します。

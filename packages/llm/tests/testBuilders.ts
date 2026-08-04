@@ -16,7 +16,7 @@ export function buildContextRiskCandidate(overrides: Partial<ContextRiskCandidat
 
 export function buildLlmErrorDetail(overrides: Partial<LlmErrorDetail> = {}): LlmErrorDetail {
   return {
-    kind: "json_parse",
+    kind: "wasm",
     message: "AI文脈チェックの結果を読み取れませんでした。",
     hint: "必要なら再実行してください。",
     ...overrides

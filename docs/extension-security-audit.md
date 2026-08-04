@@ -64,12 +64,12 @@ pnpm qa:chrome-store
 対象:
 
 - `llm-bridge.html`
-- `llm-worker.js`
+- `wasm-context-worker.js`
 - `apps/extension/entrypoints`
 
 チェック:
 
-- [ ] content scriptから必要なbridge/workerだけにアクセスできる
+- [ ] content scriptからはbridgeだけにアクセスでき、CPU/WASM Workerは拡張内部からだけ起動される
 - [ ] ユーザー本文や検出結果を静的ファイルとして出力していない
 - [ ] テスト専用HTMLやローカル検証ファイルが公開対象に混入していない
 - [ ] bridge iframeは対象ページ側のCSPに巻き込まれにくい説明になっている
@@ -124,8 +124,8 @@ pnpm build:extension
 
 対象:
 
-- [webllm-model-policy.md](webllm-model-policy.md)
-- [webllm-compatibility-matrix.md](webllm-compatibility-matrix.md)
+- [local-ai-model-policy.md](local-ai-model-policy.md)
+- [local-ai-compatibility-matrix.md](local-ai-compatibility-matrix.md)
 - `packages/llm`
 
 チェック:

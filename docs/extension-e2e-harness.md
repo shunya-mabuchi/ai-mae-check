@@ -108,9 +108,9 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 | デモE2E | LP兼ミニデモの体験確認 | `apps/site` | 実行する |
 | 拡張E2Eハーネス | 実拡張を読み込んだpaste/submit確認 | ローカル模擬composer | 手動CIから段階的に導入 |
 | 実サイト手動QA | 対象サイトDOMと実操作の確認 | ChatGPT / Claude / Gemini / Perplexity | CIには載せない |
-| ローカルAI実機確認 | WebGPU、モデル取得、保存領域の確認 | 実ブラウザ/実端末 | CIには載せない |
+| ローカルAI実機確認 | CPU/WASM、モデル取得、保存領域の確認 | 実ブラウザ/実端末 | CIには載せない |
 
-実サイト手動QAは [extension-site-qa.md](extension-site-qa.md) に残します。ローカルAI実機確認は [webllm-real-device-check.md](webllm-real-device-check.md) と [webllm-compatibility-matrix.md](webllm-compatibility-matrix.md) に記録します。
+実サイト手動QAは [extension-site-qa.md](extension-site-qa.md) に残します。ローカルAI実機確認は [local-ai-real-device-check.md](local-ai-real-device-check.md) と [local-ai-compatibility-matrix.md](local-ai-compatibility-matrix.md) に記録します。
 
 ## 実装済みコマンド
 

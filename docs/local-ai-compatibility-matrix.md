@@ -1,6 +1,6 @@
 # ローカルAI互換性マトリクス
 
-ファイル名は過去のWebLLM検証記録との互換性のために残しています。現行のAI文脈チェックはWebLLM/WebGPUを使わず、Transformers.js + ONNX Runtime WebのCPU/WASMで実行します。
+現行のAI文脈チェックはWebLLM/WebGPUを使わず、Transformers.js + ONNX Runtime WebのCPU/WASMで実行します。
 
 ## 固定モデル
 

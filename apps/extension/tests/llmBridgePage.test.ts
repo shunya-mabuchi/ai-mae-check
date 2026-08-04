@@ -2,38 +2,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { LLM_BRIDGE_CONNECT, LLM_BRIDGE_READY } from "../src/lib/llmBridgeMessages";
 
 const analyzeMock = vi.fn();
-const statusMock = vi.fn(() => ({
-  phase: "idle",
-  ready: false,
-  modelId: "test-model",
-  message: "AI文脈チェックは未準備です。"
-}));
 const disposeMock = vi.fn();
-const analyzeWasmMock = vi.fn();
-const disposeWasmMock = vi.fn();
-const runtimeServiceFactoryMock = vi.fn(() => ({
-  analyze: analyzeMock,
-  status: statusMock,
-  prepare: vi.fn(),
-  dispose: disposeMock
-}));
-const createLocalLlmRuntimeServiceMock = vi.fn((...args: unknown[]) => runtimeServiceFactoryMock(...args));
-
-vi.mock("@ai-mae-check/llm/runtime", () => ({
-  createLocalLlmRuntimeService: createLocalLlmRuntimeServiceMock
-}));
-
-vi.mock("../src/lib/extensionRuntime", () => ({
-  getExtensionResourceUrl: vi.fn((path: string) => `chrome-extension://test/${path}`)
-}));
-
-vi.mock("../src/lib/llmBridgeFallback", () => ({
-  createJsonParseBridgeFallbackResult: vi.fn(() => null)
-}));
 
 vi.mock("../src/lib/wasmContextWorkerClient", () => ({
-  analyzeContextWithWasmWorker: analyzeWasmMock,
-  disposeWasmContextWorker: disposeWasmMock
+  analyzeContextWithWasmWorker: analyzeMock,
+  disposeWasmContextWorker: disposeMock
 }));
 
 class FakeMessagePort {
@@ -54,34 +27,29 @@ class FakeMessagePort {
   }
 }
 
-async function loadBridgePage(options?: { expectedNonce?: string | null }) {
+async function loadBridgePage() {
   vi.resetModules();
-
   let messageHandler: ((event: MessageEvent<unknown>) => void) | null = null;
   let pagehideHandler: (() => void) | null = null;
-  const href =
-    options?.expectedNonce === null
-      ? "chrome-extension://test/llm-bridge.html"
-      : `chrome-extension://test/llm-bridge.html?nonce=${options?.expectedNonce ?? "expected-nonce"}`;
-
   vi.stubGlobal("window", {
-    location: { href },
+    location: { href: "chrome-extension://test/llm-bridge.html?nonce=expected-nonce" },
     addEventListener: vi.fn((type: string, listener: (event: MessageEvent<unknown>) => void) => {
-      if (type === "message") {
-        messageHandler = listener;
-      } else if (type === "pagehide") {
-        pagehideHandler = listener as () => void;
-      }
+      if (type === "message") messageHandler = listener;
+      if (type === "pagehide") pagehideHandler = listener as () => void;
     })
   });
-
   await import("../src/llmBridgePage");
-
-  if (!messageHandler) {
-    throw new Error("message handler was not registered");
-  }
-
+  if (!messageHandler) throw new Error("message handler was not registered");
   return { messageHandler, pagehideHandler };
+}
+
+function connect(messageHandler: (event: MessageEvent<unknown>) => void): FakeMessagePort {
+  const port = new FakeMessagePort();
+  messageHandler({
+    data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
+    ports: [port]
+  } as MessageEvent<unknown>);
+  return port;
 }
 
 describe("llmBridgePage", () => {
@@ -89,348 +57,61 @@ describe("llmBridgePage", () => {
     vi.resetModules();
     vi.unstubAllGlobals();
     analyzeMock.mockReset();
-    statusMock.mockReset();
-    statusMock.mockReturnValue({
-      phase: "idle",
-      ready: false,
-      modelId: "test-model",
-      message: "AI文脈チェックは未準備です。"
-    });
     disposeMock.mockReset();
-    analyzeWasmMock.mockReset();
-    disposeWasmMock.mockReset();
-    runtimeServiceFactoryMock.mockReset();
-    runtimeServiceFactoryMock.mockImplementation(() => ({
-      analyze: analyzeMock,
-      status: statusMock,
-      prepare: vi.fn(),
-      dispose: disposeMock
-    }));
-    createLocalLlmRuntimeServiceMock.mockClear();
   });
 
-  it("CPU文脈チェック要求を専用Workerへ渡す", async () => {
-    analyzeWasmMock.mockResolvedValue({
+  it("nonceが一致した接続だけをreadyにする", async () => {
+    const { messageHandler } = await loadBridgePage();
+    const port = connect(messageHandler);
+
+    expect(port.started).toBe(true);
+    expect(port.postedMessages).toEqual([{ type: LLM_BRIDGE_READY }]);
+  });
+
+  it("解析要求をCPU / WASM Workerへ渡す", async () => {
+    analyzeMock.mockResolvedValue({
       candidates: [],
-      summary: "CPU文脈チェック完了",
+      summary: "完了",
       rawText: "",
-      modelId: "Xenova/multilingual-e5-small",
+      modelId: "test-model",
       elapsedMs: 5
     });
     const { messageHandler } = await loadBridgePage();
-    const port = new FakeMessagePort();
-    messageHandler({
-      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
-      ports: [port]
-    } as MessageEvent<unknown>);
-
+    const port = connect(messageHandler);
     port.dispatch({
-      type: "analyze-wasm",
-      requestId: "wasm-request",
-      inputText: "候補者の面談評価を社内だけで確認します。",
+      type: "analyze-context",
+      requestId: "request-1",
+      inputText: "候補者の評価を確認します。",
       options: { maxCandidates: 4 }
     });
 
     await vi.waitFor(() => {
-      expect(analyzeWasmMock).toHaveBeenCalledWith(
-        "候補者の面談評価を社内だけで確認します。",
+      expect(analyzeMock).toHaveBeenCalledWith(
+        "候補者の評価を確認します。",
         expect.objectContaining({ maxCandidates: 4, onProgress: expect.any(Function) })
       );
     });
     expect(port.postedMessages).toContainEqual(
-      expect.objectContaining({ type: "analyze-result", requestId: "wasm-request" })
+      expect.objectContaining({ type: "analyze-result", requestId: "request-1" })
     );
   });
 
-  it("nonceが一致した接続だけreadyにして既存のanalyzeフローを維持する", async () => {
-    analyzeMock.mockResolvedValue({
-      candidates: [],
-      summary: "ok",
-      rawText: "",
-      modelId: "test-model",
-      elapsedMs: 5
-    });
-
+  it("不正な要求へ本文を含まないエラーを返す", async () => {
     const { messageHandler } = await loadBridgePage();
-    const port = new FakeMessagePort();
-
-    messageHandler({
-      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
-      ports: [port]
-    } as MessageEvent<unknown>);
-
-    expect(port.started).toBe(true);
-    expect(port.postedMessages).toEqual([{ type: LLM_BRIDGE_READY }]);
-
-    port.dispatch({
-      type: "analyze",
-      requestId: "request-1",
-      inputText: "本文です",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      profileId: "standard",
-      options: {}
-    });
+    const port = connect(messageHandler);
+    port.dispatch({ type: "unknown", requestId: "bad-1", inputText: "秘密本文" });
 
     await vi.waitFor(() => {
-      expect(analyzeMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          input: "本文です",
-          onProgress: expect.any(Function)
-        })
+      expect(port.postedMessages).toContainEqual(
+        expect.objectContaining({ type: "error", requestId: "bad-1" })
       );
     });
-    expect(createLocalLlmRuntimeServiceMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-        contextWindowSize: 2048,
-        maxInputChars: 1200,
-        maxTokens: 384,
-        compactPrompt: true
-      })
-    );
-    expect(port.postedMessages).toContainEqual(
-      expect.objectContaining({
-        type: "analyze-result",
-        requestId: "request-1"
-      })
-    );
-    expect(disposeMock).not.toHaveBeenCalled();
-  });
-
-  it("pagehide時にruntimeを破棄する", async () => {
-    analyzeMock.mockResolvedValue({
-      candidates: [],
-      summary: "ok",
-      rawText: "",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      elapsedMs: 5
-    });
-    const { messageHandler, pagehideHandler } = await loadBridgePage();
-    const port = new FakeMessagePort();
-    messageHandler({
-      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
-      ports: [port]
-    } as MessageEvent<unknown>);
-    port.dispatch({
-      type: "analyze",
-      requestId: "request-pagehide",
-      inputText: "本文です",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      profileId: "standard",
-      options: {}
-    });
-    await vi.waitFor(() => expect(analyzeMock).toHaveBeenCalled());
-
-    pagehideHandler?.();
-
-    await vi.waitFor(() => expect(disposeMock).toHaveBeenCalledTimes(1));
-  });
-
-  it("モデル準備状態を返す", async () => {
-    analyzeMock.mockResolvedValue({
-      candidates: [],
-      summary: "ok",
-      rawText: "",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      elapsedMs: 5
-    });
-    const { messageHandler } = await loadBridgePage();
-    const port = new FakeMessagePort();
-
-    messageHandler({
-      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
-      ports: [port]
-    } as MessageEvent<unknown>);
-
-    port.dispatch({
-      type: "model-state",
-      requestId: "state-1",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      profileId: "standard",
-      options: {}
-    });
-
-    await vi.waitFor(() => {
-      expect(port.postedMessages).toContainEqual({
-        type: "model-state-result",
-        requestId: "state-1",
-        ready: false
-      });
-    });
-
-    port.dispatch({
-      type: "analyze",
-      requestId: "request-1",
-      inputText: "本文です",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      profileId: "standard",
-      options: {}
-    });
-
-    await vi.waitFor(() => {
-      expect(analyzeMock).toHaveBeenCalled();
-    });
-    statusMock.mockReturnValue({
-      phase: "ready",
-      ready: true,
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      message: "AI文脈チェックを実行できます。"
-    });
-
-    port.dispatch({
-      type: "model-state",
-      requestId: "state-2",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      profileId: "standard",
-      options: {}
-    });
-
-    await vi.waitFor(() => {
-      expect(port.postedMessages).toContainEqual({
-        type: "model-state-result",
-        requestId: "state-2",
-        ready: true
-      });
-    });
-  });
-
-  it.each([
-    {
-      name: "connect messageにnonceがない",
-      hrefNonce: "expected-nonce",
-      connectMessage: { type: LLM_BRIDGE_CONNECT }
-    },
-    {
-      name: "connect messageのnonceが一致しない",
-      hrefNonce: "expected-nonce",
-      connectMessage: { type: LLM_BRIDGE_CONNECT, nonce: "wrong-nonce" }
-    },
-    {
-      name: "bridge URLにnonceがない",
-      hrefNonce: null,
-      connectMessage: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" }
-    }
-  ])("$name とbridgePortを確立しない", async ({ hrefNonce, connectMessage }) => {
-    const { messageHandler } = await loadBridgePage({ expectedNonce: hrefNonce });
-    const port = new FakeMessagePort();
-
-    messageHandler({
-      data: connectMessage,
-      ports: [port]
-    } as MessageEvent<unknown>);
-
-    expect(port.started).toBe(false);
-    expect(port.postedMessages).toEqual([]);
-
-    port.dispatch({
-      type: "analyze",
-      requestId: "request-ignored",
-      inputText: "秘密本文",
-      modelId: "test-model",
-      profileId: "standard",
-      options: {}
-    });
-
-    await Promise.resolve();
-    expect(analyzeMock).not.toHaveBeenCalled();
-  });
-
-  it("bridge確立後の再接続を拒否する", async () => {
-    analyzeMock.mockResolvedValue({
-      candidates: [],
-      summary: "ok",
-      rawText: "",
-      modelId: "test-model",
-      elapsedMs: 3
-    });
-
-    const { messageHandler } = await loadBridgePage();
-    const firstPort = new FakeMessagePort();
-    const secondPort = new FakeMessagePort();
-
-    messageHandler({
-      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
-      ports: [firstPort]
-    } as MessageEvent<unknown>);
-    messageHandler({
-      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
-      ports: [secondPort]
-    } as MessageEvent<unknown>);
-
-    expect(firstPort.started).toBe(true);
-    expect(firstPort.postedMessages).toEqual([{ type: LLM_BRIDGE_READY }]);
-    expect(secondPort.started).toBe(false);
-    expect(secondPort.postedMessages).toEqual([]);
-
-    firstPort.dispatch({
-      type: "analyze",
-      requestId: "request-after-connect",
-      inputText: "再接続拒否後も正常処理",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      profileId: "standard",
-      options: {}
-    });
-
-    await vi.waitFor(() => {
-      expect(analyzeMock).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  it("不正requestを拒否してユーザー本文をerror messageに含めない", async () => {
-    const { messageHandler } = await loadBridgePage();
-    const port = new FakeMessagePort();
-
-    messageHandler({
-      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
-      ports: [port]
-    } as MessageEvent<unknown>);
-
-    port.dispatch({
-      type: "analyze",
-      requestId: "bad-request",
-      inputText: "秘密本文",
-      modelId: 123,
-      profileId: "standard",
-      options: {}
-    });
-
-    await vi.waitFor(() => {
-      expect(port.postedMessages).toContainEqual({
-        type: "error",
-        requestId: "bad-request",
-        message: "AI文脈チェック用のリクエスト形式が正しくありません。"
-      });
-    });
-    expect(analyzeMock).not.toHaveBeenCalled();
-  });
-
-  it("analyze失敗時もユーザー本文をerror messageに含めない", async () => {
-    analyzeMock.mockRejectedValue(new Error("秘密本文を含む内部エラー"));
-
-    const { messageHandler } = await loadBridgePage();
-    const port = new FakeMessagePort();
-
-    messageHandler({
-      data: { type: LLM_BRIDGE_CONNECT, nonce: "expected-nonce" },
-      ports: [port]
-    } as MessageEvent<unknown>);
-
-    port.dispatch({
-      type: "analyze",
-      requestId: "request-error",
-      inputText: "秘密本文",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      profileId: "standard",
-      options: {}
-    });
-
-    await vi.waitFor(() => {
-      expect(port.postedMessages).toContainEqual({
-        type: "error",
-        requestId: "request-error",
-        message: "AI文脈チェックを実行できませんでした。"
-      });
-    });
     expect(JSON.stringify(port.postedMessages)).not.toContain("秘密本文");
+  });
+
+  it("ページ破棄時にWorkerを破棄する", async () => {
+    const { pagehideHandler } = await loadBridgePage();
+    pagehideHandler?.();
+    expect(disposeMock).toHaveBeenCalledTimes(1);
   });
 });

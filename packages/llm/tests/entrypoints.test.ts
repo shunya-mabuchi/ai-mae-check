@@ -8,11 +8,11 @@ describe("@ai-mae-check/llm entrypoints", () => {
     expect(shared).not.toHaveProperty("createLlmContextAnalyzer");
   });
 
-  it("runtime entryはWebLLM実行APIを公開する", async () => {
-    const runtime = await import("../src/runtime");
+  it("wasm-worker entryはCPU上の解析Worker APIだけを公開する", async () => {
+    const runtime = await import("../src/wasm-worker");
 
-    expect(runtime).toHaveProperty("createLocalLlmRuntimeService");
-    expect(runtime).toHaveProperty("createLlmContextAnalyzer");
-    expect(runtime).toHaveProperty("isWebGpuAvailable");
+    expect(runtime).toHaveProperty("startWasmContextWorker");
+    expect(runtime).not.toHaveProperty("createLlmContextAnalyzer");
+    expect(runtime).not.toHaveProperty("isWebGpuAvailable");
   });
 });

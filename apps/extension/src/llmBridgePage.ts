@@ -1,11 +1,4 @@
-import {
-  type AnalyzeContextOptions,
-  getLlmExecutionProfile,
-  type LocalLlmRuntimeService,
-  type LlmExecutionProfileId,
-  type LlmProgress
-} from "@ai-mae-check/llm";
-import { createLocalLlmRuntimeService } from "@ai-mae-check/llm/runtime";
+import type { LlmProgress } from "@ai-mae-check/llm";
 import {
   getLlmBridgeExpectedNonce,
   getLlmBridgeRequestId,
@@ -15,22 +8,18 @@ import {
   type LlmBridgeRequest,
   type LlmBridgeResponse
 } from "./lib/llmBridgeMessages";
-import { getExtensionResourceUrl } from "./lib/extensionRuntime";
-import { createJsonParseBridgeFallbackResult } from "./lib/llmBridgeFallback";
 import {
   analyzeContextWithWasmWorker,
   disposeWasmContextWorker
 } from "./lib/wasmContextWorkerClient";
 
-const BRIDGE_EXECUTION_ERROR_MESSAGE = "AI文脈チェックを実行できませんでした。";
-const BRIDGE_REQUEST_ERROR_MESSAGE = "AI文脈チェック用のリクエスト形式が正しくありません。";
+const BRIDGE_EXECUTION_ERROR_MESSAGE =
+  "CPU文脈チェックを実行できませんでした。ルールベースの検出結果は引き続き利用できます。";
+const BRIDGE_REQUEST_ERROR_MESSAGE = "CPU文脈チェック用のリクエスト形式が正しくありません。";
 const expectedBridgeNonce = getLlmBridgeExpectedNonce(window.location.href);
 
 let bridgePort: MessagePort | null = null;
 let bridgeConnected = false;
-let runtimeService: LocalLlmRuntimeService | null = null;
-let runtimeModelId: string | null = null;
-let runtimeProfileId: LlmExecutionProfileId | null = null;
 let analyzeQueue: Promise<void> = Promise.resolve();
 
 function post(message: LlmBridgeResponse): void {
@@ -38,142 +27,18 @@ function post(message: LlmBridgeResponse): void {
 }
 
 function postProgress(requestId: string): (progress: LlmProgress) => void {
-  return (progress) => {
-    post({
-      type: "progress",
-      requestId,
-      progress
-    });
-  };
-}
-
-async function getRuntimeService(profileId: LlmExecutionProfileId): Promise<LocalLlmRuntimeService> {
-  const profile = getLlmExecutionProfile(profileId);
-  const runtimePhase = runtimeService?.status().phase;
-  if (
-    runtimeService &&
-    runtimeModelId === profile.modelId &&
-    runtimeProfileId === profile.id &&
-    runtimePhase !== "error" &&
-    runtimePhase !== "disposed"
-  ) {
-    return runtimeService;
-  }
-
-  const previousRuntimeService = runtimeService;
-  runtimeService = null;
-  runtimeModelId = null;
-  runtimeProfileId = null;
-
-  try {
-    await previousRuntimeService?.dispose();
-  } catch {
-    // GPUデバイス喪失後は破棄も失敗し得るため、新しいWorkerの起動を優先する。
-  }
-
-  runtimeService = createLocalLlmRuntimeService({
-    modelId: profile.modelId,
-    contextWindowSize: profile.contextWindowSize,
-    maxInputChars: profile.maxInputChars,
-    maxTokens: profile.maxTokens,
-    compactPrompt: profile.compactPrompt,
-    workerUrl: getExtensionResourceUrl("llm-worker.js")
-  });
-  runtimeModelId = profile.modelId;
-  runtimeProfileId = profile.id;
-  return runtimeService;
-}
-
-function isModelReady(modelId: string, profileId: LlmExecutionProfileId): boolean {
-  return runtimeModelId === modelId && runtimeProfileId === profileId && runtimeService?.status().ready === true;
-}
-
-async function handleAnalyze(request: Extract<LlmBridgeRequest, { type: "analyze" }>): Promise<void> {
-  const startedAt = performance.now();
-  const profile = getLlmExecutionProfile(request.profileId);
-  const currentRuntimeService = await getRuntimeService(request.profileId);
-  const maxCandidates = Math.min(
-    request.options.maxCandidates ?? profile.maxCandidates,
-    profile.maxCandidates
-  );
-  try {
-    const options: AnalyzeContextOptions = {
-      onProgress: postProgress(request.requestId)
-    };
-    if (request.options.existingFindings) {
-      options.existingFindings = request.options.existingFindings;
-    }
-    options.maxCandidates = maxCandidates;
-
-    const result = await currentRuntimeService.analyze({
-      input: request.inputText,
-      ...options
-    });
-
-    post({
-      type: "analyze-result",
-      requestId: request.requestId,
-      result
-    });
-  } catch (error) {
-    const fallback = createJsonParseBridgeFallbackResult({
-      inputText: request.inputText,
-      modelId: profile.modelId,
-      startedAt,
-      error,
-      maxCandidates
-    });
-
-    if (fallback) {
-      post({
-        type: "analyze-result",
-        requestId: request.requestId,
-        result: fallback
-      });
-      return;
-    }
-
-    throw error;
-  }
-}
-
-async function handleWasmAnalyze(
-  request: Extract<LlmBridgeRequest, { type: "analyze-wasm" }>
-): Promise<void> {
-  const result = await analyzeContextWithWasmWorker(request.inputText, {
-    ...(typeof request.options.maxCandidates === "number"
-      ? { maxCandidates: request.options.maxCandidates }
-      : {}),
-    onProgress: postProgress(request.requestId)
-  });
-  post({
-    type: "analyze-result",
-    requestId: request.requestId,
-    result
-  });
-}
-
-function handleModelState(request: Extract<LlmBridgeRequest, { type: "model-state" }>): void {
-  post({
-    type: "model-state-result",
-    requestId: request.requestId,
-    ready: isModelReady(request.modelId, request.profileId)
-  });
+  return (progress) => post({ type: "progress", requestId, progress });
 }
 
 async function handleRequest(request: LlmBridgeRequest): Promise<void> {
   try {
-    if (request.type === "model-state") {
-      handleModelState(request);
-      return;
-    }
-
-    if (request.type === "analyze-wasm") {
-      await handleWasmAnalyze(request);
-      return;
-    }
-
-    await handleAnalyze(request);
+    const result = await analyzeContextWithWasmWorker(request.inputText, {
+      ...(typeof request.options.maxCandidates === "number"
+        ? { maxCandidates: request.options.maxCandidates }
+        : {}),
+      onProgress: postProgress(request.requestId)
+    });
+    post({ type: "analyze-result", requestId: request.requestId, result });
   } catch {
     post({
       type: "error",
@@ -187,11 +52,7 @@ async function handlePortMessage(message: unknown): Promise<void> {
   if (!isLlmBridgeRequest(message)) {
     const requestId = getLlmBridgeRequestId(message);
     if (requestId) {
-      post({
-        type: "error",
-        requestId,
-        message: BRIDGE_REQUEST_ERROR_MESSAGE
-      });
+      post({ type: "error", requestId, message: BRIDGE_REQUEST_ERROR_MESSAGE });
     }
     return;
   }
@@ -200,11 +61,6 @@ async function handlePortMessage(message: unknown): Promise<void> {
 }
 
 function enqueuePortMessage(message: unknown): void {
-  if (isLlmBridgeRequest(message) && message.type === "model-state") {
-    void handlePortMessage(message);
-    return;
-  }
-
   analyzeQueue = analyzeQueue.then(
     () => handlePortMessage(message),
     () => handlePortMessage(message)
@@ -228,7 +84,6 @@ window.addEventListener("message", (event: MessageEvent<unknown>) => {
     return;
   }
   bridgeConnected = true;
-
   bridgePort.onmessage = (portEvent: MessageEvent<unknown>) => {
     enqueuePortMessage(portEvent.data);
   };
@@ -238,15 +93,4 @@ window.addEventListener("message", (event: MessageEvent<unknown>) => {
 
 window.addEventListener("pagehide", () => {
   disposeWasmContextWorker();
-  const currentRuntimeService = runtimeService;
-  runtimeService = null;
-  runtimeModelId = null;
-  runtimeProfileId = null;
-  if (currentRuntimeService) {
-    void Promise.resolve()
-      .then(() => currentRuntimeService.dispose())
-      .catch(() => {
-        // ページ破棄時は、既に失われたGPUデバイスの解放失敗を画面へ伝える必要はない。
-      });
-  }
 });

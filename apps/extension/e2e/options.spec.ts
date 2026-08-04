@@ -53,7 +53,7 @@ test.describe("Options PageのReact Aria操作", () => {
     try {
       const page = await openOptionsPage(target.context);
       const manualRadio = page.getByRole("radio", { name: /手動ボタンだけで実行/ });
-      const autoRadio = page.getByRole("radio", { name: /準備済みなら自動実行/ });
+      const autoRadio = page.getByRole("radio", { name: /自動で実行/ });
 
       await expect(manualRadio).toBeChecked();
       await manualRadio.focus();
@@ -63,30 +63,20 @@ test.describe("Options PageのReact Aria操作", () => {
 
       await page.reload();
       await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
-      await expect(page.getByRole("radio", { name: /準備済みなら自動実行/ })).toBeChecked();
+      await expect(page.getByRole("radio", { name: /自動で実行/ })).toBeChecked();
     } finally {
       await closeExtensionContext(target);
     }
   });
 
-  test("実行負荷を低負荷へ変更し、軽量モデル選択を保持する", async () => {
+  test("CPU文脈分類と固有表現抽出の固定モデルを表示する", async () => {
     const target = await launchExtensionContext();
     try {
       const page = await openOptionsPage(target.context);
-      const standardRadio = page.getByRole("radio", { name: /^標準/ });
-      const lowResourceRadio = page.getByRole("radio", { name: /^低負荷/ });
-
-      await expect(standardRadio).toBeChecked();
-      await standardRadio.focus();
-      await page.keyboard.press("ArrowRight");
-      await expect(lowResourceRadio).toBeChecked();
-      await expect(page.getByText("Qwen2.5-0.5B-Instruct-q4f16_1-MLC", { exact: true })).toBeVisible();
-      await expect(page.getByText("保存しました。", { exact: true })).toBeVisible();
-
-      await page.reload();
-      await expect(page.getByText("設定は変更時に自動保存されます。", { exact: true })).toBeVisible();
-      await expect(page.getByRole("radio", { name: /^低負荷/ })).toBeChecked();
-      await expect(page.getByText("Qwen2.5-0.5B-Instruct-q4f16_1-MLC", { exact: true })).toBeVisible();
+      await expect(page.getByText("文脈分類: sirasagi62/ruri-v3-30m-ONNX", { exact: true })).toBeVisible();
+      await expect(page.getByText("固有表現抽出: jiting/xlm-roberta-ner-japanese_onnx", { exact: true })).toBeVisible();
+      await expect(page.getByRole("radio", { name: /^標準/ })).toHaveCount(0);
+      await expect(page.getByRole("radio", { name: /^低負荷/ })).toHaveCount(0);
     } finally {
       await closeExtensionContext(target);
     }

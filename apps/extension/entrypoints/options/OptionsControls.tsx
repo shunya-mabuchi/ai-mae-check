@@ -13,7 +13,7 @@ import {
   RadioGroup as AriaRadioGroup,
   type RadioGroupProps as AriaRadioGroupProps
 } from "react-aria-components/RadioGroup";
-import type { LlmResourceMode, LlmRunMode } from "../../src/lib/settings";
+import type { LlmRunMode } from "../../src/lib/settings";
 
 type ButtonVariant = "primary" | "secondary";
 
@@ -99,8 +99,8 @@ const llmModes: Array<{ value: LlmRunMode; label: string; description: string }>
   },
   {
     value: "auto",
-    label: "準備済みなら自動実行",
-    description: "ローカルAIモデルがすでに準備できている場合だけ、自動で文脈チェックを開始します。"
+    label: "自動で実行",
+    description: "確認画面を開いたときにCPU文脈チェックを開始します。初回はモデル準備に時間がかかる場合があります。"
   }
 ];
 
@@ -118,68 +118,6 @@ export function LlmModeRadioGroup({ value, onChange, ...props }: LlmModeRadioGro
       className="grid gap-3 sm:grid-cols-2"
     >
       {llmModes.map((mode) => (
-        <AriaRadio
-          key={mode.value}
-          value={mode.value}
-          className="group flex cursor-pointer items-start gap-3 rounded-md border border-line bg-white p-4 outline-hidden transition data-[hovered]:border-leaf/50 data-[selected]:border-leaf/60 data-[selected]:bg-[#f3faf6] data-[focus-visible]:ring-2 data-[focus-visible]:ring-signal data-[focus-visible]:ring-offset-2"
-        >
-          {({ isSelected }) => (
-            <>
-              <span
-                aria-hidden="true"
-                className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-line bg-white text-leaf transition group-data-[selected]:border-leaf"
-              >
-                {isSelected ? <Circle size={10} fill="currentColor" strokeWidth={0} /> : null}
-              </span>
-              <span className="min-w-0">
-                <span className="block font-semibold text-ink">{mode.label}</span>
-                <span className="mt-2 block text-sm leading-6 text-stone-600">{mode.description}</span>
-              </span>
-            </>
-          )}
-        </AriaRadio>
-      ))}
-    </AriaRadioGroup>
-  );
-}
-
-interface LlmResourceModeRadioGroupProps
-  extends Omit<AriaRadioGroupProps, "children" | "className" | "value" | "onChange"> {
-  value: LlmResourceMode;
-  onChange: (value: LlmResourceMode) => void;
-}
-
-const llmResourceModes: Array<{ value: LlmResourceMode; label: string; description: string }> = [
-  {
-    value: "standard",
-    label: "標準",
-    description: "Qwen2.5 0.5Bを通常の入力長と候補数で実行します。"
-  },
-  {
-    value: "low_resource",
-    label: "低負荷",
-    description: "同じQwen2.5 0.5Bの入力長、出力長、候補数、context windowを抑えて実行します。"
-  }
-];
-
-export function LlmResourceModeRadioGroup({
-  value,
-  onChange,
-  ...props
-}: LlmResourceModeRadioGroupProps) {
-  return (
-    <AriaRadioGroup
-      {...props}
-      aria-label="AI文脈チェックの実行負荷"
-      value={value}
-      onChange={(nextValue) => {
-        if (nextValue === "standard" || nextValue === "low_resource") {
-          onChange(nextValue);
-        }
-      }}
-      className="grid gap-3 sm:grid-cols-2"
-    >
-      {llmResourceModes.map((mode) => (
         <AriaRadio
           key={mode.value}
           value={mode.value}

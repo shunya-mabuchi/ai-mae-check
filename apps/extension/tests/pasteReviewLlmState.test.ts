@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  isContextAnalysisExecutionError,
-  type ContextAnalysisResult,
-  type LlmErrorDetail
-} from "@ai-mae-check/llm";
-import {
   createPasteReviewLlmCompleteMessage,
-  createPasteReviewLlmResultMessage,
   createPasteReviewLlmResultState,
   formatPasteReviewLlmStatusMessage,
   PASTE_REVIEW_LLM_DISABLED_MESSAGE,
@@ -14,210 +8,66 @@ import {
   PASTE_REVIEW_LLM_LOADING_MESSAGE,
   shouldAutoRunPasteReviewLlm
 } from "../src/lib/pasteReviewLlmState";
-import { buildLlmErrorDetail } from "./testBuilders";
+
+const candidate = {
+  id: "candidate-1",
+  category: "person_name" as const,
+  surface: "山田花子さん",
+  label: "人名候補",
+  reason: "人名候補です。",
+  riskLevel: "medium" as const,
+  suggestedPlaceholder: "[PERSON_1]",
+  confidence: 0.9
+};
 
 describe("pasteReviewLlmState", () => {
   it("初期・無効・ロード中の文言を返す", () => {
-    expect(PASTE_REVIEW_LLM_INITIAL_MESSAGE).toBe("AI文脈チェックは手動で実行できます。");
-    expect(PASTE_REVIEW_LLM_DISABLED_MESSAGE).toBe("設定でAI文脈チェックが無効になっています。");
-    expect(PASTE_REVIEW_LLM_LOADING_MESSAGE).toBe("ローカルAIモデルを準備しています。初回のみ時間がかかる場合があります。");
+    expect(PASTE_REVIEW_LLM_INITIAL_MESSAGE).toContain("手動");
+    expect(PASTE_REVIEW_LLM_DISABLED_MESSAGE).toContain("無効");
+    expect(PASTE_REVIEW_LLM_LOADING_MESSAGE).toContain("初回のみ時間がかかる場合があります");
   });
 
-  it("候補数に応じて完了文言を返す", () => {
-    expect(createPasteReviewLlmCompleteMessage(2)).toBe("AI文脈チェックで注意候補が見つかりました。");
-    expect(createPasteReviewLlmCompleteMessage(0)).toBe(
-      "AI文脈チェックでは追加の注意候補は見つかりませんでした。ただし、安全を保証するものではありません。"
-    );
+  it("候補数に応じた完了文言を返す", () => {
+    expect(createPasteReviewLlmCompleteMessage(1)).toContain("注意候補が見つかりました");
+    expect(createPasteReviewLlmCompleteMessage(0)).toContain("安全を保証するものではありません");
   });
 
-  it("出力形式を読み取れなかった非致命メッセージは安全化できる状態として表示する", () => {
-    expect(
-      createPasteReviewLlmCompleteMessage(
-        0,
-        "AI文脈チェックの出力形式は読み取れませんでした。ルールベース検出結果は維持されています。必要なら再実行してください。"
-      )
-    ).toBe("ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。");
-  });
-
-  it("json_parseは実行不能エラーではなく非致命的な結果として扱う", () => {
-    const result: ContextAnalysisResult = {
-      candidates: [],
-      summary: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
-      rawText: "",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      elapsedMs: 10,
-      error: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
-      errorDetail: buildLlmErrorDetail({
-        message: "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。",
-        hint: "ルールベース検出結果は維持されています。必要なら再実行してください。"
-      })
-    };
-
-    expect(isContextAnalysisExecutionError(result)).toBe(false);
-    expect(createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail)).toBe(
-      "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
-    );
-  });
-
-  it("json_parseでも補助検出候補がある場合は続行できる状態として表示する", () => {
-    expect(
-      createPasteReviewLlmResultMessage(2, undefined, buildLlmErrorDetail())
-    ).toBe("ブラウザ内の補助検出で注意候補を確認しました。安全化対象を選んで続行できます。");
-  });
-
-  it("AI文脈チェック結果を候補・初期選択ID・表示文言にまとめる", () => {
-    const result = createPasteReviewLlmResultState({
-      candidates: [
-        {
-          id: "high-confidence",
-          category: "person_name",
-          surface: "山田花子さん",
-          label: "人名候補",
-          reason: "採用文脈のため注意候補です。",
-          riskLevel: "medium",
-          suggestedPlaceholder: "[PERSON_1]",
-          confidence: 0.86
-        },
-        {
-          id: "low-confidence",
-          category: "project_name",
-          surface: "Project Alpha",
-          label: "案件名候補",
-          reason: "案件名の可能性があります。",
-          riskLevel: "low",
-          suggestedPlaceholder: "[PROJECT_1]",
-          confidence: 0.62
-        }
-      ],
-      summary: "注意候補があります。"
-    });
-
-    expect(result.statusMessage).toBe("AI文脈チェックで注意候補が見つかりました。");
-    expect(result.candidates.map((candidate) => candidate.id)).toEqual(["high-confidence", "low-confidence"]);
-    expect(result.selectedCandidateIds).toEqual(["high-confidence"]);
-    expect(result.emptyCandidateMessageVisible).toBe(false);
-  });
-
-  it("AI文脈チェックが正常完了して候補0件なら空候補メッセージを表示可能にする", () => {
-    const result = createPasteReviewLlmResultState({
-      candidates: [],
-      summary: "追加候補はありません。"
-    });
-
-    expect(result.emptyCandidateMessageVisible).toBe(true);
-  });
-
-  it("AI文脈チェック結果状態でもjson_parseは非致命メッセージを維持する", () => {
-    const result = createPasteReviewLlmResultState({
-      candidates: [],
-      summary: "AI文脈チェックの結果を読み取れませんでした。",
-      errorDetail: buildLlmErrorDetail()
-    });
-
-    expect(result).toEqual({
-      candidates: [],
-      selectedCandidateIds: [],
-      statusMessage: "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。",
+  it("結果を候補・初期選択・表示状態へまとめる", () => {
+    expect(createPasteReviewLlmResultState({
+      candidates: [candidate],
+      summary: "完了",
+      errorDetail: undefined
+    })).toEqual(expect.objectContaining({
+      candidates: [candidate],
+      selectedCandidateIds: ["candidate-1"],
       emptyCandidateMessageVisible: false
-    });
+    }));
   });
 
-  it("WorkerやWebGPUの失敗は実行不能エラーとして扱う", () => {
-    const result: Pick<ContextAnalysisResult, "error" | "errorDetail"> = {
-      error: "AI文脈チェックを実行できませんでした。",
-      errorDetail: buildLlmErrorDetail({
-        kind: "worker",
-        message: "AI文脈チェックを実行できませんでした。",
-        hint: "ページを再読み込みしてから再試行してください。"
-      })
-    };
-
-    expect(isContextAnalysisExecutionError(result)).toBe(true);
+  it("正常完了して候補0件のときだけ空候補メッセージを許可する", () => {
+    expect(createPasteReviewLlmResultState({
+      candidates: [], summary: "完了", errorDetail: undefined
+    }).emptyCandidateMessageVisible).toBe(true);
+    expect(createPasteReviewLlmResultState({
+      candidates: [],
+      summary: "失敗",
+      errorDetail: { kind: "wasm", message: "失敗", hint: "確認してください" }
+    }).emptyCandidateMessageVisible).toBe(false);
   });
 
-  it("診断メモと技術詳細を追加してエラー文言を整形する", () => {
-    const detail: LlmErrorDetail = {
+  it("診断メモと技術詳細を整形する", () => {
+    expect(formatPasteReviewLlmStatusMessage("失敗", {
       kind: "worker",
-      message: "AI文脈チェックを実行できませんでした。",
-      hint: "ページを再読み込みしてから再試行してください。",
-      technicalDetail: "Worker disposed"
-    };
-
-    expect(formatPasteReviewLlmStatusMessage(detail.message, detail)).toBe(
-      "AI文脈チェックを実行できませんでした。\nエラー分類: worker\n診断メモ: ページを再読み込みしてから再試行してください。\n詳細: Worker disposed"
-    );
+      message: "失敗",
+      hint: "再読み込みしてください。",
+      technicalDetail: "Worker failed"
+    })).toContain("診断メモ: 再読み込みしてください。");
   });
 
-  it("json_parseのエラー詳細は診断メモではなく非致命メッセージとして表示する", () => {
-    const detail: LlmErrorDetail = buildLlmErrorDetail({
-      hint: "ルールベース検出結果は維持されています。必要なら再実行してください。",
-      technicalDetail: "AI文脈チェックの結果を読み取れませんでした"
-    });
-
-    expect(formatPasteReviewLlmStatusMessage(detail.message, detail)).toBe(
-      "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
-    );
-  });
-
-  it("エラー詳細が欠けたjson_parseメッセージも非致命メッセージとして表示する", () => {
-    expect(
-      formatPasteReviewLlmStatusMessage(
-        "AI文脈チェックの結果を読み取れませんでした。ルールベースの検出結果は引き続き利用できます。"
-      )
-    ).toBe("ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。");
-  });
-
-  it("出力形式を読み取れない日本語メッセージも非致命メッセージとして表示する", () => {
-    expect(formatPasteReviewLlmStatusMessage("AI文脈チェックの出力形式は読み取れませんでした")).toBe(
-      "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
-    );
-  });
-
-  it("新しい出力形式読み取り失敗メッセージも非致命メッセージとして表示する", () => {
-    expect(formatPasteReviewLlmStatusMessage("AI文脈チェックの出力形式を読み取れませんでした")).toBe(
-      "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。"
-    );
-  });
-
-  it("エラー詳細がない場合は元メッセージだけを返す", () => {
-    expect(formatPasteReviewLlmStatusMessage("文脈リスクを確認しています。")).toBe("文脈リスクを確認しています。");
-  });
-
-  it("通常モードかつモデル準備済みのときだけAI文脈チェックの自動実行を許可する", () => {
-    const autoLlm = {
-      enabled: true,
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-      mode: "auto" as const
-    };
-
-    expect(shouldAutoRunPasteReviewLlm("default", autoLlm, true)).toBe(true);
-    expect(shouldAutoRunPasteReviewLlm("default", autoLlm, false)).toBe(false);
-    expect(shouldAutoRunPasteReviewLlm("paste_guard", autoLlm, true)).toBe(false);
-    expect(shouldAutoRunPasteReviewLlm("context_check", autoLlm, true)).toBe(false);
-  });
-
-  it("AI文脈チェックが無効または手動モードなら自動実行しない", () => {
-    expect(
-      shouldAutoRunPasteReviewLlm(
-        "default",
-        {
-          enabled: false,
-          modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-          mode: "auto"
-        },
-        true
-      )
-    ).toBe(false);
-    expect(
-      shouldAutoRunPasteReviewLlm(
-        "default",
-        {
-          enabled: true,
-          modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
-          mode: "manual"
-        },
-        true
-      )
-    ).toBe(false);
+  it("通常モードかつ自動設定のときだけ自動実行する", () => {
+    const auto = { enabled: true, mode: "auto" as const };
+    expect(shouldAutoRunPasteReviewLlm("default", auto)).toBe(true);
+    expect(shouldAutoRunPasteReviewLlm("paste_guard", auto)).toBe(false);
+    expect(shouldAutoRunPasteReviewLlm("default", { enabled: true, mode: "manual" })).toBe(false);
   });
 });

@@ -1,10 +1,5 @@
-import {
-  classifyLlmErrorSignal,
-  isJsonParseLlmErrorMessage as isJsonParseSignalMessage,
-  type LlmErrorSignal
-} from "./errorSignals";
+import { classifyLlmErrorSignal, type LlmErrorSignal } from "./errorSignals";
 import type { ContextAnalysisResult, LlmErrorDetail } from "./types";
-export { createJsonParseFallbackMessage, isJsonParseLlmErrorMessage } from "./errorSignals";
 
 type ErrorWithLlmErrorDetail = Error & {
   llmErrorDetail: LlmErrorDetail;
@@ -115,7 +110,9 @@ function detail(signal: LlmErrorSignal, rawMessage: string): LlmErrorDetail {
 }
 
 export function sanitizeLlmErrorDetail(detail: LlmErrorDetail, sourceText?: string): LlmErrorDetail {
-  const technicalDetail = detail.technicalDetail ? sanitizeTechnicalDetail(detail.technicalDetail, sourceText) : undefined;
+  // 元本文がない埋め込み済み詳細は、安全性を確認できないため表示しない。
+  const technicalDetail =
+    detail.technicalDetail && sourceText ? sanitizeTechnicalDetail(detail.technicalDetail, sourceText) : undefined;
   return {
     kind: detail.kind,
     message: sanitizeRequiredDisplayText(detail.message, sourceText),
@@ -139,9 +136,5 @@ export function formatLlmErrorMessage(error: unknown): string {
 }
 
 export function isContextAnalysisExecutionError(result: Pick<ContextAnalysisResult, "error" | "errorDetail">): boolean {
-  if (!result.error) {
-    return false;
-  }
-
-  return result.errorDetail?.kind !== "json_parse" && !isJsonParseSignalMessage(result.error);
+  return Boolean(result.error);
 }

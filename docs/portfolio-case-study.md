@@ -67,7 +67,7 @@ flowchart LR
 - Vitest
 - Playwright
 - Chrome Extension Manifest V3
-- ローカルAI / WebGPU / Web Worker
+- ローカルAI / ONNX Runtime Web / WebAssembly / Web Worker
 - GitHub Pages / GitHub Actions
 - pnpm workspace
 

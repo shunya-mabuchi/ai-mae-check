@@ -48,11 +48,11 @@ test("ミニデモをキーボードで操作し、フォーカス位置を確�
   await expect(page.locator("pre").filter({ hasText: "taro@example.com" })).toBeVisible();
 });
 
-test("WebLLM実行系はAI文脈チェック操作まで読み込まない", async ({ page }) => {
+test("ローカルAI実行系はAI文脈チェック操作まで読み込まない", async ({ page }) => {
   const runtimeRequests: string[] = [];
   page.on("request", (request) => {
     const url = request.url();
-    if (/llm\/src\/(runtime|analyzer|webllm)|webllmWorker/i.test(url)) {
+    if (/context-worker\.ts|llm\/src\/wasmAnalyzer/i.test(url)) {
       runtimeRequests.push(url);
     }
   });
@@ -65,7 +65,7 @@ test("WebLLM実行系はAI文脈チェック操作まで読み込まない", asy
 
   await page.getByRole("button", { name: "AI文脈チェック" }).click();
   await expect
-    .poll(() => runtimeRequests.some((url) => url.includes("/runtime.ts")))
+    .poll(() => runtimeRequests.some((url) => url.includes("/context-worker.ts")))
     .toBe(true);
   expect(new Set(runtimeRequests).size).toBe(runtimeRequests.length);
 });

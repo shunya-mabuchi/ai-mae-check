@@ -85,6 +85,6 @@ MPL-2.0、CC-BY-4.0、GPLを含む複数ライセンス表記などは、利用�
 ## 関連ドキュメント
 
 - [ライセンスと素材利用方針](license-policy.md)
-- [ローカルAIモデル選定とライセンス確認](webllm-model-policy.md)
+- [ローカルAIモデル選定とライセンス確認](local-ai-model-policy.md)
 - [拡張ZIPとbundleサイズ予算](extension-size-budget.md)
 - [publicリポジトリ安全監査](public-repo-safety.md)
