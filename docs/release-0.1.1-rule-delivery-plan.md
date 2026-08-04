@@ -22,7 +22,7 @@
 4. 完了: `https://ai-mae-check.pages.dev/api/rules/latest` が署名付きルールJSONを返すことを確認する。
 5. 完了: `pnpm qa:rules:production` で、本番APIの署名が拡張側公開鍵で検証できることを確認する。
 6. 完了: 残Issueを解消してから、最終提出候補のZIPを作り直す。
-7. 完了: `pnpm build:extension`、`pnpm package:extension`相当のWXT zip生成、`pnpm qa:public-repo`、`pnpm qa:public-docs`、`pnpm qa:privacy-regression`、`pnpm qa:webllm-model-policy`、`pnpm qa:dependency-policy`、`pnpm qa:release-policy`、`pnpm qa:rules:production`、`pnpm qa:demo:seo`、`pnpm qa:portfolio-case-study`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
+7. 完了: `pnpm build:extension`、`pnpm package:extension`相当のWXT zip生成、`pnpm qa:public-repo`、`pnpm qa:public-docs`、`pnpm qa:privacy-regression`、`pnpm qa:local-ai-model-policy`、`pnpm qa:dependency-policy`、`pnpm qa:release-policy`、`pnpm qa:rules:production`、`pnpm qa:demo:seo`、`pnpm qa:portfolio-case-study`、`pnpm qa:extension:size`、`pnpm qa:extension:manifest`、`pnpm qa:chrome-store` を実行する。
 8. 完了: Chrome Web Storeへ0.1.1として新しいZIPを提出する。
 
 Chrome Web Store公開状態を確認し、README、LP、GitHub Release、CHANGELOGの公開後導線を更新します。

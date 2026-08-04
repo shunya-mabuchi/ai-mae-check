@@ -23,7 +23,7 @@ apps/site
 
 packages
 ├─ core                       ルール検出・安全化・ポリシー
-├─ llm                        文脈リスク候補・WebLLM
+├─ llm                        文脈リスク候補・ローカルAI
 └─ design-tokens              UI非依存のCSS変数
 ```
 
@@ -70,7 +70,7 @@ Radix UIは新規採用しません。既存の動作を一度に置き換えず
 
 Reactを読み込まない状態でも、LPの説明、導入導線、privacy、supportを読めることを必須とします。
 
-WebLLMの共有型・表示用ロジックは`@ai-mae-check/llm`から参照します。モデル実行系は`@ai-mae-check/llm/runtime`へ分離し、DemoWorkbenchでAI文脈チェックを明示操作した時だけdynamic importします。初期表示とルール検出ではruntimeおよびWorkerを取得しません。
+ローカルAIの共有型・表示用ロジックは`@ai-mae-check/llm`から参照します。モデル実行系は`@ai-mae-check/llm/runtime`へ分離し、DemoWorkbenchでAI文脈チェックを明示操作した時だけdynamic importします。初期表示とルール検出ではruntimeおよびWorkerを取得しません。
 
 ## Vite MPA
 
@@ -155,25 +155,25 @@ React Aria Componentsの低レベルhookは、Components APIで実現できな�
 
 `useDemoWorkbench`は画面向けのFacadeとして残します。Reducer、Action、純粋な変換処理にはユニットテストを書きます。
 
-## WebLLMのロード境界
+## ローカルAIのロード境界
 
 `@ai-mae-check/llm`を次の責務へ分割します。
 
 - `@ai-mae-check/llm/shared`: 型、候補変換、プロンプト、JSON処理、エラー分類
-- `@ai-mae-check/llm/runtime`: WebGPU、WebLLMライフサイクル、Runtime Service
+- `@ai-mae-check/llm/runtime`: CPU/WASM、ローカルAIライフサイクル、Runtime Service
 - `@ai-mae-check/llm/worker`: Workerエントリー
 
 初期ページとルール検出では`runtime`とWorkerを取得しません。ユーザーがAI文脈チェックを実行したときだけ動的importします。
 
 受け入れ条件:
 
-- 初期表示時のWebLLM runtimeリクエストが0件
-- ルール検出時のWebLLM runtimeリクエストが0件
+- 初期表示時のローカルAI runtimeリクエストが0件
+- ルール検出時のローカルAI runtimeリクエストが0件
 - AI文脈チェック実行後にだけruntimeとWorkerを取得
 - 初期サイトJSはgzip 120 KiB以下を目標とする
 - content scriptはgzip 40 KiB以下を目標とする
 - optionsはReact Ariaの操作部品を含めてgzip 100 KiB以下を目標とする
-- 未使用のWebLLM Worker複製を拡張成果物へ出力しない
+- 未使用のローカルAI Worker複製を拡張成果物へ出力しない
 
 ## 拡張機能の段階移行
 
@@ -187,9 +187,9 @@ Options PageのButton、Checkbox、RadioGroup、RadioはReact Aria Componentsへ
 
 ファイル確認モーダルはReact Ariaの制御型Modal / Dialogへ移行済みです。Shadow Root内にReact rootと専用Portalコンテナを作り、リスクファイルを選択したときだけ拡張パッケージ内の`file-modal-runtime.js`を読み込みます。通常の貼り付け・送信処理へReact Ariaのランタイムを含めないため、content scriptの初期サイズを維持できます。
 
-貼り付け確認モーダルもReact Ariaの制御型Modal / Dialogへ移行済みです。DLP判定、選択、安全化、WebLLM実行制御は`pasteReviewModalController.ts`へ分離し、Reactコンポーネントは表示と閉じるライフサイクルを担当します。注意対象を貼り付けたときだけ、拡張パッケージ内の`review-modal-runtime.js`を読み込みます。WebLLM処理中に画面を閉じた場合は、遅れて返る進捗・候補・エラーを表示へ反映しません。
+貼り付け確認モーダルもReact Ariaの制御型Modal / Dialogへ移行済みです。DLP判定、選択、安全化、ローカルAI実行制御は`pasteReviewModalController.ts`へ分離し、Reactコンポーネントは表示と閉じるライフサイクルを担当します。注意対象を貼り付けたときだけ、拡張パッケージ内の`review-modal-runtime.js`を読み込みます。ローカルAI処理中に画面を閉じた場合は、遅れて返る進捗・候補・エラーを表示へ反映しません。
 
-送信前確認モーダルもReact Ariaの制御型Modal / Dialogへ移行済みです。カテゴリ選択、プレビュー生成、WebLLM実行制御は`confirmModalController.ts`へ分離し、貼り付け確認と同じ`review-modal-runtime.js`から必要時だけ読み込みます。高リスクと中リスクが混在する場合は、coreの`requiredFindingIds`に含まれるカテゴリだけを固定し、任意カテゴリはユーザーが安全化対象から外せます。
+送信前確認モーダルもReact Ariaの制御型Modal / Dialogへ移行済みです。カテゴリ選択、プレビュー生成、ローカルAI実行制御は`confirmModalController.ts`へ分離し、貼り付け確認と同じ`review-modal-runtime.js`から必要時だけ読み込みます。高リスクと中リスクが混在する場合は、coreの`requiredFindingIds`に含まれるカテゴリだけを固定し、任意カテゴリはユーザーが安全化対象から外せます。
 
 呼び出し側の命令型Promise API、決定値、DLPポリシーは変更しません。React rootのunmount時を含め、Promiseを一度だけ解決します。モーダルの読込または描画に失敗した場合は、元の送信をキャンセルし、日本語の復旧メッセージを表示します。本文はエラーやログに含めません。
 
@@ -217,7 +217,7 @@ React Ariaへ移行したモーダルでは、旧`setupDialogAccessibility`に�
 - 一つのPRで構造移行とTailwind 4移行を混ぜない
 - 一つのPRで構造移行とBiome導入を混ぜない
 - DLP判定とUI置換を同時に変更しない
-- WebLLM失敗時もルール検出を維持する
+- ローカルAI失敗時もルール検出を維持する
 - ユーザー本文を保存、ログ出力、外部LLM API送信しない
 - 過去リリース文書は履歴として原則書き換えない
 

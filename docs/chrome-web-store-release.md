@@ -59,7 +59,7 @@ Developer Dashboardへ入力する掲載情報の原本は [chrome-web-store-lis
 
 ### `storage`
 
-拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、WebLLMモデル設定など、ユーザーが選択した設定をブラウザ内に保存するために使用します。また、ルール配信が一時的に取得できない場合に備え、最後に検証済みの署名付きリモートルールJSON、keyId、version、有効期限だけを短時間キャッシュします。貼り付け本文、送信本文、添付前に読み取った対応ファイル本文、検出結果、マスキング用のplaceholderMapは保存しません。
+拡張機能の有効/無効、対象サイトごとのON/OFF、検出ルールごとのON/OFF、ローカルAI利用設定など、ユーザーが選択した設定をブラウザ内に保存するために使用します。また、ルール配信が一時的に取得できない場合に備え、最後に検証済みの署名付きリモートルールJSON、keyId、version、有効期限だけを短時間キャッシュします。貼り付け本文、送信本文、添付前に読み取った対応ファイル本文、検出結果、マスキング用のplaceholderMapは保存しません。
 
 ### Host permissions
 
@@ -75,7 +75,7 @@ AIまえチェックは、ChatGPT、Claude、Gemini、Perplexityなどに文章�
 
 「いいえ、リモートコードを使用していません」を選択します。
 
-拡張機能の実行ロジックとして外部から任意のコードを取得して実行しません。WebLLMとCPU文脈チェックのJavaScript、およびONNX Runtime WebのWebAssemblyは拡張機能パッケージへ同梱します。初回利用時にはローカル推論用のモデルデータを取得する場合がありますが、ユーザー本文を外部LLM APIへ送信するものではありません。ルール配信を有効にしている場合も、取得するのはGitHub Pages上の `GET /rules/latest.json` で配信する署名付き静的ルールJSONのみで、リクエスト本文は使用しません。
+拡張機能の実行ロジックとして外部から任意のコードを取得して実行しません。ローカルAIとCPU文脈チェックのJavaScript、およびONNX Runtime WebのWebAssemblyは拡張機能パッケージへ同梱します。初回利用時にはローカル推論用のモデルデータを取得する場合がありますが、ユーザー本文を外部LLM APIへ送信するものではありません。ルール配信を有効にしている場合も、取得するのはGitHub Pages上の `GET /rules/latest.json` で配信する署名付き静的ルールJSONのみで、リクエスト本文は使用しません。
 
 ### Data usage
 
@@ -129,7 +129,7 @@ pnpm package:extension
 pnpm qa:public-repo
 pnpm qa:public-docs
 pnpm qa:privacy-regression
-pnpm qa:webllm-model-policy
+pnpm qa:local-ai-model-policy
 pnpm qa:dependency-policy
 pnpm qa:tailwind4
 pnpm qa:release-policy
@@ -183,8 +183,8 @@ pnpm qa:chrome-store:published
 - [ ] `pnpm qa:public-repo` が通る
 - [ ] `pnpm qa:public-docs` が通る
 - [ ] `pnpm qa:privacy-regression` が通る
-- [ ] `pnpm qa:webllm-model-policy` が通る
-- [ ] `pnpm qa:webllm-compatibility` が通る
+- [ ] `pnpm qa:local-ai-model-policy` が通る
+- [ ] `pnpm qa:local-ai-compatibility` が通る
 - [ ] `pnpm qa:rule-catalog` が通る
 - [ ] `pnpm qa:extension:e2e-harness` が通る
 - [ ] ローカル環境で `pnpm test:extension:e2e` が通る、または実行できない理由をPR/Release本文に記録する
@@ -201,7 +201,7 @@ pnpm qa:chrome-store:published
 - [ ] `<all_urls>` を要求していない
 - [ ] 対象サイトがChatGPT / Claude / Gemini / Perplexityに限定されている
 - [ ] READMEとプライバシー方針に、本文を保存・送信しないこと、保存対象がユーザー設定と検証済みリモートルールキャッシュだけであることが書かれている
-- [ ] WebLLMモデル取得が発生する場合があることを書いている
+- [ ] ローカルAIモデル取得が発生する場合があることを書いている
 - [ ] 外部LLM APIを使わないことを書いている
 - [ ] 画像に実在の個人情報・実APIキー・実トークンが含まれていない
 - [ ] ストア掲載文に過度な安全保証や検出率を断言する誇大表現がない
@@ -215,9 +215,9 @@ pnpm qa:chrome-store:published
 - [ ] 送信前確認モーダルを確認する
 - [ ] high / critical / 秘密情報保護の対象が安全化なしでは送信不可になることを確認する
 - [ ] mediumが詳細確認から許可可能であることを確認する
-- [ ] WebLLMが使えない環境でもルールベース検出が使えることを確認する
+- [ ] ローカルAIが使えない環境でもルールベース検出が使えることを確認する
 - [ ] モデル取得失敗時の日本語メッセージを確認する
-- [ ] [WebLLM対応環境とモデル互換性マトリクス](webllm-compatibility-matrix.md) に、OS、Chrome、WebGPU状態、エラー分類を本文なしで記録する
+- [ ] [ローカルAI対応環境とモデル互換性マトリクス](webllm-compatibility-matrix.md) に、OS、Chrome、CPU/WASM状態、エラー分類を本文なしで記録する
 - [ ] 拡張E2Eハーネス方針 [extension-e2e-harness.md](extension-e2e-harness.md) に従い、リリース用manifestへE2E専用host permissionが混入していないことを確認する
 
 ## 公開後の対応
@@ -229,7 +229,7 @@ pnpm qa:chrome-store:published
 
 ## 差し戻し時の対応
 
-原因別の確認表、Issueテンプレート、リモートコードやWebLLMモデル取得の説明文は [chrome-web-store-rejection-playbook.md](./chrome-web-store-rejection-playbook.md) にまとめています。
+原因別の確認表、Issueテンプレート、リモートコードやローカルAIモデル取得の説明文は [chrome-web-store-rejection-playbook.md](./chrome-web-store-rejection-playbook.md) にまとめています。
 
 1. Googleの指摘内容をIssueへ転記する。実本文や実キーが含まれる場合はマスクする。
 2. 仕様・権限・説明文・プライバシー申告・リモートコード扱いのどれが原因か切り分ける。

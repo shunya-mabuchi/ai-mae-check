@@ -1,544 +1,153 @@
 # AIまえチェック
 
-**AIに送る前に、消し忘れを見つける。**
+> AIに送る前に、消し忘れを見つける。
 
-「AIまえチェック」は、ChatGPT / Claude / Gemini / Perplexity などのLLMサービスへ文章を貼る前・送る前に、個人情報・秘密情報・APIキー・社外秘っぽい内容をブラウザ内で検出し、安全化を促すChrome拡張です。
-
-単なるAIチャットではなく、普段使っているLLMの入力欄の前に置く「送信前DLPレイヤー」を目指しています。サイドパネルや独自入力欄を主役にせず、対象サイトの通常入力体験をできるだけ保ったまま、送信前に小さく止まって確認できる設計です。
-
-## 現在の位置づけ
-
-**公開ステータス:** Chrome Web Storeの一般公開版は0.1.2です。公開ページは <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc> です。リポジトリでは、公開サイトと拡張UIの再設計、React Aria Components、Tailwind CSS 4、Biome、提出QA強化をまとめた0.2.0提出候補を準備しています。0.2.0はまだ公開版ではありません。
-
-このリポジトリには、すでに以下の基盤があります。
-
-- pnpm workspaceによるmonorepo構成
-- `packages/core` のルールベース検出・マスキング
-- `packages/llm` のWebLLM文脈チェック基盤
-- `apps/extension` のChrome拡張
-- `apps/site` の紹介LP兼ミニデモサイト
-- Vitest / Playwrightのテスト基盤
-
-現在は、初期実装の「貼り付け時チェック」に加えて、送信ボタン・Enter送信を捕捉する「送信前DLPレイヤー」の基礎実装まで進んでいます。デモサイトは拡張機能を入れる前に価値を試す補助体験であり、プロダクト本体はChrome拡張です。実装ロードマップは [DLP Roadmap Implementation Plan](./docs/superpowers/plans/2026-06-16-dlp-roadmap.md) に整理しています。
-
-## 公開後の確認導線
-
-Chrome Web Store公開後は、次の順番で確認できるようにしています。
-
-1. 紹介LPで、AIまえチェックがChrome拡張を本体とする送信前DLPレイヤーであることを確認する
-2. LPまたはREADMEからChrome Web Storeへ移動し、拡張機能を追加する
-3. ミニデモで、ルール検出、AI文脈チェック、安全化対象選択、安全化後テキストの考え方を先に試す
-4. 開発者向けには、`pnpm build:extension` 後に `apps/extension/.output/chrome-mv3` をChromeへ読み込む確認手順も残す
-
-ミニデモは導入前の補助体験です。ポートフォリオとしては体験価値を説明する入口にしつつ、READMEとLPではChrome拡張がプロダクト本体であることと、Chrome Web Storeから追加できることを先に示します。
-
-設計判断と技術構成を採用担当者・エンジニア向けにまとめたケーススタディは [docs/portfolio-case-study.md](docs/portfolio-case-study.md) にあります。
-
-## 作った理由
-
-生成AIに文章を送る作業は、メール作成、議事録整理、要約、翻訳、調査、コード相談などの日常業務に入り込んでいます。一方で、送ろうとしている文章には、メールアドレス、電話番号、APIキー、社内URL、顧客名、契約金額、採用・法務・給与などの注意情報が混ざりがちです。
-
-「送信」ボタンを押す直前まで気づきにくい消し忘れを、ブラウザ内で補助的に見つける。それがAIまえチェックの目的です。
+AIまえチェックは、ChatGPT、Claude、Geminiなどへ文章を貼り付ける前・送信する前に、個人情報、秘密情報、APIキー、社外秘らしい内容に気づくためのChrome拡張です。Perplexityなどの追加サイトはadapterの後続対応として扱います。プロダクト本体は拡張機能であり、公開サイトのデモは導入前に動きを確認するための補助アプリです。
 
 ## 解決したい課題
 
-- LLMへ送る文章に個人情報や秘密情報が混ざる
-- APIキーやトークンは一度漏れると影響が大きい
-- 「社外秘」と明記されていない文脈リスクは正規表現だけでは拾いにくい
-- 自前サーバーや外部LLM APIへ本文を送る設計にすると、確認ツール自体が新しいリスクになる
-- 個人開発でも継続できる、ランニングコストの低い構成にしたい
+AIへ相談する文章には、メールアドレス、電話番号、顧客名、社内URL、契約金額、採用情報、APIキーなどが意図せず混ざります。AIまえチェックは、送信直前の確認レイヤーとして、ユーザーが安全化内容を確認する時間を作ります。
 
-## ChatGPTの下位互換ではありません
-
-AIまえチェックは文章を生成するAIチャットではありません。
-
-ChatGPT / Claude / Gemini / Perplexity へ送る前に、送信内容を検出・安全化するための補助レイヤーです。最終的に送るかどうかはユーザーが判断します。AIまえチェックは「完全に安全」と断言せず、消し忘れに気づくための実用的な確認体験を目指します。
-
-## 新方針
-
-現在は、貼り付けイベントに加えて対象LLMサイトの送信操作も捕捉する方針で実装しています。
-
-- 対象サイトは ChatGPT / Claude / Gemini / Perplexity
-- サイドパネルや独自入力欄ではなく、通常の入力欄を使う
-- 送信直前に確認モーダルを出す
-- `medium` は詳細確認後に許可可能
-- `high` / `critical` と秘密情報保護の対象は、安全化なしでは送信不可
-- 安全化後の本文は `[メールアドレス]` や `[電話番号]` のような日本語ラベルへ置き換える
-- テキスト系ファイル添付前チェックはMVPとして対応
+これはChatGPTの下位互換ではありません。文章を生成するサービスではなく、AIへ貼る前のブラウザ内DLP補助ツールです。
 
 ## 主な機能
 
-現在の実装:
-
-- メールアドレス、電話番号、JWT、AWS Access Key風文字列、GitHub / Slack / Stripe / OpenAI / npm / OAuth token風文字列などの検出
-- 秘密鍵、`.env`形式の秘密情報、Basic認証URL、Webhook URL、DATABASE_URL風接続文字列、クレジットカード風番号、マイナンバー風文字列の検出
-- URL、IPv4、金額、社外秘・注意語、社内URL風文字列の検出
-- 日付、郵便番号、長いID風文字列の低リスク検出
-- 重複範囲を整理したマスキング
-- WebLLMによるブラウザ内の文脈リスク候補チェック
-- Chrome拡張を入れる前に試せる、紹介LP兼ミニデモ
-- Chrome拡張のOptions Page
-
-新方針で追加・刷新する機能:
-
-- ChatGPT / Claude / Gemini / Perplexity のsite adapter
-- 送信ボタンclick、Enter、Cmd+Enter / Ctrl+Enterの送信前インターセプト
-- 秘密情報保護の対象判定
-- risk score / policy判定
-- カテゴリ単位の確認モーダル
-- 日本語ラベルによる安全化
-- WebLLMによる文脈リスク候補チェック
-- 変換後テキストの再スキャン
-- `.txt` / `.md` / `.csv` / `.json` / `.yaml` / `.env` / `.log` / code系ファイルの添付前チェック
+- ChatGPT、Claude、Geminiの貼り付け前・送信前チェック
+- メール、電話、JWT、APIキー、秘密鍵、`.env`、Basic認証URL、カード番号、URL、IP、金額、注意語などのルール検出
+- 高リスク情報や秘密情報保護対象の安全化必須判定
+- 中リスク候補の詳細確認とユーザー選択
+- 小型日本語NERによる人名、組織名、場所、施設、製品、イベント候補
+- Ruri-v3-30mによる契約、人事、法務、財務、社内、未公開などの文脈候補
+- 候補をチェックボックスで選び、安全化して入力
+- 対象サイト、ルール、AI文脈チェックの設定
+- 署名付き静的ルール配信の検証
+- ユーザー本文を永続保存しない設計
 
 ## 使用イメージ
 
-1. ユーザーはChatGPT / Claude / Gemini / Perplexityの通常入力欄に文章を入力する
-2. AIまえチェックがブラウザ内で軽量検出し、必要な場合は送信前の確認モーダルを表示する
-3. 貼り付け本文にルール検出対象、または契約・採用・未公開などの文脈チェック候補がある場合は確認モーダルを表示する
-4. 文脈チェック候補では、貼り付け時は `AI文脈チェックも実行`、送信前は短い `AIチェック` ボタンを押した場合だけWebLLMを起動する
-5. ユーザーが送信ボタンやEnterで送信しようとする
-6. リスクがなければ通常どおり送信する
-7. 注意情報がある場合は送信前に確認モーダルを表示する
-8. ユーザーはカテゴリごとに安全化対象を確認する
-9. 具体的な値を `[メールアドレス]` や `[電話番号]` などの日本語ラベルへ置き換えて安全化する
-10. 安全化後のテキストを再スキャンし、秘密情報保護の対象が残っていない場合に送信する
+1. 対象サイトへ文章を貼り付ける、または送信する。
+2. ルールベース検出がブラウザ内ですぐに実行される。
+3. 必要に応じてAI文脈チェックを実行する。
+4. 検出結果と安全化後プレビューを確認する。
+5. ユーザーが選択した候補だけを安全化して入力する。
 
-## WebLLMを使っている理由
+## AI文脈チェック
 
-メールアドレスやAPIキーのような確定情報は、正規表現やルールベースで検出できます。一方で、顧客名、会社名、案件名、契約前情報、採用・給与・法務・金融などの文脈リスクは、単純な文字列パターンだけでは拾いにくいことがあります。
+### 役割分担
 
-そこでWebLLMを使い、ユーザーのブラウザ内で補助的な文脈チェックを行います。外部LLM APIは使いません。
+ルールベース検出が主役です。メールアドレス、電話番号、APIキー、JWT、秘密鍵など確定的に判定しやすい情報はルールで検出します。
 
-Chrome拡張では、対象サイトのContent Scriptから直接WebLLM Workerを起動せず、拡張originのbridge iframe内でWebLLMを実行します。これにより、ChatGPTなど対象ページ側のCSPやorigin制約に巻き込まれにくい構成にしています。
+AI文脈チェックは、ルールだけでは拾いにくい候補を補います。
 
-公開サイトのミニデモでは、初期表示とルール検出でWebLLM実行系を読み込みません。「AI文脈チェック」を明示的に実行した時だけruntimeとWorkerを遅延ロードし、WebLLMが失敗してもルール検出結果を維持します。
+- `jiting/xlm-roberta-ner-japanese_onnx` q8（revision `8d70fc4d277a84e59ccc70520ffd9daff66e66f0`）: 人名、組織名、場所、施設、製品、イベントなどの実体候補
+- `sirasagi62/ruri-v3-30m-ONNX` q8（revision `cdf9391f1ff2198daa8f63f7ccf97d7b3e7415a0`）: 契約、人事、法務、財務、社内、未公開、機密文脈などの候補
 
-## WebLLMでやっていること
+どちらもTransformers.js + ONNX Runtime WebのCPU/WASMで実行します。生成LLMではなく、文章生成、要約、依頼文生成、JSON解析は行いません。AI結果は候補であり、確定判定や安全の保証ではありません。
 
-- 正規表現では拾いにくい文脈リスクの候補検出
-- 顧客名、人名、会社名、案件名、プロジェクト名候補の検出
-- 契約、見積、給与、採用、法務、金融などのセンシティブ文脈の候補検出
-- 候補理由の日本語説明
-- 安全化前に確認できる追加の注意候補
-- ルール検出0件でも文脈ヒントがある貼り付けに対する、手動AI文脈チェック入口の提示
+### モデル取得と制限
 
-WebLLMによる依頼文の自動生成は、現時点では精度と安定性が十分ではないため削除しました。WebLLMの結果は、あくまで「追加で確認したい候補」として表示し、実際の置換はルールベースの安全化処理に寄せています。
+AI文脈チェックの初回利用時には、第三者のモデル配信元からモデルファイルを取得する場合があります。取得後はブラウザキャッシュや管理下の保存領域を利用します。モデルファイルは合計で大きくなる場合があり、保存容量、端末メモリ、CPU、ネットワーク制限によって利用できないことがあります。NERまたはRuriの片方だけが失敗した場合は部分結果を表示し、両方が失敗してもルールベース検出を維持します。
 
-## WebLLMでやっていないこと
+モデルの選定理由とライセンスは [docs/webllm-model-policy.md](docs/webllm-model-policy.md) と [NOTICE](NOTICE) に記載しています。ファイル名は過去のWebLLM実装との互換性のために残していますが、WebLLMとWebGPUは現行機能ではありません。
 
-- メールアドレス検出の主役にすること
-- APIキー検出の主役にすること
-- 電話番号検出の主役にすること
-- 最終的な安全判定を断言すること
-- 文章全体の要約を主目的にすること
-- 外部LLM APIへ本文を送ること
+## プライバシー設計
 
-## AI文脈チェックのモデルと実行負荷
+- 貼り付け本文、送信本文、ファイル本文、検出結果、placeholderMapを永続保存しない
+- 設定と検証済み署名付きルールキャッシュだけを `chrome.storage.local` に保存
+- ユーザー本文を外部LLM API、開発者サーバー、ルール配信サーバーへ送信しない
+- AI推論はユーザーのブラウザ内で実行する
+- ユーザー本文をconsole.logやエラー詳細へ出力しない
+- Analyticsやトラッキングを入れない
+- サポート報告や公開Issueに実APIキー、実トークン、実個人情報を含めない
 
-AIまえチェックでは、WebGPUで動くWebLLMモデルを `Qwen2.5-0.5B-Instruct-q4f16_1-MLC` にしています。WebLLM 0.2.84のprebuilt設定に含まれ、日本語を含む多言語とJSONなどの構造化出力を重視した0.5B級モデルであること、元モデルがApache License 2.0であることを選定理由にしています。
+ただし、モデルファイルの取得先、ブラウザのキャッシュ、保存容量、端末環境には依存します。安全を保証する製品ではなく、検出漏れや誤検出の可能性があります。
 
-ただし、prebuilt設定の必要VRAM目安は約945MBで、すべての内蔵GPUで動くわけではありません。標準プロファイルでGPU負荷系の失敗が起きた場合は、同じQwenモデルを低負荷プロファイルで1回だけ再実行します。それでも完了できない場合は、`Xenova/multilingual-e5-small` のq8版をONNX Runtime Web / WebAssemblyでCPU実行する文脈分類へ自動で切り替えます。
-
-CPUフォールバックは文章を生成せず、短い文の埋め込みと固定の業務文脈を比較し、契約、人事、法務、財務、社内情報、未公開情報の候補を補います。WebGPUを使わないため、今回確認したIntel UHD Graphics 620 / D3D11環境でも動作できる可能性がありますが、CPU命令、端末メモリ、保存領域、モデル取得状況によっては完了できない場合があります。
-
-Options Pageの「実行負荷」では `標準` と `低負荷` を選べます。どちらも同じQwen2.5 0.5Bモデルを使います。標準はcontext windowを2048、入力上限を1200文字、出力上限を384 tokens、候補上限を8件、低負荷はcontext windowを1536、入力上限を800文字、出力上限を256 tokens、候補上限を6件に抑えます。CPUフォールバックは互換性を保つため実装側で固定し、設定として保存しません。
-
-日本語の人名・会社名・案件名の抽出精度はモデルだけに依存させません。入力文に実在する敬称つき人名や `Project ...` 形式の案件名、採用・契約・未公開などの定型文脈は、軽量なローカル補助候補として統合します。WebLLMとCPU分類の両方が失敗しても、ルールベース検出とこの補助候補は維持します。
-
-WebLLMまたはCPU文脈チェックの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュを利用します。実行用のJavaScriptとONNX Runtime WebのWASMは拡張ZIPへ同梱し、外部LLM APIや外部の実行コードは利用しません。詳しい選定根拠とライセンスは [AI文脈チェックのモデル選定](docs/webllm-model-policy.md) と [NOTICE](NOTICE) に記載しています。
-
-## 技術スタック
-
-- pnpm workspace
-- TypeScript
-- React
-- React Aria Components
-- WXT
-- Vite
-- Tailwind CSS 4
-- Vitest
-- Playwright
-- Chrome Extension Manifest V3
-- `@mlc-ai/web-llm`
-- `@huggingface/transformers`
-- ONNX Runtime Web
-- Web Worker
-- WebGPU
-- WebAssembly
-- `chrome.storage.local`
-- GitHub Pages / GitHub Actionsによる署名付き静的ルール配信
-
-## アーキテクチャ図
+## アーキテクチャ
 
 ```mermaid
-flowchart LR
-  User["ユーザー入力 / 送信操作"] --> Adapter["apps/extension\nsite adapter"]
-  RuleSource["rules/latest.json\nGit管理された追加ルール"] --> BuildSign["GitHub Actions\nビルド時署名"]
-  BuildSign --> RuleApi["GitHub Pages\n署名付き静的JSON"]
-  RuleApi --> Verify["packages/core\n公開鍵で署名検証"]
-  Verify --> Core
-  Adapter --> Core["packages/core\nルール検出 / risk score / policy"]
-  Core --> Decision{"送信前判定"}
-  Decision -->|safe| Submit["通常送信"]
-  Decision -->|medium| Modal["確認モーダル\n詳細から許可可能"]
-  Decision -->|high / critical / 秘密情報保護| Block["安全化なしでは送信不可"]
-  Modal --> Transform["日本語ラベルへ安全化"]
-  Block --> Transform
-  Modal --> Llm["packages/llm\nWebLLM文脈候補"]
-  Llm -->|GPU失敗| Cpu["packages/llm\nCPU / WASM文脈分類"]
-  Llm --> Transform
-  Cpu --> Transform
-  Transform --> Rescan["変換後テキストを再スキャン"]
-  Rescan --> Adapter
-  Adapter --> Submit
-  Options["Options Page"] --> Storage["chrome.storage.local\n設定と検証済みルールキャッシュ"]
-  Demo["apps/site\n紹介LP兼ミニデモ"] --> Core
-  Demo --> Llm
+flowchart TD
+  Site[対象サイトのadapter] --> Core[Fast DLP Engine\nルールベース検出]
+  Core --> Policy[Policy Decision\nallow / confirm / sanitize_required]
+  Core --> LocalAI[Local Context Risk Engine\nNER + Ruri / CPU-WASM]
+  LocalAI --> Policy
+  Policy --> UI[確認モーダル]
+  UI --> Sanitizer[安全化・マスキング]
+  Sanitizer --> Site
+  Rules[署名付き静的ルールJSON] --> Core
 ```
 
 ## ディレクトリ構成
 
 ```text
-repository-root/
-  apps/
-    extension/  Chrome拡張本体
-    site/       静的LP、公開文書、Reactミニデモ
-  packages/
-    core/       ルールベース検出、署名検証、マスキング、型定義
-    llm/        WebLLM、CPU / WASM文脈分類、Worker、プロンプト、JSONパース
-    design-tokens/  サイトと拡張で共有するUI非依存トークン
-  rules/        Git管理する追加ルール定義
-  scripts/      GitHub Pages生成、ビルド時署名、公開QA
-  docs/
-    superpowers/plans/  実装計画
-  AGENTS.md
-  README.md
-  package.json
-  pnpm-workspace.yaml
+harumae/
+  apps/extension/   Chrome拡張、adapter、送信前確認UI
+  apps/site/        紹介LP、プライバシー、サポート、ミニデモ
+  packages/core/    ルール検出、マスキング、ポリシー、型
+  packages/llm/     NER、Ruri、CPU/WASM Worker、候補変換
+  docs/             設計、QA、公開・運用手順
+  scripts/          ビルド、ルール署名、QA
 ```
 
-公開サイトはVite MPAで構築し、LP・プライバシー・サポートは静的HTMLを基本にしています。Reactは操作が必要なミニデモだけへマウントし、説明ページではJavaScriptが無効でも本文と主要導線を読める構成です。
+## 技術スタック
+
+TypeScript、pnpm workspace、React、WXT、Vite、Tailwind CSS、React Aria、Vitest、Playwright、Chrome Extension Manifest V3、Transformers.js、ONNX Runtime Web、Web Worker、WebAssembly、`chrome.storage.local`、GitHub Pages、GitHub Actionsを使用します。
 
 ## セットアップ
 
-Chrome拡張はChrome 111以降を対象とします。AI文脈チェックには、これに加えてWebGPUを利用できる環境が必要です。
-
 ```bash
 pnpm install
+pnpm dev:extension
+pnpm dev:site
 ```
 
-PlaywrightのE2Eを実行する場合:
-
-```bash
-pnpm exec playwright install chromium
-```
+拡張機能は `pnpm build:extension` でビルドし、生成されたChrome用成果物を `chrome://extensions` の「パッケージ化されていない拡張機能を読み込む」から読み込みます。公開サイトはGitHub Pagesで配信します。
 
 ## 開発コマンド
 
 ```bash
-pnpm dev
-pnpm dev:extension
-pnpm dev:site
-pnpm build
-pnpm build:extension
-pnpm build:extension:e2e
-pnpm build:site
-pnpm build:pages
-pnpm package:extension
-pnpm qa:public-repo
-pnpm qa:public-docs
-pnpm qa:privacy-regression
-pnpm qa:performance-budget
-pnpm qa:webllm-model-policy
-pnpm qa:webllm-compatibility
-pnpm qa:rule-catalog
-pnpm qa:extension:e2e-harness
-pnpm qa:dependency-policy
-pnpm qa:tailwind4
-pnpm qa:release-policy
-pnpm qa:issue-pr-workflow
-pnpm qa:site:publication
-pnpm qa:github-pages
-pnpm qa:portfolio-case-study
-pnpm qa:extension:size
-pnpm qa:extension:manifest
-pnpm qa:chrome-store
-pnpm assets:screenshots
 pnpm test
-pnpm test:core
-pnpm test:llm
-pnpm test:pages
-pnpm test:e2e
-pnpm test:extension:e2e
-pnpm rules:keygen
-pnpm lint
-pnpm lint:report
-pnpm format:check
-pnpm format
 pnpm typecheck
+pnpm lint
+pnpm build
+pnpm qa:local-ai-model-policy
+pnpm qa:local-ai-compatibility
 ```
 
-`pnpm lint` は、Biomeによる一般的なlintと段階導入中のformatter確認に加え、文字化け、`any`、実行時の不要なconsole出力などのリポジトリ固有QAを実行します。warningを含む改善候補は`pnpm lint:report`で確認できます。適用範囲と除外理由は [Biome段階導入方針](docs/biome-adoption.md) にまとめています。
+CPU/WASMモデルの実ロードは通常のCIテストに必須とせず、Workerと推論結果をモックしたテストを実行します。実モデルは [ローカルAI実機確認メモ](docs/webllm-real-device-check.md) に沿って手動確認します。
 
-`pnpm package:extension` はChrome Web Store提出用のZIPを作成するためのコマンドです。`apps/extension/config/rule-delivery.release.json` の本番ルール配信URL・`keyId`・公開JWKがそろっていない場合は失敗します。
+## 検出対象と制限
 
-`pnpm build:extension:e2e` と `pnpm test:extension:e2e` は、ローカル模擬composerにだけlocalhost権限を追加したE2E専用buildを使います。Chrome Web Store提出用ZIPは通常の `pnpm package:extension` で作り、E2E専用buildからは作りません。
+確定情報はルールベースで検出します。AIは人名、組織名、場所、施設、製品、イベント、契約、人事、法務、財務、社内、未公開などの候補を補助します。検出漏れ・誤検出、固有名詞の取りこぼし、住所の部分検出があり得ます。PDF、docx、xlsx、画像OCRなどのファイル内容は安全判定済みとして扱いません。対応していないファイルは安全判定済みとは扱いません。外部OCR APIを使わない方針のため、画像OCRは現時点では実装しない判断です。
 
-`pnpm qa:public-repo` は、publicリポジトリへ実secret、private JWK、生成物、ログ、ZIPが混入していないかを確認するQAコマンドです。監査手順は [docs/public-repo-safety.md](docs/public-repo-safety.md) にまとめています。
+本ツールは情報漏洩を完全に防ぐものではありません。最終的に送信するかどうかはユーザーが判断してください。
 
-`pnpm qa:public-docs` は、README、LP、Chrome Web Store掲載文、プライバシー方針、サポート導線の重要URLとプライバシー表現がずれていないかを確認する公開文書同期QAです。
+## ルール配信
 
-`pnpm qa:privacy-regression` は、本文・検出結果・placeholderMapを永続保存しないこと、外部送信しないこと、`chrome.storage.local` の利用が設定保存に限られていることを確認するQAです。運用は [docs/privacy-regression.md](docs/privacy-regression.md) にまとめています。
+追加ルールはGitで管理し、CIで検証したうえでGitHub Pagesの署名付き静的JSON `GET /rules/latest.json` として配信します。拡張機能は公開鍵で署名を検証し、検証に失敗したルールを適用しません。本文はルール配信へ送信しません。
 
-`pnpm qa:performance-budget` は、ルールベース検出を主判定として即時に動かし、モーダル表示がWebLLMを待たないこと、WebLLM入力・候補数・タイムアウトの基準が明文化されていることを確認するQAです。性能基準は [docs/performance-budget.md](docs/performance-budget.md) にまとめています。ローカルの目安測定には `pnpm bench:rules` を使えます。
+## ドキュメント
 
-Options Pageの設定グループ、保存対象、`settingsVersion`、設定マイグレーション、初期化、設定バリデーションの考え方は [docs/options-settings.md](docs/options-settings.md) にまとめています。
+- 公開サイト: https://shunya-mabuchi.github.io/ai-mae-check/
+- サポート: https://shunya-mabuchi.github.io/ai-mae-check/support/
+- プライバシー: https://shunya-mabuchi.github.io/ai-mae-check/privacy/
+- [ローカルAIモデル選定](docs/webllm-model-policy.md)
+- [ローカルAI互換性マトリクス](docs/webllm-compatibility-matrix.md)
+- [ローカルAI実機確認](docs/webllm-real-device-check.md)
+- [ローカルAIエラー復旧](docs/webllm-error-recovery.md)
+- [プライバシーポリシー](docs/privacy-policy.md)
+- [脅威モデル](docs/threat-model.md)
+- [サイトadapter契約](docs/site-adapter-contract.md)
+- [第三者ライセンス告知](NOTICE)
+- [変更履歴](CHANGELOG.md)
 
-`pnpm qa:webllm-model-policy` は、WebLLMの単一モデルID、実行プロファイル、モデルライセンス確認文書が実装とずれていないかを確認するQAです。モデル選定方針は [docs/webllm-model-policy.md](docs/webllm-model-policy.md) にまとめています。
+## 公開状況
 
-`pnpm qa:webllm-compatibility` は、WebLLM対応環境、WebGPU非対応、保存領域不足、モデル取得失敗、本文を記録しない運用の記録フォーマットが維持されているか確認するQAです。実機確認の記録形式は [docs/webllm-compatibility-matrix.md](docs/webllm-compatibility-matrix.md) にまとめています。WebLLMの失敗理由、ユーザー向け復旧メッセージ、本文を含めない診断メモの扱いは [docs/webllm-error-recovery.md](docs/webllm-error-recovery.md) にまとめています。
+Chrome Web Storeの公開版は `0.1.2` です。次の提出候補は `0.2.0` で、全自動QAと実サイト手動確認を終えてから提出します。
 
-`pnpm qa:rule-catalog` は、同梱検出ルール、placeholder、配信ルールschema、署名付き配信前レビュー手順が検出ルール作成ガイド [docs/detection-rule-authoring.md](docs/detection-rule-authoring.md) と、DLP評価fixtureの追加基準 [docs/dlp-rule-quality-process.md](docs/dlp-rule-quality-process.md) からずれていないか確認するQAです。
+## ポートフォリオとして
 
-`pnpm qa:extension:e2e-harness` は、Chrome拡張をPlaywrightで読み込む拡張E2Eハーネス方針、ローカル模擬composerでの検証範囲、実装済みファイル、実サイト手動QAとの境界、E2E専用host permissionをリリースZIPへ混入させない方針が [docs/extension-e2e-harness.md](docs/extension-e2e-harness.md) とずれていないか確認するQAです。
-
-`pnpm qa:dependency-policy` は、依存関係アップデートとライセンス確認の運用ドキュメントが、現在のCIと公開前QAの前提からずれていないか確認するQAです。運用は [docs/dependency-maintenance.md](docs/dependency-maintenance.md) にまとめています。
-
-`pnpm qa:tailwind4` は、CSS-first設定、明示的なscan対象、semantic token、React Ariaのstate selectorがproduction CSSへ残っていることを確認するQAです。
-
-`pnpm qa:release-policy` は、rootと拡張のversion、CHANGELOG、リリース手順、Chrome Web Store再提出前QAがずれていないか確認するQAです。運用は [docs/release-process.md](docs/release-process.md) と [CHANGELOG.md](CHANGELOG.md) にまとめています。
-
-`pnpm qa:issue-pr-workflow` は、Issue/PRテンプレート、ラベル・マイルストーン運用、実データを書かない注意が維持されているかを確認するQAです。運用は [docs/issue-pr-workflow.md](docs/issue-pr-workflow.md) にまとめています。
-
-`pnpm qa:site:publication` は、公開サイトのtitle、description、OGP、favicon、web manifest、robots、sitemap、JavaScriptなしで読める公開文書、404、GitHub Pagesのサブパス配下にあるアセット参照を確認するQAです。運用は [docs/lp-seo-publication.md](docs/lp-seo-publication.md) にまとめています。
-
-`pnpm qa:portfolio-case-study` は、Chrome拡張が本体であること、ローカルDLPエンジン、WebLLM、署名付きルール配信、プライバシー設計の説明がケーススタディとして維持されているか確認するQAです。
-
-`pnpm qa:extension:size` は、Chrome Web Store提出ZIP、展開後の拡張本体、content script、WebLLM workerを含むJavaScript bundleのサイズが内部予算を超えていないか確認するQAです。予算は [docs/extension-size-budget.md](docs/extension-size-budget.md) にまとめています。
-
-`pnpm qa:extension:manifest` は、ビルド済み拡張のmanifestが初期対象サイト、最小権限、WebLLM bridge公開リソースを満たしているか確認するQAコマンドです。
-
-Chrome拡張の権限、CSP、web accessible resources、依存関係、WebLLMモデル説明の監査チェックリストは [docs/extension-security-audit.md](docs/extension-security-audit.md) にまとめています。
-
-AIまえチェックが守る範囲、守れない範囲、信頼境界、重大度の見方は [docs/threat-model.md](docs/threat-model.md) にまとめています。
-
-ローカルDLPランタイムとしての責務分離、各レイヤーの役割、既存実装との対応表は [docs/local-dlp-runtime.md](docs/local-dlp-runtime.md) にまとめています。
-
-「安全化」「マスク」「秘密情報保護」の関係は [docs/sanitization-concepts.md](docs/sanitization-concepts.md) にまとめています。ユーザー向けの基本表現は「安全化」に寄せ、内部方式は `placeholder` / `generalize` / `redact` として整理しています。`mask` などの旧内部名は互換性のために残しています。
-
-`pnpm qa:chrome-store` は、提出用ZIP、Chrome Web Store掲載情報、ストア用画像寸法、プライバシーポリシー、誇大表現の混入に加えて、本番ルール配信URL・`keyId`・公開JWKが提出物へ一致して埋め込まれているかをまとめて確認する公開前QAコマンドです。
-
-`pnpm rules:keygen` は、ルール配信API用のECDSA P-256鍵ペアを生成します。`pnpm qa:rules:production` は、本番の署名付きルールJSONが拡張側の公開鍵で検証できるかを確認します。署名方式とAPI仕様は [docs/rule-delivery.md](docs/rule-delivery.md) にまとめています。新しい検出ルールを追加するときの命名、riskLevel、placeholder、テスト観点は [docs/detection-rule-authoring.md](docs/detection-rule-authoring.md) に、fixtureとルール追加運用は [docs/dlp-rule-quality-process.md](docs/dlp-rule-quality-process.md) にまとめています。
-
-## CI
-
-GitHub Actionsで、PRと `main` 更新時に `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm package:extension`、公開前QA一式を実行します。Chrome Web Store公開前の提出物チェック、publicリポジトリ安全監査、公開文書同期、プライバシー回帰チェック、モデル/依存/リリース方針のずれもPR上で見えるようにしています。
-
-`main` ブランチは保護し、PR経由の更新と必須チェック通過を前提にしています。運用方針は [docs/branch-protection.md](docs/branch-protection.md) にまとめています。
-
-## Chrome拡張の読み込み方法
-
-1. `pnpm build:extension` を実行する
-2. Chromeで `chrome://extensions` を開く
-3. デベロッパーモードを有効にする
-4. 「パッケージ化されていない拡張機能を読み込む」を選ぶ
-5. `apps/extension/.output/chrome-mv3` を選択する
-
-Chrome Web Store提出時の説明文、権限理由、プライバシー方針、画像素材、公開後の運用チェックリストは [docs/chrome-web-store-release.md](docs/chrome-web-store-release.md) にまとめています。審査画面へ貼った文章は [docs/chrome-web-store-submission-copy.md](docs/chrome-web-store-submission-copy.md)、ストア画像の最終アップロード順は [docs/chrome-web-store-assets.json](docs/chrome-web-store-assets.json) で管理しています。差し戻し時の原因別対応は [docs/chrome-web-store-rejection-playbook.md](docs/chrome-web-store-rejection-playbook.md) にあります。
-
-サポートFAQと既知の制限は [docs/support-faq.md](docs/support-faq.md) にまとめています。問い合わせ時は、貼り付け本文、実APIキー、実トークン、実個人情報、顧客名、案件名を送らず、ダミー情報で再現してください。
-
-追加ルール取得で送るのは、GitHub Pages上の署名付き静的JSON `GET /rules/latest.json` に対する本文なしリクエストだけです。貼り付け本文・送信本文・検出結果・placeholderMap は送信しません。外部LLM APIも使わず、WebLLMの推論もブラウザ内で完結します。
-
-公開ページは以下です。
-
-- LP: <https://shunya-mabuchi.github.io/ai-mae-check/>
-- プライバシー方針: <https://shunya-mabuchi.github.io/ai-mae-check/privacy/>
-- サポート: <https://shunya-mabuchi.github.io/ai-mae-check/support/>
-
-0.1.2ではGitHub Pages移行用の鍵ペアを再発行し、秘密鍵はGitHub Environment Secretだけに保存しています。追加ルールはGit管理、CI検証、ビルド時署名を経て静的JSONとして公開します。運用メモは [docs/rule-delivery-operations.md](docs/rule-delivery-operations.md) にまとめています。
-
-プライバシー方針の本文は [docs/privacy-policy.md](docs/privacy-policy.md) にあります。
-
-ChatGPT / Claude / Gemini / Perplexity上での実サイトQA手順は [docs/extension-site-qa.md](docs/extension-site-qa.md)、SiteAdapterの契約とサイト別E2E確認項目は [docs/site-adapter-contract.md](docs/site-adapter-contract.md) にまとめています。WebLLMの実機確認観点は [docs/webllm-real-device-check.md](docs/webllm-real-device-check.md)、端末別のWebLLM対応環境とモデル互換性の記録は [docs/webllm-compatibility-matrix.md](docs/webllm-compatibility-matrix.md) に分けています。
-
-## 公開サイトの起動方法
-
-```bash
-pnpm dev:site
-```
-
-起動後、表示されたローカルURLをブラウザで開きます。紹介LP、静的なプライバシー・サポートページ、Reactで動くミニデモを同じ `apps/site` で確認できます。
-
-## デモサイトの公開方針
-
-ポートフォリオ用の紹介ページ兼デモは、GitHub Pagesで公開します。公開リポジトリ、標準のGitHub Actions、`github.io`ドメインを使うため、現時点では月額費用なしで運用できます。本文の検出処理はブラウザ内で行い、GitHub Pagesや外部LLM APIへ送りません。
-
-署名付き追加ルールはGitHub Actionsのビルド時に生成し、同じGitHub Pages成果物として公開します。公開URL、Secret、ロールバック、確認手順は [docs/github-pages.md](docs/github-pages.md) にまとめています。
-
-LP上では、Chrome Web Store公開中の状態を表示し、主CTAをストア追加ボタンにしています。GitHubとミニデモは、実装確認と導入前の補助体験として残しています。
-
-現在のGitHub Pages設定:
-
-1. `pnpm build:pages` で `apps/site/dist` と署名付きJSONを生成する
-2. `.github/workflows/github-pages.yml` が成果物をGitHub Pagesへデプロイする
-3. `privateJwk` はEnvironment `github-pages` のSecretにだけ保存する
-4. 公開後、`pnpm qa:rules:production` と [docs/portfolio-demo-qa.md](docs/portfolio-demo-qa.md) の1440px / 390px確認を行う
-
-## 検出対象
-
-高リスク:
-
-- メールアドレス
-- 日本の電話番号
-- JWT
-- AWS Access Key風文字列
-- GitHub token風文字列
-- Slack token風文字列
-- Stripe secret key風文字列
-- OpenAI API key風文字列
-- npm token風文字列
-- OAuth client secret風文字列
-- 秘密鍵
-- `.env`形式の秘密情報
-- Basic認証情報を含むURL
-- Webhook URL風文字列
-- DATABASE_URL風接続文字列
-- クレジットカード風番号
-- マイナンバー風文字列
-
-中リスク:
-
-- URL
-- IPv4アドレス
-- 金額
-- 社外秘・注意語を含む文
-- 社内URLっぽいもの
-
-低リスク:
-
-- 日付
-- 郵便番号
-- 長いID風文字列
-
-秘密情報保護の対象には、APIキー、private key、SSH/PEM秘密鍵、JWT、`.env`、DATABASE_URL、AWS/GitHub/Slack/Stripe/OpenAI/npm/OAuth token、Webhook URL、クレジットカード風番号、マイナンバー風文字列などを含めます。マイナンバー風文字列は誤検出を抑えるため、同じ行に「マイナンバー」または「個人番号」という文脈語がある場合に検出します。
-
-テキスト系ファイル添付前チェックのMVPでは、`.txt`, `.md`, `.csv`, `.json`, `.yaml`, `.yml`, `.env`, `.log`, `.js`, `.ts`, `.py`, `.go`, `.rb`, `.java`, `.html`, `.xml` をローカルで読み取り、同じルールベース検出とrisk scoreを適用します。PDF / docx / xlsx / 画像や画像OCRが必要なファイルは対象外であり、安全判定済みとは扱いません。画像OCRは、外部OCR APIを使うと本文非送信の方針と相性が悪く、ブラウザ内OCRもモデルサイズ、端末負荷、日本語精度の課題が大きいため、現時点では実装しない判断です。現時点では `input[type=file]` 経由の添付を対象にしており、対象サイト独自のドラッグ&ドロップ添付やクリップボード経由のファイル添付は動作保証の対象外です。非テキストファイル対応の検討方針は [docs/file-inspection-roadmap.md](docs/file-inspection-roadmap.md) にまとめています。
-
-## プライバシー設計
-
-- 貼り付け本文や送信本文を永続保存しません
-- 検出結果を永続保存しません
-- placeholderMapを永続保存しません
-- 送信履歴を保存しません
-- ファイル本文を保存しません
-- ユーザー設定と検証済みの署名付きリモートルールキャッシュだけを `chrome.storage.local` に保存します
-- 保存済み設定とリモートルールキャッシュはOptions Pageの「設定を初期化」から削除できます
-- ユーザー本文を `console.log` で出力しません
-- エラーにも本文を含めません
-- Analyticsやトラッキングを入れません
-- 外部LLM APIへ本文を送りません
-- ルール配信APIを使う場合も、取得するのは署名付きルール定義だけで、ユーザー本文は送りません
-- リモートルールキャッシュには署名付きルールJSON、`keyId`、`version`、有効期限だけを含め、本文や検出結果は含めません
-
-WebLLMを使う場合、検出とAI文脈チェックはユーザーのブラウザ内で実行されます。自前の推論サーバーやOpenAI API / Claude API / Gemini APIなどは利用しません。
-
-## モデルファイル取得に関する説明
-
-WebLLMの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュやブラウザ管理下の保存領域を利用します。
-
-貼り付け本文や送信本文は外部サーバーに送信されません。ただし、WebLLMのモデル配信元、ブラウザ実装、キャッシュやIndexedDBなどの保存領域には依存します。private browser / シークレットモードでは保存容量が制限され、`QuotaExceededError` などでAI文脈チェックを利用できない場合があります。
-
-ネットワーク、プロキシ、セキュリティソフト、広告ブロッカー、社内ネットワーク制限により、Hugging FaceやGitHub rawなどのモデル配信元へ接続できない場合、AI文脈チェックは失敗します。その場合もルールベース検出は引き続き利用できます。
-
-## セキュリティ上の注意
-
-- 本ツールは情報漏洩を完全に防ぐものではありません
-- 検出漏れや誤検出が発生する可能性があります
-- 最終的に送信するかどうかはユーザーが判断してください
-- WebLLMによる判定は補助的な候補提示です
-- WebGPU非対応環境ではCPU文脈チェックへ切り替えますが、端末条件によってはAI文脈チェックを完了できない場合があります
-- モデルロードには時間がかかる場合があります
-- 対象サイトのDOM変更によりadapterが動かなくなる可能性があります
-- 通常入力欄を使う設計のため、送信前に対象ページ側のJavaScriptや他の拡張機能が入力欄の文字列へアクセスできる可能性は残ります
-
-脆弱性やセキュリティ相談は [SECURITY.md](SECURITY.md) の手順に沿って報告してください。public Issueには、貼り付け本文、実APIキー、実トークン、実個人情報、顧客名、案件名などを書き込まないでください。
-
-## 実装上の前提・制限
-
-- 対象サイトは ChatGPT / Claude / Gemini / Perplexity です
-- 初期実装では `<all_urls>` を無条件に要求しません
-- 対象サイトごとのDOM構造に依存するため、継続的なadapter保守が必要です
-- `medium` は詳細確認後に許可可能です
-- `high` / `critical` と秘密情報保護の対象は、安全化なしでは送信不可にします
-- WebLLMが失敗しても、ルールベース検出は引き続き利用できます
-- WebLLMの出力形式が崩れた場合やGPU実行を完了できない場合でも、敬称つき人名、`Project ...` 形式の案件名、採用・契約・未公開などの定型文脈はブラウザ内の補助候補として表示します。ただし、網羅性を保証するものではありません
-- WebLLMとCPU分類モデルの実モデルロードはテストの必須条件にせず、CIではモデル出力をモックします
-- LLM候補は確定扱いせず、ユーザーが確認する候補として扱います
-- WebLLMは `Qwen2.5-0.5B-Instruct-q4f16_1-MLC` の単一モデルです。古いモデル指定はこのIDへ正規化し、別モデルへ暗黙に切り替えません。Options Pageの「低負荷」はモデル変更ではなく、context window、入力長、出力長、候補数を削減する実行プロファイルです
-- 拡張側では、iframe側のWebGPU事前チェックだけで停止せず、WebLLM Worker本体の初期化を試します。それでも `No available WebGPU adapters` が出る場合、WebLLMの再試行は行わずCPU / WebAssembly分類へ切り替えます。GPU経路を診断する場合は、`chrome://gpu` のDawn InfoでD3D12 backendが利用可能か、WebGPU StatusがBlocklistedではないかを確認してください
-- WebGPU推論中に `GPUBuffer.mapAsync`、`DXGI_ERROR_DEVICE_HUNG`、`Device was lost`、`Object has already been disposed` などの実行時エラーが出る場合があります。標準プロファイルでGPU負荷系の失敗を検出した場合は、同じQwenモデルを低負荷プロファイルで1回だけ再実行します。低負荷でも失敗した場合は `Xenova/multilingual-e5-small` のCPU / WebAssembly分類へ切り替え、それも失敗した場合はルールベース検出と軽量な補助候補を維持します
-- 開発中にChrome拡張を再読み込みした場合、既に開いているChatGPT / Claude / Gemini / Perplexity側のタブも再読み込みしてください。古いContent Scriptが残ると、AI文脈チェック用の拡張ページやWorkerを起動できない場合があります
-- 同じsurfaceが複数回出る場合、初期実装では出現箇所ごとにFinding化します
-- WebLLMによる依頼文生成は、精度が足りないため削除しました。WebLLMは文脈リスク候補の提示に限定します
-- ファイル添付前チェックはテキスト系ファイルのみが対象です。PDF / docx / xlsx / 画像や画像OCRが必要なファイルは解析せず、安全判定済みとは扱いません。画像OCRは現時点では実装しない判断です
-- ファイル添付前チェックは `input[type=file]` 経由の添付を対象にします。対象サイト独自のドラッグ&ドロップ添付やクリップボード経由のファイル添付は、サイト実装に依存するため動作保証の対象外です
-- ファイル本文は読み取り後のメモリ上でのみ扱い、永続保存やログ出力はしません
-- 0.1.1では署名付きルール配信の本番APIを有効化済みです。署名検証失敗時やネットワークエラー時は同梱ルールへフォールバックします
-- 商用利用を意識した構成ですが、利用するWebLLMモデル、CPU分類モデル、推論ランタイムごとのライセンスや配信条件は個別確認が必要です
-- Qwen2.5 0.5BはApache License 2.0、multilingual-e5-smallとONNX RuntimeはMIT Licenseです。第三者モデルと推論ランタイムに関する告知は [NOTICE](NOTICE) に記載します
-- 自前サーバーや外部API利用料は発生しない設計ですが、第三者のモデル配信元やブラウザ機能には依存します
-
-## GitHubでの開発運用
-
-このリポジトリはpublic前提で管理します。Issue / PR / README / テストデータには、実在の個人情報、実APIキー、実トークンを入れません。
-
-基本の流れ:
-
-1. 作業内容をIssueにする
-2. Issue番号に紐づくブランチを作る
-3. 実装、テスト、ビルドを行う
-4. PRを作成する
-5. 確認後にマージする
-
-今回の方針転換は次のIssueに分割しています。
-
-- #17 方針転換ロードマップ
-- #18 core: risk score / policy / transform model
-- #19 extension: site adapter / send interception
-- #20 extension: paste guard / confirmation UI
-- #21 extension: category confirmation modal
-- #22 llm: WebLLM文脈チェック
-- #23 extension: text file preflight
-- #24 demo/docs: LP兼デモとREADME更新
-
-## ライセンス
-
-コードとドキュメントは、特に別記がない限りMIT Licenseです。
-
-ロゴ、アイコン、Chrome Web Store用画像、README掲載スクリーンショットなどのブランド・掲載素材は、別プロダクトの素材としてそのまま再利用しないでください。詳細は [LICENSE](LICENSE) と [docs/license-policy.md](docs/license-policy.md) にまとめています。
-
-## 今後追加したい機能
-
-- Chrome Web Store公開後の導線、GitHub Release、サポート導線の継続メンテナンス
-- ChatGPT / Claude / Gemini / Perplexity adapterの実サイト継続QA
-- Chrome拡張E2EハーネスのCI安定化と実サイトQA対応表の継続更新
-- 署名付きルール配信の運用メモに沿ったルールカタログの継続拡充
-- PDF / docx / xlsxなど、非テキストファイルを安全判定済みと誤解させない検査方針の検討。画像OCRは外部API利用、サイズ、端末負荷、日本語精度の課題が大きいため、現時点では実装しない判断です。詳細は [docs/file-inspection-roadmap.md](docs/file-inspection-roadmap.md) に整理しています
+Chrome Web Storeで公開するChrome拡張を本体に、ルールベースDLP、ポリシー判定、CPU/WASMローカルAI、署名付きルール配信、プライバシー設計、実サイトQA、CIを組み合わせています。バックエンドやユーザー本文のデータベースを持たず、必要な処理をブラウザ内で完結させる設計判断も含めて公開しています。
 
 ## スクリーンショット
 
-READMEでは、ビルド済みChrome拡張をPlaywrightのE2E用composer上で実際に動かし、モーダルを切り出した画像を掲載します。画像内のデータはすべて実在しないダミーです。
-
-![貼り付け前の安全化確認モーダル](docs/assets/readme/extension-paste-modal.png)
-
-![送信前の安全化確認モーダル](docs/assets/readme/extension-send-modal.png)
-
-![ルール検出なし時のAI文脈チェック確認モーダル](docs/assets/readme/extension-context-modal.png)
-
-紹介LP、ミニデモ、Options Pageの掲載用画像案は [docs/store-assets.md](docs/store-assets.md) に分けて管理しています。READMEには、ビルド済み拡張を実際に動かした画面だけを掲載します。
-
-ポートフォリオ用LP兼ミニデモの1440px / 390px確認結果は [docs/portfolio-demo-qa.md](docs/portfolio-demo-qa.md) にまとめています。
-
-公開サイト、拡張モーダル、Chrome Web Store向けの掲載画像は `pnpm assets:screenshots` で、ダミー文を使って一括再生成できます。
+最新のChrome拡張モーダル画面は `docs/assets/store/` とREADME掲載用画像で管理します。公開サイトの画像だけでなく、拡張機能本体の貼り付け前確認、安全化確認、AI文脈チェックの3画面を掲載します。

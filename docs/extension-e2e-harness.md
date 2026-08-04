@@ -2,7 +2,7 @@
 
 AIまえチェックはChrome拡張が本体です。ユニットテスト、デモE2E、manifest QAに加えて、実際の拡張を読み込んだ状態でpaste検知、送信前確認、安全化して貼り付け、安全化して送信を確認するE2Eハーネスを用意しています。
 
-0.1.1時点で、ローカルの模擬composerページを使う最小ハーネスは実装済みです。実サイトのログイン状態に依存しないため、Chrome Web Store提出用ZIPやWebLLM実モデルロードとは切り離して確認できます。
+0.1.1時点で、ローカルの模擬composerページを使う最小ハーネスは実装済みです。実サイトのログイン状態に依存しないため、Chrome Web Store提出用ZIPやローカルAI実モデルロードとは切り離して確認できます。
 
 SiteAdapterの責務、ChatGPT / Claude / Gemini / PerplexityごとのDOM差分、実サイト手動QAの観点は [SiteAdapter契約とE2E確認項目](site-adapter-contract.md) にまとめています。
 
@@ -34,7 +34,7 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 - MV3拡張は通常のheadless Chromiumで制約があるため、まずheaded実行を前提にします
 - CIで実行する場合は、GitHub Actions上のLinux runnerでheaded相当の実行が安定するかを別途確認します
 - extension IDは一時プロファイルやkey設定で変わる可能性があるため、テストではID固定に依存しすぎません
-- WebLLM実モデルロードはE2E必須条件にしません
+- ローカルAI実モデルロードはE2E必須条件にしません
 
 ## ローカル模擬ページ
 
@@ -96,7 +96,7 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 
 - ChatGPT / Claude / Gemini / Perplexityへのログイン
 - 実サイトの本番DOMに依存した完全E2E
-- WebLLM実モデルロード
+- ローカルAI実モデルロード
 - 実APIキー、実トークン、実在個人情報を使うテスト
 - Chrome Web Store審査画面の操作
 
@@ -108,9 +108,9 @@ const context = await chromium.launchPersistentContext(userDataDir, {
 | デモE2E | LP兼ミニデモの体験確認 | `apps/site` | 実行する |
 | 拡張E2Eハーネス | 実拡張を読み込んだpaste/submit確認 | ローカル模擬composer | 手動CIから段階的に導入 |
 | 実サイト手動QA | 対象サイトDOMと実操作の確認 | ChatGPT / Claude / Gemini / Perplexity | CIには載せない |
-| WebLLM実機確認 | WebGPU、モデル取得、保存領域の確認 | 実ブラウザ/実端末 | CIには載せない |
+| ローカルAI実機確認 | WebGPU、モデル取得、保存領域の確認 | 実ブラウザ/実端末 | CIには載せない |
 
-実サイト手動QAは [extension-site-qa.md](extension-site-qa.md) に残します。WebLLM実機確認は [webllm-real-device-check.md](webllm-real-device-check.md) と [webllm-compatibility-matrix.md](webllm-compatibility-matrix.md) に記録します。
+実サイト手動QAは [extension-site-qa.md](extension-site-qa.md) に残します。ローカルAI実機確認は [webllm-real-device-check.md](webllm-real-device-check.md) と [webllm-compatibility-matrix.md](webllm-compatibility-matrix.md) に記録します。
 
 ## 実装済みコマンド
 
@@ -136,7 +136,7 @@ pnpm test:extension:e2e
 - 1回あたりの実行時間は約1分20秒から1分30秒で、通常PRの待ち時間として許容できる
 - リリース用manifestへE2E専用host permissionを混入させないQAを維持している
 
-WebLLM実モデルロードは引き続きCI必須条件にしません。WebLLMはGPU、保存領域、ネットワークに依存するため、実機確認と互換性マトリクスで扱います。
+ローカルAI実モデルロードは引き続きCI必須条件にしません。ローカルAIはGPU、保存領域、ネットワークに依存するため、実機確認と互換性マトリクスで扱います。
 
 ### 2026-06-24時点の判断
 
@@ -147,7 +147,7 @@ PR/push時の自動CIへ昇格します。
 - 修正後の手動CIで3回連続成功した
 - E2E専用buildは `.output-e2e` に分離され、リリースZIPへ混入しない
 - `pnpm qa:extension:manifest` と `pnpm qa:chrome-store` でリリースmanifestの権限を継続確認できる
-- WebLLM実モデルロードは対象外のままなので、CIの不安定要因を増やしすぎない
+- ローカルAI実モデルロードは対象外のままなので、CIの不安定要因を増やしすぎない
 
 継続監視条件:
 
@@ -159,7 +159,7 @@ PR/push時の自動CIへ昇格します。
 
 - `workflow_dispatch` で必要なタイミングにも実行できる
 - `xvfb-run` 上でheaded相当のChromiumを起動する
-- WebLLM実モデルロードは必須条件にしない
+- ローカルAI実モデルロードは必須条件にしない
 - E2E専用host permissionがリリースZIPへ混入しない方針を維持する
 
 ## 最小シナリオ

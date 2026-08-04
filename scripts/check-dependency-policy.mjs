@@ -53,7 +53,7 @@ for (const command of [
   "pnpm lint",
   "pnpm qa:public-repo",
   "pnpm qa:public-docs",
-  "pnpm qa:webllm-model-policy",
+  "pnpm qa:local-ai-model-policy",
   "pnpm qa:tailwind4",
   "pnpm qa:extension:size",
   "pnpm qa:extension:manifest",
@@ -63,7 +63,7 @@ for (const command of [
 }
 
 for (const term of [
-  "@mlc-ai/web-llm",
+  "@huggingface/transformers",
   "WXT",
   "Vite",
   "React",
@@ -81,8 +81,8 @@ for (const licenseName of ["MIT", "Apache-2.0", "MPL-2.0", "CC-BY-4.0"]) {
 }
 
 assertIncludes(licensePolicy, "第三者ライブラリ", paths.licensePolicy);
-assertIncludes(modelPolicy, "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", paths.modelPolicy);
-assertIncludes(modelPolicy, "Xenova/multilingual-e5-small", paths.modelPolicy);
+assertIncludes(modelPolicy, "jiting/xlm-roberta-ner-japanese_onnx", paths.modelPolicy);
+assertIncludes(modelPolicy, "sirasagi62/ruri-v3-30m-ONNX", paths.modelPolicy);
 assertIncludes(modelPolicy, "ONNX Runtime Web", paths.modelPolicy);
 assertIncludes(workflow, "pnpm qa:public-repo", paths.workflow);
 assertIncludes(workflow, "pnpm qa:tailwind4", paths.workflow);

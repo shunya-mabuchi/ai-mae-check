@@ -34,13 +34,13 @@ READMEと `docs/` 配下の文章は、特に別記がない限りMIT Licenseで
 
 デモやテストに含まれるメールアドレス、電話番号、APIキー風文字列、会社名、人物名、プロジェクト名はダミーです。実在の秘密情報や個人情報を意図していません。
 
-## 依存関係とWebLLMモデル
+## 依存関係とローカルAIモデル
 
-依存ライブラリ、WebLLM、WebLLMが取得するモデルファイルは、それぞれの配布元ライセンスに従います。このリポジトリのMIT Licenseは、第三者ライブラリや第三者モデルのライセンスを上書きしません。
+依存ライブラリ、ローカルAI、ローカルAIが取得するモデルファイルは、それぞれの配布元ライセンスに従います。このリポジトリのMIT Licenseは、第三者ライブラリや第三者モデルのライセンスを上書きしません。
 
-モデルや依存関係を追加・変更する場合は、ライセンス、商用利用可否、配布元、WebLLM prebuilt対応、ブラウザ内実行の安定性を確認します。WebLLMモデルの選定理由と確認手順は [webllm-model-policy.md](webllm-model-policy.md) にまとめています。
+モデルや依存関係を追加・変更する場合は、ライセンス、商用利用可否、配布元、Transformers.js対応、ブラウザ内実行の安定性を確認します。ローカルAIモデルの選定理由と確認手順は [webllm-model-policy.md](webllm-model-policy.md) にまとめています。
 
-現在のWebLLMモデルはApache License 2.0の `Qwen/Qwen2.5-0.5B-Instruct` をMLC形式へ量子化した `Qwen2.5-0.5B-Instruct-q4f16_1-MLC` です。CPUフォールバックでは、MIT Licenseの `intfloat/multilingual-e5-small` をTransformers.js向けONNXへ変換した `Xenova/multilingual-e5-small` を利用します。第三者モデルとONNX Runtime Webに関する告知はリポジトリルートの [NOTICE](../NOTICE) に記載します。
+現在のローカルAIモデルは、Apache License 2.0の `sirasagi62/ruri-v3-30m-ONNX` と、モデルカードでMIT Licenseと表示されている `jiting/xlm-roberta-ner-japanese_onnx` です。前者は文脈候補、後者は日本語NER候補に使います。第三者モデルとONNX Runtime Webに関する告知はリポジトリルートの [NOTICE](../NOTICE) に記載します。
 
 依存関係アップデート時の確認コマンド、`pnpm licenses list --json` の使い方、PRチェックリストは [dependency-maintenance.md](dependency-maintenance.md) にまとめています。
 

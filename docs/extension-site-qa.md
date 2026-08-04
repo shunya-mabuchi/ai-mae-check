@@ -5,7 +5,7 @@
 ## 目的
 
 - 対象サイト上でpaste検知、送信前確認、マスク貼り付け、送信ブロックが動くことを確認する
-- WebLLMの実機動作、WebGPU非対応、モデル取得失敗時の表示を確認する
+- ローカルAIの実機動作、CPU/WASM初期化失敗、モデル取得失敗時の表示を確認する
 - 対象サイトのDOM変更でadapterが壊れていないか確認する
 - Perplexityも対象サイトとして確認する
 
@@ -27,7 +27,7 @@ Chromeで次を行います。
 4. `apps/extension/.output/chrome-mv3` を読み込む
 5. 初回インストール時にAIまえチェックのOptions Pageが開くことを確認する
 6. 開かない場合は拡張アイコンをクリックしてOptions Pageを開く
-7. 拡張機能が有効、対象サイトがON、WebLLMは手動実行になっていることを確認する
+7. 拡張機能が有効、対象サイトがON、ローカルAIは手動実行になっていることを確認する
 8. 確認対象サイトのタブを再読み込みする
 
 ## 静的manifest QA
@@ -40,7 +40,7 @@ Chromeで次を行います。
 - host permissionsがChatGPT / Claude / Gemini / Perplexityに限定されている
 - `<all_urls>` を要求していない
 - Content Scriptのmatchesが対象サイトに限定されている
-- WebLLM bridge用の `llm-worker.js` と `llm-bridge.html` がweb accessible resourcesに含まれている
+- ローカルAI bridge用の `llm-worker.js` と `llm-bridge.html` がweb accessible resourcesに含まれている
 - 拡張アイコンがmanifestに設定されている
 - 拡張アイコンをクリックするとOptions Pageを開ける
 
@@ -127,8 +127,8 @@ https://user:password@example.com/internal/proposal
 - [ ] 文脈リスクサンプルを入力し、送信ボタンclickで送信前確認が出る
 - [ ] 通常Enterの送信操作で送信前確認が出る
 - [ ] AI文脈チェックを手動実行できる
-- [ ] WebLLM結果の候補が「確定」ではなく候補として表示される
-- [ ] WebLLMが失敗してもルールベース検出結果は残る
+- [ ] ローカルAI結果の候補が「確定」ではなく候補として表示される
+- [ ] ローカルAIが失敗してもルールベース検出結果は残る
 
 ## Claude確認
 
@@ -183,7 +183,7 @@ https://user:password@example.com/internal/proposal
 - [ ] AI文脈チェックを手動実行できる
 - [ ] キャンセル時に送信されない
 
-## WebLLM実機確認
+## ローカルAI実機確認
 
 通常環境:
 
@@ -194,7 +194,7 @@ https://user:password@example.com/internal/proposal
 - [ ] 候補なしの場合も「安全を保証するものではありません」と表示される
 - [ ] 人名候補、顧客名候補、案件名候補がチェック対象として表示される
 
-WebGPU非対応またはadapterなし:
+CPU/WASM実行環境の初期化失敗:
 
 - [ ] 「このブラウザまたは端末ではAI文脈チェックを利用できません。ルールベースの検出は引き続き利用できます。」が表示される
 - [ ] ルールベース検出とマスク貼り付けは利用できる
@@ -215,7 +215,7 @@ Worker / bridge失敗:
 
 ## 失敗時の診断メモ
 
-本文そのものはIssueやPRへ貼らないでください。記録するのは、サイト、操作、期待結果、実際の表示、エラー種別、ブラウザ/OS、WebGPU可否だけにします。
+本文そのものはIssueやPRへ貼らないでください。記録するのは、サイト、操作、期待結果、実際の表示、エラー種別、ブラウザ/OS、CPU/WASM可否だけにします。
 
 記録例:
 
@@ -227,7 +227,7 @@ Worker / bridge失敗:
 エラー種別: adapter/editor検出失敗
 Chrome: 148.x
 OS: Windows
-WebGPU: adapterあり
+CPU/WASM: 実行可能
 補足: 本文は記録しない
 ```
 
@@ -248,8 +248,8 @@ paste確認: pass / fail / skipped
 送信ボタン確認: pass / fail / skipped
 Enter送信確認: pass / fail / skipped
 安全化後のReact反映: pass / fail / skipped
-WebLLM確認: pass / fail / unsupported / skipped
-エラー分類: none / adapter-editor / adapter-submit / insertion / policy / webllm-webgpu / webllm-fetch / other
+ローカルAI確認: pass / fail / unsupported / skipped
+エラー分類: none / adapter-editor / adapter-submit / insertion / policy / local-ai-wasm / local-ai-fetch / other
 本文なしの補足: 例「送信ボタンのaria-labelが変わっていた」
 Issue化: なし / #xxx
 ```
@@ -267,7 +267,7 @@ Issue化: なし / #xxx
 - 操作種別
 - 期待結果と実際の表示
 - エラー分類
-- Chrome / OS / WebGPU可否
+- Chrome / OS / CPU/WASM可否
 - 本文を含まないDOM手がかり。例: `textarea` が `contenteditable` に変わった、送信ボタンのaria-labelが消えた
 
 Issueへ書かない情報:
@@ -284,7 +284,7 @@ Issueへ書かない情報:
 
 本文、検出文字列、placeholderMap、現在のページURL全文は記録していません。
 
-| 対象サイト | paste確認 | 送信前確認 | 安全化後の入力反映 | WebLLM確認 | 補足 |
+| 対象サイト | paste確認 | 送信前確認 | 安全化後の入力反映 | ローカルAI確認 | 補足 |
 | --- | --- | --- | --- | --- | --- |
 | ChatGPT | 通過 | 通過 | 通過 | 一部補強が必要 | AI文脈チェックで人名・社名候補の取りこぼしを確認。#455-#459で補強する |
 | Claude | 通過 | 通過 | 通過 | 一部補強が必要 | AI文脈チェックで人名・社名候補の取りこぼしを確認。#455-#459で補強する |
@@ -299,5 +299,5 @@ Issueへ書かない情報:
 - [ ] Claudeのチェックリストを一通り確認した
 - [ ] Geminiのチェックリストを一通り確認した
 - [ ] Perplexityのチェックリストを一通り確認した
-- [ ] WebLLM通常環境、WebGPU非対応、モデル取得失敗時の表示を確認した
+- [ ] ローカルAI通常環境、CPU/WASM初期化失敗、モデル取得失敗時の表示を確認した
 - [ ] 失敗があれば、本文を含めずにIssue化した

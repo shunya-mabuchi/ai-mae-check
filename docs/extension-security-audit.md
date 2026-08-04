@@ -1,8 +1,8 @@
 # Chrome拡張 権限・CSP・依存関係監査チェックリスト
 
-AIまえチェックをChrome Web Storeへ継続的に出すための、権限、CSP、web accessible resources、依存関係、WebLLMモデル説明の監査チェックリストです。
+AIまえチェックをChrome Web Storeへ継続的に出すための、権限、CSP、web accessible resources、依存関係、ローカルAIモデル説明の監査チェックリストです。
 
-バージョンアップ前、権限変更時、WebLLMや依存関係の更新時、Chrome Web Store差し戻し時に使います。
+バージョンアップ前、権限変更時、ローカルAIや依存関係の更新時、Chrome Web Store差し戻し時に使います。
 
 ## 監査の原則
 
@@ -12,7 +12,7 @@ AIまえチェックをChrome Web Storeへ継続的に出すための、権限�
 - 外部LLM APIを使わない
 - ユーザー本文、送信本文、検出結果、placeholderMapを開発者サーバーへ送らない
 - 外部から任意コードを取得して実行しない
-- WebLLMモデルファイル取得とリモートコードを混同しない説明にする
+- ローカルAIモデルファイル取得とリモートコードを混同しない説明にする
 - 依存関係とモデルのライセンス説明をREADME、LP、ストア掲載文と矛盾させない
 
 ## manifest監査
@@ -32,7 +32,7 @@ AIまえチェックをChrome Web Storeへ継続的に出すための、権限�
 - [ ] `<all_urls>` が入っていない
 - [ ] `localhost` や `127.0.0.1` がリリースmanifestに入っていない
 - [ ] `content_scripts.matches` がhost permissionsと同じ対象サイトに収まっている
-- [ ] `web_accessible_resources` はWebLLM bridgeやworkerなど必要なファイルだけを公開している
+- [ ] `web_accessible_resources` はローカルAI bridgeやworkerなど必要なファイルだけを公開している
 - [ ] アイコン、名称、説明がChrome Web Store掲載文と一致している
 
 確認コマンド:
@@ -54,8 +54,8 @@ pnpm qa:chrome-store
 
 - [ ] `content_security_policy.extension_pages` が必要最小限である
 - [ ] `script-src` に不要な外部originがない
-- [ ] `worker-src` がWebLLM Worker実行に必要な範囲だけである
-- [ ] `wasm-unsafe-eval` など、WebLLM実行上必要な指定がある場合は理由をPR本文に書く
+- [ ] `worker-src` がローカルAI Worker実行に必要な範囲だけである
+- [ ] `wasm-unsafe-eval` など、ローカルAI実行上必要な指定がある場合は理由をPR本文に書く
 - [ ] 外部から任意JavaScriptを取得して実行する実装がない
 - [ ] CSP変更時はChrome Web Storeのリモートコード説明も確認する
 
@@ -81,7 +81,7 @@ pnpm qa:chrome-store
 - [ ] 拡張ロジックとして外部JavaScriptを取得して実行していない
 - [ ] ルール配信は署名付きJSONだけを取得し、公開鍵で検証する
 - [ ] ルール配信へユーザー本文、検出結果、placeholderMapを送っていない
-- [ ] WebLLMモデルファイルは推論用モデルデータとして説明し、本文送信ではないことを明記する
+- [ ] ローカルAIモデルファイルは推論用モデルデータとして説明し、本文送信ではないことを明記する
 - [ ] Chrome Web Store掲載文、プライバシーポリシー、README、LPで説明が一致している
 
 関連:
@@ -107,7 +107,7 @@ pnpm qa:chrome-store
 - [ ] Chrome拡張本体に不要なフロントエンド/開発用依存が混入していない
 - [ ] 新規依存のライセンスが商用利用と公開配布に支障ない
 - [ ] GPLなど配布条件が重いライセンスを含む場合は利用箇所を明確にする
-- [ ] WebLLMモデルや推論関連の依存は、モデルライセンスと別に確認する
+- [ ] ローカルAIモデルや推論関連の依存は、モデルライセンスと別に確認する
 - [ ] `pnpm-lock.yaml` の差分が意図した依存更新だけである
 - [ ] 依存更新PRに、権限、CSP、bundle size、Chrome Web Store説明への影響を書いている
 
@@ -120,7 +120,7 @@ pnpm qa:extension:size
 pnpm build:extension
 ```
 
-## WebLLMモデルとライセンス監査
+## ローカルAIモデルとライセンス監査
 
 対象:
 
@@ -133,14 +133,14 @@ pnpm build:extension
 - [ ] 標準モデルIDがREADMEと実装で一致している
 - [ ] モデル配信元に依存する可能性を説明している
 - [ ] 外部LLM APIを使わない説明になっている
-- [ ] WebGPU非対応時もルールベース検出が使える
-- [ ] モデルライセンス、商用利用可否、WebLLM prebuilt対応を確認している
+- [ ] CPU/WASM初期化失敗時もルールベース検出が使える
+- [ ] モデルライセンス、商用利用可否、ローカルAI prebuilt対応を確認している
 - [ ] 実機確認メモに本文を含めていない
 
 確認コマンド:
 
 ```bash
-pnpm qa:webllm-model-policy
+pnpm qa:local-ai-model-policy
 pnpm test:llm
 ```
 
@@ -160,7 +160,7 @@ pnpm test:llm
 - [ ] `storage` の理由が設定保存に限定されている
 - [ ] host permissionsの理由が対象サイト上の貼り付け/送信前確認に限定されている
 - [ ] 「完全に安全」「100%検出」「すべて防ぐ」などの表現がない
-- [ ] 本文非保存、外部LLM API不使用、WebLLMモデル取得の説明が矛盾していない
+- [ ] 本文非保存、外部LLM API不使用、ローカルAIモデル取得の説明が矛盾していない
 - [ ] 画像に実在の個人情報、実APIキー、実トークンが含まれていない
 
 確認コマンド:

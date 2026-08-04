@@ -35,7 +35,7 @@ Chrome Web Storeの審査で差し戻しが発生した場合の原因分類、�
 - [ ] ホスト権限
 - [ ] プライバシー申告
 - [ ] リモートコード扱い
-- [ ] WebLLMモデル取得の説明
+- [ ] ローカルAIモデル取得の説明
 - [ ] 説明文・画像・メタデータ
 - [ ] テスト手順
 - [ ] その他
@@ -67,7 +67,7 @@ Chrome Web Storeの審査で差し戻しが発生した場合の原因分類、�
 | 権限 | `apps/extension/wxt.config.ts`, `docs/chrome-web-store-submission-copy.md` | `storage` などの権限理由が単一用途と一致しているか |
 | ホスト権限 | `apps/extension/wxt.config.ts`, `docs/extension-site-qa.md` | ChatGPT / Claude / Gemini / Perplexity以外を不要に要求していないか |
 | リモートコード | `apps/extension/wxt.config.ts`, `packages/llm`, `docs/chrome-web-store-release.md` | 外部から任意コードを取得して実行していない説明になっているか |
-| WebLLMモデル取得 | `docs/chrome-web-store-submission-copy.md`, `docs/privacy-policy.md`, `README.md` | モデルファイル取得と本文非送信の説明が分かれているか |
+| ローカルAIモデル取得 | `docs/chrome-web-store-submission-copy.md`, `docs/privacy-policy.md`, `README.md` | モデルファイル取得と本文非送信の説明が分かれているか |
 | プライバシー申告 | `docs/privacy-policy.md`, `docs/chrome-web-store-submission-copy.md` | 収集データ、保存データ、送信しないデータの表現が一致しているか |
 | データ使用 | Developer Dashboard, `docs/privacy-policy.md` | Webサイトのコンテンツなど必要なカテゴリを正しく申告しているか |
 | 説明文 | `docs/chrome-web-store-listing.json`, `docs/chrome-web-store-submission-copy.md` | 「完全に安全」「100%検出」などの誇大表現がないか |
@@ -89,7 +89,7 @@ Chrome Web Storeの審査で差し戻しが発生した場合の原因分類、�
 - 検出結果、placeholderMap、送信履歴を永続保存しない
 - 開発者サーバーや外部LLM APIへ本文を送信しない
 - 設定と検証済みリモートルールキャッシュだけを `chrome.storage.local` に保存する
-- WebLLMモデル取得と本文送信を混同しない表現になっている
+- ローカルAIモデル取得と本文送信を混同しない表現になっている
 - Chrome Web Storeのデータ使用申告、LP、README、プライバシーポリシーが矛盾していない
 
 ## リモートコード指摘時の説明テンプレート
@@ -97,17 +97,17 @@ Chrome Web Storeの審査で差し戻しが発生した場合の原因分類、�
 ```text
 この拡張機能は、拡張機能のロジックとして外部から任意のコードを取得して実行しません。
 
-WebLLMまたはCPU文脈チェックの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。これは推論用モデルデータであり、ユーザーの貼り付け本文や送信本文を外部LLM APIへ送信するものではありません。実行用のJavaScriptとWebAssemblyは拡張機能パッケージへ同梱します。
+ローカルAIの初回利用時には、ローカル推論用のモデルファイルを取得する場合があります。これは推論用モデルデータであり、ユーザーの貼り付け本文や送信本文を外部LLM APIへ送信するものではありません。実行用のJavaScriptとWebAssemblyは拡張機能パッケージへ同梱します。
 
 ルール配信を有効にしている場合も、取得するのは署名付きルールJSONのみです。拡張機能は公開鍵で署名を検証し、ユーザー本文、検出結果、placeholderMap、送信履歴をルール配信Workerへ送信しません。
 ```
 
-## WebLLMモデル取得の説明テンプレート
+## ローカルAIモデル取得の説明テンプレート
 
 ```text
-AI文脈チェックではWebLLMとCPU / WebAssemblyフォールバックを利用し、検出と推論はユーザーのブラウザ内で実行されます。初回利用時にはローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュやブラウザ管理下の保存領域を利用します。
+AI文脈チェックではローカルAIとCPU / WebAssemblyフォールバックを利用し、検出と推論はユーザーのブラウザ内で実行されます。初回利用時にはローカル推論用のモデルファイルを取得する場合があります。モデル取得後はブラウザキャッシュやブラウザ管理下の保存領域を利用します。
 
-モデルファイル取得は、貼り付け本文を外部LLM APIや開発者サーバーへ送信する処理ではありません。WebGPU非対応時はCPU文脈チェックへ切り替えますが、保存容量、端末メモリ、プロキシやセキュリティソフトの制限により完了できない場合があります。その場合もルールベース検出は引き続き利用できます。
+モデルファイル取得は、貼り付け本文を外部LLM APIや開発者サーバーへ送信する処理ではありません。CPU/WASMの初期化、保存容量、端末メモリ、プロキシやセキュリティソフトの制限により完了できない場合があります。その場合もルールベース検出は引き続き利用できます。
 ```
 
 ## 再提出手順

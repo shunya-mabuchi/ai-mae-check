@@ -24,13 +24,13 @@ LP上のミニデモではなく、実際にChatGPT / Claude / Gemini / Perplexi
 
 ### 2. ルールベース検出を主役にする
 
-メールアドレス、電話番号、JWT、AWS Access Key風文字列、GitHub / Slack / Stripe / OpenAI / npm / OAuth token風文字列、秘密鍵、`.env`形式の秘密情報、Basic認証URL、Webhook URL、DATABASE_URL風接続文字列、クレジットカード風番号、マイナンバー風文字列などは、WebLLMではなく `packages/core` のルールベース検出で扱います。
+メールアドレス、電話番号、JWT、AWS Access Key風文字列、GitHub / Slack / Stripe / OpenAI / npm / OAuth token風文字列、秘密鍵、`.env`形式の秘密情報、Basic認証URL、Webhook URL、DATABASE_URL風接続文字列、クレジットカード風番号、マイナンバー風文字列などは、ローカルAIではなく `packages/core` のルールベース検出で扱います。
 
-高リスク情報や秘密情報保護対象は、WebLLMの判断を待たずに安全側へ倒します。これは速度と説明可能性を優先した判断です。
+高リスク情報や秘密情報保護対象は、ローカルAIの判断を待たずに安全側へ倒します。これは速度と説明可能性を優先した判断です。
 
-### 3. WebLLMは補助的な候補提示に限定する
+### 3. ローカルAIは補助的な候補提示に限定する
 
-WebLLMは、顧客名、会社名、案件名、契約・採用・給与・法務など、正規表現だけでは拾いにくい文脈上の注意候補を見つけるために使います。WebLLMの結果は「確定」ではなく「候補」として表示し、ユーザーが安全化対象に含めるか確認します。
+ローカルAIは、顧客名、会社名、案件名、契約・採用・給与・法務など、正規表現だけでは拾いにくい文脈上の注意候補を見つけるために使います。ローカルAIの結果は「確定」ではなく「候補」として表示し、ユーザーが安全化対象に含めるか確認します。
 
 ### 4. 本文を保存しない
 
@@ -50,7 +50,7 @@ flowchart LR
   Core --> Policy["Policy Decision\nallow / confirm / sanitize_required"]
   Policy --> Modal["確認モーダル\n安全化プレビュー"]
   Modal --> Insert["安全化して入力"]
-  Modal --> LLM["packages/llm\nWebLLM Context Risk Engine"]
+  Modal --> LLM["packages/llm\nローカルAI Context Risk Engine"]
   LLM --> Modal
   Rules["GitHub Pages\n署名付き静的ルール配信"] --> Verify["公開鍵で署名検証"]
   Verify --> Core
@@ -67,7 +67,7 @@ flowchart LR
 - Vitest
 - Playwright
 - Chrome Extension Manifest V3
-- WebLLM / WebGPU / Web Worker
+- ローカルAI / WebGPU / Web Worker
 - GitHub Pages / GitHub Actions
 - pnpm workspace
 
@@ -99,19 +99,19 @@ sequenceDiagram
 - Analyticsやトラッキングを入れない
 - `chrome.storage.local` は設定と検証済みリモートルールキャッシュに限定する
 - GitHub Issue / PR / README / テストデータに実データを入れない
-- WebLLMモデル取得時には通信が発生する場合があることを明記する
+- ローカルAIモデル取得時には通信が発生する場合があることを明記する
 
 ## 制限
 
-AIまえチェックは情報漏洩を完全に防ぐものではありません。検出漏れや誤検出は発生し得ます。WebLLMによる文脈チェックは補助的な候補提示であり、最終的な送信判断はユーザーが行います。
+AIまえチェックは情報漏洩を完全に防ぐものではありません。検出漏れや誤検出は発生し得ます。ローカルAIによる文脈チェックは補助的な候補提示であり、最終的な送信判断はユーザーが行います。
 
-また、WebGPU非対応環境ではCPU / WebAssembly文脈チェックへ切り替えます。CPU側も完了できない場合でも、ルールベース検出は引き続き利用できます。
+また、AI文脈チェックはCPU / WebAssemblyで実行します。モデル取得や初期化に失敗した場合でも、ルールベース検出は引き続き利用できます。
 
 ## ポートフォリオとして見てほしい点
 
 - Chrome拡張の実サイト介入とReact系入力欄への挿入処理
 - UIではなく `packages/core` に検出エンジンを分離したこと
-- WebLLMを安全判定の中心に置かず、補助候補として扱ったこと
+- ローカルAIを安全判定の中心に置かず、補助候補として扱ったこと
 - 本文を保存しないプライバシー設計
 - GitHub Pagesを使った無料運用と署名付きルール配信の拡張余地
 - Chrome Web Store公開、掲載素材、プライバシーポリシー、サポート導線、QAコマンドまで整えたこと
