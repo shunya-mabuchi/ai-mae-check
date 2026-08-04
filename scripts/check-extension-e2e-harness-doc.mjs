@@ -64,7 +64,7 @@ for (const phrase of [
   "contenteditable",
   "ChatGPT / Claude / Gemini / Perplexity",
   "実サイト手動QA",
-  "WebLLM実モデルロード",
+  "ローカルAI実モデルロード",
   "CIには載せない",
   "workflow_dispatch",
   "xvfb-run",

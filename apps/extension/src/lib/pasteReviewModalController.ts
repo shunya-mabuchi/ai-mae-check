@@ -1,6 +1,5 @@
 import { evaluateDlpPolicy } from "@ai-mae-check/core";
 import type { ContextRiskCandidate } from "@ai-mae-check/llm";
-import { isLlmBridgeModelReady } from "./llmBridgeClient";
 import {
   PASTE_REVIEW_LLM_INITIAL_MESSAGE,
   shouldAutoRunPasteReviewLlm
@@ -23,7 +22,6 @@ import {
   renderReviewFindingList
 } from "./reviewListRenderers";
 import { runReviewLlm } from "./reviewLlmRunner";
-import { resolveLlmModelId } from "./settings";
 import {
   createPasteReviewInsertText,
   createPasteReviewPreviewText
@@ -63,7 +61,6 @@ export function initializePasteReviewModalController(
   let disposed = false;
   const selectedRuleFindingIds = createInitialSelectedFindingIds(options.detection.findings);
   const selectedCandidateIds = new Set<string>();
-  const llmModelId = resolveLlmModelId(options.settings.llm);
 
   llmStatus.textContent = PASTE_REVIEW_LLM_INITIAL_MESSAGE;
 
@@ -113,8 +110,6 @@ export function initializePasteReviewModalController(
       await runReviewLlm({
         enabled: options.settings.llm.enabled,
         inputText: options.inputText,
-        modelId: llmModelId,
-        profileId: options.settings.llm.resourceMode,
         existingFindings: options.detection.findings,
         llmStatus,
         llmButton,
@@ -159,15 +154,9 @@ export function initializePasteReviewModalController(
   render();
 
   if (mode === "default" && options.settings.llm.enabled && options.settings.llm.mode === "auto") {
-    void isLlmBridgeModelReady(llmModelId, options.settings.llm.resourceMode)
-      .then((modelReady) => {
-        if (isActive() && shouldAutoRunPasteReviewLlm(mode, options.settings.llm, modelReady)) {
-          void runLlm("auto");
-        }
-      })
-      .catch(() => {
-        // 準備状態を取得できなくても、手動実行とルールベース検出は維持する。
-      });
+    if (shouldAutoRunPasteReviewLlm(mode, options.settings.llm)) {
+      void runLlm("auto");
+    }
   }
 
   return {

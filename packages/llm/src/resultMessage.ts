@@ -1,4 +1,3 @@
-import { createJsonParseFallbackMessage, isJsonParseLlmErrorMessage } from "./errors";
 import type { LlmErrorDetail } from "./types";
 
 export const CONTEXT_ANALYSIS_FOUND_MESSAGE = "AI文脈チェックで注意候補が見つかりました。";
@@ -11,18 +10,10 @@ export interface CreateContextAnalysisResultMessageOptions {
   errorDetail?: LlmErrorDetail | undefined;
 }
 
-export function createContextAnalysisCompleteMessage(candidateCount: number, summary?: string): string {
-  if (isJsonParseLlmErrorMessage(summary)) {
-    return createJsonParseFallbackMessage(candidateCount);
-  }
-
+export function createContextAnalysisCompleteMessage(candidateCount: number, _summary?: string): string {
   return candidateCount > 0 ? CONTEXT_ANALYSIS_FOUND_MESSAGE : CONTEXT_ANALYSIS_EMPTY_MESSAGE;
 }
 
 export function createContextAnalysisResultMessage(options: CreateContextAnalysisResultMessageOptions): string {
-  if (options.errorDetail?.kind === "json_parse") {
-    return createJsonParseFallbackMessage(options.candidateCount);
-  }
-
   return createContextAnalysisCompleteMessage(options.candidateCount, options.summary);
 }

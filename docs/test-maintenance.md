@@ -1,18 +1,18 @@
 # テスト保守方針
 
-最終更新日: 2026-06-24
+最終更新日: 2026-08-05
 
-AIまえチェックでは、DLP判定、WebLLM、Chrome拡張の送信前介入を小さな単位で検証します。テストが大きくなりすぎると、ユーザーシナリオ、異常系、WebLLMの状態遷移が読み取りにくくなるため、分割基準を明文化します。
+AIまえチェックでは、DLP判定、ローカルAI、Chrome拡張の送信前介入を小さな単位で検証します。テストが大きくなりすぎると、ユーザーシナリオ、異常系、ローカルAIの状態遷移が読み取りにくくなるため、分割基準を明文化します。
 
 ## 基本方針
 
 - テスト名は、実装都合ではなくユーザーが遭遇するシナリオを表す。
 - 共有fixtureは増やしすぎず、読み手が入力、操作、期待結果を追える範囲に留める。
-- WebLLM実モデルロードは通常テストに含めず、モックと実機確認メモで分ける。
+- ローカルAI実モデルロードは通常テストに含めず、モックと実機確認メモで分ける。
 - Chrome拡張E2Eは、対象サイトの実DOMではなくmock composerで安定シナリオを守る。
 - 肥大化したテストは、シナリオ単位に分割する。
 
-## 2026-06-24時点の判断
+## 2026-08-05時点の判断
 
 現時点では、次の大きいテストを今すぐ物理分割しない判断にします。理由は、直近でE2E CIをPR必須相当に昇格したばかりで、まず安定性を観測したいこと、また分割だけで大きな差分を作るより、次にシナリオを追加するタイミングで責務別に切る方が安全なためです。
 
@@ -20,10 +20,10 @@ AIまえチェックでは、DLP判定、WebLLM、Chrome拡張の送信前介入
 
 | ファイル | 現在の役割 | 上限 | 分割する場合の単位 |
 | --- | --- | ---: | --- |
-| `apps/extension/tests/llmBridgePage.test.ts` | LLM bridge pageの起動、リクエスト、異常系 | 450行 | lifecycle / request handling / error handling |
-| `packages/llm/tests/llm.test.ts` | WebLLM周辺の統合的なユニット検証 | 440行 | parser / candidate conversion / analyzer fallback |
+| `apps/extension/tests/llmBridgePage.test.ts` | CPU/WASM Worker bridgeの起動、リクエスト、異常系 | 180行 | Worker lifecycle / request handling / error handling |
+| `packages/llm/tests/wasmAnalyzer.test.ts` | NERとRuriを統合する分析処理 | 220行 | NER / Ruri classification / partial failure |
 | `apps/extension/e2e/extension.spec.ts` | mock composer上の拡張E2E | 390行 | paste scenarios / submit scenarios / keyboard scenarios |
-| `packages/llm/tests/runtimeService.test.ts` | LocalLlmRuntimeServiceの状態管理 | 330行 | prepare / analyze / error state |
+| `packages/llm/tests/residualMasking.test.ts` | 軽量な固有名詞・業務文脈候補の補完 | 160行 | person and company / project / business context |
 
 ## 分割する条件
 

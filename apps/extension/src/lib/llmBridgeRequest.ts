@@ -1,59 +1,21 @@
-import type { AnalyzeContextOptions, LlmExecutionProfileId } from "@ai-mae-check/llm";
+import type { AnalyzeContextOptions } from "@ai-mae-check/llm";
 import type { LlmBridgeRequest } from "./llmBridgeMessages";
 
 export interface CreateLlmBridgeAnalyzeRequestOptions
-  extends Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates"> {
+  extends Pick<AnalyzeContextOptions, "maxCandidates"> {
   requestId: string;
   inputText: string;
-  modelId: string;
-  profileId: LlmExecutionProfileId;
 }
 
-export type LlmBridgeAnalyzeRequest = Extract<LlmBridgeRequest, { type: "analyze" }>;
-export type LlmBridgeWasmAnalyzeRequest = Extract<LlmBridgeRequest, { type: "analyze-wasm" }>;
-export type LlmBridgeModelStateRequest = Extract<LlmBridgeRequest, { type: "model-state" }>;
+export type LlmBridgeAnalyzeRequest = LlmBridgeRequest;
 
 export function createLlmBridgeAnalyzeRequest(options: CreateLlmBridgeAnalyzeRequestOptions): LlmBridgeAnalyzeRequest {
   return {
-    type: "analyze",
+    type: "analyze-context",
     requestId: options.requestId,
     inputText: options.inputText,
-    modelId: options.modelId,
-    profileId: options.profileId,
     options: {
-      ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
       ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
     }
-  };
-}
-
-export function createLlmBridgeWasmAnalyzeRequest(options: {
-  requestId: string;
-  inputText: string;
-  maxCandidates?: number;
-}): LlmBridgeWasmAnalyzeRequest {
-  return {
-    type: "analyze-wasm",
-    requestId: options.requestId,
-    inputText: options.inputText,
-    options: {
-      ...(typeof options.maxCandidates === "number"
-        ? { maxCandidates: options.maxCandidates }
-        : {})
-    }
-  };
-}
-
-export function createLlmBridgeModelStateRequest(
-  requestId: string,
-  modelId: string,
-  profileId: LlmExecutionProfileId
-): LlmBridgeModelStateRequest {
-  return {
-    type: "model-state",
-    requestId,
-    modelId,
-    profileId,
-    options: {}
   };
 }

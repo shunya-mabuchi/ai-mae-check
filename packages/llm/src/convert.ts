@@ -6,6 +6,10 @@ const placeholderPrefixByCategory: Record<ContextRiskCategory, string> = {
   person_name: "PERSON",
   company_name: "COMPANY",
   customer_name: "CUSTOMER",
+  location_name: "LOCATION",
+  facility_name: "FACILITY",
+  product_name: "PRODUCT",
+  event_name: "EVENT",
   project_name: "PROJECT",
   contract_info: "CONTRACT_INFO",
   hr_info: "HR_INFO",
@@ -64,6 +68,25 @@ function findOccurrences(input: string, surface: string, includeAllOccurrences: 
   return occurrences;
 }
 
+function findCandidateOccurrences(
+  input: string,
+  candidate: ContextRiskCandidate,
+  includeAllOccurrences: boolean
+): Array<{ start: number; end: number }> {
+  if (
+    typeof candidate.start === "number" &&
+    typeof candidate.end === "number" &&
+    candidate.start >= 0 &&
+    candidate.end > candidate.start &&
+    candidate.end <= input.length &&
+    input.slice(candidate.start, candidate.end) === candidate.surface
+  ) {
+    return [{ start: candidate.start, end: candidate.end }];
+  }
+
+  return findOccurrences(input, candidate.surface, includeAllOccurrences);
+}
+
 export function convertContextCandidatesToFindings(
   input: string,
   candidates: ContextRiskCandidate[],
@@ -84,7 +107,7 @@ export function convertContextCandidatesToFindings(
       continue;
     }
 
-    const occurrences = findOccurrences(input, candidate.surface, includeAllOccurrences);
+    const occurrences = findCandidateOccurrences(input, candidate, includeAllOccurrences);
     const prefix = placeholderPrefixByCategory[candidate.category];
 
     for (const occurrence of occurrences) {

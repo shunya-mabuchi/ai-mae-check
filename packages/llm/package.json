@@ -14,14 +14,6 @@
       "types": "./dist/shared.d.ts",
       "import": "./dist/shared.js"
     },
-    "./runtime": {
-      "types": "./dist/runtime.d.ts",
-      "import": "./dist/runtime.js"
-    },
-    "./worker": {
-      "types": "./dist/worker.d.ts",
-      "import": "./dist/worker.js"
-    },
     "./wasm-worker": {
       "types": "./dist/wasm-worker.d.ts",
       "import": "./dist/wasm-worker.js"
@@ -35,7 +27,6 @@
   "dependencies": {
     "@ai-mae-check/core": "workspace:*",
     "@huggingface/transformers": "3.8.1",
-    "@mlc-ai/web-llm": "^0.2.79",
     "onnxruntime-web": "1.22.0-dev.20250409-89f8206ba4"
   }
 }

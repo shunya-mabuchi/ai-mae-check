@@ -11,6 +11,6 @@ describe("extensionRuntime", () => {
   });
 
   it("chrome.runtime.getURLが使えない場合は診断可能な日本語エラーにする", () => {
-    expect(() => getExtensionResourceUrl("llm-worker.js", undefined)).toThrow(EXTENSION_RUNTIME_UNAVAILABLE_MESSAGE);
+    expect(() => getExtensionResourceUrl("llm-bridge.html", undefined)).toThrow(EXTENSION_RUNTIME_UNAVAILABLE_MESSAGE);
   });
 });

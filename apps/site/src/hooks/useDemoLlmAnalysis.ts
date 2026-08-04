@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, type Dispatch } from "react";
+import { useCallback, useEffect, type Dispatch } from "react";
 import { detectSensitiveText, type DetectionResult } from "@ai-mae-check/core";
 import {
   classifyLlmError,
-  isContextAnalysisExecutionError,
-  type LocalLlmRuntimeService
+  isContextAnalysisExecutionError
 } from "@ai-mae-check/llm";
 import {
   createEmptyInputLlmUiState,
@@ -15,7 +14,7 @@ import {
 import { selectCandidateIdsByConfidence } from "../lib/demoMasking";
 import { resolveLlmSelectedFindingIds } from "../lib/demoSelection";
 import type { DemoWorkbenchAction } from "../lib/demoWorkbenchState";
-import { createDemoLlmRuntimeService } from "../lib/demoLlmRuntimeLoader";
+import { analyzeDemoContext, disposeDemoContextWorker } from "../lib/demoContextWorkerClient";
 
 export interface RunDemoLlmDetectionOptions {
   text: string;
@@ -30,44 +29,8 @@ export interface DemoLlmAnalysisViewModel {
 }
 
 export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
-  const runtimeServiceRef = useRef<LocalLlmRuntimeService | null>(null);
-  const runtimeServicePromiseRef = useRef<Promise<LocalLlmRuntimeService> | null>(
-    null
-  );
-
   useEffect(() => {
-    return () => {
-      const currentService = runtimeServiceRef.current;
-      const pendingService = runtimeServicePromiseRef.current;
-      runtimeServiceRef.current = null;
-      runtimeServicePromiseRef.current = null;
-      void (async () => {
-        const service = currentService ?? (await pendingService);
-        await service?.dispose();
-      })().catch(() => undefined);
-    };
-  }, []);
-
-  const disposeRuntimeService = useCallback(async () => {
-    const pendingService = runtimeServicePromiseRef.current;
-    runtimeServicePromiseRef.current = null;
-    const service = runtimeServiceRef.current ?? (await pendingService);
-    await service?.dispose();
-    runtimeServiceRef.current = null;
-  }, []);
-
-  const getRuntimeService = useCallback(async () => {
-    if (runtimeServiceRef.current) {
-      return runtimeServiceRef.current;
-    }
-
-    runtimeServicePromiseRef.current ??= createDemoLlmRuntimeService();
-    try {
-      runtimeServiceRef.current = await runtimeServicePromiseRef.current;
-      return runtimeServiceRef.current;
-    } finally {
-      runtimeServicePromiseRef.current = null;
-    }
+    return disposeDemoContextWorker;
   }, []);
 
   const runLlmDetection = useCallback(
@@ -100,17 +63,15 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
       });
 
       try {
-        const runtimeService = await getRuntimeService();
-        const result = await runtimeService.analyze({
-          input: text,
-          existingFindings: currentDetection.findings,
-          onProgress: (progress) =>
+        const result = await analyzeDemoContext(
+          text,
+          (progress) =>
             dispatch({
               type: "llm_progressed",
               requestId,
               uiState: createProgressLlmUiState(progress)
             })
-        });
+        );
 
         if (isContextAnalysisExecutionError(result)) {
           dispatch({
@@ -126,10 +87,14 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
                   errorDetail: null
                 }
           });
-          await disposeRuntimeService();
+          disposeDemoContextWorker();
           return;
         }
 
+        const uiState = createLlmResultUiState(
+          result.candidates.length,
+          result.errorDetail
+        );
         dispatch({
           type: "llm_completed",
           requestId,
@@ -137,10 +102,12 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
           selectedCandidateIds: selectCandidateIdsByConfidence(
             result.candidates
           ),
-          uiState: createLlmResultUiState(
-            result.candidates.length,
-            result.errorDetail
-          )
+          uiState: result.warnings?.length
+            ? {
+                ...uiState,
+                message: `${uiState.message} 一部のブラウザ内モデルは利用できませんでした。`
+              }
+            : uiState
         });
       } catch (error) {
         dispatch({
@@ -148,10 +115,10 @@ export function useDemoLlmAnalysis(): DemoLlmAnalysisViewModel {
           requestId,
           uiState: createErrorLlmUiState(classifyLlmError(error))
         });
-        await disposeRuntimeService();
+        disposeDemoContextWorker();
       }
     },
-    [disposeRuntimeService, getRuntimeService]
+    []
   );
 
   return { runLlmDetection };

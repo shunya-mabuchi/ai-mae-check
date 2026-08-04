@@ -25,7 +25,7 @@ describe("CPU/WASM文脈分類", () => {
     const prototypes = getWasmContextPrototypeTexts();
 
     expect(prototypes).toHaveLength(6);
-    expect(prototypes.every((prototype) => prototype.startsWith("query: "))).toBe(true);
+    expect(prototypes.every((prototype) => prototype.startsWith("トピック: "))).toBe(true);
   });
 
   it("最も近い業務文脈を候補へ変換し、既存の人名候補も統合する", () => {
@@ -62,6 +62,20 @@ describe("CPU/WASM文脈分類", () => {
       segmentEmbeddings: [[0.2, 0.2, 0.2, 0.2, 0.2, 0.2]],
       prototypeEmbeddings: Array.from({ length: 6 }, (_, index) => unitVector(index)),
       confidenceThreshold: 0.9
+    });
+
+    expect(candidates).toEqual([]);
+  });
+
+  it("上位カテゴリの差が小さい曖昧な意味分類は追加しない", () => {
+    const input = "公開済みの一般的な案内文を整えてください。";
+    const candidates = createWasmContextCandidates({
+      input,
+      segments: [{ surface: input }],
+      segmentEmbeddings: [[0.71, 0.7, 0, 0, 0, 0]],
+      prototypeEmbeddings: Array.from({ length: 6 }, (_, index) => unitVector(index)),
+      confidenceThreshold: 0.6,
+      includeResidualCandidates: false
     });
 
     expect(candidates).toEqual([]);

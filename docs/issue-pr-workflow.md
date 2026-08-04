@@ -36,7 +36,7 @@ IssueやPRのタイトル、本文もpublicリポジトリのポートフォリ�
 pnpm qa:github-metadata
 ```
 
-このQAはGitHub CLIを使うため、実行前に `gh auth status` で認証状態を確認します。技術用語としての `WebLLM`、`Chrome Web Store`、`SiteAdapter` などは許容し、`docs:`、`feat:`、`Summary`、`Validation` のようなテンプレート由来の英語を修正対象にします。本文、実APIキー、実トークン、顧客名、案件名、個人情報はIssueやPRへ書きません。
+このQAはGitHub CLIを使うため、実行前に `gh auth status` で認証状態を確認します。技術用語としての `ローカルAI`、`Chrome Web Store`、`SiteAdapter` などは許容し、`docs:`、`feat:`、`Summary`、`Validation` のようなテンプレート由来の英語を修正対象にします。本文、実APIキー、実トークン、顧客名、案件名、個人情報はIssueやPRへ書きません。
 
 ## ラベル運用
 
@@ -66,7 +66,7 @@ pnpm qa:github-metadata
 最小限のマイルストーン:
 
 - `0.1.1`: 署名付きルール配信と公開前QA整備
-- `0.2.0`: ローカルDLPランタイム再設計、PolicyDecision分離、WebLLM改善
+- `0.2.0`: ローカルDLPランタイム再設計、PolicyDecision分離、ローカルAI改善
 - `post-0.2`: Perplexity adapter、非テキストファイル検査、ポートフォリオ強化
 
 マイルストーンは、Chrome Web Store提出バージョンと連動させます。提出しない調査Issueは、無理にリリースマイルストーンへ入れません。

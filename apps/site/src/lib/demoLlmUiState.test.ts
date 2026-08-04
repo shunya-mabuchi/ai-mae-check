@@ -13,8 +13,7 @@ import {
   createLlmResultUiState,
   createLlmStatusPanelViewModel,
   createLoadingLlmUiState,
-  createProgressLlmUiState,
-  createWebGpuUnavailableLlmUiState
+  createProgressLlmUiState
 } from "./demoLlmUiState";
 
 describe("demoLlmUiState", () => {
@@ -26,19 +25,11 @@ describe("demoLlmUiState", () => {
     });
   });
 
-  it("空入力とWebGPU非対応をエラー状態にする", () => {
+  it("空入力をエラー状態にする", () => {
     expect(createEmptyInputLlmUiState()).toMatchObject({
       status: "error",
       message: "先に送信前テキストを入力してください。",
       errorDetail: null
-    });
-
-    expect(createWebGpuUnavailableLlmUiState()).toMatchObject({
-      status: "error",
-      errorDetail: {
-        kind: "webgpu",
-        hint: "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。"
-      }
     });
   });
 
@@ -66,49 +57,51 @@ describe("demoLlmUiState", () => {
 
     expect(createLlmCompleteUiState(0)).toEqual({
       status: "empty",
-      message: "AI文脈チェックでは追加の注意候補は見つかりませんでした。ただし、安全を保証するものではありません。",
+      message:
+        "AI文脈チェックでは追加の注意候補は見つかりませんでした。ただし、安全を保証するものではありません。",
       errorDetail: null
     });
   });
 
-  it("エラー詳細をUI stateに変換する", () => {
+  it("エラー詳細をUI状態へ変換する", () => {
     const errorDetail: LlmErrorDetail = {
-      kind: "json_parse",
-      message: "AI文脈チェックの結果を読み取れませんでした。",
-      hint: "必要なら再実行してください。"
+      kind: "wasm",
+      message: "AI文脈チェック用のWebAssembly実行環境を利用できませんでした。",
+      hint: "ページを再読み込みしてから再試行してください。"
     };
 
     expect(createErrorLlmUiState(errorDetail)).toEqual({
       status: "error",
-      message: "AI文脈チェックの結果を読み取れませんでした。",
+      message: "AI文脈チェック用のWebAssembly実行環境を利用できませんでした。",
       errorDetail
     });
   });
 
-  it("json_parseはデモでも非致命的な結果として扱う", () => {
+  it("WASM実行エラーを実行失敗として扱う", () => {
+    const errorDetail: LlmErrorDetail = {
+      kind: "wasm",
+      message: "AI文脈チェック用のWebAssembly実行環境を利用できませんでした。",
+      hint: "ページを再読み込みしてから再試行してください。"
+    };
     const result: ContextAnalysisResult = {
       candidates: [],
-      summary: "AI文脈チェックの結果を読み取れませんでした。",
+      summary: errorDetail.message,
       rawText: "",
-      modelId: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+      modelId: "sirasagi62/ruri-v3-30m-ONNX",
       elapsedMs: 10,
-      error: "AI文脈チェックの結果を読み取れませんでした。",
-      errorDetail: {
-        kind: "json_parse",
-        message: "AI文脈チェックの結果を読み取れませんでした。",
-        hint: "必要なら再実行してください。"
-      }
+      error: errorDetail.message,
+      errorDetail
     };
 
-    expect(isContextAnalysisExecutionError(result)).toBe(false);
+    expect(isContextAnalysisExecutionError(result)).toBe(true);
     expect(createLlmResultUiState(result.candidates.length, result.errorDetail)).toEqual({
-      status: "empty",
-      message: "ルールベース検出結果で安全化できます。AI文脈チェックは必要に応じて再実行してください。",
-      errorDetail: null
+      status: "error",
+      message: errorDetail.message,
+      errorDetail
     });
   });
 
-  it("WorkerやWebGPUの失敗はデモでも実行不能エラーとして扱う", () => {
+  it("Workerの失敗も実行不能エラーとして扱う", () => {
     const result: Pick<ContextAnalysisResult, "error" | "errorDetail"> = {
       error: "AI文脈チェックを実行できませんでした。",
       errorDetail: {

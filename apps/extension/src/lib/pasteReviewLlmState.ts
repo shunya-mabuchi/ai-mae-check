@@ -2,7 +2,6 @@ import {
   createContextAnalysisCompleteMessage,
   createContextAnalysisResultMessage,
   selectContextCandidateIdsByConfidence,
-  isJsonParseLlmErrorMessage,
   type ContextAnalysisResult,
   type ContextRiskCandidate,
   type LlmErrorDetail
@@ -31,10 +30,6 @@ export function createPasteReviewLlmResultMessage(
   summary?: string,
   detail?: LlmErrorDetail
 ): string {
-  if (detail?.kind === "json_parse") {
-    return createContextAnalysisResultMessage({ candidateCount, summary, errorDetail: detail });
-  }
-
   return createPasteReviewLlmCompleteMessage(candidateCount, summary);
 }
 
@@ -45,15 +40,11 @@ export function createPasteReviewLlmResultState(
     candidates: result.candidates,
     selectedCandidateIds: selectContextCandidateIdsByConfidence(result.candidates),
     statusMessage: createPasteReviewLlmResultMessage(result.candidates.length, result.summary, result.errorDetail),
-    emptyCandidateMessageVisible: result.candidates.length === 0 && result.errorDetail?.kind !== "json_parse"
+    emptyCandidateMessageVisible: result.candidates.length === 0 && !result.errorDetail
   };
 }
 
 export function formatPasteReviewLlmStatusMessage(message: string, detail?: LlmErrorDetail): string {
-  if (detail?.kind === "json_parse" || isJsonParseLlmErrorMessage(message)) {
-    return createContextAnalysisResultMessage({ candidateCount: 0, summary: message, errorDetail: detail });
-  }
-
   if (!detail) {
     return message;
   }
@@ -64,8 +55,7 @@ export function formatPasteReviewLlmStatusMessage(message: string, detail?: LlmE
 
 export function shouldAutoRunPasteReviewLlm(
   mode: PasteReviewModalMode,
-  llmSettings: AiMaeCheckSettings["llm"],
-  modelReady: boolean
+  llmSettings: AiMaeCheckSettings["llm"]
 ): boolean {
-  return modelReady && mode === "default" && llmSettings.enabled && llmSettings.mode === "auto";
+  return mode === "default" && llmSettings.enabled && llmSettings.mode === "auto";
 }

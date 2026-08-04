@@ -1,9 +1,7 @@
 import { evaluateDlpPolicy, type Finding, type TransformMode } from "@ai-mae-check/core";
 import type { ContextRiskCandidate } from "@ai-mae-check/llm";
-import { isLlmBridgeModelReady } from "../lib/llmBridgeClient";
 import { runReviewLlm } from "../lib/reviewLlmRunner";
 import { resolveReviewFindings } from "../lib/reviewSelection";
-import { resolveLlmModelId } from "../lib/settings";
 import { renderConfirmModalCandidateList } from "./confirmModalCandidateList";
 import { renderConfirmModalCategoryList } from "./confirmModalCategoryList";
 import { applyConfirmModalFooterState } from "./confirmModalFooter";
@@ -42,7 +40,6 @@ export function initializeSendConfirmModalController(
   let llmRunning = false;
   let disposed = false;
   const mode: TransformMode = options.defaultMode ?? "generalize";
-  const llmModelId = resolveLlmModelId(options.llm);
 
   const isActive = () => !disposed && !options.isClosed();
 
@@ -128,8 +125,6 @@ export function initializeSendConfirmModalController(
       await runReviewLlm({
         enabled: options.llm?.enabled ?? false,
         inputText: options.inputText,
-        modelId: llmModelId,
-        profileId: options.llm?.resourceMode ?? "standard",
         existingFindings: options.detection.findings,
         llmStatus: options.elements.llmStatus,
         llmButton: options.elements.llmButton,
@@ -165,15 +160,7 @@ export function initializeSendConfirmModalController(
   renderPreview();
 
   if (options.llm?.enabled && options.llm.mode === "auto") {
-    void isLlmBridgeModelReady(llmModelId, options.llm.resourceMode)
-      .then((modelReady) => {
-        if (isActive() && modelReady) {
-          void runLlm("auto");
-        }
-      })
-      .catch(() => {
-        // 準備状態の取得に失敗しても、手動ボタンとルールベース検出はそのまま使える。
-      });
+    void runLlm("auto");
   }
 
   return {

@@ -179,15 +179,15 @@ function modalScreenshot() {
               ["契約・採用文脈", "中リスク / 確認対象"]
             ].map(([label, detail], index) => `<div class="finding"><div class="check">${index + 1}</div><div><b>${label}</b><div class="mini">${detail}</div></div></div>`).join("")}
             <div class="card" style="padding:16px;margin-top:16px;box-shadow:none;">
-              <b>WebLLMによる文脈チェック結果</b>
+              <b>AI文脈チェック結果</b>
               <p class="mini" style="margin:8px 0 0;">顧客名や契約前情報と思われる注意候補が見つかりました。候補はユーザーが安全化対象に含めるか選べます。</p>
             </div>
           </div>
           <div class="preview mono">
-            [CUSTOMER_1]向けの[PROJECT_1]提案メモです。<br>
-            連絡先は [EMAIL_1] です。<br>
-            GITHUB_TOKEN=[GITHUB_TOKEN_1]<br><br>
-            候補者の[PERSON_1]さんについて、評価メモを確認します。<br><br>
+            [組織名]向けの[案件名]提案メモです。<br>
+            連絡先は [メールアドレス] です。<br>
+            GITHUB_TOKEN=[秘密情報]<br><br>
+            候補者の[人名]について、評価メモを確認します。<br><br>
             ※安全を保証するものではありません。
           </div>
         </div>
@@ -206,13 +206,13 @@ function optionsScreenshot() {
       <div class="grid cols-2" style="margin-top:28px;">
         <div class="card" style="padding:26px;">
           <h2 class="h2" style="font-size:34px;">対象サイトと検出ルール</h2>
-          ${["ChatGPT", "Claude", "Gemini", "メール・電話・APIキー", "社外秘・社内URL"].map((label) => `<div class="finding"><div class="check">✓</div><div><b>${label}</b><div class="mini">有効</div></div></div>`).join("")}
+          ${["ChatGPT", "Claude", "Gemini", "Perplexity", "メール・電話・APIキー", "社外秘・社内URL"].map((label) => `<div class="finding"><div class="check">✓</div><div><b>${label}</b><div class="mini">有効</div></div></div>`).join("")}
         </div>
         <div class="card" style="padding:26px;">
           <h2 class="h2" style="font-size:34px;">AI文脈チェック</h2>
           <div class="finding"><div class="check">✓</div><div><b>手動実行</b><div class="mini">初期設定では自動実行しません</div></div></div>
-          <div class="finding"><div class="check">✓</div><div><b>WebLLMモデル</b><div class="mini">Qwen2.5 0.5B q4f16</div></div></div>
-          <div class="preview">貼り付け本文は永続保存しません。設定と検証済みルールキャッシュだけをChromeのローカル保存領域に保存します。WebLLMの初回利用時にはモデルファイルを取得する場合があります。</div>
+          <div class="finding"><div class="check">✓</div><div><b>ブラウザ内AIモデル</b><div class="mini">Ruri-v3-30m + 日本語NER / CPU</div></div></div>
+          <div class="preview">貼り付け本文は永続保存しません。設定と検証済みルールキャッシュだけをChromeのローカル保存領域に保存します。AI文脈チェックの初回利用時にはモデルファイルを取得する場合があります。</div>
         </div>
       </div>
     </div>`

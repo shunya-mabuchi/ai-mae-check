@@ -14,7 +14,19 @@ type ResidualPrefix =
   | "INTERNAL_INFO"
   | "CONFIDENTIAL_CONTEXT";
 
-type ResidualCategory = Exclude<ContextRiskCategory, "other">;
+type ResidualCategory = Extract<
+  ContextRiskCategory,
+  | "person_name"
+  | "company_name"
+  | "customer_name"
+  | "project_name"
+  | "contract_info"
+  | "hr_info"
+  | "legal_info"
+  | "financial_info"
+  | "internal_info"
+  | "confidential_context"
+>;
 
 export interface ResidualContextTerm {
   surface: string;
@@ -206,7 +218,11 @@ function normalizeSurface(surface: string): string {
 }
 
 function isDuplicateCandidate(candidate: ContextRiskCandidate, term: ResidualContextTerm): boolean {
-  if (candidate.category !== term.category) {
+  const organizationCategories: ContextRiskCategory[] = ["company_name", "customer_name"];
+  const sameCategory = candidate.category === term.category;
+  const bothOrganizations =
+    organizationCategories.includes(candidate.category) && organizationCategories.includes(term.category);
+  if (!sameCategory && !bothOrganizations) {
     return false;
   }
 

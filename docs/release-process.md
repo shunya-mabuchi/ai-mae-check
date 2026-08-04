@@ -31,8 +31,8 @@ AIまえチェックはChrome拡張がプロダクト本体です。GitHub Relea
 pnpm qa:public-repo
 pnpm qa:public-docs
 pnpm qa:privacy-regression
-pnpm qa:webllm-model-policy
-pnpm qa:webllm-compatibility
+pnpm qa:local-ai-model-policy
+pnpm qa:local-ai-compatibility
 pnpm qa:rule-catalog
 pnpm qa:extension:e2e-harness
 pnpm qa:dependency-policy
@@ -48,7 +48,7 @@ pnpm qa:chrome-store
 
 拡張E2Eハーネスの方針は [extension-e2e-harness.md](extension-e2e-harness.md) にまとめています。0.1.1時点では実サイトログインに依存するE2EをCI必須にせず、リリース用manifestへテスト専用host permissionを混入させない方針を優先します。ローカル確認では `pnpm test:extension:e2e` を使い、実行できない場合は理由をPRまたはRelease本文に残します。
 
-権限、CSP、web accessible resources、依存関係、WebLLMモデル説明の監査は [extension-security-audit.md](extension-security-audit.md) のチェックリストに沿って確認します。
+権限、CSP、web accessible resources、依存関係、ローカルAIモデル説明の監査は [extension-security-audit.md](extension-security-audit.md) のチェックリストに沿って確認します。
 
 ## GitHub Release
 
@@ -59,7 +59,7 @@ Release本文には次を含めます。
 - Chrome Web Store公開URL
 - 主な変更
 - プライバシー設計
-- WebLLMモデル取得に関する注意
+- ローカルAIモデル取得に関する注意
 - 既知の制限
 - 手動確認した対象サイト
 - 署名付きルール配信の状態

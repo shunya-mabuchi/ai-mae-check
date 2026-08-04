@@ -127,11 +127,11 @@ if (!sameMembers(contentScriptMatches, expectedTargetMatches)) {
 const webAccessibleResources = manifest.web_accessible_resources ?? [];
 const bridgeResource = webAccessibleResources.find((entry) => {
   const resources = entry.resources ?? [];
-  return resources.includes("llm-worker.js") && resources.includes("llm-bridge.html");
+  return resources.includes("llm-bridge.html");
 });
 
 if (!bridgeResource) {
-  fail("web_accessible_resources must expose llm-worker.js and llm-bridge.html for WebLLM bridge");
+  fail("web_accessible_resources must expose llm-bridge.html for the local AI bridge");
 }
 
 for (const iconResource of ["icon/16.png", "icon/32.png", "icon/48.png", "icon/128.png"]) {
@@ -142,7 +142,7 @@ for (const iconResource of ["icon/16.png", "icon/32.png", "icon/48.png", "icon/1
 
 assertNoUnexpectedHosts(bridgeResource.matches ?? []);
 if (!sameMembers(bridgeResource.matches ?? [], expectedTargetMatches)) {
-  fail(`WebLLM bridge matches mismatch. actual=${JSON.stringify(bridgeResource.matches ?? [])}`);
+  fail(`local AI bridge matches mismatch. actual=${JSON.stringify(bridgeResource.matches ?? [])}`);
 }
 
 for (const size of ["16", "32", "48", "128"]) {

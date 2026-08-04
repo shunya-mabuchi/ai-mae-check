@@ -1,17 +1,21 @@
 export {
   ANALYZING_MESSAGE,
-  DEFAULT_CONTEXT_WINDOW_SIZE,
   DEFAULT_CONFIDENCE_THRESHOLD,
   DEFAULT_MAX_CANDIDATES,
   DEFAULT_MAX_INPUT_CHARS,
-  DEFAULT_MODEL_ID,
   MODEL_LOADING_MESSAGE,
-  WASM_CONTEXT_MODEL_DTYPE,
-  WASM_CONTEXT_MODEL_ID,
-  WASM_CONTEXT_MODEL_REVISION,
-  WEBGPU_UNAVAILABLE_MESSAGE
+  LOCAL_CONTEXT_MODEL_DTYPE,
+  LOCAL_CONTEXT_MODEL_ID,
+  LOCAL_CONTEXT_MODEL_REVISION,
+  LOCAL_NER_MODEL_DTYPE,
+  LOCAL_NER_MODEL_ID,
+  LOCAL_NER_MODEL_REVISION
 } from "./constants";
 export { convertContextCandidatesToFindings } from "./convert";
+export {
+  createNerContextCandidates,
+  type NerToken
+} from "./nerClassifier";
 export {
   buildContextCheckPlan,
   createContextCheckInput,
@@ -19,16 +23,11 @@ export {
 } from "./contextBuilder";
 export {
   classifyLlmError,
-  createJsonParseFallbackMessage,
   formatLlmErrorMessage,
   isContextAnalysisExecutionError,
-  isJsonParseLlmErrorMessage,
   sanitizeLlmErrorDetail
 } from "./errors";
 export { getLlmErrorSignalCopy } from "./errorSignals";
-export { getAvailableModelIds, resolveModelId } from "./model";
-export { getLlmExecutionProfile } from "./profiles";
-export { parseContextAnalysisJson } from "./parser";
 export {
   CONTEXT_ANALYSIS_EMPTY_MESSAGE,
   CONTEXT_ANALYSIS_FOUND_MESSAGE,
@@ -54,29 +53,19 @@ export {
   type WasmContextEmbeddingRuntime,
   type WasmContextSegment
 } from "./wasmClassifier";
-export { buildContextRiskPrompt } from "./prompt";
 export type {
   AnalyzeContextOptions,
-  ChatMessage,
   ContextAnalysisResult,
-  ContextAnalyzeRequest,
   ContextCheckPlan,
   ContextCheckPlanOptions,
   ContextHintReason,
   ContextHintResult,
   ContextWindow,
-  ContextPromptOptions,
   ContextRiskCandidate,
   ContextRiskCategory,
   ConvertCandidatesOptions,
-  LlmAnalyzerOptions,
   LlmContextAnalyzer,
   LlmErrorDetail,
   LlmErrorKind,
-  LlmExecutionProfile,
-  LlmExecutionProfileId,
-  LlmProgress,
-  LlmRuntimePhase,
-  LlmRuntimeStatus,
-  LocalLlmRuntimeService
+  LlmProgress
 } from "./types";

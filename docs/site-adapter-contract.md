@@ -51,7 +51,7 @@ SiteAdapterが行わないこと:
 
 - DLP判定の実装
 - risk scoreやpolicy判定
-- WebLLM文脈チェック
+- ローカルAI文脈チェック
 - モーダルUIの表示
 - `chrome.storage.local` への保存
 - ユーザー本文、検出結果、placeholderMapの永続保存
@@ -199,7 +199,7 @@ adapter観点:
 - [ ] mediumリスクは詳細確認後に許可可能である
 - [ ] キャンセル時に本文が勝手に送信されない
 - [ ] 安全化後に再スキャンされ、秘密情報保護対象が残る場合は送信されない
-- [ ] WebLLMが失敗してもルールベース検出と安全化は利用できる
+- [ ] ローカルAIが失敗してもルールベース検出と安全化は利用できる
 - [ ] エラー表示や診断メモに本文が含まれない
 
 ### Perplexity
@@ -279,7 +279,7 @@ interface FileAttachmentProbe {
 
 - ユニットテスト: adapter mapping、送信キー判定、bypass、設定ON/OFF、モーダル状態を確認します。
 - 拡張E2Eハーネス: ローカル模擬composerでpaste、送信前確認、安全化、キャンセルを確認します。
-- 実サイト手動QA: ChatGPT / Claude / Gemini / Perplexity の実DOM、実送信ボタン、Reactイベント反映、WebLLM表示を確認します。
+- 実サイト手動QA: ChatGPT / Claude / Gemini / Perplexity の実DOM、実送信ボタン、Reactイベント反映、ローカルAI表示を確認します。
 
 実サイトのログイン、A/Bテスト、DOM更新、利用規約、ネットワーク状態に依存する確認はCIに載せず、手動QAとして記録します。手動QAの記録には、貼り付け本文、送信本文、検出文字列、placeholderMap、現在のページURLを含めません。
 

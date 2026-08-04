@@ -1,13 +1,11 @@
 import { detectorRules } from "@ai-mae-check/core";
-import { DEFAULT_MODEL_ID, type LlmExecutionProfileId } from "@ai-mae-check/llm";
 import { REMOTE_RULE_CACHE_KEY } from "./remoteRuleCache";
 import { siteIdFromHostname, targetSites, type SiteId } from "./sites";
 
 export const SETTINGS_KEY = "ai-mae-check.settings.v1";
-export const SETTINGS_SCHEMA_VERSION = 3;
+export const SETTINGS_SCHEMA_VERSION = 4;
 
 export type LlmRunMode = "manual" | "auto";
-export type LlmResourceMode = LlmExecutionProfileId;
 
 export interface AiMaeCheckSettings {
   settingsVersion: number;
@@ -16,9 +14,7 @@ export interface AiMaeCheckSettings {
   rules: Record<string, boolean>;
   llm: {
     enabled: boolean;
-    modelId: string;
     mode: LlmRunMode;
-    resourceMode: LlmResourceMode;
   };
 }
 
@@ -43,9 +39,7 @@ function createDefaultSettings(): AiMaeCheckSettings {
     rules: defaultRules(),
     llm: {
       enabled: true,
-      modelId: DEFAULT_MODEL_ID,
-      mode: "manual",
-      resourceMode: "standard"
+      mode: "manual"
     }
   };
 }
@@ -84,14 +78,6 @@ function normalizeLlmMode(value: unknown): LlmRunMode {
   return value === "auto" ? "auto" : "manual";
 }
 
-function normalizeLlmResourceMode(value: unknown): LlmResourceMode {
-  return value === "low_resource" ? "low_resource" : "standard";
-}
-
-export function resolveLlmModelId(_llm: AiMaeCheckSettings["llm"] | undefined): string {
-  return DEFAULT_MODEL_ID;
-}
-
 export function migrateSettings(value: unknown): AiMaeCheckSettings {
   if (!isRecord(value)) {
     return createDefaultSettings();
@@ -111,9 +97,7 @@ export function migrateSettings(value: unknown): AiMaeCheckSettings {
     rules: normalizeRuleSettings(value.rules, defaults.rules),
     llm: {
       enabled: readBoolean(llmValue.enabled, defaults.llm.enabled),
-      modelId: DEFAULT_MODEL_ID,
-      mode: normalizeLlmMode(llmValue.mode),
-      resourceMode: normalizeLlmResourceMode(llmValue.resourceMode)
+      mode: normalizeLlmMode(llmValue.mode)
     }
   };
 }
@@ -143,14 +127,8 @@ export function validateSettings(settings: AiMaeCheckSettings): SettingsValidati
   if (missingRules.length > 0) {
     messages.push("検出ルール設定に不足があります。不足分は初期値で補完されます。");
   }
-  if (settings.llm.modelId.trim().length === 0) {
-    messages.push("WebLLMモデルIDが空です。初期モデルを利用してください。");
-  }
   if (settings.llm.mode !== "manual" && settings.llm.mode !== "auto") {
     messages.push("AI文脈チェックの実行モードが不正です。手動実行または自動実行を選んでください。");
-  }
-  if (settings.llm.resourceMode !== "standard" && settings.llm.resourceMode !== "low_resource") {
-    messages.push("AI文脈チェックの負荷設定が不正です。標準または低負荷を選んでください。");
   }
 
   return {

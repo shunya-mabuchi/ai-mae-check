@@ -38,7 +38,7 @@ GitHub Actionsで次を確認します。
 
 - CIが失敗したPRはmergeしない
 - Chrome拡張のZIP生成やChrome Web Store QAが失敗した場合は、ストア提出物を作り直さない
-- WebLLM chunk size warningのような既知のwarningは、ビルド失敗ではない限りPR本文やIssueに記録して扱う
+- ローカルAI chunk size warningのような既知のwarningは、ビルド失敗ではない限りPR本文やIssueに記録して扱う
 - GitHub Pages QAまたは本番デプロイが失敗した場合は、LP、`/privacy/`、`/support/`、`/rules/latest.json` の影響を確認する
 - Secret scanning / public repo safety QAが失敗した場合は、原因がダミーか実secretかを確認し、実secretの可能性があれば履歴修正と鍵ローテーションを優先する
 

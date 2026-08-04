@@ -7,13 +7,13 @@ const qa = createQaContext({ rootDir, errorPrefix: "Test maintenance QA failed" 
 const trackedLargeTests = [
   {
     file: "apps/extension/tests/llmBridgePage.test.ts",
-    maxLines: 450,
-    splitBy: "bridge page lifecycle / request handling / error handling"
+    maxLines: 180,
+    splitBy: "Worker lifecycle / request handling / error handling"
   },
   {
-    file: "packages/llm/tests/llm.test.ts",
-    maxLines: 440,
-    splitBy: "parser / candidate conversion / analyzer fallback"
+    file: "packages/llm/tests/wasmAnalyzer.test.ts",
+    maxLines: 220,
+    splitBy: "NER / Ruri classification / partial failure"
   },
   {
     file: "apps/extension/e2e/extension.spec.ts",
@@ -21,9 +21,9 @@ const trackedLargeTests = [
     splitBy: "paste scenarios / submit scenarios / keyboard scenarios"
   },
   {
-    file: "packages/llm/tests/runtimeService.test.ts",
-    maxLines: 330,
-    splitBy: "prepare / analyze / error state"
+    file: "packages/llm/tests/residualMasking.test.ts",
+    maxLines: 160,
+    splitBy: "person and company / project / business context"
   }
 ];
 

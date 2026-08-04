@@ -1,7 +1,6 @@
 import type {
   AnalyzeContextOptions,
   ContextAnalysisResult,
-  LlmExecutionProfileId,
   LlmProgress
 } from "@ai-mae-check/llm";
 import {
@@ -11,7 +10,6 @@ import {
   type LlmBridgeResponse
 } from "./llmBridgeMessages";
 import { getExtensionResourceUrl } from "./extensionRuntime";
-import { createJsonParseBridgeFallbackResult } from "./llmBridgeFallback";
 import {
   BRIDGE_LOAD_TIMEOUT_MS,
   createLlmBridgeNonce,
@@ -19,11 +17,7 @@ import {
   createLlmBridgeIframe,
   waitForLlmBridgeIframeLoad
 } from "./llmBridgeFrame";
-import {
-  createLlmBridgeAnalyzeRequest,
-  createLlmBridgeModelStateRequest,
-  createLlmBridgeWasmAnalyzeRequest
-} from "./llmBridgeRequest";
+import { createLlmBridgeAnalyzeRequest } from "./llmBridgeRequest";
 
 interface BridgeConnection {
   port: MessagePort;
@@ -37,40 +31,19 @@ interface PendingRequest<T> {
   onProgress?: (progress: LlmProgress) => void;
 }
 
-interface BridgeErrorFallbackOptions {
-  request: Extract<LlmBridgeRequest, { type: "analyze" }>;
-  startedAt: number;
-  message: string;
-}
-
-interface BridgeAnalyzeOptions extends Pick<AnalyzeContextOptions, "existingFindings" | "maxCandidates" | "onProgress"> {
-  modelId: string;
-  profileId: LlmExecutionProfileId;
-}
+interface BridgeAnalyzeOptions extends Pick<AnalyzeContextOptions, "maxCandidates" | "onProgress"> {}
 
 const BRIDGE_PAGE = "llm-bridge.html";
 
 let bridgePromise: Promise<BridgeConnection> | null = null;
 let requestSeq = 0;
-type BridgeResult = ContextAnalysisResult | boolean;
+type BridgeResult = ContextAnalysisResult;
 
 const pendingRequests = new Map<string, PendingRequest<BridgeResult>>();
 
 function nextRequestId(): string {
   requestSeq += 1;
   return `llm-${Date.now()}-${requestSeq}`;
-}
-
-export function createBridgeErrorFallbackResult(options: BridgeErrorFallbackOptions): ContextAnalysisResult | null {
-  return createJsonParseBridgeFallbackResult({
-    inputText: options.request.inputText,
-    modelId: options.request.modelId,
-    startedAt: options.startedAt,
-    error: new Error(options.message),
-    ...(typeof options.request.options.maxCandidates === "number"
-      ? { maxCandidates: options.request.options.maxCandidates }
-      : {})
-  });
 }
 
 function handleBridgeMessage(message: LlmBridgeResponse): void {
@@ -90,27 +63,7 @@ function handleBridgeMessage(message: LlmBridgeResponse): void {
 
   pendingRequests.delete(message.requestId);
 
-  if (message.type === "model-state-result") {
-    pending.resolve(message.ready);
-    return;
-  }
-
   if (message.type === "error") {
-    if (pending.request.type !== "analyze") {
-      pending.reject(new Error(message.message));
-      return;
-    }
-
-    const fallback = createBridgeErrorFallbackResult({
-      request: pending.request,
-      startedAt: pending.startedAt,
-      message: message.message
-    });
-    if (fallback) {
-      pending.resolve(fallback);
-      return;
-    }
-
     pending.reject(new Error(message.message));
     return;
   }
@@ -190,44 +143,8 @@ export function analyzeContextWithBridge(inputText: string, options: BridgeAnaly
   const request = createLlmBridgeAnalyzeRequest({
     requestId: nextRequestId(),
     inputText,
-    modelId: options.modelId,
-    profileId: options.profileId,
-    ...(options.existingFindings ? { existingFindings: options.existingFindings } : {}),
     ...(typeof options.maxCandidates === "number" ? { maxCandidates: options.maxCandidates } : {})
   });
 
   return sendBridgeRequest(request, options.onProgress);
-}
-
-export function analyzeContextWithWasmBridge(
-  inputText: string,
-  options: Pick<AnalyzeContextOptions, "maxCandidates" | "onProgress"> = {}
-): Promise<ContextAnalysisResult> {
-  const request = createLlmBridgeWasmAnalyzeRequest({
-    requestId: nextRequestId(),
-    inputText,
-    ...(typeof options.maxCandidates === "number"
-      ? { maxCandidates: options.maxCandidates }
-      : {})
-  });
-
-  return sendBridgeRequest(request, options.onProgress);
-}
-
-export async function isLlmBridgeModelReady(
-  modelId: string,
-  profileId: LlmExecutionProfileId
-): Promise<boolean> {
-  const request = createLlmBridgeModelStateRequest(nextRequestId(), modelId, profileId);
-  const bridge = await getBridgeConnection();
-
-  return new Promise<boolean>((resolve, reject) => {
-    pendingRequests.set(request.requestId, {
-      resolve: (value) => resolve(value === true),
-      reject,
-      request,
-      startedAt: performance.now()
-    });
-    bridge.port.postMessage(request);
-  });
 }

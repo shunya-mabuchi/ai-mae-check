@@ -1,8 +1,7 @@
 import releaseConfig from "../../config/rule-delivery.release.json";
-import { resolveLlmModelId, SETTINGS_KEY, type AiMaeCheckSettings } from "./settings";
+import { LOCAL_CONTEXT_MODEL_ID, LOCAL_NER_MODEL_ID } from "@ai-mae-check/llm";
+import { SETTINGS_KEY, type AiMaeCheckSettings } from "./settings";
 import { targetSites, type SiteId } from "./sites";
-
-export type WebGpuDiagnosticStatus = "available" | "unavailable" | "error" | "unknown";
 
 interface RuntimeLike {
   getManifest?: () => {
@@ -13,9 +12,7 @@ interface RuntimeLike {
 
 interface NavigatorLike {
   userAgent?: string;
-  gpu?: {
-    requestAdapter?: () => Promise<unknown>;
-  };
+  hardwareConcurrency?: number;
 }
 
 export interface PrivacySafeDiagnosticReport {
@@ -28,10 +25,8 @@ export interface PrivacySafeDiagnosticReport {
   environment: {
     browser: string;
     os: string;
-    webGpu: {
-      status: WebGpuDiagnosticStatus;
-      reason: string;
-    };
+    wasmAvailable: boolean;
+    hardwareConcurrency: number | null;
   };
   settings: {
     schemaKey: string;
@@ -40,8 +35,8 @@ export interface PrivacySafeDiagnosticReport {
     disabledSites: SiteId[];
     llmEnabled: boolean;
     llmMode: AiMaeCheckSettings["llm"]["mode"];
-    llmResourceMode: AiMaeCheckSettings["llm"]["resourceMode"];
-    llmModelId: string;
+    contextModelId: string;
+    nerModelId: string;
     enabledRuleCount: number;
     disabledRuleCount: number;
   };
@@ -111,40 +106,6 @@ function osFromUserAgent(userAgent: string): string {
   return "unknown";
 }
 
-async function getWebGpuDiagnostic(navigatorLike: NavigatorLike | undefined): Promise<PrivacySafeDiagnosticReport["environment"]["webGpu"]> {
-  if (!navigatorLike?.gpu) {
-    return {
-      status: "unavailable",
-      reason: "navigator.gpu is not available"
-    };
-  }
-
-  if (typeof navigatorLike.gpu.requestAdapter !== "function") {
-    return {
-      status: "unknown",
-      reason: "navigator.gpu.requestAdapter is not available"
-    };
-  }
-
-  try {
-    const adapter = await navigatorLike.gpu.requestAdapter();
-    return adapter
-      ? {
-          status: "available",
-          reason: "requestAdapter returned an adapter"
-        }
-      : {
-          status: "unavailable",
-          reason: "requestAdapter returned null"
-        };
-  } catch {
-    return {
-      status: "error",
-      reason: "requestAdapter failed"
-    };
-  }
-}
-
 function siteIdsByEnabledState(settings: AiMaeCheckSettings, enabled: boolean): SiteId[] {
   return targetSites.filter((site) => settings.sites[site.id] === enabled).map((site) => site.id);
 }
@@ -161,7 +122,6 @@ export async function createPrivacySafeDiagnosticReport(
   const manifest = runtime?.getManifest?.();
   const userAgent = navigatorLike?.userAgent ?? "";
   const endpoint = releaseConfig.endpoint.trim();
-  const webGpu = await getWebGpuDiagnostic(navigatorLike);
 
   return {
     generatedAt: (options.now ?? new Date()).toISOString(),
@@ -173,7 +133,11 @@ export async function createPrivacySafeDiagnosticReport(
     environment: {
       browser: browserFromUserAgent(userAgent),
       os: osFromUserAgent(userAgent),
-      webGpu
+      wasmAvailable: typeof WebAssembly === "object",
+      hardwareConcurrency:
+        typeof navigatorLike?.hardwareConcurrency === "number"
+          ? navigatorLike.hardwareConcurrency
+          : null
     },
     settings: {
       schemaKey: SETTINGS_KEY,
@@ -182,8 +146,8 @@ export async function createPrivacySafeDiagnosticReport(
       disabledSites: siteIdsByEnabledState(options.settings, false),
       llmEnabled: options.settings.llm.enabled,
       llmMode: options.settings.llm.mode,
-      llmResourceMode: options.settings.llm.resourceMode,
-      llmModelId: resolveLlmModelId(options.settings.llm),
+      contextModelId: LOCAL_CONTEXT_MODEL_ID,
+      nerModelId: LOCAL_NER_MODEL_ID,
       enabledRuleCount: countRulesByEnabledState(options.settings, true),
       disabledRuleCount: countRulesByEnabledState(options.settings, false)
     },

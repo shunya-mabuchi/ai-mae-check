@@ -19,9 +19,9 @@ pnpm qa:privacy-regression
 
 ## postMessageの扱い
 
-WebLLMはChrome拡張のContent Scriptから直接Workerを起動しにくいため、拡張機能originのbridge iframeを使います。このため `postMessage` / `MessagePort` で貼り付け本文を拡張機能内のbridgeへ渡します。
+ローカルAIはChrome拡張のContent Scriptから直接Workerを起動しにくいため、拡張機能originのbridge iframeを使います。このため `postMessage` / `MessagePort` で貼り付け本文を拡張機能内のbridgeへ渡します。
 
-これは開発者サーバーや外部LLM APIへ本文を送るものではありません。ただし、`postMessage` の利用箇所はWebLLM bridge用途に限定し、外部originへ本文を渡す実装を追加しない前提です。
+これは開発者サーバーや外部LLM APIへ本文を送るものではありません。ただし、`postMessage` の利用箇所はローカルAI bridge用途に限定し、外部originへ本文を渡す実装を追加しない前提です。
 
 ## 手動確認すること
 
@@ -29,10 +29,10 @@ WebLLMはChrome拡張のContent Scriptから直接Workerを起動しにくいた
 - Application > Storageで、拡張機能の設定と検証済みの署名付きリモートルールキャッシュ以外に、本文・placeholderMap・検出結果が保存されていない
 - Networkタブで、本文を含むリクエストが発生していない
 - ルール配信は `GET /rules/latest.json` のみで、本文や検出結果を送っていない
-- WebLLMモデル取得が発生する場合でも、貼り付け本文はモデル配信元や外部LLM APIへ送信されていない
+- ローカルAIモデル取得が発生する場合でも、貼り付け本文はモデル配信元や外部LLM APIへ送信されていない
 
 ## 例外
 
-WebLLMのモデルファイルやブラウザ内部キャッシュは、ブラウザ実装やWebLLMランタイムによりIndexedDB等を使う場合があります。このQAはAIまえチェック自身の実装が本文や検出結果を永続保存しないことを確認するためのものです。
+ローカルAIのモデルファイルやブラウザ内部キャッシュは、ブラウザ実装やローカルAIランタイムによりIndexedDB等を使う場合があります。このQAはAIまえチェック自身の実装が本文や検出結果を永続保存しないことを確認するためのものです。
 
 署名付きリモートルールキャッシュは、ネットワーク障害時にも直前に検証済みだった検出ルールを短時間だけ使うためのものです。保存対象は署名付きルールJSON、`keyId`、`version`、`generatedAt`、`cachedAt`、`expiresAt` に限り、ユーザー本文、検出結果、placeholderMap、送信履歴は含めません。

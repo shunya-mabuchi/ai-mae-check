@@ -1,8 +1,6 @@
 import {
   createContextAnalysisCompleteMessage,
-  createContextAnalysisResultMessage,
   MODEL_LOADING_MESSAGE,
-  WEBGPU_UNAVAILABLE_MESSAGE,
   type LlmErrorDetail,
   type LlmProgress
 } from "@ai-mae-check/llm";
@@ -37,18 +35,6 @@ export function createEmptyInputLlmUiState(): DemoLlmUiState {
   };
 }
 
-export function createWebGpuUnavailableLlmUiState(): DemoLlmUiState {
-  return {
-    status: "error",
-    message: WEBGPU_UNAVAILABLE_MESSAGE,
-    errorDetail: {
-      kind: "webgpu",
-      message: WEBGPU_UNAVAILABLE_MESSAGE,
-      hint: "chrome://gpu のDawn InfoでD3D12 backendがAvailableか確認してください。"
-    }
-  };
-}
-
 export function createLoadingLlmUiState(): DemoLlmUiState {
   return {
     status: "loading",
@@ -74,15 +60,7 @@ export function createLlmCompleteUiState(candidateCount: number): DemoLlmUiState
 }
 
 export function createLlmResultUiState(candidateCount: number, detail?: LlmErrorDetail): DemoLlmUiState {
-  if (detail?.kind === "json_parse") {
-    return {
-      status: candidateCount > 0 ? "done" : "empty",
-      message: createContextAnalysisResultMessage({ candidateCount, errorDetail: detail }),
-      errorDetail: null
-    };
-  }
-
-  return createLlmCompleteUiState(candidateCount);
+  return detail ? createErrorLlmUiState(detail) : createLlmCompleteUiState(candidateCount);
 }
 
 export function createErrorLlmUiState(errorDetail: LlmErrorDetail): DemoLlmUiState {

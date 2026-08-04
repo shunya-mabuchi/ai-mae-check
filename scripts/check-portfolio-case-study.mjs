@@ -36,7 +36,7 @@ const footer = read(paths.footer);
 for (const phrase of [
   "Chrome拡張が本体",
   "ルールベース検出",
-  "WebLLM",
+  "ONNX Runtime Web",
   "署名付きルール配信",
   "chrome.storage.local",
   "外部LLM API",

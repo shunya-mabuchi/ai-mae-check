@@ -11,13 +11,14 @@ AIまえチェックの変更履歴です。Chrome Web Storeへ提出する拡�
 - 公開サイトをVite MPAへ再構築し、静的HTMLを基本にReactミニデモだけを操作可能なアイランドとして実装
 - 公開サイト、Options Page、拡張モーダルへReact Aria Componentsと共通デザイントークンを導入
 - Tailwind CSS 4へ移行し、Biomeを段階導入してUI実装とコード品質の基準を統一
-- WebLLM実行系を明示操作まで遅延ロードし、ルールベース検出を先に表示する構成へ改善
+- AI文脈チェックをTransformers.js + ONNX Runtime WebのCPU/WASM経路へ一本化し、ルールベース検出を先に表示する構成へ改善
 - PolicyDecision、サイトAdapter、ContextBuilder、ローカルDLP評価fixtureとQAを整理
 - 対応するテキスト系ファイルの添付前チェックと、対象外ファイルを安全判定済みにしない制御を追加
 - 署名付き追加ルールの正規URLを、静的配信であることが明確な `/rules/latest.json` に統一
 - ChatGPT / Claude / Gemini / Perplexity adapterのE2E、サイズ予算、公開文書、ストア提出物のQAを強化
 - AI文脈チェックの採用・人事情報を医療情報と分離し、安全化時に `[人事情報]` と表示するよう修正
-- WebLLMのGPUメモリ不足・デバイス喪失時に低VRAMモデルへ1回再試行し、失敗時もローカル補助候補を維持するよう改善
+- 日本語NERによる固有表現抽出とRuri-v3-30mによる文脈分類を分離し、片方が失敗しても利用可能な候補とルールベース結果を維持するよう改善
+- WebGPU、生成LLM、E5への実行時依存とモデル選択UIを削除し、固定モデルの役割と取得容量を設定画面へ明記
 
 ## 0.1.2 - 2026-08-01
 

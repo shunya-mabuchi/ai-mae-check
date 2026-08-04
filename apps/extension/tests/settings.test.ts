@@ -1,12 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_MODEL_ID } from "@ai-mae-check/llm";
 import {
   DEFAULT_SETTINGS,
   loadSettings,
   migrateSettings,
   normalizeSettings,
   resetSettings,
-  resolveLlmModelId,
   saveSettings,
   SETTINGS_KEY,
   SETTINGS_SCHEMA_VERSION,
@@ -19,10 +17,9 @@ describe("settings", () => {
     vi.unstubAllGlobals();
   });
 
-  it("初期設定にsettingsVersionと正式対応モデルを含める", () => {
+  it("初期設定にsettingsVersionと手動実行モードを含める", () => {
     expect(DEFAULT_SETTINGS.settingsVersion).toBe(SETTINGS_SCHEMA_VERSION);
-    expect(DEFAULT_SETTINGS.llm.modelId).toBe(DEFAULT_MODEL_ID);
-    expect(DEFAULT_SETTINGS.llm.resourceMode).toBe("standard");
+    expect(DEFAULT_SETTINGS.llm).toEqual({ enabled: true, mode: "manual" });
   });
 
   it("古い設定を現在のスキーマへマイグレーションする", () => {
@@ -50,25 +47,21 @@ describe("settings", () => {
     expect(settings.sites.claude).toBe(true);
     expect(settings.rules.email).toBe(false);
     expect(settings.rules.unknown_rule).toBeUndefined();
-    expect(settings.llm.modelId).toBe(DEFAULT_MODEL_ID);
     expect(settings.llm.mode).toBe("auto");
-    expect(settings.llm.resourceMode).toBe("standard");
     expect("pastedText" in settings).toBe(false);
   });
 
-  it("低負荷設定でも同じQwenモデルを選ぶ", () => {
+  it("廃止したモデルIDと負荷設定を保存対象から除外する", () => {
     const settings = normalizeSettings({
       llm: {
         enabled: true,
-        modelId: DEFAULT_MODEL_ID,
         mode: "manual",
         resourceMode: "low_resource"
       }
     });
 
-    expect(settings.llm.resourceMode).toBe("low_resource");
-    expect(resolveLlmModelId(settings.llm)).toBe(DEFAULT_MODEL_ID);
-    expect(resolveLlmModelId(DEFAULT_SETTINGS.llm)).toBe(DEFAULT_MODEL_ID);
+    expect(settings.llm).toEqual({ enabled: true, mode: "manual" });
+    expect("resourceMode" in settings.llm).toBe(false);
   });
 
   it("壊れた設定値は初期値へ戻す", () => {
@@ -136,7 +129,6 @@ describe("settings", () => {
       settingsVersion: 0,
       llm: {
         ...DEFAULT_SETTINGS.llm,
-        modelId: "   ",
         mode: "manual"
       }
     });
@@ -179,9 +171,7 @@ describe("settings", () => {
       rules: {},
       llm: {
         ...DEFAULT_SETTINGS.llm,
-        modelId: "",
-        mode: "bad",
-        resourceMode: "bad"
+        mode: "bad"
       }
     });
 
@@ -191,9 +181,7 @@ describe("settings", () => {
         "設定バージョンが古いか不正です。現在の形式に補完されます。",
         "対象サイト設定に不足があります。不足分は初期値で補完されます。",
         "検出ルール設定に不足があります。不足分は初期値で補完されます。",
-        "WebLLMモデルIDが空です。初期モデルを利用してください。",
-        "AI文脈チェックの実行モードが不正です。手動実行または自動実行を選んでください。",
-        "AI文脈チェックの負荷設定が不正です。標準または低負荷を選んでください。"
+        "AI文脈チェックの実行モードが不正です。手動実行または自動実行を選んでください。"
       ])
     );
   });
