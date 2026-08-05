@@ -1,10 +1,10 @@
 # ローカルDLPランタイム設計
 
-最終更新日: 2026-06-23
+最終更新日: 2026-08-05
 
 AIまえチェックは、単に「ローカルAI付きのChrome拡張」ではなく、ブラウザ内で完結する送信前DLPランタイムとして育てていきます。この文書は、各レイヤーの責務、既存実装との対応、後続Issueへの分割方針をまとめるものです。
 
-0.1.0のChrome Web Store公開ZIPには影響させず、0.1.1以降または0.2系の設計改善として段階的に反映します。
+0.2.0では、ルールベース検出を主判定とし、日本語NERとRuri-v3-30mをCPU/WASMで動かすローカルAIを補助経路として実装しています。
 
 ## 基本方針
 
@@ -166,11 +166,14 @@ flowchart TD
 
 現在の実装:
 
-- `packages/llm/src/analyzer.ts`
-- `packages/llm/src/runtimeService.ts`
 - `packages/llm/src/contextBuilder.ts`
-- `packages/llm/src/prompt.ts`
-- `packages/llm/src/parser.ts`
+- `packages/llm/src/wasmAnalyzer.ts`
+- `packages/llm/src/wasmRuntime.ts`
+- `packages/llm/src/wasmClassifier.ts`
+- `packages/llm/src/nerClassifier.ts`
+- `packages/llm/src/residualEntityTerms.ts`
+- `packages/llm/src/residualBusinessTerms.ts`
+- `packages/llm/src/residualMasking.ts`
 - `packages/llm/src/convert.ts`
 - `apps/extension/src/lib/reviewLlmRunner.ts`
 - `apps/extension/src/lib/llmBridgeClient.ts`
@@ -180,9 +183,12 @@ flowchart TD
 
 実装済みの分離:
 
-- #293でローカルAI実行状態を `LocalLlmRuntimeService` としてUIから分離し、UIは `status()` と `analyze()` の結果を受け取る構造へ寄せています。
+- `wasmRuntime.ts` がTransformers.js、ONNX Runtime Web、モデルロード、推論器の破棄を担当します。
+- `wasmAnalyzer.ts` がNER候補と文脈分類候補の統合、部分失敗時の継続、進捗通知を担当します。
+- `residualEntityTerms.ts` と `residualBusinessTerms.ts` が、モデルを補完する固有表現候補と業務文脈語を分けて管理します。
+- `residualMasking.ts` はモデル候補と補完候補の優先順位、重複排除、件数制限だけを担当します。
 - `prepare()` は本文を受け取らず、モデル準備だけを扱います。
-- `error` 状態には日本語メッセージと復旧ヒントを持たせ、ユーザー本文は含めません。
+- エラー状態には日本語メッセージと復旧ヒントを持たせ、ユーザー本文は含めません。
 
 ### 5. Sanitizer
 
@@ -246,7 +252,7 @@ flowchart TD
 | Site Adapter Layer | `apps/extension/src/content/adapters/*` | 対象サイト追加時もadapter単位で閉じる |
 | Fast DLP Engine | `packages/core/src/detect.ts`, `remoteRules.ts`, `detectors/*` | カテゴリ別detectorsへ段階分割済み。今後は配信ルールと評価fixtureを増やす |
 | Policy Decision | `packages/core/src/policy.ts`, `pasteGuard.ts`, `contentReview.ts` | 判定責務はcoreへ集約済み。今後は運用ルール追加時にpolicyテストを増やす |
-| Context Risk Engine | `packages/llm/src/*`, `reviewLlmRunner.ts`, LLM bridge | ContextBuilder、準備済み時自動実行、LocalLlmRuntimeServiceを実装済み |
+| Context Risk Engine | `packages/llm/src/*`, `reviewLlmRunner.ts`, LLM bridge | ContextBuilder、CPU/WASMモデル実行、NER、Ruri文脈分類、補完候補、候補統合を責務別に分離済み |
 | Sanitizer | `packages/core/src/transform.ts`, `mask.ts` | #392でredact / placeholder / generalizeなど内部変換モードを整理済み |
 | UX Layer | 拡張モーダル、Options Page、LP/デモ | #393でモーダルCSS重複を減らし、#388と#402でローカル模擬composerの拡張E2Eを拡張済み |
 
@@ -279,7 +285,7 @@ flowchart TD
 | #290 | 実装済み | ContextHintResultとContextBuilderでローカルAI入力を短縮する |
 | #291 | 実装済み | ローカルAI準備済み時だけAI文脈チェックを自動実行する |
 | #292 | 実装済み | DLP評価fixtureとevalコマンドを追加する |
-| #293 | 実装済み | LocalLlmRuntimeServiceでローカルAI実行状態をUIから分離する |
+| #293 | 旧WebLLM構成で実装済み | 当時のLocalLlmRuntimeServiceで実行状態をUIから分離した。現行0.2.0では `wasmRuntime.ts` と `wasmAnalyzer.ts` が同じ責務境界を引き継ぐ |
 | #294 | 実装済み | 検出ルールをカテゴリ別detectorsへ段階的に分割する |
 | #295 | 実装済み | PolicyDecisionを独立した判定エンジンとして整理する |
 | #334 | 実装済み | 拡張モーダルをプロダクトUIとして再設計する |

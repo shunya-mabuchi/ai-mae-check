@@ -24,6 +24,7 @@ AIまえチェックでは、DLP判定、ローカルAI、Chrome拡張の送信�
 | `packages/llm/tests/wasmAnalyzer.test.ts` | NERとRuriを統合する分析処理 | 220行 | NER / Ruri classification / partial failure |
 | `apps/extension/e2e/extension.spec.ts` | mock composer上の拡張E2E | 390行 | paste scenarios / submit scenarios / keyboard scenarios |
 | `packages/llm/tests/residualMasking.test.ts` | 軽量な固有名詞・業務文脈候補の補完 | 160行 | person and company / project / business context |
+| `packages/llm/tests/residualMaskingPriority.test.ts` | モデル候補と固定語候補の優先順位 | 160行 | category conflict / dedupe / non-conflict |
 
 ## 分割する条件
 
