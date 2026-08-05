@@ -14,8 +14,8 @@
 ### 0.2.0提出候補ZIP
 
 - ファイル: `apps/extension/.output/ai-mae-checkextension-0.2.0-chrome.zip`
-- サイズ: 3,306,169 bytes
-- SHA-256: `C8F581E833A2C8DE7330F013992F25C3F249613D061B0F3F25B5FC9B06D7BB83`
+- サイズ: 3,306,482 bytes
+- SHA-256: `CC71515A58EEEE8A822F25BA1EAE0C4EEDE48CD2128BDACBE1FC717AAEFF0A8C`
 - 公開状態: 未提出。現在の公開版0.1.2を維持
 - 公開後の記録: 0.2.0公開確認後に `docs/chrome-web-store-published.json`、Git tag、GitHub Releaseを更新
 

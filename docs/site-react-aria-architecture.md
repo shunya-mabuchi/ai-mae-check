@@ -231,4 +231,4 @@ React Ariaへ移行したモーダルでは、旧`setupDialogAccessibility`に�
 - `pnpm test:e2e`
 - `pnpm test:extension:e2e`
 - 1440pxと390pxのサイトスクリーンショット比較
-- ChatGPT、Claude、Geminiでの手動確認
+- ChatGPT、Claude、Gemini、Perplexityでの手動確認
