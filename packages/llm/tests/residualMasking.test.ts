@@ -94,4 +94,5 @@ describe("mergeResidualContextCandidates", () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0]?.surface).toBe("山田花子さん");
   });
+
 });

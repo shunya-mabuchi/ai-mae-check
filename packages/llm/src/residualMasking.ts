@@ -134,6 +134,15 @@ const prefixByCategory: Partial<Record<ContextRiskCategory, ResidualPrefix>> = {
   confidential_context: "CONFIDENTIAL_CONTEXT"
 };
 
+const businessContextCategories = new Set<ContextRiskCategory>([
+  "contract_info",
+  "hr_info",
+  "legal_info",
+  "financial_info",
+  "internal_info",
+  "confidential_context"
+]);
+
 function personTerm(surface: string): ResidualContextTerm {
   return {
     surface,
@@ -232,6 +241,18 @@ function isDuplicateCandidate(candidate: ContextRiskCandidate, term: ResidualCon
   return candidateSurface.includes(termSurface) || termSurface.includes(candidateSurface);
 }
 
+function hasSpecificBusinessTerm(candidate: ContextRiskCandidate, terms: ResidualContextTerm[]): boolean {
+  if (!businessContextCategories.has(candidate.category)) {
+    return false;
+  }
+
+  const candidateSurface = normalizeSurface(candidate.surface);
+  return terms.some(
+    (term) =>
+      businessContextCategories.has(term.category) && candidateSurface.includes(normalizeSurface(term.surface))
+  );
+}
+
 export function extractResidualContextTerms(input: string): ResidualContextTerm[] {
   const terms: ResidualContextTerm[] = [];
 
@@ -294,17 +315,21 @@ export function mergeResidualContextCandidates(
   options: { maxCandidates?: number } = {}
 ): ContextRiskCandidate[] {
   const maxCandidates = options.maxCandidates ?? DEFAULT_MAX_CANDIDATES;
-  const merged = [...candidates];
+  const residualTerms = extractResidualContextTerms(input);
+  const prioritizedCandidates = candidates.filter(
+    (candidate) => !hasSpecificBusinessTerm(candidate, residualTerms)
+  );
+  const merged = [...prioritizedCandidates];
   const counters = new Map<ResidualPrefix, number>();
 
-  for (const candidate of candidates) {
+  for (const candidate of prioritizedCandidates) {
     const prefix = prefixByCategory[candidate.category];
     if (prefix) {
       counters.set(prefix, (counters.get(prefix) ?? 0) + 1);
     }
   }
 
-  for (const term of extractResidualContextTerms(input)) {
+  for (const term of residualTerms) {
     if (merged.length >= maxCandidates) {
       break;
     }
