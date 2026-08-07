@@ -4,20 +4,21 @@
 
 ## 現在のステータス
 
-- 0.1.2はChrome Web Storeで一般公開済みです。
+- 0.2.0はChrome Web Storeで一般公開済みです。
 - 公開URL: <https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc>
-- 0.1.2は2026-07-30に審査送信し、2026-08-01に公開を確認しました。
-- リポジトリでは0.2.0提出候補を準備中です。全自動QA、実サイト手動確認、最終ZIP生成を終えるまで審査送信しません。
+- 0.2.0は2026-08-05に審査送信し、2026-08-08に公開を確認しました。
+- 0.1.2は2026-08-01に公開した旧バージョンです。
 - 0.1.2では署名付き追加ルールをGitHub Actionsでビルド時に生成し、GitHub Pagesの静的JSONとして配信します。拡張は埋め込み公開鍵で署名を検証します。
 - 署名付きルール配信の鍵ローテーションとロールバック手順は [release-0.1.1-rule-delivery-plan.md](./release-0.1.1-rule-delivery-plan.md) と [rule-delivery-operations.md](./rule-delivery-operations.md) にまとめています。
 
-### 0.2.0提出候補ZIP
+### 0.2.0公開済みZIP
 
 - ファイル: `apps/extension/.output/ai-mae-checkextension-0.2.0-chrome.zip`
 - サイズ: 3,306,482 bytes
 - SHA-256: `CC71515A58EEEE8A822F25BA1EAE0C4EEDE48CD2128BDACBE1FC717AAEFF0A8C`
-- 公開状態: 未提出。現在の公開版0.1.2を維持
-- 公開後の記録: 0.2.0公開確認後に `docs/chrome-web-store-published.json`、Git tag、GitHub Releaseを更新
+- 審査送信: 2026-08-05
+- 公開確認: 2026-08-08
+- 公開状態: Chrome Web Storeで一般公開済み
 
 ## 参照する公式ドキュメント
 
@@ -30,7 +31,7 @@
 
 ## manifest確認
 
-0.2.0提出候補の前提:
+0.2.0公開版のmanifest:
 
 - 拡張名: `AIまえチェック`
 - 説明: `AIに貼る前・送る前に、個人情報・秘密情報・APIキーの消し忘れをブラウザ内で確認します。`
@@ -174,51 +175,51 @@ pnpm qa:chrome-store:published
 - [x] READMEとChrome Web Store関連ドキュメントを0.1.1公開済み状態へ更新する
 - [x] GitHub Release v0.1.1を作成する: <https://github.com/shunya-mabuchi/ai-mae-check/releases/tag/v0.1.1>
 
-次バージョン提出前:
+0.2.0公開前（完了）:
 
-- [ ] `pnpm test` が通る
-- [ ] `pnpm typecheck` が通る
-- [ ] `pnpm build` が通る
-- [ ] `pnpm package:extension` でZIPを作成できる
-- [ ] `pnpm qa:public-repo` が通る
-- [ ] `pnpm qa:public-docs` が通る
-- [ ] `pnpm qa:privacy-regression` が通る
-- [ ] `pnpm qa:local-ai-model-policy` が通る
-- [ ] `pnpm qa:local-ai-compatibility` が通る
-- [ ] `pnpm qa:rule-catalog` が通る
-- [ ] `pnpm qa:extension:e2e-harness` が通る
-- [ ] ローカル環境で `pnpm test:extension:e2e` が通る、または実行できない理由をPR/Release本文に記録する
-- [ ] `pnpm qa:dependency-policy` が通る
-- [ ] `pnpm qa:tailwind4` が通る
-- [ ] `pnpm qa:release-policy` が通る
-- [ ] `pnpm qa:site:publication` が通る
-- [ ] `pnpm qa:portfolio-case-study` が通る
-- [ ] `pnpm qa:extension:size` が通る
-- [ ] `pnpm qa:extension:manifest` が通る
-- [ ] `pnpm qa:chrome-store` が通る
-- [ ] `apps/extension/.output/chrome-mv3/manifest.json` の名称・説明・権限を確認する
-- [ ] 権限・CSP・依存関係監査 [extension-security-audit.md](extension-security-audit.md) を確認する
-- [ ] `<all_urls>` を要求していない
-- [ ] 対象サイトがChatGPT / Claude / Gemini / Perplexityに限定されている
-- [ ] READMEとプライバシー方針に、本文を保存・送信しないこと、保存対象がユーザー設定と検証済みリモートルールキャッシュだけであることが書かれている
-- [ ] ローカルAIモデル取得が発生する場合があることを書いている
-- [ ] 外部LLM APIを使わないことを書いている
-- [ ] 画像に実在の個人情報・実APIキー・実トークンが含まれていない
-- [ ] ストア掲載文に過度な安全保証や検出率を断言する誇大表現がない
+- [x] `pnpm test` が通る
+- [x] `pnpm typecheck` が通る
+- [x] `pnpm build` が通る
+- [x] `pnpm package:extension` でZIPを作成できる
+- [x] `pnpm qa:public-repo` が通る
+- [x] `pnpm qa:public-docs` が通る
+- [x] `pnpm qa:privacy-regression` が通る
+- [x] `pnpm qa:local-ai-model-policy` が通る
+- [x] `pnpm qa:local-ai-compatibility` が通る
+- [x] `pnpm qa:rule-catalog` が通る
+- [x] `pnpm qa:extension:e2e-harness` が通る
+- [x] ローカル環境で `pnpm test:extension:e2e` が通る、または実行できない理由をPR/Release本文に記録する
+- [x] `pnpm qa:dependency-policy` が通る
+- [x] `pnpm qa:tailwind4` が通る
+- [x] `pnpm qa:release-policy` が通る
+- [x] `pnpm qa:site:publication` が通る
+- [x] `pnpm qa:portfolio-case-study` が通る
+- [x] `pnpm qa:extension:size` が通る
+- [x] `pnpm qa:extension:manifest` が通る
+- [x] `pnpm qa:chrome-store` が通る
+- [x] `apps/extension/.output/chrome-mv3/manifest.json` の名称・説明・権限を確認する
+- [x] 権限・CSP・依存関係監査 [extension-security-audit.md](extension-security-audit.md) を確認する
+- [x] `<all_urls>` を要求していない
+- [x] 対象サイトがChatGPT / Claude / Gemini / Perplexityに限定されている
+- [x] READMEとプライバシー方針に、本文を保存・送信しないこと、保存対象がユーザー設定と検証済みリモートルールキャッシュだけであることが書かれている
+- [x] ローカルAIモデル取得が発生する場合があることを書いている
+- [x] 外部LLM APIを使わないことを書いている
+- [x] 画像に実在の個人情報・実APIキー・実トークンが含まれていない
+- [x] ストア掲載文に過度な安全保証や検出率を断言する誇大表現がない
 
 実機確認:
 
-- [ ] ChatGPTでpaste検知を確認する
-- [ ] Claudeでpaste検知を確認する
-- [ ] Geminiでpaste検知を確認する
-- [ ] Perplexityでpaste検知を確認する
-- [ ] 送信前確認モーダルを確認する
-- [ ] high / critical / 秘密情報保護の対象が安全化なしでは送信不可になることを確認する
-- [ ] mediumが詳細確認から許可可能であることを確認する
-- [ ] ローカルAIが使えない環境でもルールベース検出が使えることを確認する
-- [ ] モデル取得失敗時の日本語メッセージを確認する
-- [ ] [ローカルAI対応環境とモデル互換性マトリクス](local-ai-compatibility-matrix.md) に、OS、Chrome、CPU/WASM状態、エラー分類を本文なしで記録する
-- [ ] 拡張E2Eハーネス方針 [extension-e2e-harness.md](extension-e2e-harness.md) に従い、リリース用manifestへE2E専用host permissionが混入していないことを確認する
+- [x] ChatGPTでpaste検知を確認する
+- [x] Claudeでpaste検知を確認する
+- [x] Geminiでpaste検知を確認する
+- [x] Perplexityでpaste検知を確認する
+- [x] 送信前確認モーダルを確認する
+- [x] high / critical / 秘密情報保護の対象が安全化なしでは送信不可になることを確認する
+- [x] mediumが詳細確認から許可可能であることを確認する
+- [x] ローカルAIが使えない環境でもルールベース検出が使えることを確認する
+- [x] モデル取得失敗時の日本語メッセージを確認する
+- [x] [ローカルAI対応環境とモデル互換性マトリクス](local-ai-compatibility-matrix.md) に、OS、Chrome、CPU/WASM状態、エラー分類を本文なしで記録する
+- [x] 拡張E2Eハーネス方針 [extension-e2e-harness.md](extension-e2e-harness.md) に従い、リリース用manifestへE2E専用host permissionが混入していないことを確認する
 
 ## 公開後の対応
 

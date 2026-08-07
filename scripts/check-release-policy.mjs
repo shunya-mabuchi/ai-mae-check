@@ -56,9 +56,7 @@ if (chromeStoreAssets.releaseVersion !== rootPackage.version) {
   qa.fail(`store assets releaseVersion (${chromeStoreAssets.releaseVersion}) must match root version (${rootPackage.version})`);
 }
 
-if (publishedState.version === rootPackage.version) {
-  qa.fail("submission candidate must not be recorded as published before Chrome Web Store publication is confirmed");
-}
+const currentVersionIsPublished = publishedState.version === rootPackage.version;
 
 for (const command of [
   "pnpm package:extension",
@@ -87,7 +85,6 @@ for (const phrase of ["公開を確認", "GitHub Release", "Chrome Web Store"]) 
 }
 
 qa.assertIncludes(changelog, "## Unreleased", paths.changelog);
-qa.assertIncludes(changelog, "## 0.2.0 - 提出候補", paths.changelog);
 qa.assertIncludes(changelog, "0.1.2", paths.changelog);
 qa.assertIncludes(changelog, "## 0.1.1 - 2026-07-03", paths.changelog);
 qa.assertIncludes(changelog, "## 0.1.0 - 2026-06-20", paths.changelog);
@@ -96,10 +93,23 @@ qa.assertIncludes(ruleDeliveryPlan, "公開を確認", paths.ruleDeliveryPlan);
 qa.assertIncludes(readme, "CHANGELOG.md", paths.readme);
 qa.assertIncludes(releaseDraft012, "GitHub Pages", paths.releaseDraft012);
 qa.assertIncludes(releaseDraft012, "0.1.2", paths.releaseDraft012);
-qa.assertIncludes(releaseDraft020, "提出候補", paths.releaseDraft020);
 qa.assertIncludes(releaseDraft020, "ai-mae-checkextension-0.2.0-chrome.zip", paths.releaseDraft020);
-qa.assertIncludes(chromeStoreSubmission, "現在の一般公開版は0.1.2", paths.chromeStoreSubmission);
 qa.assertIncludes(ruleDeliveryPlan, "0.1.2", paths.ruleDeliveryPlan);
+
+if (currentVersionIsPublished) {
+  qa.assertIncludes(
+    changelog,
+    `## ${rootPackage.version} - ${publishedState.checkedAt}`,
+    paths.changelog
+  );
+  qa.assertIncludes(releaseDraft020, "一般公開を確認", paths.releaseDraft020);
+  qa.assertIncludes(chromeStoreSubmission, `${rootPackage.version}公開版`, paths.chromeStoreSubmission);
+  qa.assertIncludes(readme, `公開版は \`${rootPackage.version}\``, paths.readme);
+} else {
+  qa.assertIncludes(changelog, `## ${rootPackage.version} - 提出候補`, paths.changelog);
+  qa.assertIncludes(releaseDraft020, "提出候補", paths.releaseDraft020);
+  qa.assertIncludes(chromeStoreSubmission, "現在の一般公開版", paths.chromeStoreSubmission);
+}
 
 for (const phrase of [
   "2026-06-27",

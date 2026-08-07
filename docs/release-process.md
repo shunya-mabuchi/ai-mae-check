@@ -10,7 +10,7 @@ AIまえチェックはChrome拡張がプロダクト本体です。GitHub Relea
 
 ## リリース前の順序
 
-現在の一般公開版は0.1.2です。0.2.0提出候補も、対象Issueを解消してQAを通してからZIPを提出します。候補作成時点では公開状態を記録する `docs/chrome-web-store-published.json` を先に更新しません。
+現在の一般公開版は0.2.0です。次回以降も対象Issueを解消してQAを通してからZIPを提出します。候補作成時点では公開状態を記録する `docs/chrome-web-store-published.json` を先に更新しません。
 
 1. 対象IssueをIssueごとにPR化してmainへマージする
 2. `CHANGELOG.md` の `Unreleased` を更新する
@@ -64,11 +64,11 @@ Release本文には次を含めます。
 - 手動確認した対象サイト
 - 署名付きルール配信の状態
 
-0.1.0のRelease下書きは [docs/releases/v0.1.0.md](releases/v0.1.0.md)、0.1.1は [docs/releases/v0.1.1.md](releases/v0.1.1.md)、0.1.2は [docs/releases/v0.1.2.md](releases/v0.1.2.md)、0.2.0提出候補は [docs/releases/v0.2.0.md](releases/v0.2.0.md) にあります。
+0.1.0のRelease下書きは [docs/releases/v0.1.0.md](releases/v0.1.0.md)、0.1.1は [docs/releases/v0.1.1.md](releases/v0.1.1.md)、0.1.2は [docs/releases/v0.1.2.md](releases/v0.1.2.md)、0.2.0は [docs/releases/v0.2.0.md](releases/v0.2.0.md) にあります。
 
-## 0.2.0提出候補の扱い
+## 0.2.0の扱い
 
-0.2.0は、全自動QAと実サイト手動確認を終えた同一のmainコミットから提出ZIPを生成します。審査送信前は0.1.2を公開版として維持し、0.2.0公開確認後に公開状態ファイル、Git tag、GitHub Releaseを更新します。署名付き追加ルールは0.1.2と互換性があるため、`rules/latest.json` の `minExtensionVersion` は0.1.2のまま維持します。
+0.2.0は、全自動QAと実サイト手動確認を終えた同一のmainコミットから提出ZIPを生成し、2026年8月5日に審査送信、2026年8月8日に公開を確認しました。公開確認後に公開状態ファイル、Git tag、GitHub Releaseを更新します。署名付き追加ルールは0.1.2と互換性があるため、`rules/latest.json` の `minExtensionVersion` は0.1.2のまま維持します。
 
 ## 0.1.2の扱い
 

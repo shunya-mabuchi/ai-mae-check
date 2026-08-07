@@ -38,7 +38,7 @@ apps/extension/public/icon/128.png
 
 ## ストア掲載用最終セット
 
-Chrome Web Storeへアップロードする画像の最終セットと順番は [chrome-web-store-assets.json](./chrome-web-store-assets.json) で管理します。0.2.0提出候補ではファイルごとのSHA-256も同JSONに固定し、提出直前QAで意図しない差し替えを検出します。READMEに掲載している実機スクリーンショットとは別物です。
+Chrome Web Storeへアップロードする画像の最終セットと順番は [chrome-web-store-assets.json](./chrome-web-store-assets.json) で管理します。0.2.0公開版ではファイルごとのSHA-256も同JSONに固定し、提出直前QAで意図しない差し替えを検出しました。READMEに掲載している実機スクリーンショットとは別物です。
 
 ```text
 docs/assets/store/icon-128.png
