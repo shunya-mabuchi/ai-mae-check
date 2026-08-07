@@ -171,10 +171,11 @@ CPU/WASMモデルの実ロードは通常のCIテストに必須とせず、Work
 - [検出ルール作成ガイド](docs/detection-rule-authoring.md)
 - [第三者ライセンス告知](NOTICE)
 - [変更履歴](CHANGELOG.md)
+- [Chrome Web Store](https://chrome.google.com/webstore/detail/idedmkfplfieijdcflcogkngplhkkecc)
 
 ## 公開状況
 
-Chrome Web Storeの公開版は `0.1.2` です。次の提出候補は `0.2.0` で、全自動QAと実サイト手動確認を終えてから提出します。
+Chrome Web Storeの公開版は `0.2.0` です。2026年8月8日に公開を確認しました。
 
 ## ポートフォリオとして
 
